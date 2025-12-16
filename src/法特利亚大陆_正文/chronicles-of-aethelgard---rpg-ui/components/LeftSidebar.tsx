@@ -1,5 +1,5 @@
 import { MapPin, Skull, Zap } from 'lucide-react';
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Character, GameGlobal } from '../types';
 import { Panel, StatBar } from './UI';
 
@@ -11,8 +11,50 @@ interface LeftSidebarProps {
 }
 
 export const LeftSidebar: React.FC<LeftSidebarProps> = ({ character, global, mvuStat }) => {
-  const [avatarUrl, setAvatarUrl] = useState<string>('https://picsum.photos/200');
+  const defaultAvatarUrl = 'https://picsum.photos/200';
+
+  // 从聊天变量读取保存的头像 URL
+  const loadAvatarUrl = (): string => {
+    try {
+      // @ts-expect-error getVariables 为全局注入
+      const vars = getVariables({ type: 'chat' });
+      const saved = vars?.['ui_settings']?.['avatarUrl'];
+      if (typeof saved === 'string' && saved.trim()) {
+        return saved;
+      }
+    } catch (err) {
+      console.warn('读取头像设置失败，使用默认值', err);
+    }
+    return defaultAvatarUrl;
+  };
+
+  const [avatarUrl, setAvatarUrl] = useState<string>(loadAvatarUrl);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+
+  // 组件加载时读取头像
+  useEffect(() => {
+    const loaded = loadAvatarUrl();
+    setAvatarUrl(loaded);
+  }, []);
+
+  // 保存头像 URL 到聊天变量
+  const saveAvatarUrl = (url: string) => {
+    try {
+      // @ts-expect-error getVariables, insertOrAssignVariables 为全局注入
+      const vars = getVariables({ type: 'chat' });
+      const updated = {
+        ...vars,
+        ui_settings: {
+          ...(vars?.ui_settings || {}),
+          avatarUrl: url,
+        },
+      };
+      // @ts-expect-error insertOrAssignVariables 为全局注入
+      insertOrAssignVariables(updated, { type: 'chat' });
+    } catch (err) {
+      console.warn('保存头像设置失败', err);
+    }
+  };
 
   const handleAvatarClick = () => {
     fileInputRef.current?.click();
@@ -25,6 +67,7 @@ export const LeftSidebar: React.FC<LeftSidebarProps> = ({ character, global, mvu
     reader.onload = () => {
       if (typeof reader.result === 'string') {
         setAvatarUrl(reader.result);
+        saveAvatarUrl(reader.result);
       }
     };
     reader.readAsDataURL(file);
@@ -38,8 +81,10 @@ export const LeftSidebar: React.FC<LeftSidebarProps> = ({ character, global, mvu
           <p className="text-stone-300 font-serif text-sm">{global.date}</p>
           <div className="h-[1px] w-1/2 bg-gradient-to-r from-transparent via-gold-700/50 to-transparent mx-auto my-1"></div>
           <div className="flex items-center justify-center gap-1.5 text-gold-400">
-            <MapPin size={12} className="shrink-0" />
-            <p className="font-display text-xs tracking-wider">{global.location}</p>
+             <MapPin size={12} className="shrink-0" />
+             <p className="font-display text-xs tracking-wider">
+               {global.location}
+             </p>
           </div>
         </div>
       </Panel>
@@ -52,25 +97,23 @@ export const LeftSidebar: React.FC<LeftSidebarProps> = ({ character, global, mvu
             onClick={handleAvatarClick}
             title="点击更换头像"
           >
-            {/* Avatar Placeholder */}
-            <img
-              src={avatarUrl}
-              alt="Character"
-              className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity duration-500"
-            />
-            <div className="absolute inset-0 ring-inset ring-2 ring-black/40 rounded-full"></div>
+             {/* Avatar Placeholder */}
+             <img src={avatarUrl} alt="Character" className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity duration-500" />
+             <div className="absolute inset-0 ring-inset ring-2 ring-black/40 rounded-full"></div>
           </div>
-          <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleAvatarChange} />
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={handleAvatarChange}
+          />
           <h2 className="text-xl font-display font-bold text-transparent bg-clip-text bg-gradient-to-b from-gold-100 to-gold-500 text-center">
             {character.name}
           </h2>
           <div className="flex flex-wrap justify-center gap-2 text-xs font-serif text-stone-400">
-            <span className="px-2 py-0.5 bg-stone-900/80 border border-stone-700 rounded text-stone-300">
-              {character.race}
-            </span>
-            <span className="px-2 py-0.5 bg-stone-900/80 border border-stone-700 rounded text-stone-300">
-              {character.class}
-            </span>
+            <span className="px-2 py-0.5 bg-stone-900/80 border border-stone-700 rounded text-stone-300">{character.race}</span>
+            <span className="px-2 py-0.5 bg-stone-900/80 border border-stone-700 rounded text-stone-300">{character.class}</span>
           </div>
         </div>
 
@@ -81,8 +124,20 @@ export const LeftSidebar: React.FC<LeftSidebarProps> = ({ character, global, mvu
       {/* Vitals: HP / MP / Stamina */}
       <Panel title="生命 · 魔力 · 耐力">
         <div className="space-y-3">
-          <StatBar label="生命" value={character.vitals.hp} max={character.vitals.maxHp} color="red" showValue />
-          <StatBar label="魔力" value={character.vitals.mp} max={character.vitals.maxMp} color="blue" showValue />
+          <StatBar
+            label="生命"
+            value={character.vitals.hp}
+            max={character.vitals.maxHp}
+            color="red"
+            showValue
+          />
+          <StatBar
+            label="魔力"
+            value={character.vitals.mp}
+            max={character.vitals.maxMp}
+            color="blue"
+            showValue
+          />
           <StatBar
             label="耐力"
             value={character.vitals.stamina}
@@ -95,26 +150,22 @@ export const LeftSidebar: React.FC<LeftSidebarProps> = ({ character, global, mvu
 
       {/* Combat Power */}
       <Panel title="战斗评估">
-        <div className="grid grid-cols-2 gap-4">
-          <div className="flex flex-col items-center p-2 bg-stone-900/40 rounded border border-stone-800">
-            <Skull size={16} className="text-stone-400 mb-1" />
-            <span className="text-[10px] text-stone-500 uppercase">肉身战力</span>
-            <span className="text-xl font-display text-red-500 font-bold drop-shadow-md">
-              {character.combatPower.physical}
-            </span>
-          </div>
-          <div className="flex flex-col items-center p-2 bg-stone-900/40 rounded border border-stone-800">
-            <Zap size={16} className="text-purple-400 mb-1" />
-            <span className="text-[10px] text-stone-500 uppercase">魔法战力</span>
-            <span className="text-xl font-display text-purple-400 font-bold shadow-purple-500/20 drop-shadow">
-              {character.combatPower.magical}
-            </span>
-          </div>
-        </div>
+         <div className="grid grid-cols-2 gap-4">
+            <div className="flex flex-col items-center p-2 bg-stone-900/40 rounded border border-stone-800">
+               <Skull size={16} className="text-stone-400 mb-1" />
+               <span className="text-[10px] text-stone-500 uppercase">肉身战力</span>
+               <span className="text-xl font-display text-red-500 font-bold drop-shadow-md">{character.combatPower.physical}</span>
+            </div>
+            <div className="flex flex-col items-center p-2 bg-stone-900/40 rounded border border-stone-800">
+               <Zap size={16} className="text-purple-400 mb-1" />
+               <span className="text-[10px] text-stone-500 uppercase">魔法战力</span>
+               <span className="text-xl font-display text-purple-400 font-bold shadow-purple-500/20 drop-shadow">{character.combatPower.magical}</span>
+            </div>
+         </div>
       </Panel>
 
-      {/* XP */}
-      <Panel title="修炼进度">
+       {/* XP */}
+       <Panel title="修炼进度">
         <div className="space-y-3">
           <StatBar
             label="锻体经验"
@@ -167,7 +218,9 @@ const StatusBlock: React.FC<{ mvuStat: any | null }> = ({ mvuStat }) => {
             {/* Tooltip: 仅显示 描述 + 持续时间，向上延伸 */}
             <div className="absolute left-1/2 bottom-full z-40 mb-2 w-64 -translate-x-1/2 rounded-lg border border-stone-700 bg-stone-950 p-3 text-left text-xs text-stone-200 shadow-[0_10px_30px_rgba(0,0,0,0.7)] opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity">
               {entry.描述 && <p className="mb-1 leading-relaxed">{String(entry.描述)}</p>}
-              {entry.持续时间 && <p className="text-emerald-300">持续时间：{String(entry.持续时间)}</p>}
+              {entry.持续时间 && (
+                <p className="text-emerald-300">持续时间：{String(entry.持续时间)}</p>
+              )}
             </div>
           </div>
         ))}
