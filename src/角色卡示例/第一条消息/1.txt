@@ -86,7 +86,11 @@
 </small>
 </cross_channel>
 
+<<<<<<< HEAD
 <update>
+=======
+<UpdateVariable>
+>>>>>>> 6f04ece0949abf2098513ba3eec65028a25c9b9a
 <initvar>
 ```yaml
 世界:
@@ -125,4 +129,8 @@
       数量: 1
 ```
 </initvar>
+<<<<<<< HEAD
 </update>
+=======
+</UpdateVariable>
+>>>>>>> 6f04ece0949abf2098513ba3eec65028a25c9b9a
