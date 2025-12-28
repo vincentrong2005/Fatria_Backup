@@ -1,5 +1,5 @@
 import { MapPin, Skull, Zap } from 'lucide-react';
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Character, GameGlobal } from '../types';
 import { Panel, StatBar } from './UI';
 
@@ -8,11 +8,55 @@ interface LeftSidebarProps {
   global: GameGlobal;
   // 原始 mvu stat_data, 用于解析状态详情
   mvuStat: any | null;
+  /** 展示模式: inline = 三栏布局; overlay = 从屏幕边缘拉出的覆盖面板 */
+  variant?: 'inline' | 'overlay';
 }
 
-export const LeftSidebar: React.FC<LeftSidebarProps> = ({ character, global, mvuStat }) => {
-  const [avatarUrl, setAvatarUrl] = useState<string>('https://picsum.photos/200');
+export const LeftSidebar: React.FC<LeftSidebarProps> = ({ character, global, mvuStat, variant = 'inline' }) => {
+  const defaultAvatarUrl = 'https://picsum.photos/200';
+
+  // 从聊天变量读取保存的头像 URL
+  const loadAvatarUrl = (): string => {
+    try {
+      // @ts-expect-error getVariables 为全局注入
+      const vars = getVariables({ type: 'chat' });
+      const saved = vars?.['ui_settings']?.['avatarUrl'];
+      if (typeof saved === 'string' && saved.trim()) {
+        return saved;
+      }
+    } catch (err) {
+      console.warn('读取头像设置失败，使用默认值', err);
+    }
+    return defaultAvatarUrl;
+  };
+
+  const [avatarUrl, setAvatarUrl] = useState<string>(loadAvatarUrl);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+
+  // 组件加载时读取头像
+  useEffect(() => {
+    const loaded = loadAvatarUrl();
+    setAvatarUrl(loaded);
+  }, []);
+
+  // 保存头像 URL 到聊天变量
+  const saveAvatarUrl = (url: string) => {
+    try {
+      // @ts-expect-error getVariables, insertOrAssignVariables 为全局注入
+      const vars = getVariables({ type: 'chat' });
+      const updated = {
+        ...vars,
+        ui_settings: {
+          ...(vars?.ui_settings || {}),
+          avatarUrl: url,
+        },
+      };
+      // @ts-expect-error insertOrAssignVariables 为全局注入
+      insertOrAssignVariables(updated, { type: 'chat' });
+    } catch (err) {
+      console.warn('保存头像设置失败', err);
+    }
+  };
 
   const handleAvatarClick = () => {
     fileInputRef.current?.click();
@@ -25,13 +69,22 @@ export const LeftSidebar: React.FC<LeftSidebarProps> = ({ character, global, mvu
     reader.onload = () => {
       if (typeof reader.result === 'string') {
         setAvatarUrl(reader.result);
+        saveAvatarUrl(reader.result);
       }
     };
     reader.readAsDataURL(file);
   };
 
+  const isOverlay = variant === 'overlay';
+
   return (
-    <aside className="basis-[22%] min-w-0 flex flex-col gap-4 h-full overflow-y-auto pr-3 custom-scrollbar column-scroll">
+    <aside
+      className={
+        isOverlay
+          ? 'h-full w-full md:w-2/3 md:max-w-[960px] flex flex-col gap-4 overflow-y-auto px-4 py-4 bg-[#050507f2] border-r border-[#2f3040] shadow-[0_0_40px_rgba(0,0,0,0.9)] custom-scrollbar'
+          : 'basis-[22%] min-w-0 flex flex-col gap-4 h-full overflow-y-auto pr-3 custom-scrollbar column-scroll'
+      }
+    >
       {/* Global Info */}
       <Panel title="世界信息">
         <div className="flex flex-col gap-2 text-center">
@@ -73,9 +126,36 @@ export const LeftSidebar: React.FC<LeftSidebarProps> = ({ character, global, mvu
             <span className="px-2 py-0.5 bg-stone-900/80 border border-stone-700 rounded text-stone-300">{character.class}</span>
           </div>
         </div>
-
+        
         {/* Status Text */}
         <StatusBlock mvuStat={mvuStat} />
+      </Panel>
+
+      {/* Vitals: HP / MP / Stamina */}
+      <Panel title="生命 · 魔力 · 耐力">
+        <div className="space-y-3">
+          <StatBar 
+            label="生命"
+            value={character.vitals.hp} 
+            max={character.vitals.maxHp} 
+            color="red" 
+            showValue
+          />
+          <StatBar 
+            label="魔力"
+            value={character.vitals.mp} 
+            max={character.vitals.maxMp} 
+            color="blue" 
+            showValue
+          />
+          <StatBar 
+            label="耐力"
+            value={character.vitals.stamina} 
+            max={character.vitals.maxStamina} 
+            color="emerald" 
+            showValue
+          />
+        </div>
       </Panel>
 
       {/* Combat Power */}
@@ -97,17 +177,17 @@ export const LeftSidebar: React.FC<LeftSidebarProps> = ({ character, global, mvu
        {/* XP */}
        <Panel title="修炼进度">
         <div className="space-y-3">
-          <StatBar
-            label="锻体经验"
-            value={character.experience.physical}
-            max={character.experience.maxPhysical}
+          <StatBar 
+            label="锻体经验" 
+            value={character.experience.physical} 
+            max={character.experience.maxPhysical} 
             color="amber"
             showValue
           />
-          <StatBar
-            label="魔法经验"
-            value={character.experience.magical}
-            max={character.experience.maxMagical}
+          <StatBar 
+            label="魔法经验" 
+            value={character.experience.magical} 
+            max={character.experience.maxMagical} 
             color="purple"
             showValue
           />
@@ -145,8 +225,8 @@ const StatusBlock: React.FC<{ mvuStat: any | null }> = ({ mvuStat }) => {
             className="relative group px-2 py-0.5 rounded-full bg-stone-900/80 border border-stone-700 text-xs font-serif text-amber-200 cursor-help"
           >
             {entry.name}
-            {/* Tooltip: 仅显示 描述 + 持续时间，向上延伸 */}
-            <div className="absolute left-1/2 bottom-full z-40 mb-2 w-64 -translate-x-1/2 rounded-lg border border-stone-700 bg-stone-950 p-3 text-left text-xs text-stone-200 shadow-[0_10px_30px_rgba(0,0,0,0.7)] opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity">
+            {/* Tooltip: 仅显示 描述 + 持续时间，向上延伸，居中 */}
+            <div className="absolute left-1/2 bottom-full z-40 mb-2 w-64 -translate-x-1/2 rounded-lg border border-stone-700 bg-stone-950 p-3 text-center text-xs text-stone-200 shadow-[0_10px_30px_rgba(0,0,0,0.7)] opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity">
               {entry.描述 && <p className="mb-1 leading-relaxed">{String(entry.描述)}</p>}
               {entry.持续时间 && (
                 <p className="text-emerald-300">持续时间：{String(entry.持续时间)}</p>
@@ -154,7 +234,7 @@ const StatusBlock: React.FC<{ mvuStat: any | null }> = ({ mvuStat }) => {
             </div>
           </div>
         ))}
-      </div>
-    </div>
-  );
+     </div>
+  </div>
+);
 };

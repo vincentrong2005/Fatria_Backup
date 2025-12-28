@@ -7,12 +7,22 @@ interface RightSidebarProps {
   character: Character;
   news: NewsItem[];
   onOpenModal: (type: ModalType) => void;
+  /** 展示模式: inline = 三栏布局; overlay = 从屏幕边缘拉出的覆盖面板 */
+  variant?: 'inline' | 'overlay';
 }
 
-export const RightSidebar: React.FC<RightSidebarProps> = ({ character, news, onOpenModal }) => {
-  return (
-    <aside className="basis-[22%] min-w-0 flex flex-col gap-4 h-full overflow-y-auto pl-3 custom-scrollbar column-scroll">
+export const RightSidebar: React.FC<RightSidebarProps> = ({ character, news, onOpenModal, variant = 'inline' }) => {
+  const isOverlay = variant === 'overlay';
 
+  return (
+    <aside
+      className={
+        isOverlay
+          ? 'h-full w-full md:w-2/3 md:max-w-[960px] flex flex-col gap-4 overflow-y-auto px-4 py-4 bg-[#050507f2] border-l border-[#2f3040] shadow-[0_0_40px_rgba(0,0,0,0.9)] custom-scrollbar'
+          : 'basis-[22%] min-w-0 flex flex-col gap-4 h-full overflow-y-auto pl-3 custom-scrollbar column-scroll'
+      }
+    >
+      
       {/* Interaction Buttons Grid */}
       <Panel title="行动">
         <div className="grid grid-cols-2 gap-2">
@@ -32,20 +42,20 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({ character, news, onO
       {/* Quick Equipment View */}
       <Panel title="当前装备">
           <div className="space-y-3 text-sm">
-             <EquipmentRow
-                label="主武器"
-                item={character.equipment.weapon}
-                icon={<Sword size={16} className="text-red-400" />}
+             <EquipmentRow 
+                label="主武器" 
+                item={character.equipment.weapon} 
+                icon={<Sword size={16} className="text-red-400" />} 
              />
-             <EquipmentRow
-                label="防具"
-                item={character.equipment.armor}
-                icon={<Shield size={16} className="text-blue-400" />}
+             <EquipmentRow 
+                label="防具" 
+                item={character.equipment.armor} 
+                icon={<Shield size={16} className="text-blue-400" />} 
              />
-             <EquipmentRow
-                label="饰品"
-                item={character.equipment.accessory}
-                icon={<Gem size={16} className="text-purple-400" />}
+             <EquipmentRow 
+                label="饰品" 
+                item={character.equipment.accessory} 
+                icon={<Gem size={16} className="text-purple-400" />} 
              />
           </div>
       </Panel>

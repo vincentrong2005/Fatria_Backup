@@ -1,5 +1,5 @@
 import { Maximize2, Minimize2 } from 'lucide-react';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { LeftSidebar } from './components/LeftSidebar';
 import { MainContent } from './components/MainContent';
 import { Modal } from './components/Modal';
@@ -18,8 +18,52 @@ const App: React.FC = () => {
   const [activeModal, setActiveModal] = useState<ModalType>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [mainText, setMainText] = useState<string>('');
+  const [options, setOptions] = useState<string[]>([]);
   const [news, setNews] = useState<NewsItem[]>(MOCK_NEWS);
   const [mvuStat, setMvuStat] = useState<any | null>(null);
+  // 用于让其他组件（例如技能面板）向输入框预填文本
+  const prefillInputRef = useRef<((text: string) => void) | null>(null);
+
+  // --- 布局：左右栏开关（支持记忆） ---
+  const loadSidebarSettings = () => {
+    try {
+      // @ts-expect-error getVariables 为全局注入
+      const vars = getVariables({ type: 'chat' });
+      const saved = vars?.['ui_settings']?.['sidebar'];
+      return {
+        left: typeof saved?.left === 'boolean' ? saved.left : false,
+        right: typeof saved?.right === 'boolean' ? saved.right : false,
+      };
+    } catch (err) {
+      console.warn('读取侧栏设置失败，使用默认值（仅正文）', err);
+      return { left: false, right: false };
+    }
+  };
+
+  const [{ left: showLeftSidebar, right: showRightSidebar }, setSidebarState] = useState(() => loadSidebarSettings());
+
+  const saveSidebarSettings = (next: { left: boolean; right: boolean }) => {
+    try {
+      // @ts-expect-error getVariables, insertOrAssignVariables 为全局注入
+      const vars = getVariables({ type: 'chat' });
+      const updated = {
+        ...vars,
+        ui_settings: {
+          ...(vars?.ui_settings || {}),
+          sidebar: next,
+        },
+      };
+      // @ts-expect-error insertOrAssignVariables 为全局注入
+      insertOrAssignVariables(updated, { type: 'chat' });
+    } catch (err) {
+      console.warn('保存侧栏设置失败', err);
+    }
+  };
+
+  const updateSidebarState = (next: { left: boolean; right: boolean }) => {
+    setSidebarState(next);
+    saveSidebarSettings(next);
+  };
 
   useEffect(() => {
     const handler = () => setIsFullscreen(!!document.fullscreenElement);
@@ -31,7 +75,7 @@ const App: React.FC = () => {
   useEffect(() => {
     const bootstrapMvu = async () => {
       try {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
         const globalAny = window as any;
         if (globalAny.waitGlobalInitialized) {
           await globalAny.waitGlobalInitialized('Mvu');
@@ -53,6 +97,20 @@ const App: React.FC = () => {
 
         refreshFromMvu();
         globalAny.eventOn?.(globalAny.Mvu.events.VARIABLE_UPDATE_ENDED, (vars: any) => refreshFromMvu(vars));
+
+        // 监听自定义刷新事件
+        const handleCustomUpdate = (event: CustomEvent) => {
+          if (event.detail) {
+            refreshFromMvu(event.detail);
+          } else {
+            refreshFromMvu();
+          }
+        };
+        window.addEventListener('mvu-data-updated', handleCustomUpdate as EventListener);
+
+        return () => {
+          window.removeEventListener('mvu-data-updated', handleCustomUpdate as EventListener);
+        };
       } catch (err) {
         console.warn('无法读取 MVU 变量，使用默认展示', err);
       }
@@ -61,16 +119,19 @@ const App: React.FC = () => {
     bootstrapMvu();
   }, []);
 
-  // 从最新一楼消息中用正则提取 <content> … </content> 的正文，并过滤 <!-- --> 注释
+  // 从最新一楼消息中用正则提取 <content> … </content> 的正文和 <option> 标签的选项，并过滤 <!-- --> 注释
   useEffect(() => {
     try {
       const messages = getChatMessages(-1, { role: 'assistant', hide_state: 'all' });
       const raw = messages[0]?.message ?? '';
       if (!raw) {
         setMainText('');
+        setOptions([]);
         return;
       }
-      setMainText(extractContentFromRaw(raw));
+      const { content, options: extractedOptions } = extractContentFromRaw(raw);
+      setMainText(content);
+      setOptions(extractedOptions);
     } catch (err) {
       console.warn('无法从聊天消息中提取正文', err);
     }
@@ -85,45 +146,55 @@ const App: React.FC = () => {
   };
 
   const handleSendMessage = async (message: string) => {
-    // 1. Add User Message
-    const userMsg: Message = { role: 'user', content: message };
-    setChatLog(prev => [...prev, userMsg]);
-    setIsProcessing(true);
+    const content = message.trim();
+    if (!content) return;
 
-    // 2. Simulate LLM processing (Mocking Gemini for UI Demo purposes)
-    // In production: const response = await generateResponse(message, history);
-
-    setTimeout(() => {
-      const mockResponses = [
-        "你感觉到一股奇异的魔力在剑锋流转。当你挥剑斩向粘液时，它发出刺耳的尖叫声，随后化为一滩黑水，露出了通往深处的阶梯。",
-        "你的直觉告诉你，这并非普通的遭遇。空气中弥漫着硫磺的味道，这是恶魔生物出现的征兆。",
-        "你从背包中取出魔法卷轴，随着咒语的吟唱，微弱的光芒照亮了前方的黑暗，揭示了墙壁上古老的壁画。",
-        "你的尝试失败了。那股力量反噬了你的意志，你的精神属性受到了一次冲击。"
-      ];
-
-      const randomResponse = mockResponses[Math.floor(Math.random() * mockResponses.length)];
-
-      setChatLog(prev => [...prev, { role: 'model', content: randomResponse }]);
-      setIsProcessing(false);
-
-      // 3. Simulate State Update based on action (e.g., gain XP or lose MP)
-      setCharacter(prev => ({
-        ...prev,
-        vitals: {
-          ...prev.vitals,
-          mp: Math.max(0, prev.vitals.mp - 5)
+    try {
+      // 发送到酒馆当前聊天作为用户发言
+      // @ts-expect-error createChatMessages 为全局注入
+      await createChatMessages([
+        {
+          role: 'user',
+          message: content,
         },
-        experience: {
-            ...prev.experience,
-            magical: prev.experience.magical + 15
-        }
-      }));
+      ]);
 
-    }, 2000); // Simulate network latency/thinking time
+      // 触发一次常规生成
+      // @ts-expect-error triggerSlash 为全局注入
+      await triggerSlash('/trigger');
+
+      // 可选：给一点提示
+      // @ts-expect-error toastr 为全局注入
+      toastr.success('已将指令发送至当前聊天。', '酒馆已接收');
+    } catch (err) {
+      console.error('发送到酒馆失败', err);
+      // @ts-expect-error toastr 为全局注入
+      toastr.error('发送到酒馆失败，请稍后重试。', '错误');
+    }
   };
 
   return (
     <div className="relative min-h-full w-full bg-gradient-to-br from-[#050507] via-[#0b0d13] to-[#050507] flex items-center justify-center p-4 overflow-visible font-sans select-none text-[var(--gold-100)]">
+      {/* 顶部控制按钮区域：左右栏开关 + 全屏 */}
+      <div className="absolute top-4 left-4 z-30 flex flex-wrap gap-2">
+        <button
+          onClick={() =>
+            updateSidebarState({ left: !showLeftSidebar, right: showRightSidebar })
+          }
+          className="px-3 py-1 rounded-md border border-[#3a2a0f] bg-[#0f1018cc] text-[var(--gold-100)] shadow-[0_10px_30px_rgba(0,0,0,0.6)] hover:border-[var(--gold-500)] hover:shadow-[0_10px_30px_rgba(214,167,79,0.35)] backdrop-blur-md transition-all duration-200 text-[10px] tracking-widest"
+        >
+          {showLeftSidebar ? '隐藏左栏' : '显示左栏'}
+        </button>
+        <button
+          onClick={() =>
+            updateSidebarState({ left: showLeftSidebar, right: !showRightSidebar })
+          }
+          className="px-3 py-1 rounded-md border border-[#3a2a0f] bg-[#0f1018cc] text-[var(--gold-100)] shadow-[0_10px_30px_rgba(0,0,0,0.6)] hover:border-[var(--gold-500)] hover:shadow-[0_10px_30px_rgba(214,167,79,0.35)] backdrop-blur-md transition-all duration-200 text-[10px] tracking-widest"
+        >
+          {showRightSidebar ? '隐藏右栏' : '显示右栏'}
+        </button>
+      </div>
+
       <button
         onClick={toggleFullscreen}
         className="absolute top-4 right-4 z-30 px-3 py-2 rounded-md border border-[#3a2a0f] bg-[#0f1018cc] text-[var(--gold-100)] shadow-[0_10px_40px_rgba(0,0,0,0.6)] hover:border-[var(--gold-500)] hover:shadow-[0_10px_40px_rgba(214,167,79,0.35)] backdrop-blur-md transition-all duration-200 flex items-center gap-2 text-xs tracking-widest"
@@ -138,26 +209,35 @@ const App: React.FC = () => {
          <div className="absolute inset-0 shadow-[inset_0_0_150px_rgba(0,0,0,0.9)]"></div>
       </div>
 
-      <div className="relative z-10 w-full max-w-[1600px] min-h-[760px] flex gap-3">
+      <div className="relative z-10 w-full max-w-[1600px] min-h-[760px]">
+        {/* 中心正文区域：永远占满容器宽度 */}
+        <div className="h-full flex">
+          <MainContent
+            chatLog={chatLog}
+            onSendMessage={handleSendMessage}
+            isProcessing={isProcessing}
+            mainText={mainText}
+            options={options}
+            registerPrefillHandler={(fn) => {
+              prefillInputRef.current = fn;
+            }}
+            expandFull
+          />
+        </div>
 
-        {/* Left Sidebar: Character & Status */}
-        <LeftSidebar character={character} global={globalState} mvuStat={mvuStat} />
+        {/* 左侧覆盖状态栏 */}
+        {showLeftSidebar && (
+          <div className="absolute inset-y-4 left-0 z-30 flex">
+            <LeftSidebar character={character} global={globalState} mvuStat={mvuStat} variant="overlay" />
+          </div>
+        )}
 
-        {/* Center: Main Game Loop / Chat */}
-        <MainContent
-          chatLog={chatLog}
-          onSendMessage={handleSendMessage}
-          isProcessing={isProcessing}
-          mainText={mainText}
-        />
-
-        {/* Right Sidebar: Inventory & Menu */}
-        <RightSidebar
-          character={character}
-          news={news}
-          onOpenModal={setActiveModal}
-        />
-
+        {/* 右侧覆盖状态栏 */}
+        {showRightSidebar && (
+          <div className="absolute inset-y-4 right-0 z-30 flex justify-end">
+            <RightSidebar character={character} news={news} onOpenModal={setActiveModal} variant="overlay" />
+          </div>
+        )}
       </div>
 
       {/* Modal Overlay */}
@@ -168,6 +248,9 @@ const App: React.FC = () => {
         character={character}
         mvuStat={mvuStat}
         isFullscreen={isFullscreen}
+        onSkillToChat={(text) => {
+          prefillInputRef.current?.(text);
+        }}
       />
     </div>
   );
@@ -307,7 +390,41 @@ function mapMvuToGlobal(data: any): GameGlobal | null {
   const stat = data?.stat_data ?? {};
   const date = extractValue(getPath(stat, '系统变量.日期'), '');
   const time = extractValue(getPath(stat, '系统变量.时间'), '');
-  const location = extractValue(getPath(stat, '主角.位置'), '未知地点');
+
+  // 读取新的位置对象结构
+  const locationObj = getPath(stat, '主角.位置', null);
+  let location = '未知地点';
+
+  if (locationObj && typeof locationObj === 'object') {
+    // 处理新的对象结构：{ 大区域, 具体城市, 具体地点 }
+    const region = extractValue(locationObj.大区域, '');
+    const city = extractValue(locationObj.具体城市, '');
+    const place = extractValue(locationObj.具体地点, '');
+
+    // 构建位置字符串，过滤掉默认值和空值
+    const parts: string[] = [];
+
+    // 大区域：总是显示（即使是默认值）
+    if (region) {
+      parts.push(region);
+    }
+
+    // 具体城市：只显示非默认值
+    if (city && city !== '未知' && city.trim() !== '') {
+      parts.push(city);
+    }
+
+    // 具体地点：只显示非默认值
+    if (place && place !== '未知' && place.trim() !== '') {
+      parts.push(place);
+    }
+
+    location = parts.length > 0 ? parts.join(' > ') : (region || '未知地点');
+  } else if (typeof locationObj === 'string') {
+    // 兼容旧数据：如果位置还是字符串，直接使用
+    location = locationObj || '未知地点';
+  }
+
   const dateStr = [date, time].filter(Boolean).join(' ');
   return {
     date: dateStr || '时间未知',
@@ -329,15 +446,36 @@ function mapMvuToNews(data: any, dateStr?: string): NewsItem[] | null {
   ];
 }
 
-function extractContentFromRaw(raw: string): string {
-  if (!raw) return '';
-  // 先移除 <!-- --> 包裹的注释
-  const withoutComments = raw.replace(/<!--[\s\S]*?-->/g, '');
-  // 使用用户给定正则语义: 捕捉 <content>...</content> 中间的内容
-  const match = withoutComments.match(/[\s\S]*?<content>([\s\S]*?)<\/content>/i);
-  if (match && match[1]) {
-    return match[1].trim();
+function extractContentFromRaw(raw: string): { content: string; options: string[] } {
+  if (!raw) return { content: '', options: [] };
+
+  // 第一步：移除 <!-- --> 包裹的注释
+  let processed = raw.replace(/<!--[\s\S]*?-->/g, '');
+
+  // 第二步：移除 </think> 标签之前的所有内容
+  const thinkEndIndex = processed.indexOf('</think>');
+  if (thinkEndIndex !== -1) {
+    processed = processed.substring(thinkEndIndex + '</think>'.length);
   }
-  // 如果没有 content 标签，就展示整段（同样是去掉注释后的）
-  return withoutComments.trim();
+
+  // 第三步：移除 <额外剧情思考>...</额外剧情思考> 包裹的所有内容
+  processed = processed.replace(/<额外剧情思考>[\s\S]*?<\/额外剧情思考>/gi, '');
+
+  // 第四步：使用用户给定正则语义: 捕捉 <content>...</content> 中间的内容和 <option> 标签内的选项
+  const contentMatch = processed.match(/[\s\S]*?<content>([\s\S]*?)<\/content>/i);
+  const content = contentMatch && contentMatch[1] ? contentMatch[1].trim() : processed.trim();
+
+  // 提取 <option> 标签内的选项
+  const optionMatch = processed.match(/<option>\s*A\.\s*([\s\S]*?)\s*B\.\s*([\s\S]*?)\s*C\.\s*([\s\S]*?)\s*D\.\s*([\s\S]*?)<\/option>/i);
+  const extractedOptions: string[] = [];
+  if (optionMatch) {
+    // 提取 A, B, C, D 四个选项，去除首尾空白
+    for (let i = 1; i <= 4; i++) {
+      if (optionMatch[i]) {
+        extractedOptions.push(optionMatch[i].trim());
+      }
+    }
+  }
+
+  return { content, options: extractedOptions };
 }

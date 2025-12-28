@@ -1,0 +1,125 @@
+<template>
+  <div class="space-y-6 animate-slide-up">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <!-- Name Input -->
+      <div class="group relative">
+        <label class="block text-sm font-medium text-gray-300 mb-2 flex items-center gap-2">
+          <i class="fas fa-user text-secondary"></i> 姓名
+        </label>
+        <input
+          type="text"
+          :value="data.name"
+          @input="(e) => updateData({ name: (e.target as HTMLInputElement).value })"
+          class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-secondary/50 focus:border-transparent transition-all duration-300 backdrop-blur-sm"
+          placeholder="输入你的角色名..."
+        />
+      </div>
+
+      <!-- Age Input -->
+      <div class="group relative">
+        <label class="block text-sm font-medium text-gray-300 mb-2 flex items-center gap-2">
+          <i class="fas fa-graduation-cap text-secondary"></i> 年龄
+        </label>
+        <input
+          type="number"
+          min="15"
+          max="25"
+          :value="data.age"
+          @input="(e) => updateData({ age: parseInt((e.target as HTMLInputElement).value) || 16 })"
+          class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-secondary/50 transition-all backdrop-blur-sm"
+        />
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <!-- Gender Selection -->
+      <div>
+        <label class="block text-sm font-medium text-gray-300 mb-2">性别</label>
+        <div class="flex bg-white/5 rounded-xl p-1 border border-white/10 backdrop-blur-sm">
+          <button
+            v-for="g in Object.values(Gender)"
+            :key="g"
+            @click="updateData({ gender: g, archetypeId: null })"
+            :class="[
+              'flex-1 py-2 rounded-lg text-sm font-medium transition-all duration-300',
+              data.gender === g
+                ? 'bg-secondary text-white shadow-lg shadow-pink-500/30'
+                : 'text-gray-400 hover:text-white hover:bg-white/5'
+            ]"
+          >
+            {{ g }}
+          </button>
+        </div>
+      </div>
+
+      <!-- Difficulty Selection -->
+      <div>
+        <label class="block text-sm font-medium text-gray-300 mb-2 flex items-center gap-2">
+          <i class="fas fa-exclamation-circle text-red-400"></i> 游戏难度
+        </label>
+        <select
+          :value="data.difficulty"
+          @change="(e) => updateData({ difficulty: (e.target as HTMLSelectElement).value as Difficulty })"
+          class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-red-500/50 appearance-none cursor-pointer backdrop-blur-sm"
+        >
+          <option
+            v-for="d in Object.values(Difficulty)"
+            :key="d"
+            :value="d"
+            class="bg-slate-900 text-white"
+          >
+            {{ d }}
+          </option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Appearance Textarea -->
+    <div>
+      <label class="block text-sm font-medium text-gray-300 mb-2 flex items-center gap-2">
+        <i class="fas fa-face-smile text-secondary"></i> 外貌描述
+      </label>
+      <textarea
+        rows="2"
+        :value="data.appearance"
+        @input="(e) => updateData({ appearance: (e.target as HTMLTextAreaElement).value })"
+        class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-secondary/50 transition-all backdrop-blur-sm resize-none"
+        placeholder="例如：银色长发，红瞳，身材娇小，常年围着一条红色围巾..."
+      />
+    </div>
+
+    <!-- Personality Textarea -->
+    <div>
+      <label class="block text-sm font-medium text-gray-300 mb-2 flex items-center gap-2">
+        <i class="fas fa-align-left text-secondary"></i> 性格与背景
+      </label>
+      <textarea
+        rows="3"
+        :value="data.personality"
+        @input="(e) => updateData({ personality: (e.target as HTMLTextAreaElement).value })"
+        class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-secondary/50 transition-all backdrop-blur-sm resize-none"
+        placeholder="你的性格特点，以及你是如何进入这所学院的..."
+      />
+    </div>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { Gender, Difficulty, CharacterData } from '../types';
+
+defineProps<{
+  data: CharacterData;
+}>();
+
+const emit = defineEmits<{
+  (e: 'update-data', fields: Partial<CharacterData>): void;
+}>();
+
+const updateData = (fields: Partial<CharacterData>) => {
+  emit('update-data', fields);
+};
+</script>
+
+<style lang="scss" scoped>
+</style>
+
