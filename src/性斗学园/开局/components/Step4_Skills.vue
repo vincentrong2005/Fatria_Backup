@@ -13,10 +13,12 @@
           </div>
         </div>
         <div class="text-right bg-white/5 px-3 py-1 rounded-full border border-white/5">
-          <span :class="[
-            'font-bold',
-            data.initialActiveSkills.length === MAX_ACTIVE_SKILLS ? 'text-secondary' : 'text-white'
-          ]">
+          <span
+            :class="[
+              'font-bold',
+              data.initialActiveSkills.length === MAX_ACTIVE_SKILLS ? 'text-secondary' : 'text-white',
+            ]"
+          >
             {{ data.initialActiveSkills.length }}
           </span>
           <span class="text-gray-500 text-sm">/{{ MAX_ACTIVE_SKILLS }}</span>
@@ -29,29 +31,37 @@
             v-for="skill in ACTIVE_SKILLS"
             :key="skill.id"
             @click="toggleActiveSkill(skill.id)"
-            :disabled="!data.initialActiveSkills.includes(skill.id) && data.initialActiveSkills.length >= MAX_ACTIVE_SKILLS"
+            :disabled="
+              !data.initialActiveSkills.includes(skill.id) && data.initialActiveSkills.length >= MAX_ACTIVE_SKILLS
+            "
             :class="[
               'relative group p-3 rounded-xl border transition-all duration-300 text-left flex items-start gap-3 h-full',
               data.initialActiveSkills.includes(skill.id)
                 ? 'bg-secondary/20 border-secondary ring-1 ring-secondary'
                 : data.initialActiveSkills.length >= MAX_ACTIVE_SKILLS
                   ? 'bg-white/5 border-white/5 opacity-50 cursor-not-allowed'
-                  : 'bg-white/5 border-white/10 hover:bg-white/10 hover:border-white/30'
+                  : 'bg-white/5 border-white/10 hover:bg-white/10 hover:border-white/30',
             ]"
           >
-            <div :class="[
-              'p-2.5 rounded-lg transition-colors shrink-0',
-              data.initialActiveSkills.includes(skill.id) ? 'bg-secondary text-white' : 'bg-black/30 text-gray-400 group-hover:text-gray-200'
-            ]">
+            <div
+              :class="[
+                'p-2.5 rounded-lg transition-colors shrink-0',
+                data.initialActiveSkills.includes(skill.id)
+                  ? 'bg-secondary text-white'
+                  : 'bg-black/30 text-gray-400 group-hover:text-gray-200',
+              ]"
+            >
               <i :class="['fas', getIconClass(skill.icon)]"></i>
             </div>
-            
+
             <div class="flex-1 min-w-0">
               <div class="flex justify-between items-start">
-                <h4 :class="[
-                  'font-bold text-sm truncate pr-2 transition-colors',
-                  data.initialActiveSkills.includes(skill.id) ? 'text-white' : 'text-gray-200'
-                ]">
+                <h4
+                  :class="[
+                    'font-bold text-sm truncate pr-2 transition-colors',
+                    data.initialActiveSkills.includes(skill.id) ? 'text-white' : 'text-gray-200',
+                  ]"
+                >
                   {{ skill.name }}
                 </h4>
                 <i v-if="data.initialActiveSkills.includes(skill.id)" class="fas fa-check text-secondary shrink-0"></i>
@@ -81,10 +91,12 @@
           </div>
         </div>
         <div class="text-right bg-white/5 px-3 py-1 rounded-full border border-white/5">
-          <span :class="[
-            'font-bold',
-            data.initialPassiveSkills.length === MAX_PASSIVE_SKILLS ? 'text-secondary' : 'text-white'
-          ]">
+          <span
+            :class="[
+              'font-bold',
+              data.initialPassiveSkills.length === MAX_PASSIVE_SKILLS ? 'text-secondary' : 'text-white',
+            ]"
+          >
             {{ data.initialPassiveSkills.length }}
           </span>
           <span class="text-gray-500 text-sm">/{{ MAX_PASSIVE_SKILLS }}</span>
@@ -97,29 +109,37 @@
             v-for="skill in currentPassiveSkills"
             :key="skill.id"
             @click="togglePassiveSkill(skill.id)"
-            :disabled="!data.initialPassiveSkills.includes(skill.id) && data.initialPassiveSkills.length >= MAX_PASSIVE_SKILLS"
+            :disabled="
+              !data.initialPassiveSkills.includes(skill.id) && data.initialPassiveSkills.length >= MAX_PASSIVE_SKILLS
+            "
             :class="[
               'relative group p-3 rounded-xl border transition-all duration-300 text-left flex items-start gap-3 h-full',
               data.initialPassiveSkills.includes(skill.id)
                 ? 'bg-secondary/20 border-secondary ring-1 ring-secondary'
                 : data.initialPassiveSkills.length >= MAX_PASSIVE_SKILLS
                   ? 'bg-white/5 border-white/5 opacity-50 cursor-not-allowed'
-                  : 'bg-white/5 border-white/10 hover:bg-white/10 hover:border-white/30'
+                  : 'bg-white/5 border-white/10 hover:bg-white/10 hover:border-white/30',
             ]"
           >
-            <div :class="[
-              'p-2.5 rounded-lg transition-colors shrink-0',
-              data.initialPassiveSkills.includes(skill.id) ? 'bg-secondary text-white' : 'bg-black/30 text-gray-400 group-hover:text-gray-200'
-            ]">
+            <div
+              :class="[
+                'p-2.5 rounded-lg transition-colors shrink-0',
+                data.initialPassiveSkills.includes(skill.id)
+                  ? 'bg-secondary text-white'
+                  : 'bg-black/30 text-gray-400 group-hover:text-gray-200',
+              ]"
+            >
               <i :class="['fas', getIconClass(skill.icon)]"></i>
             </div>
-            
+
             <div class="flex-1 min-w-0">
               <div class="flex justify-between items-start">
-                <h4 :class="[
-                  'font-bold text-sm truncate pr-2 transition-colors',
-                  data.initialPassiveSkills.includes(skill.id) ? 'text-white' : 'text-gray-200'
-                ]">
+                <h4
+                  :class="[
+                    'font-bold text-sm truncate pr-2 transition-colors',
+                    data.initialPassiveSkills.includes(skill.id) ? 'text-white' : 'text-gray-200',
+                  ]"
+                >
                   {{ skill.name }}
                 </h4>
                 <i v-if="data.initialPassiveSkills.includes(skill.id)" class="fas fa-check text-secondary shrink-0"></i>
@@ -180,6 +200,4 @@ const togglePassiveSkill = (skillId: string) => {
 };
 </script>
 
-<style lang="scss" scoped>
-</style>
-
+<style lang="scss" scoped></style>

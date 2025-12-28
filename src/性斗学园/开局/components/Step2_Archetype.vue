@@ -4,7 +4,9 @@
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
       <div class="lg:col-span-2 space-y-4">
         <!-- Header Panel -->
-        <div class="bg-black/20 border border-white/5 rounded-t-2xl p-4 flex justify-between items-center backdrop-blur-md">
+        <div
+          class="bg-black/20 border border-white/5 rounded-t-2xl p-4 flex justify-between items-center backdrop-blur-md"
+        >
           <div class="flex items-center gap-2">
             <div class="p-1.5 bg-secondary/20 rounded text-secondary">
               <i class="fas fa-user"></i>
@@ -17,7 +19,9 @@
         </div>
 
         <!-- Scrollable List -->
-        <div class="bg-black/20 border-x border-b border-white/5 rounded-b-2xl p-4 h-[350px] overflow-y-auto custom-scrollbar">
+        <div
+          class="bg-black/20 border-x border-b border-white/5 rounded-b-2xl p-4 h-[350px] overflow-y-auto custom-scrollbar"
+        >
           <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
             <button
               v-for="archetype in currentArchetypes"
@@ -27,22 +31,28 @@
                 'relative group p-3 rounded-xl border transition-all duration-300 text-left flex items-start gap-3',
                 data.archetypeId === archetype.id
                   ? 'bg-secondary/20 border-secondary ring-1 ring-secondary'
-                  : 'bg-white/5 border-white/5 hover:bg-white/10 hover:border-white/20'
+                  : 'bg-white/5 border-white/5 hover:bg-white/10 hover:border-white/20',
               ]"
             >
-              <div :class="[
-                'p-2.5 rounded-lg transition-colors shrink-0',
-                data.archetypeId === archetype.id ? 'bg-secondary text-white' : 'bg-black/30 text-gray-400 group-hover:text-gray-200'
-              ]">
+              <div
+                :class="[
+                  'p-2.5 rounded-lg transition-colors shrink-0',
+                  data.archetypeId === archetype.id
+                    ? 'bg-secondary text-white'
+                    : 'bg-black/30 text-gray-400 group-hover:text-gray-200',
+                ]"
+              >
                 <i :class="['fas', getIconClass(archetype.icon)]"></i>
               </div>
-              
+
               <div class="flex-1 min-w-0">
                 <div class="flex justify-between items-start">
-                  <h4 :class="[
-                    'font-bold text-sm truncate transition-colors',
-                    data.archetypeId === archetype.id ? 'text-white' : 'text-gray-200'
-                  ]">
+                  <h4
+                    :class="[
+                      'font-bold text-sm truncate transition-colors',
+                      data.archetypeId === archetype.id ? 'text-white' : 'text-gray-200',
+                    ]"
+                  >
                     {{ archetype.name }}
                   </h4>
                 </div>
@@ -57,12 +67,16 @@
 
       <!-- Selected Archetype Detail Panel -->
       <div class="lg:col-span-1">
-        <div :class="[
-          'h-full rounded-2xl border border-white/10 p-6 flex flex-col items-center text-center transition-all duration-500',
-          selectedArchetype ? 'bg-gradient-to-b from-secondary/10 to-transparent' : 'bg-white/5 grayscale opacity-50'
-        ]">
+        <div
+          :class="[
+            'h-full rounded-2xl border border-white/10 p-6 flex flex-col items-center text-center transition-all duration-500',
+            selectedArchetype ? 'bg-gradient-to-b from-secondary/10 to-transparent' : 'bg-white/5 grayscale opacity-50',
+          ]"
+        >
           <template v-if="selectedArchetype">
-            <div class="w-16 h-16 rounded-full bg-secondary/20 flex items-center justify-center mb-4 text-secondary shadow-[0_0_20px_rgba(236,72,153,0.3)]">
+            <div
+              class="w-16 h-16 rounded-full bg-secondary/20 flex items-center justify-center mb-4 text-secondary shadow-[0_0_20px_rgba(236,72,153,0.3)]"
+            >
               <i :class="['fas', getIconClass(selectedArchetype.passiveSkill.icon)]"></i>
             </div>
             <h4 class="text-sm uppercase tracking-widest text-secondary font-bold mb-1">专属被动</h4>
@@ -70,7 +84,7 @@
             <p class="text-sm text-gray-300 leading-relaxed">
               {{ selectedArchetype.passiveSkill.description }}
             </p>
-            
+
             <div class="mt-6 w-full pt-6 border-t border-white/10">
               <h4 class="text-xs uppercase tracking-widest text-gray-500 mb-3">初始加成</h4>
               <div class="flex flex-wrap gap-2 justify-center">
@@ -79,7 +93,8 @@
                   :key="key"
                   class="text-xs px-2 py-1 rounded-md bg-black/40 text-gray-200 border border-white/10"
                 >
-                  {{ getStatLabel(key) }} <span :class="(value as number) > 0 ? 'text-green-400' : 'text-red-400'">
+                  {{ getStatLabel(key) }}
+                  <span :class="(value as number) > 0 ? 'text-green-400' : 'text-red-400'">
                     {{ (value as number) > 0 ? '+' : '' }}{{ value }}
                   </span>
                 </span>
@@ -107,16 +122,18 @@
           <i class="fas fa-gear"></i> 非二元自由配置
         </span>
       </h3>
-      
+
       <!-- Non-binary Config Toggles -->
       <div v-if="isOther" class="mb-8 bg-black/20 p-4 rounded-xl border border-white/5">
         <label class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3 block">生理构造设置</label>
         <div class="flex gap-4">
           <label class="flex items-center gap-2 cursor-pointer group">
-            <div :class="[
-              'w-5 h-5 rounded border flex items-center justify-center transition-colors',
-              data.configFeatures.hasBreasts ? 'bg-secondary border-secondary' : 'border-gray-500 bg-transparent'
-            ]">
+            <div
+              :class="[
+                'w-5 h-5 rounded border flex items-center justify-center transition-colors',
+                data.configFeatures.hasBreasts ? 'bg-secondary border-secondary' : 'border-gray-500 bg-transparent',
+              ]"
+            >
               <i v-if="data.configFeatures.hasBreasts" class="fas fa-check text-white text-xs"></i>
             </div>
             <input
@@ -125,19 +142,23 @@
               :checked="data.configFeatures.hasBreasts"
               @change="toggleFeature('hasBreasts')"
             />
-            <span :class="[
-              'text-sm group-hover:text-white transition-colors',
-              data.configFeatures.hasBreasts ? 'text-white' : 'text-gray-400'
-            ]">
+            <span
+              :class="[
+                'text-sm group-hover:text-white transition-colors',
+                data.configFeatures.hasBreasts ? 'text-white' : 'text-gray-400',
+              ]"
+            >
               女性性征 (乳房/臀部)
             </span>
           </label>
 
           <label class="flex items-center gap-2 cursor-pointer group">
-            <div :class="[
-              'w-5 h-5 rounded border flex items-center justify-center transition-colors',
-              data.configFeatures.hasPenis ? 'bg-secondary border-secondary' : 'border-gray-500 bg-transparent'
-            ]">
+            <div
+              :class="[
+                'w-5 h-5 rounded border flex items-center justify-center transition-colors',
+                data.configFeatures.hasPenis ? 'bg-secondary border-secondary' : 'border-gray-500 bg-transparent',
+              ]"
+            >
               <i v-if="data.configFeatures.hasPenis" class="fas fa-check text-white text-xs"></i>
             </div>
             <input
@@ -146,10 +167,12 @@
               :checked="data.configFeatures.hasPenis"
               @change="toggleFeature('hasPenis')"
             />
-            <span :class="[
-              'text-sm group-hover:text-white transition-colors',
-              data.configFeatures.hasPenis ? 'text-white' : 'text-gray-400'
-            ]">
+            <span
+              :class="[
+                'text-sm group-hover:text-white transition-colors',
+                data.configFeatures.hasPenis ? 'text-white' : 'text-gray-400',
+              ]"
+            >
               男性性征 (阴茎)
             </span>
           </label>
@@ -160,9 +183,7 @@
         <!-- Height Slider -->
         <div>
           <label class="flex justify-between text-sm font-medium text-gray-300 mb-4">
-            <span class="flex items-center gap-2">
-              <i class="fas fa-ruler"></i> 身高 (Height)
-            </span>
+            <span class="flex items-center gap-2"> <i class="fas fa-ruler"></i> 身高 (Height) </span>
             <span class="text-secondary font-bold">{{ data.height }} cm</span>
           </label>
           <div class="relative flex items-center h-6">
@@ -172,7 +193,7 @@
               max="195"
               step="1"
               :value="data.height"
-              @input="(e) => updateData({ height: parseInt((e.target as HTMLInputElement).value) })"
+              @input="e => updateData({ height: parseInt((e.target as HTMLInputElement).value) })"
               class="absolute w-full h-2 bg-white/20 rounded-lg appearance-none cursor-pointer focus:outline-none accent-secondary z-20 opacity-0 hover:opacity-100"
             />
             <div class="w-full h-2 bg-slate-700 rounded-full overflow-hidden absolute z-10">
@@ -192,9 +213,7 @@
         <!-- Hips Slider -->
         <div v-if="showBreasts">
           <label class="flex justify-between text-sm font-medium text-gray-300 mb-4">
-            <span class="flex items-center gap-2">
-              <i class="fas fa-circle"></i> 臀围 (Hips)
-            </span>
+            <span class="flex items-center gap-2"> <i class="fas fa-circle"></i> 臀围 (Hips) </span>
             <span class="text-secondary font-bold">{{ data.hips }} cm</span>
           </label>
           <div class="relative flex items-center h-6">
@@ -204,7 +223,7 @@
               max="120"
               step="1"
               :value="data.hips"
-              @input="(e) => updateData({ hips: parseInt((e.target as HTMLInputElement).value) })"
+              @input="e => updateData({ hips: parseInt((e.target as HTMLInputElement).value) })"
               class="absolute w-full h-2 bg-white/20 rounded-lg appearance-none cursor-pointer focus:outline-none accent-secondary z-20 opacity-0 hover:opacity-100"
             />
             <div class="w-full h-2 bg-slate-700 rounded-full overflow-hidden absolute z-10">
@@ -224,9 +243,7 @@
         <!-- Cock Length Slider -->
         <div v-if="showPenis">
           <label class="flex justify-between text-sm font-medium text-gray-300 mb-4">
-            <span class="flex items-center gap-2">
-              <i class="fas fa-bolt"></i> 阴茎长度 (Length)
-            </span>
+            <span class="flex items-center gap-2"> <i class="fas fa-bolt"></i> 阴茎长度 (Length) </span>
             <span class="text-secondary font-bold">{{ data.cockLength }} cm</span>
           </label>
           <div class="relative flex items-center h-6">
@@ -236,7 +253,7 @@
               max="30"
               step="1"
               :value="data.cockLength"
-              @input="(e) => updateData({ cockLength: parseInt((e.target as HTMLInputElement).value) })"
+              @input="e => updateData({ cockLength: parseInt((e.target as HTMLInputElement).value) })"
               class="absolute w-full h-2 bg-white/20 rounded-lg appearance-none cursor-pointer focus:outline-none accent-secondary z-20 opacity-0 hover:opacity-100"
             />
             <div class="w-full h-2 bg-slate-700 rounded-full overflow-hidden absolute z-10">
@@ -267,7 +284,7 @@
                 'w-10 h-10 rounded-lg text-sm font-medium transition-all duration-200',
                 data.cupSize === size
                   ? 'bg-secondary text-white shadow-lg scale-110 border-transparent'
-                  : 'bg-white/5 text-gray-400 border border-white/10 hover:border-white/30 hover:text-white'
+                  : 'bg-white/5 text-gray-400 border border-white/10 hover:border-white/30 hover:text-white',
               ]"
             >
               {{ size }}
@@ -289,7 +306,7 @@
                 'px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 border',
                 data.genitalType === type
                   ? 'bg-secondary/20 border-secondary text-white shadow-[0_0_10px_rgba(236,72,153,0.3)]'
-                  : 'bg-white/5 border-white/10 text-gray-400 hover:border-white/30 hover:text-white'
+                  : 'bg-white/5 border-white/10 text-gray-400 hover:border-white/30 hover:text-white',
               ]"
             >
               {{ type }}
@@ -342,7 +359,7 @@ const getStatLabel = (key: string): string => {
     $暴击率: '暴击',
     _堕落度: '堕落',
     _意志力: '意志',
-    _全属性: '全属性'
+    _全属性: '全属性',
   };
   return map[key] || key;
 };
@@ -355,12 +372,10 @@ const toggleFeature = (feature: 'hasBreasts' | 'hasPenis') => {
   updateData({
     configFeatures: {
       ...props.data.configFeatures,
-      [feature]: !props.data.configFeatures[feature]
-    }
+      [feature]: !props.data.configFeatures[feature],
+    },
   });
 };
 </script>
 
-<style lang="scss" scoped>
-</style>
-
+<style lang="scss" scoped></style>

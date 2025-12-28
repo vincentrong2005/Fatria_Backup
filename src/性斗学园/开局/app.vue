@@ -3,16 +3,23 @@
     <FloatingShapes />
 
     <!-- Main Container -->
-    <div class="relative z-10 w-full max-w-4xl bg-glass border border-glassBorder backdrop-blur-2xl rounded-3xl shadow-2xl overflow-hidden flex flex-col md:flex-row h-auto min-h-[600px]">
-      
+    <div
+      class="relative z-10 w-full max-w-4xl bg-glass border border-glassBorder backdrop-blur-2xl rounded-3xl shadow-2xl overflow-hidden flex flex-col md:flex-row h-auto min-h-[600px]"
+    >
       <!-- Sidebar / Header -->
-      <div class="w-full md:w-64 bg-black/20 p-6 flex flex-col justify-between border-b md:border-b-0 md:border-r border-white/5 shrink-0">
+      <div
+        class="w-full md:w-64 bg-black/20 p-6 flex flex-col justify-between border-b md:border-b-0 md:border-r border-white/5 shrink-0"
+      >
         <div>
           <div class="flex items-center gap-3 mb-8">
-            <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-secondary flex items-center justify-center shadow-lg shadow-indigo-500/20">
+            <div
+              class="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-secondary flex items-center justify-center shadow-lg shadow-indigo-500/20"
+            >
               <i class="fas fa-terminal text-white"></i>
             </div>
-            <h1 class="font-bold text-xl tracking-wide bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-400">
+            <h1
+              class="font-bold text-xl tracking-wide bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-400"
+            >
               性斗学园
             </h1>
           </div>
@@ -26,9 +33,9 @@
                 'w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 text-sm font-medium',
                 step === item.id
                   ? 'bg-white/10 text-white shadow-inner border border-white/5'
-                  : step > item.id 
-                    ? 'text-green-400' 
-                    : 'text-gray-500 cursor-not-allowed'
+                  : step > item.id
+                    ? 'text-green-400'
+                    : 'text-gray-500 cursor-not-allowed',
               ]"
             >
               <i :class="['fas', item.icon, step === item.id ? 'text-secondary' : '']"></i>
@@ -43,7 +50,7 @@
       <div class="flex-1 flex flex-col relative">
         <!-- Progress Bar Line -->
         <div class="h-1 w-full bg-white/5">
-          <div 
+          <div
             class="h-full bg-gradient-to-r from-primary via-secondary to-accent transition-all duration-500 ease-out"
             :style="{ width: `${progress}%` }"
           />
@@ -75,9 +82,7 @@
             :disabled="step === 1"
             :class="[
               'flex items-center gap-2 px-6 py-2.5 rounded-xl font-medium transition-all',
-              step === 1
-                ? 'text-gray-600 cursor-not-allowed'
-                : 'text-gray-300 hover:text-white hover:bg-white/5'
+              step === 1 ? 'text-gray-600 cursor-not-allowed' : 'text-gray-300 hover:text-white hover:bg-white/5',
             ]"
           >
             <i class="fas fa-chevron-left"></i> 上一步
@@ -101,9 +106,7 @@
               <span class="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
               加载世界...
             </span>
-            <span v-else>
-              <i class="fas fa-sparkles"></i> 开始学园生活
-            </span>
+            <span v-else> <i class="fas fa-sparkles"></i> 开始学园生活 </span>
           </button>
         </div>
       </div>
@@ -112,13 +115,15 @@
     <!-- Generic Modal for Placeholder Interactions -->
     <div v-if="showModal" class="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" @click="closeModal"></div>
-      <div class="relative bg-[#1e293b] w-full max-w-md p-8 rounded-2xl border border-white/10 shadow-2xl animate-fade-in transform transition-all scale-100">
+      <div
+        class="relative bg-[#1e293b] w-full max-w-md p-8 rounded-2xl border border-white/10 shadow-2xl animate-fade-in transform transition-all scale-100"
+      >
         <h3 class="text-xl font-bold text-white mb-4">{{ modalTitle }}</h3>
         <div class="h-32 bg-black/20 rounded-xl flex items-center justify-center border border-white/5 border-dashed">
           <p class="text-gray-500 text-sm">此功能模块已就绪，等待内容注入。</p>
         </div>
         <div class="mt-6 flex justify-end">
-          <button 
+          <button
             @click="closeModal"
             class="px-4 py-2 rounded-lg bg-white/10 hover:bg-white/20 text-white text-sm font-medium transition-colors"
           >
@@ -154,18 +159,13 @@ const navItems = [
   { id: 4, label: '初始技能', icon: 'fa-sword' },
 ];
 
-const stepTitles = [
-  '创建你的学籍档案',
-  '选择你的校园定位',
-  '激活你的天赋潜能',
-  '选择初始技能'
-];
+const stepTitles = ['创建你的学籍档案', '选择你的校园定位', '激活你的天赋潜能', '选择初始技能'];
 
 const stepDescriptions = [
   '请输入基础信息以办理入学手续。',
   '不同的身份将决定你在学园中的社交圈层与初始加成。',
   '根据游戏难度，你需要合理分配有限的天赋点数。',
-  '选择适合你战术风格的初始技能。'
+  '选择适合你战术风格的初始技能。',
 ];
 
 const progress = computed(() => (step.value / MAX_STEPS) * 100);

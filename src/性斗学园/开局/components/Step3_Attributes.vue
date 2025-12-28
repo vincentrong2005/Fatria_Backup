@@ -1,16 +1,17 @@
 <template>
   <div class="animate-slide-up space-y-6">
-    <div class="flex justify-between items-center bg-gradient-to-r from-indigo-900/50 to-purple-900/50 p-4 rounded-xl border border-white/10">
+    <div
+      class="flex justify-between items-center bg-gradient-to-r from-indigo-900/50 to-purple-900/50 p-4 rounded-xl border border-white/10"
+    >
       <div class="text-sm text-gray-300">
-        <p>当前难度: <span class="text-white font-bold">{{ data.difficulty }}</span></p>
+        <p>
+          当前难度: <span class="text-white font-bold">{{ data.difficulty }}</span>
+        </p>
         <p class="text-xs text-gray-500 mt-1">初始点数: {{ totalPointsAvailable }}</p>
       </div>
       <div class="text-right">
         <span class="block text-xs text-gray-400 uppercase tracking-wider">剩余点数</span>
-        <span :class="[
-          'text-3xl font-bold',
-          remaining === 0 ? 'text-gray-500' : 'text-secondary animate-pulse'
-        ]">
+        <span :class="['text-3xl font-bold', remaining === 0 ? 'text-gray-500' : 'text-secondary animate-pulse']">
           {{ remaining }}
         </span>
       </div>
@@ -31,7 +32,7 @@
             <span class="text-xs text-gray-500">{{ stat.costText }}</span>
           </div>
         </div>
-        
+
         <div class="flex items-center gap-3">
           <button
             @click="handleStatChange(stat.key, -1)"
@@ -40,11 +41,11 @@
           >
             <i class="fas fa-minus text-sm"></i>
           </button>
-          
+
           <span class="w-12 text-center font-mono font-bold text-lg text-white">
             {{ data.attributes[stat.key] }}
           </span>
-          
+
           <button
             @click="handleStatChange(stat.key, 1)"
             :disabled="remaining <= 0"
@@ -87,12 +88,48 @@ const pointsUsed = computed(() => {
 const remaining = computed(() => totalPointsAvailable.value - pointsUsed.value);
 
 const stats = [
-  { key: '_等级' as keyof GameAttributes, label: '初始等级', icon: 'fa-arrow-trend-up', color: 'text-yellow-400', costText: '1点 = 1级' },
-  { key: '$潜力' as keyof GameAttributes, label: '潜力资质', icon: 'fa-star', color: 'text-purple-400', costText: '2点 = 0.1潜力' },
-  { key: '_最大耐力' as keyof GameAttributes, label: '最大耐力', icon: 'fa-shield', color: 'text-green-400', costText: '1点 = 5耐力' },
-  { key: '_最大快感' as keyof GameAttributes, label: '最大快感', icon: 'fa-heart', color: 'text-pink-400', costText: '1点 = 5快感' },
-  { key: '_魅力' as keyof GameAttributes, label: '个人魅力', icon: 'fa-sparkles', color: 'text-rose-400', costText: '1点 = 1魅力' },
-  { key: '_幸运' as keyof GameAttributes, label: '幸运值', icon: 'fa-bolt', color: 'text-cyan-400', costText: '1点 = 1幸运' },
+  {
+    key: '_等级' as keyof GameAttributes,
+    label: '初始等级',
+    icon: 'fa-arrow-trend-up',
+    color: 'text-yellow-400',
+    costText: '1点 = 1级',
+  },
+  {
+    key: '$潜力' as keyof GameAttributes,
+    label: '潜力资质',
+    icon: 'fa-star',
+    color: 'text-purple-400',
+    costText: '2点 = 0.1潜力',
+  },
+  {
+    key: '_最大耐力' as keyof GameAttributes,
+    label: '最大耐力',
+    icon: 'fa-shield',
+    color: 'text-green-400',
+    costText: '1点 = 5耐力',
+  },
+  {
+    key: '_最大快感' as keyof GameAttributes,
+    label: '最大快感',
+    icon: 'fa-heart',
+    color: 'text-pink-400',
+    costText: '1点 = 5快感',
+  },
+  {
+    key: '_魅力' as keyof GameAttributes,
+    label: '个人魅力',
+    icon: 'fa-sparkles',
+    color: 'text-rose-400',
+    costText: '1点 = 1魅力',
+  },
+  {
+    key: '_幸运' as keyof GameAttributes,
+    label: '幸运值',
+    icon: 'fa-bolt',
+    color: 'text-cyan-400',
+    costText: '1点 = 1幸运',
+  },
 ];
 
 const handleStatChange = (key: keyof GameAttributes, delta: number) => {
@@ -120,12 +157,11 @@ const handleStatChange = (key: keyof GameAttributes, delta: number) => {
     emit('update-data', {
       attributes: {
         ...props.data.attributes,
-        [key]: newVal
-      }
+        [key]: newVal,
+      },
     });
   }
 };
 </script>
 
-<style lang="scss" scoped>
-</style>
+<style lang="scss" scoped></style>

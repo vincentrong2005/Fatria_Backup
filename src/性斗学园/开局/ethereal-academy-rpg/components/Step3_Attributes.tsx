@@ -1,4 +1,3 @@
-
 import React, { useMemo } from 'react';
 import { CharacterData, GameAttributes, INITIAL_ATTRIBUTES } from '../types';
 import { DIFFICULTY_POINTS, MAX_STATS } from '../constants';
@@ -10,16 +9,15 @@ interface Props {
 }
 
 const Step3_Attributes: React.FC<Props> = ({ data, updateData }) => {
-  
   const totalPointsAvailable = DIFFICULTY_POINTS[data.difficulty];
-  
+
   // Calculate points used based on difference from INITIAL_ATTRIBUTES
   // Cost Logic:
   // Level: 1 pt = 1 level
   // Potential: 5 pts = 0.1 potential (Expensive!) -> Let's make it 10 pts = 0.5 potential
   // Charm/Luck: 1 pt = 1 val
   // Max Stamina/Pleasure: 1 pt = 5 val
-  
+
   const pointsUsed = useMemo(() => {
     let used = 0;
     used += (data.attributes._等级 - INITIAL_ATTRIBUTES._等级) * 1;
@@ -38,11 +36,11 @@ const Step3_Attributes: React.FC<Props> = ({ data, updateData }) => {
     let valueChange = delta;
 
     if (key === '_最大耐力' || key === '_最大快感') {
-        cost = 1;
-        valueChange = delta * 5;
+      cost = 1;
+      valueChange = delta * 5;
     } else if (key === '$潜力') {
-        cost = 2; // 2 points for 0.1 potential
-        valueChange = delta * 0.1;
+      cost = 2; // 2 points for 0.1 potential
+      valueChange = delta * 0.1;
     }
 
     // Check if we can afford it (if adding)
@@ -60,24 +58,24 @@ const Step3_Attributes: React.FC<Props> = ({ data, updateData }) => {
       updateData({
         attributes: {
           ...data.attributes,
-          [key]: newVal
-        }
+          [key]: newVal,
+        },
       });
     }
   };
 
-  const StatRow = ({ 
-    label, 
-    statKey, 
-    icon: Icon, 
+  const StatRow = ({
+    label,
+    statKey,
+    icon: Icon,
     color,
-    costText
-  }: { 
-    label: string, 
-    statKey: keyof GameAttributes, 
-    icon: any, 
-    color: string,
-    costText: string
+    costText,
+  }: {
+    label: string;
+    statKey: keyof GameAttributes;
+    icon: any;
+    color: string;
+    costText: string;
   }) => (
     <div className="flex items-center justify-between p-3 bg-white/5 rounded-xl border border-white/5 hover:border-white/10 transition-colors">
       <div className="flex items-center gap-3">
@@ -86,12 +84,10 @@ const Step3_Attributes: React.FC<Props> = ({ data, updateData }) => {
         </div>
         <div>
           <span className="block text-sm font-medium text-gray-200">{label}</span>
-          <span className="text-xs text-gray-500">
-            {costText}
-          </span>
+          <span className="text-xs text-gray-500">{costText}</span>
         </div>
       </div>
-      
+
       <div className="flex items-center gap-3">
         <button
           onClick={() => handleStatChange(statKey, -1)}
@@ -100,11 +96,9 @@ const Step3_Attributes: React.FC<Props> = ({ data, updateData }) => {
         >
           <Minus size={14} />
         </button>
-        
-        <span className="w-12 text-center font-mono font-bold text-lg text-white">
-          {data.attributes[statKey]}
-        </span>
-        
+
+        <span className="w-12 text-center font-mono font-bold text-lg text-white">{data.attributes[statKey]}</span>
+
         <button
           onClick={() => handleStatChange(statKey, 1)}
           disabled={remaining <= 0} // Simplify check, real check in handler
@@ -120,7 +114,9 @@ const Step3_Attributes: React.FC<Props> = ({ data, updateData }) => {
     <div className="animate-slide-up space-y-6">
       <div className="flex justify-between items-center bg-gradient-to-r from-indigo-900/50 to-purple-900/50 p-4 rounded-xl border border-white/10">
         <div className="text-sm text-gray-300">
-          <p>当前难度: <span className="text-white font-bold">{data.difficulty}</span></p>
+          <p>
+            当前难度: <span className="text-white font-bold">{data.difficulty}</span>
+          </p>
           <p className="text-xs text-gray-500 mt-1">初始点数: {totalPointsAvailable}</p>
         </div>
         <div className="text-right">
