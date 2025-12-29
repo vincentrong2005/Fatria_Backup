@@ -31,10 +31,9 @@ export const COMMON_CONSTITUTIONS: ConstitutionData[] = [
     rarity: ConstitutionRarity.COMMON,
     permanentModifiers: [
       { stat: '$基础忍耐力成算', value: 15, isPercent: true },
+      { stat: '$闪避率加成', value: 10, isPercent: true },
     ],
-    sensitivityModifiers: [
-      { bodyPart: 'all', modifier: 20 },
-    ],
+    sensitivityModifiers: [],
     triggerEffects: [],
     genderRestriction: [],
     excludeConstitutions: ['c_numb'],
@@ -54,10 +53,9 @@ export const COMMON_CONSTITUTIONS: ConstitutionData[] = [
     rarity: ConstitutionRarity.COMMON,
     permanentModifiers: [
       { stat: '$意志力加成', value: -10, isPercent: false },
+      { stat: '$基础忍耐力成算', value: 25, isPercent: true },
     ],
-    sensitivityModifiers: [
-      { bodyPart: 'all', modifier: -25 },
-    ],
+    sensitivityModifiers: [],
     triggerEffects: [],
     genderRestriction: [],
     excludeConstitutions: ['c_sensitive'],
@@ -353,15 +351,15 @@ export const MALE_CONSTITUTIONS: ConstitutionData[] = [
     id: 'c_prostate_dev',
     name: '前列腺开发',
     description: '后庭已被完全开发',
-    effectDescription: '后庭敏感度x3，但受到后庭攻击时暴击率+20%',
+    effectDescription: '受到后庭攻击时暴击率+20%，但忍耐力-15%',
     icon: 'Target',
     category: ConstitutionCategory.SENSITIVITY,
     rarity: ConstitutionRarity.EPIC,
-    permanentModifiers: [],
-    sensitivityModifiers: [
-      { bodyPart: 'prostate', modifier: 200 },
-      { bodyPart: 'anus', modifier: 100 },
+    permanentModifiers: [
+      { stat: '$暴击率加成', value: 20, isPercent: true },
+      { stat: '$基础忍耐力成算', value: -15, isPercent: true },
     ],
+    sensitivityModifiers: [],
     triggerEffects: [
       {
         timing: TriggerTiming.ON_HIT,
@@ -412,15 +410,15 @@ export const FEMALE_CONSTITUTIONS: ConstitutionData[] = [
     id: 'c_sensitive_nips',
     name: '乳首开发',
     description: '胸部极为敏感',
-    effectDescription: '胸部敏感度x3，受到胸部攻击时有30%几率获得快感抵抗',
+    effectDescription: '受到胸部攻击时有30%几率获得快感抵抗，但忍耐力-10%',
     icon: 'Target',
     category: ConstitutionCategory.SENSITIVITY,
     rarity: ConstitutionRarity.RARE,
-    permanentModifiers: [],
-    sensitivityModifiers: [
-      { bodyPart: 'nipples', modifier: 200 },
-      { bodyPart: 'breasts', modifier: 100 },
+    permanentModifiers: [
+      { stat: '$基础忍耐力成算', value: -10, isPercent: true },
+      { stat: '$闪避率加成', value: 8, isPercent: true },
     ],
+    sensitivityModifiers: [],
     triggerEffects: [
       {
         timing: TriggerTiming.ON_HIT,
@@ -441,16 +439,15 @@ export const FEMALE_CONSTITUTIONS: ConstitutionData[] = [
     id: 'c_wet',
     name: '淫乱体质',
     description: '极易动情的身体',
-    effectDescription: '初始快感+15，敏感度+20%，但魅力+20',
+    effectDescription: '初始快感+15，但忍耐力-20%，魅力+20',
     icon: 'Droplets',
     category: ConstitutionCategory.SENSITIVITY,
     rarity: ConstitutionRarity.COMMON,
     permanentModifiers: [
       { stat: '$魅力加成', value: 20, isPercent: false },
+      { stat: '$基础忍耐力成算', value: -20, isPercent: true },
     ],
-    sensitivityModifiers: [
-      { bodyPart: 'all', modifier: 20 },
-    ],
+    sensitivityModifiers: [],
     triggerEffects: [
       {
         timing: TriggerTiming.BATTLE_START,
@@ -476,10 +473,9 @@ export const FEMALE_CONSTITUTIONS: ConstitutionData[] = [
     rarity: ConstitutionRarity.RARE,
     permanentModifiers: [
       { stat: '$意志力加成', value: 25, isPercent: false },
+      { stat: '$基础忍耐力成算', value: 25, isPercent: true },
     ],
-    sensitivityModifiers: [
-      { bodyPart: 'all', modifier: -25 },
-    ],
+    sensitivityModifiers: [],
     triggerEffects: [],
     genderRestriction: ['female'],
     excludeConstitutions: ['c_wet'],
