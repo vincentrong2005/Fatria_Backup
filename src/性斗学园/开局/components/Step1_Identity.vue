@@ -39,7 +39,7 @@
           <button
             v-for="g in Object.values(Gender)"
             :key="g"
-            @click="updateData({ gender: g, archetypeId: null })"
+            @click="handleGenderChange(g as Gender)"
             :class="[
               'flex-1 py-2 rounded-lg text-sm font-medium transition-all duration-300',
               data.gender === g
@@ -117,6 +117,40 @@ const emit = defineEmits<{
 
 const updateData = (fields: Partial<CharacterData>) => {
   emit('update-data', fields);
+};
+
+const handleGenderChange = (gender: Gender) => {
+  // 切换性别时，同时更新默认的身体配置
+  let configFeatures: CharacterData['configFeatures'];
+
+  if (gender === Gender.MALE) {
+    // 男性：默认只有男性性征
+    configFeatures = {
+      hasBreasts: false,
+      hasPenis: true,
+    };
+  } else if (gender === Gender.FEMALE) {
+    // 女性：默认只有女性性征
+    configFeatures = {
+      hasBreasts: true,
+      hasPenis: false,
+    };
+  } else {
+    // 非二元：默认两种性征都可用，之后在角色类型页中自行勾选
+    configFeatures = {
+      hasBreasts: true,
+      hasPenis: true,
+    };
+  }
+
+  updateData({
+    gender,
+    archetypeId: null,
+    configFeatures,
+    // 清除性器特征（因为性别改变了）
+    maleGenitalType: undefined,
+    femaleGenitalType: undefined
+  });
 };
 </script>
 

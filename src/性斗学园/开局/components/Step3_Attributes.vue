@@ -1,8 +1,15 @@
 <template>
   <div class="animate-slide-up space-y-6">
-    <div class="flex justify-between items-center bg-gradient-to-r from-indigo-900/50 to-purple-900/50 p-4 rounded-xl border border-white/10">
+    <div :class="[
+      'flex justify-between items-center p-4 rounded-xl border',
+      cheatMode 
+        ? 'bg-gradient-to-r from-yellow-900/50 to-orange-900/50 border-yellow-500/30' 
+        : 'bg-gradient-to-r from-indigo-900/50 to-purple-900/50 border-white/10'
+    ]">
       <div class="text-sm text-gray-300">
-        <p>当前难度: <span class="text-white font-bold">{{ data.difficulty }}</span></p>
+        <p>当前难度: <span class="text-white font-bold">{{ data.difficulty }}</span>
+          <span v-if="cheatMode" class="ml-2 text-xs text-yellow-400">[作弊模式]</span>
+        </p>
         <p class="text-xs text-gray-500 mt-1">初始点数: {{ totalPointsAvailable }}</p>
       </div>
       <div class="text-right">
@@ -19,7 +26,7 @@
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
       <div
         v-for="stat in stats"
-        :key="stat.key"
+        :key="stat.path"
         class="flex items-center justify-between p-3 bg-white/5 rounded-xl border border-white/5 hover:border-white/10 transition-colors"
       >
         <div class="flex items-center gap-3">
@@ -34,20 +41,20 @@
         
         <div class="flex items-center gap-3">
           <button
-            @click="handleStatChange(stat.key, -1)"
-            :disabled="data.attributes[stat.key] <= INITIAL_ATTRIBUTES[stat.key]"
+            @click="handleStatChange(stat.path, -1)"
+            :disabled="getCurrentValue(stat.path) <= getInitialValue(stat.path) || isUpdating"
             class="w-8 h-8 flex items-center justify-center rounded-full bg-white/5 text-gray-400 hover:bg-white/10 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-all"
           >
             <i class="fas fa-minus text-sm"></i>
           </button>
           
           <span class="w-12 text-center font-mono font-bold text-lg text-white">
-            {{ data.attributes[stat.key] }}
+            {{ getCurrentValue(stat.path) }}
           </span>
           
           <button
-            @click="handleStatChange(stat.key, 1)"
-            :disabled="remaining <= 0"
+            @click="handleStatChange(stat.path, 1)"
+            :disabled="remaining <= 0 || isUpdating"
             class="w-8 h-8 flex items-center justify-center rounded-full bg-secondary text-white shadow-lg shadow-pink-500/20 hover:scale-110 active:scale-95 disabled:opacity-30 disabled:cursor-not-allowed disabled:transform-none transition-all"
           >
             <i class="fas fa-plus text-sm"></i>
@@ -59,70 +66,113 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
-import { CharacterData, GameAttributes, INITIAL_ATTRIBUTES } from '../types';
+import { computed, ref } from 'vue';
+import { CharacterData, CharacterAttributes, INITIAL_ATTRIBUTES } from '../types';
 import { DIFFICULTY_POINTS, MAX_STATS } from '../constants';
+import { updateMvuVariable } from '../utils/mvu-helper';
 
 const props = defineProps<{
   data: CharacterData;
+  cheatMode?: boolean;
 }>();
 
 const emit = defineEmits<{
   (e: 'update-data', fields: Partial<CharacterData>): void;
 }>();
 
-const totalPointsAvailable = computed(() => DIFFICULTY_POINTS[props.data.difficulty]);
+const isUpdating = ref(false);
 
+// 作弊模式下使用999点，否则使用难度对应的点数
+const totalPointsAvailable = computed(() => {
+  if (props.cheatMode) return 999;
+  return DIFFICULTY_POINTS[props.data.difficulty];
+});
+
+// 根据路径获取当前值
+const getCurrentValue = (path: string): number => {
+  const [category, key] = path.split('.');
+  return (props.data.attributes[category as keyof CharacterAttributes] as any)?.[key] || 0;
+};
+
+// 根据路径获取初始值
+const getInitialValue = (path: string): number => {
+  const [category, key] = path.split('.');
+  return (INITIAL_ATTRIBUTES[category as keyof CharacterAttributes] as any)?.[key] || 0;
+};
+
+// 计算已使用的点数（只计算可分配的6个属性）
 const pointsUsed = computed(() => {
   let used = 0;
-  used += (props.data.attributes._等级 - INITIAL_ATTRIBUTES._等级) * 1;
-  used += (props.data.attributes.$潜力 - INITIAL_ATTRIBUTES.$潜力) * 20;
-  used += (props.data.attributes._魅力 - INITIAL_ATTRIBUTES._魅力) * 1;
-  used += (props.data.attributes._幸运 - INITIAL_ATTRIBUTES._幸运) * 1;
-  used += (props.data.attributes._最大耐力 - INITIAL_ATTRIBUTES._最大耐力) / 5;
-  used += (props.data.attributes._最大快感 - INITIAL_ATTRIBUTES._最大快感) / 5;
+  // 角色基础
+  used += (props.data.attributes.角色基础._等级 - INITIAL_ATTRIBUTES.角色基础._等级) * 1;
+  used += (props.data.attributes.角色基础.$潜力 - INITIAL_ATTRIBUTES.角色基础.$潜力) * 20;
+  used += (props.data.attributes.角色基础._魅力 - INITIAL_ATTRIBUTES.角色基础._魅力) * 1;
+  used += (props.data.attributes.角色基础._幸运 - INITIAL_ATTRIBUTES.角色基础._幸运) * 1;
+  // 核心状态（只计算最大耐力和最大快感）
+  used += (props.data.attributes.核心状态._最大耐力 - INITIAL_ATTRIBUTES.核心状态._最大耐力) / 5;
+  used += (props.data.attributes.核心状态._最大快感 - INITIAL_ATTRIBUTES.核心状态._最大快感) / 5;
   return Math.max(0, Math.ceil(used));
 });
 
 const remaining = computed(() => totalPointsAvailable.value - pointsUsed.value);
 
+// 可分配的属性列表（只有6个可分配属性）
 const stats = [
-  { key: '_等级' as keyof GameAttributes, label: '初始等级', icon: 'fa-arrow-trend-up', color: 'text-yellow-400', costText: '1点 = 1级' },
-  { key: '$潜力' as keyof GameAttributes, label: '潜力资质', icon: 'fa-star', color: 'text-purple-400', costText: '2点 = 0.1潜力' },
-  { key: '_最大耐力' as keyof GameAttributes, label: '最大耐力', icon: 'fa-shield', color: 'text-green-400', costText: '1点 = 5耐力' },
-  { key: '_最大快感' as keyof GameAttributes, label: '最大快感', icon: 'fa-heart', color: 'text-pink-400', costText: '1点 = 5快感' },
-  { key: '_魅力' as keyof GameAttributes, label: '个人魅力', icon: 'fa-sparkles', color: 'text-rose-400', costText: '1点 = 1魅力' },
-  { key: '_幸运' as keyof GameAttributes, label: '幸运值', icon: 'fa-bolt', color: 'text-cyan-400', costText: '1点 = 1幸运' },
+  { path: '角色基础._等级', label: '初始等级', icon: 'fa-arrow-trend-up', color: 'text-yellow-400', costText: '1点 = 1级' },
+  { path: '角色基础.$潜力', label: '潜力资质', icon: 'fa-star', color: 'text-purple-400', costText: '2点 = 0.1潜力' },
+  { path: '核心状态._最大耐力', label: '最大耐力', icon: 'fa-shield-halved', color: 'text-green-400', costText: '1点 = 5耐力' },
+  { path: '核心状态._最大快感', label: '最大快感', icon: 'fa-heart', color: 'text-pink-400', costText: '1点 = 5快感' },
+  { path: '角色基础._魅力', label: '个人魅力', icon: 'fa-face-grin-hearts', color: 'text-rose-400', costText: '1点 = 1魅力' },
+  { path: '角色基础._幸运', label: '幸运值', icon: 'fa-clover', color: 'text-cyan-400', costText: '1点 = 1幸运' },
 ];
 
-const handleStatChange = (key: keyof GameAttributes, delta: number) => {
+const handleStatChange = async (path: string, delta: number) => {
+  if (isUpdating.value) return;
+
+  const [category, key] = path.split('.');
   let cost = 1;
   let valueChange = delta;
 
-  if (key === '_最大耐力' || key === '_最大快感') {
+  // 根据属性类型计算成本和变化值
+  if (path === '核心状态._最大耐力' || path === '核心状态._最大快感') {
     cost = 1;
     valueChange = delta * 5;
-  } else if (key === '$潜力') {
+  } else if (path === '角色基础.$潜力') {
     cost = 2;
     valueChange = delta * 0.1;
   }
 
   if (delta > 0 && remaining.value < cost) return;
 
-  const currentVal = props.data.attributes[key];
-  const maxVal = MAX_STATS[key as keyof typeof MAX_STATS] || 9999;
-  const minVal = INITIAL_ATTRIBUTES[key];
+  const currentVal = getCurrentValue(path);
+  const maxVal = MAX_STATS[path as keyof typeof MAX_STATS] || 9999;
+  const minVal = getInitialValue(path);
 
   let newVal = currentVal + valueChange;
-  if (key === '$潜力') newVal = parseFloat(newVal.toFixed(1));
+  if (path === '角色基础.$潜力') newVal = parseFloat(newVal.toFixed(1));
 
   if (newVal <= maxVal && newVal >= minVal) {
-    emit('update-data', {
-      attributes: {
-        ...props.data.attributes,
-        [key]: newVal
-      }
-    });
+    isUpdating.value = true;
+    
+    try {
+      // 更新本地状态
+      const newAttributes = { ...props.data.attributes };
+      const categoryObj = { ...newAttributes[category as keyof CharacterAttributes] } as any;
+      categoryObj[key] = newVal;
+      newAttributes[category as keyof CharacterAttributes] = categoryObj as any;
+      
+      // 先更新本地状态（立即反馈）
+      emit('update-data', {
+        attributes: newAttributes
+      });
+
+      // 然后实时更新 MVU 变量
+      await updateMvuVariable(path, newVal, `角色创建：${delta > 0 ? '增加' : '减少'}${Math.abs(valueChange)}`);
+    } catch (error) {
+      console.error('更新失败:', error);
+    } finally {
+      isUpdating.value = false;
+    }
   }
 };
 </script>

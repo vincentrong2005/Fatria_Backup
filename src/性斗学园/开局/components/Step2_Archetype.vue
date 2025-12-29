@@ -14,20 +14,40 @@
               <p class="text-xs text-gray-400">选择 1 个核心身份</p>
             </div>
           </div>
+          <!-- 隐藏角色解锁输入框 -->
+          <div class="flex items-center gap-2">
+            <input
+              v-if="showHiddenInput"
+              v-model="hiddenCode"
+              @keyup.enter="checkHiddenCode"
+              type="text"
+              placeholder="输入代码..."
+              class="w-24 px-2 py-1 text-xs bg-white/10 border border-white/20 rounded text-white placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-secondary"
+            />
+            <button
+              @click="toggleHiddenInput"
+              class="p-1.5 text-gray-400 hover:text-white transition-colors"
+              title="解锁隐藏角色"
+            >
+              <i class="fas fa-lock text-xs"></i>
+            </button>
+          </div>
         </div>
 
         <!-- Scrollable List -->
-        <div class="bg-black/20 border-x border-b border-white/5 rounded-b-2xl p-4 h-[350px] overflow-y-auto custom-scrollbar">
+        <div class="bg-black/20 border-x border-b border-white/5 rounded-b-2xl p-4 h-[450px] overflow-y-auto custom-scrollbar">
           <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
             <button
-              v-for="archetype in currentArchetypes"
+              v-for="archetype in visibleArchetypes"
               :key="archetype.id"
-              @click="updateData({ archetypeId: archetype.id })"
+              @click="handleArchetypeSelect(archetype.id)"
+              :disabled="isUpdating"
               :class="[
-                'relative group p-3 rounded-xl border transition-all duration-300 text-left flex items-start gap-3',
+                'relative group p-4 rounded-xl border transition-all duration-300 text-left flex items-start gap-3',
                 data.archetypeId === archetype.id
                   ? 'bg-secondary/20 border-secondary ring-1 ring-secondary'
-                  : 'bg-white/5 border-white/5 hover:bg-white/10 hover:border-white/20'
+                  : 'bg-white/5 border-white/5 hover:bg-white/10 hover:border-white/20',
+                isUpdating ? 'opacity-50 cursor-wait' : ''
               ]"
             >
               <div :class="[
@@ -40,13 +60,13 @@
               <div class="flex-1 min-w-0">
                 <div class="flex justify-between items-start">
                   <h4 :class="[
-                    'font-bold text-sm truncate transition-colors',
+                    'font-bold text-base transition-colors',
                     data.archetypeId === archetype.id ? 'text-white' : 'text-gray-200'
                   ]">
                     {{ archetype.name }}
                   </h4>
                 </div>
-                <p class="text-xs text-gray-400 mt-1 leading-snug line-clamp-2">
+                <p class="text-xs text-gray-400 mt-1.5 leading-relaxed">
                   {{ archetype.description }}
                 </p>
               </div>
@@ -66,23 +86,24 @@
               <i :class="['fas', getIconClass(selectedArchetype.passiveSkill.icon)]"></i>
             </div>
             <h4 class="text-sm uppercase tracking-widest text-secondary font-bold mb-1">专属被动</h4>
-            <h3 class="text-xl font-bold text-white mb-2">{{ selectedArchetype.passiveSkill.name }}</h3>
-            <p class="text-sm text-gray-300 leading-relaxed">
-              {{ selectedArchetype.passiveSkill.description }}
-            </p>
+            <h3 class="text-xl font-bold text-white mb-4">{{ selectedArchetype.passiveSkill.name }}</h3>
             
-            <div class="mt-6 w-full pt-6 border-t border-white/10">
-              <h4 class="text-xs uppercase tracking-widest text-gray-500 mb-3">初始加成</h4>
+            <div class="w-full pt-4 border-t border-white/10">
+              <h4 class="text-xs uppercase tracking-widest text-gray-500 mb-3">永久状态</h4>
+              <div class="mb-3">
+                <span class="text-sm font-bold text-secondary">{{ selectedArchetype.passiveSkill.name }}</span>
+              </div>
               <div class="flex flex-wrap gap-2 justify-center">
-                <span
-                  v-for="[key, value] in Object.entries(selectedArchetype.baseBonus)"
-                  :key="key"
-                  class="text-xs px-2 py-1 rounded-md bg-black/40 text-gray-200 border border-white/10"
-                >
-                  {{ getStatLabel(key) }} <span :class="(value as number) > 0 ? 'text-green-400' : 'text-red-400'">
-                    {{ (value as number) > 0 ? '+' : '' }}{{ value }}
+                <template v-for="[key, value] in Object.entries(selectedArchetype.permanentState.bonus)" :key="key">
+                  <span
+                    v-if="value !== 0"
+                    class="text-xs px-2 py-1 rounded-md bg-black/40 text-gray-200 border border-white/10"
+                  >
+                    {{ getBonusLabel(key) }} <span :class="(value as number) > 0 ? 'text-green-400' : 'text-red-400'">
+                      {{ (value as number) > 0 ? '+' : '' }}{{ value }}{{ getBonusUnit(key) }}
+                    </span>
                   </span>
-                </span>
+                </template>
               </div>
             </div>
           </template>
@@ -111,48 +132,69 @@
       <!-- Non-binary Config Toggles -->
       <div v-if="isOther" class="mb-8 bg-black/20 p-4 rounded-xl border border-white/5">
         <label class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3 block">生理构造设置</label>
-        <div class="flex gap-4">
-          <label class="flex items-center gap-2 cursor-pointer group">
-            <div :class="[
-              'w-5 h-5 rounded border flex items-center justify-center transition-colors',
-              data.configFeatures.hasBreasts ? 'bg-secondary border-secondary' : 'border-gray-500 bg-transparent'
-            ]">
-              <i v-if="data.configFeatures.hasBreasts" class="fas fa-check text-white text-xs"></i>
-            </div>
-            <input
-              type="checkbox"
-              class="hidden"
-              :checked="data.configFeatures.hasBreasts"
-              @change="toggleFeature('hasBreasts')"
-            />
-            <span :class="[
-              'text-sm group-hover:text-white transition-colors',
-              data.configFeatures.hasBreasts ? 'text-white' : 'text-gray-400'
-            ]">
-              女性性征 (乳房/臀部)
-            </span>
-          </label>
+        <div class="space-y-3">
+          <!-- 扶她选项 -->
+          <button
+            @click="setFuta"
+            :class="[
+              'w-full px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 border',
+              data.configFeatures.hasBreasts && data.configFeatures.hasPenis
+                ? 'bg-secondary/20 border-secondary text-white shadow-[0_0_10px_rgba(236,72,153,0.3)]'
+                : 'bg-white/5 border-white/10 text-gray-400 hover:border-white/30 hover:text-white'
+            ]"
+          >
+            <i class="fas fa-venus-mars mr-2"></i> 扶她 (双性特征)
+          </button>
+          
+          <!-- 自定义选项 -->
+          <div class="flex gap-4">
+            <label class="flex items-center gap-2 cursor-pointer group">
+              <div :class="[
+                'w-5 h-5 rounded border flex items-center justify-center transition-colors',
+                data.configFeatures.hasBreasts ? 'bg-secondary border-secondary' : 'border-gray-500 bg-transparent'
+              ]">
+                <i v-if="data.configFeatures.hasBreasts" class="fas fa-check text-white text-xs"></i>
+              </div>
+              <input
+                type="checkbox"
+                class="hidden"
+                :checked="data.configFeatures.hasBreasts"
+                @change="toggleFeature('hasBreasts')"
+              />
+              <span :class="[
+                'text-sm group-hover:text-white transition-colors',
+                data.configFeatures.hasBreasts ? 'text-white' : 'text-gray-400'
+              ]">
+                女性性征 (乳房/臀部)
+              </span>
+            </label>
 
-          <label class="flex items-center gap-2 cursor-pointer group">
-            <div :class="[
-              'w-5 h-5 rounded border flex items-center justify-center transition-colors',
-              data.configFeatures.hasPenis ? 'bg-secondary border-secondary' : 'border-gray-500 bg-transparent'
-            ]">
-              <i v-if="data.configFeatures.hasPenis" class="fas fa-check text-white text-xs"></i>
-            </div>
-            <input
-              type="checkbox"
-              class="hidden"
-              :checked="data.configFeatures.hasPenis"
-              @change="toggleFeature('hasPenis')"
-            />
-            <span :class="[
-              'text-sm group-hover:text-white transition-colors',
-              data.configFeatures.hasPenis ? 'text-white' : 'text-gray-400'
-            ]">
-              男性性征 (阴茎)
-            </span>
-          </label>
+            <label class="flex items-center gap-2 cursor-pointer group">
+              <div :class="[
+                'w-5 h-5 rounded border flex items-center justify-center transition-colors',
+                data.configFeatures.hasPenis ? 'bg-secondary border-secondary' : 'border-gray-500 bg-transparent'
+              ]">
+                <i v-if="data.configFeatures.hasPenis" class="fas fa-check text-white text-xs"></i>
+              </div>
+              <input
+                type="checkbox"
+                class="hidden"
+                :checked="data.configFeatures.hasPenis"
+                @change="toggleFeature('hasPenis')"
+              />
+              <span :class="[
+                'text-sm group-hover:text-white transition-colors',
+                data.configFeatures.hasPenis ? 'text-white' : 'text-gray-400'
+              ]">
+                男性性征 (阴茎)
+              </span>
+            </label>
+          </div>
+          
+          <!-- 无性提示 -->
+          <div v-if="!data.configFeatures.hasBreasts && !data.configFeatures.hasPenis" class="text-xs text-gray-500 italic">
+            <i class="fas fa-info-circle mr-1"></i> 当前为无性特征
+          </div>
         </div>
       </div>
 
@@ -275,19 +317,19 @@
           </div>
         </div>
 
-        <!-- Genital Type Selector (All) -->
-        <div class="col-span-1 md:col-span-2">
+        <!-- Female Genital Type Selector -->
+        <div v-if="showBreasts" class="col-span-1 md:col-span-2">
           <label class="flex text-sm font-medium text-gray-300 mb-4 items-center gap-2">
-            <i class="fas fa-dna"></i> 性器特征 (Genitals)
+            <i class="fas fa-venus text-pink-400"></i> 女性性器特征
           </label>
           <div class="flex flex-wrap gap-2">
             <button
-              v-for="type in currentGenitalOptions"
+              v-for="type in GENITAL_TYPES[Gender.FEMALE as keyof typeof GENITAL_TYPES]"
               :key="type"
-              @click="updateData({ genitalType: type })"
+              @click="updateData({ femaleGenitalType: type })"
               :class="[
                 'px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 border',
-                data.genitalType === type
+                data.femaleGenitalType === type
                   ? 'bg-secondary/20 border-secondary text-white shadow-[0_0_10px_rgba(236,72,153,0.3)]'
                   : 'bg-white/5 border-white/10 text-gray-400 hover:border-white/30 hover:text-white'
               ]"
@@ -296,16 +338,46 @@
             </button>
           </div>
         </div>
+
+        <!-- Male Genital Type Selector -->
+        <div v-if="showPenis" class="col-span-1 md:col-span-2">
+          <label class="flex text-sm font-medium text-gray-300 mb-4 items-center gap-2">
+            <i class="fas fa-mars text-blue-400"></i> 男性性器特征
+          </label>
+          <div class="flex flex-wrap gap-2">
+            <button
+              v-for="type in GENITAL_TYPES[Gender.MALE as keyof typeof GENITAL_TYPES]"
+              :key="type"
+              @click="updateData({ maleGenitalType: type })"
+              :class="[
+                'px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 border',
+                data.maleGenitalType === type
+                  ? 'bg-secondary/20 border-secondary text-white shadow-[0_0_10px_rgba(236,72,153,0.3)]'
+                  : 'bg-white/5 border-white/10 text-gray-400 hover:border-white/30 hover:text-white'
+              ]"
+            >
+              {{ type }}
+            </button>
+          </div>
+        </div>
+        
+        <!-- 无性提示 -->
+        <div v-if="isOther && !data.configFeatures.hasBreasts && !data.configFeatures.hasPenis" class="col-span-1 md:col-span-2">
+          <div class="text-sm text-gray-400 italic flex items-center gap-2">
+            <i class="fas fa-info-circle"></i> 当前为无性特征，无需选择性器类型
+          </div>
+        </div>
       </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import { CharacterData, Gender, Archetype } from '../types';
 import { ARCHETYPES, CUP_SIZES, GENITAL_TYPES } from '../constants';
 import { getIconClass } from '../icon-helper';
+import { updateMvuVariables } from '../utils/mvu-helper';
 
 const props = defineProps<{
   data: CharacterData;
@@ -315,8 +387,42 @@ const emit = defineEmits<{
   (e: 'update-data', fields: Partial<CharacterData>): void;
 }>();
 
+const isUpdating = ref(false);
+
 const currentArchetypes = computed(() => ARCHETYPES[props.data.gender] || ARCHETYPES[Gender.OTHER]);
-const currentGenitalOptions = computed(() => GENITAL_TYPES[props.data.gender] || GENITAL_TYPES[Gender.OTHER]);
+
+// 隐藏角色解锁状态
+const showHiddenRoles = ref(false);
+const showHiddenInput = ref(false);
+const hiddenCode = ref('');
+
+const toggleHiddenInput = () => {
+  showHiddenInput.value = !showHiddenInput.value;
+  if (!showHiddenInput.value) {
+    hiddenCode.value = '';
+  }
+};
+
+const checkHiddenCode = () => {
+  if (hiddenCode.value === '1011') {
+    showHiddenRoles.value = true;
+    showHiddenInput.value = false;
+    hiddenCode.value = '';
+  } else {
+    hiddenCode.value = '';
+  }
+};
+
+// 根据解锁状态过滤角色
+const visibleArchetypes = computed(() => {
+  return currentArchetypes.value.filter(archetype => {
+    // 如果角色被标记为隐藏，且未解锁，则过滤掉
+    if (archetype.hidden && !showHiddenRoles.value) {
+      return false;
+    }
+    return true;
+  });
+});
 
 const isMale = computed(() => props.data.gender === Gender.MALE);
 const isFemale = computed(() => props.data.gender === Gender.FEMALE);
@@ -327,28 +433,79 @@ const showPenis = computed(() => isMale.value || (isOther.value && props.data.co
 
 const selectedArchetype = computed(() => currentArchetypes.value.find(a => a.id === props.data.archetypeId));
 
-const getStatLabel = (key: string): string => {
+const getStatLabel = (path: string): string => {
+  // 处理路径字符串，如 "角色基础._等级" 或 "核心状态.$基础性斗力"
+  const parts = path.split('.');
+  const key = parts[parts.length - 1];
   const map: Record<string, string> = {
-    _等级: '等级',
-    $潜力: '潜力',
-    _魅力: '魅力',
-    _幸运: '幸运',
-    _声望: '声望',
-    _最大耐力: '耐力',
-    _最大快感: '耐性',
-    $基础性斗力: '性斗',
-    $基础忍耐力: '忍耐',
-    $闪避率: '闪避',
-    $暴击率: '暴击',
-    _堕落度: '堕落',
-    _意志力: '意志',
-    _全属性: '全属性'
+    '_等级': '等级',
+    '$潜力': '潜力',
+    '_魅力': '魅力',
+    '_幸运': '幸运',
+    '_最大耐力': '最大耐力',
+    '_最大快感': '最大快感',
+    '$基础性斗力': '基础性斗力',
+    '$基础忍耐力': '基础忍耐力',
+    '$闪避率': '闪避率',
+    '$暴击率': '暴击率',
   };
   return map[key] || key;
 };
 
+const getBonusLabel = (key: string): string => {
+  const map: Record<string, string> = {
+    '$魅力加成': '魅力加成',
+    '$幸运加成': '幸运加成',
+    '$基础性斗力加成': '基础性斗力加成',
+    '$基础性斗力成算': '基础性斗力成算',
+    '$基础忍耐力加成': '基础忍耐力加成',
+    '$基础忍耐力成算': '基础忍耐力成算',
+    '$闪避率加成': '闪避率加成',
+    '$暴击率加成': '暴击率加成',
+    '$意志力加成': '意志力加成',
+  };
+  return map[key] || key;
+};
+
+const getBonusUnit = (key: string): string => {
+  if (key.includes('成算')) {
+    return '%';
+  }
+  if (key.includes('闪避率') || key.includes('暴击率')) {
+    return '%';
+  }
+  return '';
+};
+
 const updateData = (fields: Partial<CharacterData>) => {
   emit('update-data', fields);
+};
+
+const handleArchetypeSelect = async (archetypeId: string) => {
+  if (isUpdating.value) return;
+  
+  // 先更新本地状态
+  updateData({ archetypeId });
+  
+  // 然后实时更新 MVU 变量（只更新永久状态）
+  const archetype = currentArchetypes.value.find(a => a.id === archetypeId);
+  if (archetype && archetype.permanentState) {
+    isUpdating.value = true;
+    try {
+      const updates: Record<string, any> = {};
+      
+      // 只设置永久状态（永久状态是持续生效的加成）
+      // 使用被动技能的名字作为永久状态名字，与UI显示一致
+      updates['_永久状态.$状态列表'] = [archetype.passiveSkill.name];
+      updates['_永久状态.$加成统计'] = archetype.permanentState.bonus;
+      
+      await updateMvuVariables(updates);
+    } catch (error) {
+      console.error('更新角色类型到 MVU 失败:', error);
+    } finally {
+      isUpdating.value = false;
+    }
+  }
 };
 
 const toggleFeature = (feature: 'hasBreasts' | 'hasPenis') => {
@@ -356,6 +513,15 @@ const toggleFeature = (feature: 'hasBreasts' | 'hasPenis') => {
     configFeatures: {
       ...props.data.configFeatures,
       [feature]: !props.data.configFeatures[feature]
+    }
+  });
+};
+
+const setFuta = () => {
+  updateData({
+    configFeatures: {
+      hasBreasts: true,
+      hasPenis: true
     }
   });
 };

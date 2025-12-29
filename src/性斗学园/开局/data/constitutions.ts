@@ -1,0 +1,548 @@
+/**
+ * 特殊体质数据库
+ * 包含所有初始可选的特殊体质（被动）
+ */
+
+import {
+  ConstitutionData,
+  ConstitutionCategory,
+  ConstitutionRarity,
+  TriggerTiming,
+} from './constitution-types';
+
+// 重新导出类型
+export {
+  ConstitutionCategory,
+  ConstitutionRarity,
+  TriggerTiming,
+  type ConstitutionData,
+};
+
+// ==================== 通用体质（所有性别可选） ====================
+
+export const COMMON_CONSTITUTIONS: ConstitutionData[] = [
+  {
+    id: 'c_sensitive',
+    name: '敏感体质',
+    description: '身体对刺激的反应异常敏锐',
+    effectDescription: '受到快感攻击时伤害+20%，但忍耐力+15%',
+    icon: 'HeartPulse',
+    category: ConstitutionCategory.SENSITIVITY,
+    rarity: ConstitutionRarity.COMMON,
+    permanentModifiers: [
+      { stat: '$基础忍耐力成算', value: 15, isPercent: true },
+    ],
+    sensitivityModifiers: [
+      { bodyPart: 'all', modifier: 20 },
+    ],
+    triggerEffects: [],
+    genderRestriction: [],
+    excludeConstitutions: ['c_numb'],
+    requireConstitutions: [],
+    maxCount: 1,
+    isPositive: true,
+    hidden: false,
+    flavorText: '每一次触碰都如同电流...',
+  },
+  {
+    id: 'c_numb',
+    name: '迟钝体质',
+    description: '对快感的感知较为迟钝',
+    effectDescription: '受到快感攻击时伤害-25%，但意志力-10',
+    icon: 'Snowflake',
+    category: ConstitutionCategory.SENSITIVITY,
+    rarity: ConstitutionRarity.COMMON,
+    permanentModifiers: [
+      { stat: '$意志力加成', value: -10, isPercent: false },
+    ],
+    sensitivityModifiers: [
+      { bodyPart: 'all', modifier: -25 },
+    ],
+    triggerEffects: [],
+    genderRestriction: [],
+    excludeConstitutions: ['c_sensitive'],
+    requireConstitutions: [],
+    maxCount: 1,
+    isPositive: true,
+    hidden: false,
+    flavorText: '麻木是保护自己的盔甲...',
+  },
+  {
+    id: 'c_lucky',
+    name: '天生幸运',
+    description: '总能在关键时刻获得好运',
+    effectDescription: '幸运+25，暴击率+10%',
+    icon: 'Clover',
+    category: ConstitutionCategory.SPECIAL,
+    rarity: ConstitutionRarity.RARE,
+    permanentModifiers: [
+      { stat: '$幸运加成', value: 25, isPercent: false },
+      { stat: '$暴击率加成', value: 10, isPercent: true },
+    ],
+    sensitivityModifiers: [],
+    triggerEffects: [],
+    genderRestriction: [],
+    excludeConstitutions: ['c_unlucky'],
+    requireConstitutions: [],
+    maxCount: 1,
+    isPositive: true,
+    hidden: false,
+    flavorText: '幸运女神的宠儿~',
+  },
+  {
+    id: 'c_unlucky',
+    name: '霉运缠身',
+    description: '总在关键时刻掉链子',
+    effectDescription: '幸运-20，但性斗力成算+25%',
+    icon: 'Skull',
+    category: ConstitutionCategory.SPECIAL,
+    rarity: ConstitutionRarity.RARE,
+    permanentModifiers: [
+      { stat: '$幸运加成', value: -20, isPercent: false },
+      { stat: '$基础性斗力成算', value: 25, isPercent: true },
+    ],
+    sensitivityModifiers: [],
+    triggerEffects: [],
+    genderRestriction: [],
+    excludeConstitutions: ['c_lucky'],
+    requireConstitutions: [],
+    maxCount: 1,
+    isPositive: false,
+    hidden: false,
+    flavorText: '越是倒霉，越要用实力弥补！',
+  },
+  {
+    id: 'c_stamina',
+    name: '持久战士',
+    description: '拥有异于常人的持久力',
+    effectDescription: '最大耐力+50，忍耐力成算+20%',
+    icon: 'Shield',
+    category: ConstitutionCategory.PHYSICAL,
+    rarity: ConstitutionRarity.COMMON,
+    permanentModifiers: [
+      { stat: '$最大耐力加成', value: 50, isPercent: false },
+      { stat: '$基础忍耐力成算', value: 20, isPercent: true },
+    ],
+    sensitivityModifiers: [],
+    triggerEffects: [],
+    genderRestriction: [],
+    excludeConstitutions: [],
+    requireConstitutions: [],
+    maxCount: 1,
+    isPositive: true,
+    hidden: false,
+    flavorText: '持久才是王道...',
+  },
+  {
+    id: 'c_quick',
+    name: '早漏体质',
+    description: '难以控制自己的身体',
+    effectDescription: '最大快感-20，但性斗力成算+30%',
+    icon: 'Lightning',
+    category: ConstitutionCategory.PHYSICAL,
+    rarity: ConstitutionRarity.COMMON,
+    permanentModifiers: [
+      { stat: '$最大快感加成', value: -20, isPercent: false },
+      { stat: '$基础性斗力成算', value: 30, isPercent: true },
+    ],
+    sensitivityModifiers: [],
+    triggerEffects: [],
+    genderRestriction: [],
+    excludeConstitutions: ['c_stamina'],
+    requireConstitutions: [],
+    maxCount: 1,
+    isPositive: false,
+    hidden: false,
+    flavorText: '快攻是最好的防守！',
+  },
+  {
+    id: 'c_charming',
+    name: '天生魅惑',
+    description: '与生俱来的魅力让人无法抗拒',
+    effectDescription: '魅力+30，魅惑技能效果+15%',
+    icon: 'GrinHearts',
+    category: ConstitutionCategory.SPECIAL,
+    rarity: ConstitutionRarity.RARE,
+    permanentModifiers: [
+      { stat: '$魅力加成', value: 30, isPercent: false },
+    ],
+    sensitivityModifiers: [],
+    triggerEffects: [
+      {
+        timing: TriggerTiming.ON_SKILL_USE,
+        chance: 100,
+        condition: '使用魅惑类技能时',
+        effectDescription: '魅惑技能效果+15%',
+      },
+    ],
+    genderRestriction: [],
+    excludeConstitutions: [],
+    requireConstitutions: [],
+    maxCount: 1,
+    isPositive: true,
+    hidden: false,
+    flavorText: '让人无法移开视线...',
+  },
+  {
+    id: 'c_iron_will',
+    name: '钢铁意志',
+    description: '坚不可摧的精神力量',
+    effectDescription: '意志力+40，精神攻击抗性+25%',
+    icon: 'Brain',
+    category: ConstitutionCategory.MENTAL,
+    rarity: ConstitutionRarity.RARE,
+    permanentModifiers: [
+      { stat: '$意志力加成', value: 40, isPercent: false },
+    ],
+    sensitivityModifiers: [],
+    triggerEffects: [
+      {
+        timing: TriggerTiming.ON_HIT,
+        chance: 100,
+        condition: '受到精神攻击时',
+        effectDescription: '精神攻击伤害-25%',
+      },
+    ],
+    genderRestriction: [],
+    excludeConstitutions: ['c_weak_mind'],
+    requireConstitutions: [],
+    maxCount: 1,
+    isPositive: true,
+    hidden: false,
+    flavorText: '无论如何都不会屈服！',
+  },
+  {
+    id: 'c_weak_mind',
+    name: '意志薄弱',
+    description: '精神容易被击溃',
+    effectDescription: '意志力-20，但闪避率+15%',
+    icon: 'Ghost',
+    category: ConstitutionCategory.MENTAL,
+    rarity: ConstitutionRarity.COMMON,
+    permanentModifiers: [
+      { stat: '$意志力加成', value: -20, isPercent: false },
+      { stat: '$闪避率加成', value: 15, isPercent: true },
+    ],
+    sensitivityModifiers: [],
+    triggerEffects: [],
+    genderRestriction: [],
+    excludeConstitutions: ['c_iron_will'],
+    requireConstitutions: [],
+    maxCount: 1,
+    isPositive: false,
+    hidden: false,
+    flavorText: '躲避是最好的防御...',
+  },
+  {
+    id: 'c_exhibitionist',
+    name: '露出癖',
+    description: '被注视时会异常兴奋',
+    effectDescription: '被观看时性斗力+20%，但快感积累+10%',
+    icon: 'Eye',
+    category: ConstitutionCategory.TENDENCY,
+    rarity: ConstitutionRarity.RARE,
+    permanentModifiers: [],
+    sensitivityModifiers: [],
+    triggerEffects: [
+      {
+        timing: TriggerTiming.ON_SPECTATE,
+        chance: 100,
+        effectDescription: '性斗力+20%，但快感积累速度+10%',
+        statEffects: [
+          { stat: '$基础性斗力成算', value: 20, isPercent: true },
+        ],
+      },
+    ],
+    genderRestriction: [],
+    excludeConstitutions: [],
+    requireConstitutions: [],
+    maxCount: 1,
+    isPositive: true,
+    hidden: false,
+    flavorText: '越多人看越兴奋...',
+  },
+  {
+    id: 'c_masochist',
+    name: 'M体质',
+    description: '从痛苦和羞耻中获得快感',
+    effectDescription: '受到羞耻时性斗力+15%，忍耐力+10%',
+    icon: 'HeartBroken',
+    category: ConstitutionCategory.TENDENCY,
+    rarity: ConstitutionRarity.COMMON,
+    permanentModifiers: [
+      { stat: '$基础忍耐力成算', value: 10, isPercent: true },
+    ],
+    sensitivityModifiers: [],
+    triggerEffects: [
+      {
+        timing: TriggerTiming.ON_HIT,
+        chance: 100,
+        condition: '受到羞耻类攻击时',
+        effectDescription: '性斗力临时+15%',
+      },
+    ],
+    genderRestriction: [],
+    excludeConstitutions: ['c_sadist'],
+    requireConstitutions: [],
+    maxCount: 1,
+    isPositive: true,
+    hidden: false,
+    flavorText: '请...更多...',
+  },
+  {
+    id: 'c_sadist',
+    name: 'S体质',
+    description: '从支配他人中获得力量',
+    effectDescription: '控制技能效果+20%，暴击伤害+25%',
+    icon: 'Crown',
+    category: ConstitutionCategory.TENDENCY,
+    rarity: ConstitutionRarity.COMMON,
+    permanentModifiers: [
+      { stat: '$暴击率加成', value: 15, isPercent: true },
+    ],
+    sensitivityModifiers: [],
+    triggerEffects: [
+      {
+        timing: TriggerTiming.ON_CRIT,
+        chance: 100,
+        effectDescription: '暴击伤害+25%',
+      },
+    ],
+    genderRestriction: [],
+    excludeConstitutions: ['c_masochist'],
+    requireConstitutions: [],
+    maxCount: 1,
+    isPositive: true,
+    hidden: false,
+    flavorText: '服从于我！',
+  },
+];
+
+// ==================== 男性专属体质 ====================
+
+export const MALE_CONSTITUTIONS: ConstitutionData[] = [
+  {
+    id: 'c_iron_cock',
+    name: '钢铁巨根',
+    description: '坚硬如铁的雄伟器官',
+    effectDescription: '性斗力成算+25%，物理攻击效果+15%',
+    icon: 'Dumbbell',
+    category: ConstitutionCategory.PHYSICAL,
+    rarity: ConstitutionRarity.RARE,
+    permanentModifiers: [
+      { stat: '$基础性斗力成算', value: 25, isPercent: true },
+    ],
+    sensitivityModifiers: [],
+    triggerEffects: [
+      {
+        timing: TriggerTiming.ON_ATTACK,
+        chance: 100,
+        condition: '使用物理攻击时',
+        effectDescription: '伤害+15%',
+      },
+    ],
+    genderRestriction: ['male'],
+    excludeConstitutions: [],
+    requireConstitutions: [],
+    maxCount: 1,
+    isPositive: true,
+    hidden: false,
+    flavorText: '坚若磐石...',
+  },
+  {
+    id: 'c_prostate_dev',
+    name: '前列腺开发',
+    description: '后庭已被完全开发',
+    effectDescription: '后庭敏感度x3，但受到后庭攻击时暴击率+20%',
+    icon: 'Target',
+    category: ConstitutionCategory.SENSITIVITY,
+    rarity: ConstitutionRarity.EPIC,
+    permanentModifiers: [],
+    sensitivityModifiers: [
+      { bodyPart: 'prostate', modifier: 200 },
+      { bodyPart: 'anus', modifier: 100 },
+    ],
+    triggerEffects: [
+      {
+        timing: TriggerTiming.ON_HIT,
+        chance: 100,
+        condition: '后庭受到攻击时',
+        effectDescription: '自身下次攻击暴击率+20%',
+      },
+    ],
+    genderRestriction: ['male'],
+    excludeConstitutions: [],
+    requireConstitutions: [],
+    maxCount: 1,
+    isPositive: false,
+    hidden: false,
+    flavorText: '那里...不行...',
+  },
+  {
+    id: 'c_reload',
+    name: '无限子弹',
+    description: '惊人的恢复能力',
+    effectDescription: '高潮后耐力恢复+30%，贤者时间减少1回合',
+    icon: 'Sync',
+    category: ConstitutionCategory.RECOVERY,
+    rarity: ConstitutionRarity.RARE,
+    permanentModifiers: [],
+    sensitivityModifiers: [],
+    triggerEffects: [
+      {
+        timing: TriggerTiming.ON_ORGASM,
+        chance: 100,
+        effectDescription: '恢复30%耐力，贤者时间-1回合',
+      },
+    ],
+    genderRestriction: ['male'],
+    excludeConstitutions: [],
+    requireConstitutions: [],
+    maxCount: 1,
+    isPositive: true,
+    hidden: false,
+    flavorText: '准备好第二回合了吗？',
+  },
+];
+
+// ==================== 女性专属体质 ====================
+
+export const FEMALE_CONSTITUTIONS: ConstitutionData[] = [
+  {
+    id: 'c_sensitive_nips',
+    name: '乳首开发',
+    description: '胸部极为敏感',
+    effectDescription: '胸部敏感度x3，受到胸部攻击时有30%几率获得快感抵抗',
+    icon: 'Target',
+    category: ConstitutionCategory.SENSITIVITY,
+    rarity: ConstitutionRarity.RARE,
+    permanentModifiers: [],
+    sensitivityModifiers: [
+      { bodyPart: 'nipples', modifier: 200 },
+      { bodyPart: 'breasts', modifier: 100 },
+    ],
+    triggerEffects: [
+      {
+        timing: TriggerTiming.ON_HIT,
+        chance: 30,
+        condition: '胸部受到攻击时',
+        effectDescription: '获得1回合快感抵抗+20%',
+      },
+    ],
+    genderRestriction: ['female'],
+    excludeConstitutions: [],
+    requireConstitutions: [],
+    maxCount: 1,
+    isPositive: false,
+    hidden: false,
+    flavorText: '不要碰那里...',
+  },
+  {
+    id: 'c_wet',
+    name: '淫乱体质',
+    description: '极易动情的身体',
+    effectDescription: '初始快感+15，敏感度+20%，但魅力+20',
+    icon: 'Droplets',
+    category: ConstitutionCategory.SENSITIVITY,
+    rarity: ConstitutionRarity.COMMON,
+    permanentModifiers: [
+      { stat: '$魅力加成', value: 20, isPercent: false },
+    ],
+    sensitivityModifiers: [
+      { bodyPart: 'all', modifier: 20 },
+    ],
+    triggerEffects: [
+      {
+        timing: TriggerTiming.BATTLE_START,
+        chance: 100,
+        effectDescription: '初始快感+15',
+      },
+    ],
+    genderRestriction: ['female'],
+    excludeConstitutions: ['c_dry'],
+    requireConstitutions: [],
+    maxCount: 1,
+    isPositive: false,
+    hidden: false,
+    flavorText: '身体...好热...',
+  },
+  {
+    id: 'c_dry',
+    name: '冰山美人',
+    description: '难以动情的体质',
+    effectDescription: '快感积累-25%，意志力+25',
+    icon: 'Snowflake',
+    category: ConstitutionCategory.SENSITIVITY,
+    rarity: ConstitutionRarity.RARE,
+    permanentModifiers: [
+      { stat: '$意志力加成', value: 25, isPercent: false },
+    ],
+    sensitivityModifiers: [
+      { bodyPart: 'all', modifier: -25 },
+    ],
+    triggerEffects: [],
+    genderRestriction: ['female'],
+    excludeConstitutions: ['c_wet'],
+    requireConstitutions: [],
+    maxCount: 1,
+    isPositive: true,
+    hidden: false,
+    flavorText: '你以为这就能让我动摇？',
+  },
+  {
+    id: 'c_squirt',
+    name: '潮吹体质',
+    description: '高潮时会大量喷射',
+    effectDescription: '高潮时对周围敌人造成羞耻效果，魅力+15',
+    icon: 'Water',
+    category: ConstitutionCategory.SPECIAL,
+    rarity: ConstitutionRarity.EPIC,
+    permanentModifiers: [
+      { stat: '$魅力加成', value: 15, isPercent: false },
+    ],
+    sensitivityModifiers: [],
+    triggerEffects: [
+      {
+        timing: TriggerTiming.ON_ORGASM,
+        chance: 100,
+        effectDescription: '对所有敌人施加羞耻状态2回合',
+      },
+    ],
+    genderRestriction: ['female'],
+    excludeConstitutions: [],
+    requireConstitutions: [],
+    maxCount: 1,
+    isPositive: true,
+    hidden: false,
+    flavorText: '停不下来了...',
+  },
+];
+
+// ==================== 导出所有体质 ====================
+
+export const STARTER_CONSTITUTIONS = {
+  common: COMMON_CONSTITUTIONS,
+  male: MALE_CONSTITUTIONS,
+  female: FEMALE_CONSTITUTIONS,
+};
+
+export const ALL_CONSTITUTIONS: ConstitutionData[] = [
+  ...COMMON_CONSTITUTIONS,
+  ...MALE_CONSTITUTIONS,
+  ...FEMALE_CONSTITUTIONS,
+];
+
+/** 按ID获取体质 */
+export function getConstitutionById(id: string): ConstitutionData | undefined {
+  return ALL_CONSTITUTIONS.find(c => c.id === id);
+}
+
+/** 按性别获取可用体质 */
+export function getConstitutionsForGender(gender: string): ConstitutionData[] {
+  const genderLower = gender.toLowerCase();
+  return [
+    ...COMMON_CONSTITUTIONS,
+    ...(genderLower === 'male' ? MALE_CONSTITUTIONS : []),
+    ...(genderLower === 'female' ? FEMALE_CONSTITUTIONS : []),
+  ];
+}
