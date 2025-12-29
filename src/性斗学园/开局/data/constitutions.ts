@@ -3,20 +3,10 @@
  * 包含所有初始可选的特殊体质（被动）
  */
 
-import {
-  ConstitutionData,
-  ConstitutionCategory,
-  ConstitutionRarity,
-  TriggerTiming,
-} from './constitution-types';
+import { ConstitutionData, ConstitutionCategory, ConstitutionRarity, TriggerTiming } from './constitution-types';
 
 // 重新导出类型
-export {
-  ConstitutionCategory,
-  ConstitutionRarity,
-  TriggerTiming,
-  type ConstitutionData,
-};
+export { ConstitutionCategory, ConstitutionRarity, TriggerTiming, type ConstitutionData };
 
 // ==================== 通用体质（所有性别可选） ====================
 
@@ -161,9 +151,7 @@ export const COMMON_CONSTITUTIONS: ConstitutionData[] = [
     icon: 'GrinHearts',
     category: ConstitutionCategory.SPECIAL,
     rarity: ConstitutionRarity.RARE,
-    permanentModifiers: [
-      { stat: '$魅力加成', value: 30, isPercent: false },
-    ],
+    permanentModifiers: [{ stat: '$魅力加成', value: 30, isPercent: false }],
     sensitivityModifiers: [],
     triggerEffects: [
       {
@@ -189,9 +177,7 @@ export const COMMON_CONSTITUTIONS: ConstitutionData[] = [
     icon: 'Brain',
     category: ConstitutionCategory.MENTAL,
     rarity: ConstitutionRarity.RARE,
-    permanentModifiers: [
-      { stat: '$意志力加成', value: 40, isPercent: false },
-    ],
+    permanentModifiers: [{ stat: '$意志力加成', value: 40, isPercent: false }],
     sensitivityModifiers: [],
     triggerEffects: [
       {
@@ -246,9 +232,7 @@ export const COMMON_CONSTITUTIONS: ConstitutionData[] = [
         timing: TriggerTiming.ON_SPECTATE,
         chance: 100,
         effectDescription: '性斗力+20%，但快感积累速度+10%',
-        statEffects: [
-          { stat: '$基础性斗力成算', value: 20, isPercent: true },
-        ],
+        statEffects: [{ stat: '$基础性斗力成算', value: 20, isPercent: true }],
       },
     ],
     genderRestriction: [],
@@ -267,9 +251,7 @@ export const COMMON_CONSTITUTIONS: ConstitutionData[] = [
     icon: 'HeartBroken',
     category: ConstitutionCategory.TENDENCY,
     rarity: ConstitutionRarity.COMMON,
-    permanentModifiers: [
-      { stat: '$基础忍耐力成算', value: 10, isPercent: true },
-    ],
+    permanentModifiers: [{ stat: '$基础忍耐力成算', value: 10, isPercent: true }],
     sensitivityModifiers: [],
     triggerEffects: [
       {
@@ -295,9 +277,7 @@ export const COMMON_CONSTITUTIONS: ConstitutionData[] = [
     icon: 'Crown',
     category: ConstitutionCategory.TENDENCY,
     rarity: ConstitutionRarity.COMMON,
-    permanentModifiers: [
-      { stat: '$暴击率加成', value: 15, isPercent: true },
-    ],
+    permanentModifiers: [{ stat: '$暴击率加成', value: 15, isPercent: true }],
     sensitivityModifiers: [],
     triggerEffects: [
       {
@@ -327,9 +307,7 @@ export const MALE_CONSTITUTIONS: ConstitutionData[] = [
     icon: 'Dumbbell',
     category: ConstitutionCategory.PHYSICAL,
     rarity: ConstitutionRarity.RARE,
-    permanentModifiers: [
-      { stat: '$基础性斗力成算', value: 25, isPercent: true },
-    ],
+    permanentModifiers: [{ stat: '$基础性斗力成算', value: 25, isPercent: true }],
     sensitivityModifiers: [],
     triggerEffects: [
       {
@@ -493,9 +471,7 @@ export const FEMALE_CONSTITUTIONS: ConstitutionData[] = [
     icon: 'Water',
     category: ConstitutionCategory.SPECIAL,
     rarity: ConstitutionRarity.EPIC,
-    permanentModifiers: [
-      { stat: '$魅力加成', value: 15, isPercent: false },
-    ],
+    permanentModifiers: [{ stat: '$魅力加成', value: 15, isPercent: false }],
     sensitivityModifiers: [],
     triggerEffects: [
       {

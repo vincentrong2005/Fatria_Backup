@@ -8,7 +8,7 @@ export interface CharacterBase {
   _魅力: number;
   _幸运: number;
   _声望: number;
-  _段位: "无段位" | "D" | "C" | "B" | "A" | "S" | "SS" | "SSS";
+  _段位: '无段位' | 'D' | 'C' | 'B' | 'A' | 'S' | 'SS' | 'SSS';
   段位积分: number;
 }
 
@@ -38,8 +38,8 @@ export interface PermanentBonus {
 }
 
 export interface InventoryItem {
-  类型: "消耗品" | "装备" | "材料" | "特殊";
-  等级: "C" | "B" | "A" | "S" | "SS";
+  类型: '消耗品' | '装备' | '材料' | '特殊';
+  等级: 'C' | 'B' | 'A' | 'S' | 'SS';
   数量: number;
   效果描述: string;
   描述: string;
@@ -56,8 +56,8 @@ export interface Equipment {
 export interface Quest {
   名称?: string; // Optional because Main uses explicit name, Side uses index usually but we map it
   描述: string;
-  类型?: "日常" | "特殊" | "限时" | "隐藏";
-  状态: "进行中" | "已完成" | "已失败" | "已放弃";
+  类型?: '日常' | '特殊' | '限时' | '隐藏';
+  状态: '进行中' | '已完成' | '已失败' | '已放弃';
   目标: Record<string, any>;
   奖励: string;
   期限: string;
@@ -65,7 +65,7 @@ export interface Quest {
 
 export interface Relationship {
   好感度: number;
-  关系类型: "陌生人" | "同学" | "朋友" | "恋人" | "主仆" | "完全臣服" | "仇敌";
+  关系类型: '陌生人' | '同学' | '朋友' | '恋人' | '主仆' | '完全臣服' | '仇敌';
   调教进度: number;
   臣服度: number;
 }

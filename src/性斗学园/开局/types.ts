@@ -1,13 +1,13 @@
 export enum Gender {
   MALE = '男',
   FEMALE = '女',
-  OTHER = '非二元'
+  OTHER = '非二元',
 }
 
 export enum Difficulty {
   STORY = '剧情模式 (简单)',
   NORMAL = '学园生活 (普通)',
-  HARDCORE = '地狱开局 (困难)'
+  HARDCORE = '地狱开局 (困难)',
 }
 
 // 根据 MVU 变量结构定义的属性路径
@@ -21,7 +21,7 @@ export interface CharacterAttributes {
     经验值?: number; // 当前经验值
     $今日经验?: number; // 今日获得经验
   };
-  
+
   // 核心状态
   核心状态: {
     _最大耐力: number;
@@ -63,7 +63,7 @@ export interface Archetype {
   id: string;
   name: string;
   description: string;
-  icon: string; 
+  icon: string;
   passiveSkill: Skill;
   // 永久状态
   permanentState: {
@@ -82,18 +82,18 @@ export interface CharacterData {
   background: string;
   difficulty: Difficulty;
   archetypeId: string | null;
-  
+
   // The core stats - 使用嵌套结构匹配 MVU 变量
   attributes: CharacterAttributes;
-  
+
   // Body stats
-  height: number; 
-  weight: number; 
-  cupSize: string; 
-  hips: number; 
-  cockLength: number; 
+  height: number;
+  weight: number;
+  cupSize: string;
+  hips: number;
+  cockLength: number;
   maleGenitalType?: string; // 男性性器特征（当hasPenis为true时使用）
-  femaleGenitalType?: string; // 女性性器特征（当hasBreasts为true时使用） 
+  femaleGenitalType?: string; // 女性性器特征（当hasBreasts为true时使用）
 
   // Body Configuration (For Non-binary mostly)
   configFeatures: {
@@ -148,7 +148,7 @@ export const INITIAL_CHARACTER_DATA: CharacterData = {
   femaleGenitalType: undefined,
   configFeatures: {
     hasBreasts: true,
-    hasPenis: false
+    hasPenis: false,
   },
   initialActiveSkills: [],
   initialPassiveSkills: [],

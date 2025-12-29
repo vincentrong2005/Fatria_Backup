@@ -1,7 +1,7 @@
 /**
  * 战斗数值计算系统
  * 用于PVE回合制战斗的核心计算公式
- * 
+ *
  * 新变量结构适配版本
  */
 
@@ -84,56 +84,53 @@ export interface MvuCombatData {
 /**
  * 计算实时性斗力
  * 公式: ((等级 x 潜力) + 装备基础性斗力加成 + 永久状态加成 + 临时状态加成) x (1 + (装备成算 + 永久状态成算 + 临时状态成算)/100)
- * 
+ *
  * @param data MVU 变量数据
  * @param isPostOrgasm 是否处于贤者时间（高潮后）
  * @returns 计算后的性斗力
  */
-export function calculateSexualCombatPower(
-  data: MvuCombatData,
-  isPostOrgasm: boolean = false
-): number {
+export function calculateSexualCombatPower(data: MvuCombatData, isPostOrgasm: boolean = false): number {
   const level = data.角色基础._等级;
   const potential = data.核心状态.$潜力;
-  
+
   // 基础值：等级 x 潜力
   const baseValue = level * potential;
-  
+
   // 装备加成
   const equipmentBonus = data.物品系统?.$装备总加成?.$基础性斗力加成 || 0;
-  
+
   // 永久状态加成
   const permanentBonus = data._永久状态?.$加成统计?.$基础性斗力加成 || 0;
-  
+
   // 临时状态加成（从临时状态的统一加成统计中获取）
   const tempBonus = data.$临时状态?.$加成统计?.$基础性斗力加成 || 0;
-  
+
   // 加成总和
   const totalBonus = baseValue + equipmentBonus + permanentBonus + tempBonus;
-  
+
   // 成算（百分比加成）
   const equipmentMultiplier = data.物品系统?.$装备总加成?.$基础性斗力成算 || 0;
   const permanentMultiplier = data._永久状态?.$加成统计?.$基础性斗力成算 || 0;
   const tempMultiplier = data.$临时状态?.$加成统计?.$基础性斗力成算 || 0;
-  
+
   // 总成算（转换为倍数，例如 30% = 1.3）
   const totalMultiplier = 1 + (equipmentMultiplier + permanentMultiplier + tempMultiplier) / 100;
-  
+
   // 最终性斗力
   let finalPower = totalBonus * totalMultiplier;
-  
+
   // 贤者时间减益
   if (isPostOrgasm) {
-    finalPower *= (1 - POST_ORGASM_SEX_POWER_REDUCTION);
+    finalPower *= 1 - POST_ORGASM_SEX_POWER_REDUCTION;
   }
-  
+
   return Math.max(0, Math.floor(finalPower));
 }
 
 /**
  * 计算实时忍耐力
  * 公式: ((等级 x 意志力/10) + 装备基础忍耐力加成 + 永久状态加成 + 临时状态加成) x (1 + (装备成算 + 永久状态成算 + 临时状态成算)/100)
- * 
+ *
  * @param data MVU 变量数据
  * @param isPostOrgasm 是否处于贤者时间（高潮后）
  * @param isExhausted 是否处于虚脱状态
@@ -142,47 +139,47 @@ export function calculateSexualCombatPower(
 export function calculateEndurance(
   data: MvuCombatData,
   isPostOrgasm: boolean = false,
-  isExhausted: boolean = false
+  isExhausted: boolean = false,
 ): number {
   const level = data.角色基础._等级;
   const willpower = data.核心状态._意志力;
-  
+
   // 基础值：等级 x 意志力/10
   const baseValue = level * (willpower / 10);
-  
+
   // 装备加成
   const equipmentBonus = data.物品系统?.$装备总加成?.$基础忍耐力加成 || 0;
-  
+
   // 永久状态加成
   const permanentBonus = data._永久状态?.$加成统计?.$基础忍耐力加成 || 0;
-  
+
   // 临时状态加成
   const tempBonus = data.$临时状态?.$加成统计?.$基础忍耐力加成 || 0;
-  
+
   // 加成总和
   const totalBonus = baseValue + equipmentBonus + permanentBonus + tempBonus;
-  
+
   // 成算（百分比加成）
   const equipmentMultiplier = data.物品系统?.$装备总加成?.$基础忍耐力成算 || 0;
   const permanentMultiplier = data._永久状态?.$加成统计?.$基础忍耐力成算 || 0;
   const tempMultiplier = data.$临时状态?.$加成统计?.$基础忍耐力成算 || 0;
-  
+
   // 总成算
   const totalMultiplier = 1 + (equipmentMultiplier + permanentMultiplier + tempMultiplier) / 100;
-  
+
   // 最终忍耐力
   let finalEndurance = totalBonus * totalMultiplier;
-  
+
   // 贤者时间增益
   if (isPostOrgasm) {
-    finalEndurance *= (1 + POST_ORGASM_ENDURANCE_BOOST);
+    finalEndurance *= 1 + POST_ORGASM_ENDURANCE_BOOST;
   }
-  
+
   // 虚脱状态减益
   if (isExhausted) {
-    finalEndurance *= (1 - EXHAUSTION_STAMINA_REDUCTION);
+    finalEndurance *= 1 - EXHAUSTION_STAMINA_REDUCTION;
   }
-  
+
   return Math.max(0, Math.floor(finalEndurance));
 }
 
@@ -211,7 +208,7 @@ export function handleOrgasm(data: MvuCombatData): any {
     $临时状态: {
       $状态列表: {
         ...data.$临时状态?.$状态列表,
-        '贤者时间': 3, // 持续3回合
+        贤者时间: 3, // 持续3回合
       },
       $加成统计: {
         ...data.$临时状态?.$加成统计,
@@ -220,7 +217,7 @@ export function handleOrgasm(data: MvuCombatData): any {
       },
     },
   };
-  
+
   return updates;
 }
 
@@ -277,10 +274,10 @@ export function handleLevelUp(data: MvuCombatData): any | null {
   if (!canLevelUp(data.角色基础._等级, data.角色基础.经验值 || 0)) {
     return null;
   }
-  
+
   const newLevel = data.角色基础._等级 + 1;
   const attributePoints = getAttributePointsOnLevelUp(data.核心状态.$潜力);
-  
+
   return {
     角色基础: {
       _等级: newLevel,
@@ -297,25 +294,25 @@ export function handleLevelUp(data: MvuCombatData): any | null {
 export const EXP_GAINS = {
   /** 每轮对抗经验 */
   PER_ROUND: { min: 10, max: 20 },
-  
+
   /** 性斗胜利基础经验 */
   VICTORY_BASE: 25,
-  
+
   /** 性斗胜利等级差加成（每级差5点） */
   VICTORY_LEVEL_BONUS: 5,
-  
+
   /** 性斗胜利最低经验 */
   VICTORY_MIN: 30,
-  
+
   /** 性斗失败经验 */
   DEFEAT: { min: 10, max: 25 },
-  
+
   /** 调教中每次高潮经验 */
   ORGASM: { min: 20, max: 40 },
-  
+
   /** 探索经验 */
   EXPLORATION: { min: 5, max: 15 },
-  
+
   /** 观战和练习经验 */
   SPECTATE: { min: 10, max: 30 },
 };
@@ -328,7 +325,7 @@ export const EXP_GAINS = {
  */
 export function calculateVictoryExp(userLevel: number, enemyLevel: number): number {
   const levelDiff = enemyLevel - userLevel;
-  const exp = EXP_GAINS.VICTORY_BASE + (levelDiff * EXP_GAINS.VICTORY_LEVEL_BONUS);
+  const exp = EXP_GAINS.VICTORY_BASE + levelDiff * EXP_GAINS.VICTORY_LEVEL_BONUS;
   return Math.max(EXP_GAINS.VICTORY_MIN, exp);
 }
 
@@ -351,7 +348,7 @@ export function getRandomExp(range: { min: number; max: number }): number {
  */
 export function extractCombatData(mvuData: any): MvuCombatData {
   const statData = mvuData.stat_data || {};
-  
+
   return {
     角色基础: {
       _等级: statData.角色基础?._等级 || 1,

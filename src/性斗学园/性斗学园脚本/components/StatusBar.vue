@@ -1,9 +1,5 @@
 <template>
-  <div 
-    v-if="isVisible" 
-    class="status-bar-overlay"
-    @click.self="close"
-  >
+  <div v-if="isVisible" class="status-bar-overlay" @click.self="close">
     <div class="status-bar-container" @click.stop>
       <!-- 手机边框 -->
       <div class="phone-frame">
@@ -16,8 +12,8 @@
         <!-- 状态栏头部 -->
         <div class="status-header">
           <div class="header-left">
-            <button 
-              v-if="currentPage !== 'dashboard'" 
+            <button
+              v-if="currentPage !== 'dashboard'"
               class="back-button"
               @click="currentPage = 'dashboard'"
               title="返回主页"
@@ -38,65 +34,41 @@
         <!-- 内容区域 -->
         <div class="status-content">
           <!-- Dashboard 主页（默认显示） -->
-          <DashboardPage 
-            v-if="currentPage === 'dashboard'" 
-            :characterData="characterData"
-          />
-          
+          <DashboardPage v-if="currentPage === 'dashboard'" :characterData="characterData" />
+
           <!-- Profile 档案页 -->
-          <ProfilePage 
-            v-if="currentPage === 'profile'" 
-            :characterData="characterData"
-            :combatData="combatData"
-          />
-          
+          <ProfilePage v-if="currentPage === 'profile'" :characterData="characterData" :combatData="combatData" />
+
           <!-- Inventory 背包页 -->
-          <InventoryPage 
-            v-if="currentPage === 'inventory'" 
-            :characterData="characterData"
-          />
-          
+          <InventoryPage v-if="currentPage === 'inventory'" :characterData="characterData" />
+
           <!-- Quest 任务页 -->
-          <QuestPage 
-            v-if="currentPage === 'quest'" 
-            :characterData="characterData"
-          />
-          
+          <QuestPage v-if="currentPage === 'quest'" :characterData="characterData" />
+
           <!-- Relationship 关系页 -->
-          <RelationshipPage 
-            v-if="currentPage === 'relationship'" 
-            :characterData="characterData"
-          />
+          <RelationshipPage v-if="currentPage === 'relationship'" :characterData="characterData" />
         </div>
 
         <!-- 底部导航栏 -->
         <div class="bottom-nav">
-          <button 
-            class="nav-button" 
-            :class="{ active: currentPage === 'profile' }"
-            @click="currentPage = 'profile'"
-          >
+          <button class="nav-button" :class="{ active: currentPage === 'profile' }" @click="currentPage = 'profile'">
             <i class="fas fa-user"></i>
             <span>档案</span>
           </button>
-          <button 
-            class="nav-button" 
+          <button
+            class="nav-button"
             :class="{ active: currentPage === 'inventory' }"
             @click="currentPage = 'inventory'"
           >
             <i class="fas fa-shopping-bag"></i>
             <span>背包</span>
           </button>
-          <button 
-            class="nav-button" 
-            :class="{ active: currentPage === 'quest' }"
-            @click="currentPage = 'quest'"
-          >
+          <button class="nav-button" :class="{ active: currentPage === 'quest' }" @click="currentPage = 'quest'">
             <i class="fas fa-scroll"></i>
             <span>任务</span>
           </button>
-          <button 
-            class="nav-button" 
+          <button
+            class="nav-button"
             :class="{ active: currentPage === 'relationship' }"
             @click="currentPage = 'relationship'"
           >
@@ -145,7 +117,7 @@ async function loadMvuData() {
     if (!globalAny.Mvu) {
       return;
     }
-    
+
     const mvuData = globalAny.Mvu.getMvuData({ type: 'message', message_id: 'latest' });
     if (!mvuData || !mvuData.stat_data) {
       return;
@@ -200,7 +172,7 @@ let updateInterval: number | null = null;
 onMounted(() => {
   loadMvuData();
   updateTime();
-  
+
   // 每2秒更新一次数据
   updateInterval = window.setInterval(() => {
     if (props.isVisible) {
@@ -208,7 +180,7 @@ onMounted(() => {
       updateTime(); // 同时更新游戏时间
     }
   }, 2000);
-  
+
   // 监听 MVU 变量更新事件
   const globalAny = window as any;
   if (globalAny.eventOn && globalAny.Mvu) {
@@ -275,7 +247,7 @@ onUnmounted(() => {
   inset: 0;
   pointer-events: none;
   overflow: hidden;
-  
+
   .bg-gradient-1 {
     position: absolute;
     top: -10%;
@@ -287,7 +259,7 @@ onUnmounted(() => {
     border-radius: 50%;
     opacity: 0.5;
   }
-  
+
   .bg-gradient-2 {
     position: absolute;
     bottom: -10%;
@@ -333,12 +305,12 @@ onUnmounted(() => {
   justify-content: center;
   cursor: pointer;
   transition: all 0.2s;
-  
+
   &:hover {
     background: rgba(255, 255, 255, 0.2);
     transform: scale(1.1);
   }
-  
+
   i {
     font-size: 14px;
   }
@@ -353,16 +325,16 @@ onUnmounted(() => {
   align-items: center;
   gap: 6px;
   font-size: 10px;
-  
+
   i {
     color: rgba(255, 255, 255, 0.6);
   }
-  
+
   .signal-text {
     font-family: monospace;
     opacity: 0.6;
   }
-  
+
   .battery-indicator {
     width: 24px;
     height: 12px;
@@ -370,7 +342,7 @@ onUnmounted(() => {
     border: 1px solid rgba(255, 255, 255, 0.4);
     position: relative;
     margin-left: 4px;
-    
+
     .battery-fill {
       position: absolute;
       top: 2px;
@@ -388,15 +360,15 @@ onUnmounted(() => {
   flex: 1;
   overflow-y: auto;
   z-index: 10;
-  
+
   &::-webkit-scrollbar {
     width: 4px;
   }
-  
+
   &::-webkit-scrollbar-track {
     background: transparent;
   }
-  
+
   &::-webkit-scrollbar-thumb {
     background: rgba(255, 255, 255, 0.2);
     border-radius: 2px;
@@ -427,25 +399,25 @@ onUnmounted(() => {
   cursor: pointer;
   transition: all 0.2s;
   border-radius: 12px;
-  
+
   i {
     font-size: 20px;
     margin-bottom: 2px;
   }
-  
+
   span {
     font-size: 11px;
     font-weight: 500;
   }
-  
+
   &:hover {
     color: rgba(255, 255, 255, 0.8);
     background: rgba(255, 255, 255, 0.05);
   }
-  
+
   &.active {
     color: white;
-    
+
     i {
       color: #818cf8;
     }
@@ -481,12 +453,12 @@ onUnmounted(() => {
   cursor: pointer;
   transition: all 0.2s;
   backdrop-filter: blur(10px);
-  
+
   &:hover {
     background: rgba(255, 255, 255, 0.2);
     transform: scale(1.1);
   }
-  
+
   i {
     font-size: 18px;
   }
