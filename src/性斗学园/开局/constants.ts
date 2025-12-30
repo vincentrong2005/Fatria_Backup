@@ -118,7 +118,6 @@ export const ARCHETYPES: Record<Gender, Archetype[]> = {
       name: '娇俏伪娘',
       description: '比女生更可爱的小男娘，容易激起保护欲。',
       icon: 'Cat',
-      hidden: true,
       passiveSkill: {
         id: 'p_confusion',
         name: '性别模糊',
@@ -146,7 +145,6 @@ export const ARCHETYPES: Record<Gender, Archetype[]> = {
       name: '可爱正太',
       description: '外表人畜无害，实际上可能切开是黑的年下系。',
       icon: 'Smile',
-      hidden: true,
       passiveSkill: {
         id: 'p_innocent',
         name: '无辜防御',
@@ -338,7 +336,6 @@ export const ARCHETYPES: Record<Gender, Archetype[]> = {
       name: '娇小萝莉',
       description: '体型娇小可爱，拥有令人怜惜的外表和惊人的潜力。',
       icon: 'Sparkles',
-      hidden: true,
       passiveSkill: {
         id: 'p_smallbody',
         name: '紧致构造',
@@ -366,7 +363,6 @@ export const ARCHETYPES: Record<Gender, Archetype[]> = {
       name: '雌小鬼',
       description: '性格恶劣，喜欢嘲讽，但在吃瘪时会露出绝妙表情。',
       icon: 'Ghost',
-      hidden: true,
       passiveSkill: {
         id: 'p_glass_cannon',
         name: '杂鱼判定',

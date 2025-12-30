@@ -14,31 +14,13 @@
               <p class="text-xs text-gray-400">选择 1 个核心身份</p>
             </div>
           </div>
-          <!-- 隐藏角色解锁输入框 -->
-          <div class="flex items-center gap-2">
-            <input
-              v-if="showHiddenInput"
-              v-model="hiddenCode"
-              @keyup.enter="checkHiddenCode"
-              type="text"
-              placeholder="输入代码..."
-              class="w-24 px-2 py-1 text-xs bg-white/10 border border-white/20 rounded text-white placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-secondary"
-            />
-            <button
-              @click="toggleHiddenInput"
-              class="p-1.5 text-gray-400 hover:text-white transition-colors"
-              title="解锁隐藏角色"
-            >
-              <i class="fas fa-lock text-xs"></i>
-            </button>
-          </div>
         </div>
 
         <!-- Scrollable List -->
         <div class="bg-black/20 border-x border-b border-white/5 rounded-b-2xl p-4 h-[450px] overflow-y-auto custom-scrollbar">
           <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
             <button
-              v-for="archetype in visibleArchetypes"
+              v-for="archetype in currentArchetypes"
               :key="archetype.id"
               @click="handleArchetypeSelect(archetype.id)"
               :disabled="isUpdating"
@@ -390,39 +372,6 @@ const emit = defineEmits<{
 const isUpdating = ref(false);
 
 const currentArchetypes = computed(() => ARCHETYPES[props.data.gender] || ARCHETYPES[Gender.OTHER]);
-
-// 隐藏角色解锁状态
-const showHiddenRoles = ref(false);
-const showHiddenInput = ref(false);
-const hiddenCode = ref('');
-
-const toggleHiddenInput = () => {
-  showHiddenInput.value = !showHiddenInput.value;
-  if (!showHiddenInput.value) {
-    hiddenCode.value = '';
-  }
-};
-
-const checkHiddenCode = () => {
-  if (hiddenCode.value === '1011') {
-    showHiddenRoles.value = true;
-    showHiddenInput.value = false;
-    hiddenCode.value = '';
-  } else {
-    hiddenCode.value = '';
-  }
-};
-
-// 根据解锁状态过滤角色
-const visibleArchetypes = computed(() => {
-  return currentArchetypes.value.filter(archetype => {
-    // 如果角色被标记为隐藏，且未解锁，则过滤掉
-    if (archetype.hidden && !showHiddenRoles.value) {
-      return false;
-    }
-    return true;
-  });
-});
 
 const isMale = computed(() => props.data.gender === Gender.MALE);
 const isFemale = computed(() => props.data.gender === Gender.FEMALE);

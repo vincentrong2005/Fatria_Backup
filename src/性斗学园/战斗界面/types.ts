@@ -32,16 +32,95 @@ export interface CombatStats {
   baseWillpower: number;     // 核心状态.$基础意志力
 }
 
-/** 技能 */
+/** 技能伤害来源 */
+export enum DamageSource {
+  SEX_POWER = 'sex_power',
+  CHARM = 'charm',
+  LUCK = 'luck',
+  WILLPOWER = 'willpower',
+  FIXED = 'fixed',
+}
+
+/** 技能类型 */
+export enum SkillType {
+  PHYSICAL = 'physical',
+  MENTAL = 'mental',
+  CHARM = 'charm',
+  SUPPORT = 'support',
+  CONTROL = 'control',
+  ULTIMATE = 'ultimate',
+}
+
+/** Buff类型 */
+export enum BuffType {
+  ATK_UP = 'atk_up',
+  DEF_UP = 'def_up',
+  ATK_DOWN = 'atk_down',
+  DEF_DOWN = 'def_down',
+  SENSITIVE = 'sensitive',
+  WILLPOWER_DOWN = 'willpower_down',
+  SILENCE = 'silence',
+  BIND = 'bind',
+  DODGE_DOWN = 'dodge_down',
+  CRIT_UP = 'crit_up',
+  FOCUS = 'focus',
+  SHAME = 'shame',
+  HEAT = 'heat',
+  FEAR = 'fear',
+  DOT_LUST = 'dot_lust',
+  REGEN = 'regen',
+  ENDURANCE_UP = 'endurance_up',
+}
+
+/** Buff效果 */
+export interface BuffEffect {
+  type: BuffType;
+  value: number;
+  isPercent: boolean;
+  duration: number;
+  stackable: boolean;
+  maxStacks?: number;
+}
+
+/** 伤害公式组件 */
+export interface DamageComponent {
+  source: DamageSource;
+  coefficient: number;
+  baseValue: number;
+}
+
+/** 技能数据 */
+export interface SkillData {
+  id: string;
+  name: string;
+  description: string;
+  effectDescription: string;
+  icon?: string;
+  type: SkillType;
+  staminaCost: number;
+  cooldown: number;
+  castTime: number;
+  damageFormula: DamageComponent[];
+  accuracy: number;
+  critModifier: number;
+  buffs: BuffEffect[];
+  ignoreDefense: boolean;
+  canBeDodged: boolean;
+  canBeReflected: boolean;
+  hitCount: number;
+  voiceLine?: string;
+}
+
+/** 技能实例 (运行时) */
 export interface Skill {
   id: string;
   name: string;
   description: string;
   cost: number;
-  type: 'attack' | 'heal' | 'buff' | 'debuff' | 'ultimate';
+  type: SkillType;
   cooldown: number;
   currentCooldown: number;
-  effect: (user: Character, target: Character) => CombatLogEntry;
+  data: SkillData;
 }
 
 /** 物品 */
@@ -65,12 +144,13 @@ export interface Character {
   statusEffects: StatusEffect[];
 }
 
-/** 状态效果 */
+/** 状态效果 (运行时) */
 export interface StatusEffect {
   id: string;
   name: string;
   duration: number;
   icon: string;
+  effect: BuffEffect;
   type: 'buff' | 'debuff';
 }
 
