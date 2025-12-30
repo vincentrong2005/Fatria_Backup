@@ -6,7 +6,19 @@
     <!-- 顶部标题栏 -->
     <header class="combat-header">
       <div class="header-left">
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="terminal-icon"><path d="m4 17 6-6-6-6"/><path d="M12 19h8"/></svg>
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="20"
+          height="20"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          class="terminal-icon"
+        >
+          <path d="m4 17 6-6-6-6" />
+          <path d="M12 19h8" />
+        </svg>
         <div>
           <h1 class="title">性斗学园</h1>
         </div>
@@ -48,18 +60,53 @@
       <div v-if="turnState.phase === 'climaxResolution'" class="modal-overlay">
         <div class="climax-modal">
           <div class="modal-bg-pattern"></div>
-          <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="climax-icon"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/><path d="M3.22 12H9.5l.5-1 2 4.5 2-7 1.5 3.5h5.27"/></svg>
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="64"
+            height="64"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            class="climax-icon"
+          >
+            <path
+              d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"
+            />
+            <path d="M3.22 12H9.5l.5-1 2 4.5 2-7 1.5 3.5h5.27" />
+          </svg>
           <h2 class="climax-title">高潮降临</h2>
           <p class="climax-desc">
             {{ turnState.climaxTarget === 'enemy' ? enemy.name : player.name }} 已经达到了极限...
           </p>
           <div class="climax-actions">
             <button class="btn btn-process" @click="handleClimaxResolution('process')">
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+              </svg>
               输出过程
             </button>
             <button class="btn btn-skip" @click="handleClimaxResolution('skip')">
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 4 15 12 5 20 5 4"/><line x1="19" y1="5" x2="19" y2="19"/></svg>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <polygon points="5 4 15 12 5 20 5 4" />
+                <line x1="19" y1="5" x2="19" y2="19" />
+              </svg>
               跳过过程
             </button>
           </div>
@@ -79,11 +126,9 @@
         <div class="action-section">
           <!-- 菜单标题 -->
           <div v-if="turnState.phase === 'playerInput'" class="action-header">
-            <button
-              class="tab-btn"
-              :class="{ active: activeMenu === 'main' }"
-              @click="activeMenu = 'main'"
-            >行动</button>
+            <button class="tab-btn" :class="{ active: activeMenu === 'main' }" @click="activeMenu = 'main'">
+              行动
+            </button>
             <div class="tab-divider"></div>
             <span class="action-hint">请选择你的行动</span>
           </div>
@@ -96,7 +141,10 @@
           <!-- 操作按钮区 -->
           <div class="action-grid">
             <!-- 处理中遮罩 -->
-            <div v-if="turnState.phase !== 'playerInput' && turnState.phase !== 'climaxResolution'" class="processing-overlay">
+            <div
+              v-if="turnState.phase !== 'playerInput' && turnState.phase !== 'climaxResolution'"
+              class="processing-overlay"
+            >
               <span>计算中...</span>
             </div>
 
@@ -104,15 +152,53 @@
               <!-- 主菜单 -->
               <div v-if="activeMenu === 'main'" key="main" class="menu-main">
                 <Card hover @click="activeMenu = 'skills'" class="menu-card">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="icon-blue"><path d="M14.5 17.5 3 6V3h3l11.5 11.5"/><path d="M13 19l6-6"/><path d="m16 16 4 4"/><path d="m19 21 2-2"/></svg>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="32"
+                    height="32"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    class="icon-blue"
+                  >
+                    <path d="M14.5 17.5 3 6V3h3l11.5 11.5" />
+                    <path d="M13 19l6-6" />
+                    <path d="m16 16 4 4" />
+                    <path d="m19 21 2-2" />
+                  </svg>
                   <span>战斗技能</span>
                 </Card>
                 <Card hover @click="activeMenu = 'items'" class="menu-card">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="icon-green"><path d="M4 20V10a4 4 0 0 1 4-4h8a4 4 0 0 1 4 4v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2Z"/><path d="M9 6V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"/></svg>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="32"
+                    height="32"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    class="icon-green"
+                  >
+                    <path d="M4 20V10a4 4 0 0 1 4-4h8a4 4 0 0 1 4 4v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2Z" />
+                    <path d="M9 6V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2" />
+                  </svg>
                   <span>物品背包</span>
                 </Card>
                 <Card hover @click="handleSurrender" class="menu-card">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="icon-red"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="32"
+                    height="32"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    class="icon-red"
+                  >
+                    <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z" />
+                    <line x1="4" y1="22" x2="4" y2="15" />
+                  </svg>
                   <span>投降</span>
                 </Card>
               </div>
@@ -128,12 +214,27 @@
                   :class="{ disabled: isSkillDisabled(skill) }"
                 >
                   <div v-if="skill.currentCooldown > 0" class="cooldown-overlay">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="20"
+                      height="20"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                    >
+                      <circle cx="12" cy="12" r="10" />
+                      <polyline points="12 6 12 12 16 14" />
+                    </svg>
                     <span class="cooldown-count">{{ skill.currentCooldown }}<small>T</small></span>
                   </div>
                   <div class="skill-header">
-                    <span class="skill-name" :class="{ 'skill-disabled': isSkillDisabled(skill) }">{{ skill.name }}</span>
-                    <span class="skill-cost" :class="{ 'cost-danger': player.stats.currentEndurance < skill.cost }">{{ skill.cost }} SP</span>
+                    <span class="skill-name" :class="{ 'skill-disabled': isSkillDisabled(skill) }">{{
+                      skill.name
+                    }}</span>
+                    <span class="skill-cost" :class="{ 'cost-danger': player.stats.currentEndurance < skill.cost }"
+                      >{{ skill.cost }} SP</span
+                    >
                   </div>
                   <p class="skill-desc">{{ skill.description }}</p>
                   <div class="skill-type" :class="{ 'type-disabled': isSkillDisabled(skill) }">{{ skill.type }}</div>
@@ -197,7 +298,7 @@ const turnState = reactive<TurnState>({
   currentTurn: 1,
   phase: 'playerInput',
   enemyIntention: null,
-  climaxTarget: null
+  climaxTarget: null,
 });
 const logs = ref<CombatLogEntry[]>([]);
 const activeMenu = ref<'main' | 'skills' | 'items'>('main');
@@ -210,10 +311,10 @@ async function loadFromMvu() {
     if (!mvuData?.stat_data) return;
 
     const data = mvuData.stat_data;
-    
+
     // 获取统一的高潮次数上限 (双方共享)
     const maxClimaxCount = _.get(data, '性斗系统.胜负规则.高潮次数上限', 3);
-    
+
     // 同步玩家数据
     player.value.stats.maxEndurance = _.get(data, '核心状态._最大耐力', 100);
     player.value.stats.currentEndurance = _.get(data, '核心状态._耐力', 100);
@@ -234,26 +335,31 @@ async function loadFromMvu() {
     const skillIds = Object.keys(availableSkills);
     if (skillIds.length > 0) {
       const { getSkillById } = await import('./skillDatabase');
-      player.value.skills = skillIds.map(skillId => {
-        const skillData = getSkillById(skillId);
-        if (!skillData) return null;
-        
-        // 获取技能当前冷却
-        const currentCooldown = _.get(data, `性斗系统.$技能冷却.${skillId}`, 0);
-        
-        return {
-          id: skillData.id,
-          name: skillData.name,
-          description: skillData.description,
-          cost: skillData.staminaCost,
-          type: skillData.type,
-          cooldown: skillData.cooldown,
-          currentCooldown,
-          data: skillData,
-        };
-      }).filter(skill => skill !== null);
-      
-      console.info('[战斗界面] 已加载玩家技能:', player.value.skills.map(s => s.name));
+      player.value.skills = skillIds
+        .map(skillId => {
+          const skillData = getSkillById(skillId);
+          if (!skillData) return null;
+
+          // 获取技能当前冷却
+          const currentCooldown = _.get(data, `性斗系统.$技能冷却.${skillId}`, 0);
+
+          return {
+            id: skillData.id,
+            name: skillData.name,
+            description: skillData.description,
+            cost: skillData.staminaCost,
+            type: skillData.type,
+            cooldown: skillData.cooldown,
+            currentCooldown,
+            data: skillData,
+          };
+        })
+        .filter(skill => skill !== null);
+
+      console.info(
+        '[战斗界面] 已加载玩家技能:',
+        player.value.skills.map(s => s.name),
+      );
     }
 
     // 获取对手名称
@@ -266,12 +372,12 @@ async function loadFromMvu() {
       if (loadedEnemy) {
         enemy.value = loadedEnemy;
         console.info('[战斗界面] 已从数据库加载敌人:', enemyName);
-        
+
         // 同步MVU中的对手数据到数据库加载的敌人
         const existingEndurance = _.get(data, '性斗系统.$对手耐力');
         const existingPleasure = _.get(data, '性斗系统.$对手快感');
         const existingClimaxCount = _.get(data, '性斗系统.$对手高潮次数');
-        
+
         if (existingEndurance !== undefined) {
           enemy.value.stats.currentEndurance = existingEndurance;
         }
@@ -281,7 +387,7 @@ async function loadFromMvu() {
         if (existingClimaxCount !== undefined) {
           enemy.value.stats.climaxCount = existingClimaxCount;
         }
-        
+
         // 使用统一的高潮次数上限覆盖数据库中的值
         enemy.value.stats.maxClimaxCount = maxClimaxCount;
 
@@ -337,7 +443,7 @@ function loadEnemyFromMvuData(data: any, maxClimaxCount: number) {
 async function saveMvuEnemyData() {
   try {
     if (typeof Mvu === 'undefined') return;
-    
+
     const mvuData = Mvu.getMvuData({ type: 'message', message_id: 'latest' });
     if (!mvuData) return;
 
@@ -365,7 +471,7 @@ async function saveMvuEnemyData() {
 async function saveToMvu() {
   try {
     if (typeof Mvu === 'undefined') return;
-    
+
     const mvuData = Mvu.getMvuData({ type: 'message', message_id: 'latest' });
     if (!mvuData) return;
 
@@ -374,7 +480,7 @@ async function saveToMvu() {
     player.value.skills.forEach(skill => {
       playerSkillCooldowns[skill.id] = skill.currentCooldown;
     });
-    
+
     // 保存敌人技能冷却
     const enemySkillCooldowns: Record<string, number> = {};
     enemy.value.skills.forEach(skill => {
@@ -388,7 +494,7 @@ async function saveToMvu() {
       '性斗系统.$当前回合': turnState.currentTurn,
       '性斗系统.$高潮次数': player.value.stats.climaxCount,
       '性斗系统.$技能冷却': playerSkillCooldowns,
-      
+
       // 敌人数据
       '性斗系统.对手名称': enemy.value.name,
       '性斗系统.$对手耐力': enemy.value.stats.currentEndurance,
@@ -422,7 +528,7 @@ function addLog(message: string, source: string, type: CombatLogEntry['type'] = 
     turn: turnState.currentTurn,
     message,
     source,
-    type
+    type,
   });
 }
 
@@ -432,7 +538,7 @@ function cloneCharacter(char: Character): Character {
     stats: { ...char.stats },
     skills: char.skills.map(s => ({ ...s })),
     items: char.items.map(i => ({ ...i })),
-    statusEffects: [...char.statusEffects]
+    statusEffects: [...char.statusEffects],
   };
 }
 
@@ -443,7 +549,7 @@ function getPhaseText(phase: TurnState['phase']): string {
     enemyAction: '敌方行动',
     victory: '胜利',
     defeat: '败北',
-    climaxResolution: '高潮处理'
+    climaxResolution: '高潮处理',
   };
   return texts[phase];
 }
@@ -471,7 +577,7 @@ function handlePlayerSkill(skill: Skill) {
 
   // 消耗耐力
   nextPlayer.stats.currentEndurance -= skill.cost;
-  
+
   // 设置冷却
   const skillIndex = nextPlayer.skills.findIndex(s => s.id === skill.id);
   if (skillIndex !== -1) {
@@ -481,10 +587,10 @@ function handlePlayerSkill(skill: Skill) {
   // 使用新的战斗计算系统
   import('./combatCalculator').then(({ executeAttack, applySkillBuffs }) => {
     const result = executeAttack(nextPlayer, nextEnemy, skill.data);
-    
+
     // 记录战斗日志
     addLog(`${nextPlayer.name} 使用了 ${skill.name}！`, 'player', 'info');
-    
+
     if (result.isDodged) {
       addLog(`${nextEnemy.name} 闪避了攻击！`, 'system', 'info');
     } else {
@@ -493,13 +599,13 @@ function handlePlayerSkill(skill: Skill) {
       } else {
         addLog(`造成 ${result.actualDamage} 点快感伤害`, 'player', 'damage');
       }
-      
+
       // 应用伤害
       nextEnemy.stats.currentPleasure = Math.min(
         nextEnemy.stats.maxPleasure,
-        nextEnemy.stats.currentPleasure + result.actualDamage
+        nextEnemy.stats.currentPleasure + result.actualDamage,
       );
-      
+
       // 应用buff效果
       const buffLogs = applySkillBuffs(nextEnemy, skill.data);
       buffLogs.forEach(log => addLog(log, 'system', 'info'));
@@ -538,8 +644,10 @@ function handlePlayerItem(item: Item) {
   enemy.value = nextEnemy;
   activeMenu.value = 'main';
 
-  if (nextEnemy.stats.currentPleasure < nextEnemy.stats.maxPleasure &&
-      nextPlayer.stats.currentPleasure < nextPlayer.stats.maxPleasure) {
+  if (
+    nextEnemy.stats.currentPleasure < nextEnemy.stats.maxPleasure &&
+    nextPlayer.stats.currentPleasure < nextPlayer.stats.maxPleasure
+  ) {
     setTimeout(handleEnemyTurn, 1000);
   }
 }
@@ -559,10 +667,10 @@ function handleEnemyTurn() {
     // 使用新的战斗计算系统
     import('./combatCalculator').then(({ executeAttack, applySkillBuffs }) => {
       const result = executeAttack(nextEnemy, nextPlayer, skill.data);
-      
+
       // 记录战斗日志
       addLog(`${nextEnemy.name} 使用了 ${skill.name}！`, 'enemy', 'info');
-      
+
       if (result.isDodged) {
         addLog(`你闪避了攻击！`, 'system', 'info');
       } else {
@@ -571,13 +679,13 @@ function handleEnemyTurn() {
         } else {
           addLog(`受到 ${result.actualDamage} 点快感伤害`, 'enemy', 'damage');
         }
-        
+
         // 应用伤害
         nextPlayer.stats.currentPleasure = Math.min(
           nextPlayer.stats.maxPleasure,
-          nextPlayer.stats.currentPleasure + result.actualDamage
+          nextPlayer.stats.currentPleasure + result.actualDamage,
         );
-        
+
         // 应用buff效果
         const buffLogs = applySkillBuffs(nextPlayer, skill.data);
         buffLogs.forEach(log => addLog(log, 'system', 'info'));
@@ -606,7 +714,7 @@ function startNewTurn() {
   // 回合开始回复
   player.value.stats.currentEndurance = Math.min(
     player.value.stats.maxEndurance,
-    player.value.stats.currentEndurance + 5
+    player.value.stats.currentEndurance + 5,
   );
 
   // 冷却递减
@@ -677,40 +785,43 @@ function handleRestart() {
 }
 
 // ================= 状态监听 =================
-watch([
-  () => player.value.stats.currentPleasure,
-  () => player.value.stats.currentEndurance,
-  () => enemy.value.stats.currentPleasure,
-  () => enemy.value.stats.currentEndurance
-], () => {
-  if (turnState.phase === 'climaxResolution' || turnState.phase === 'victory' || turnState.phase === 'defeat') return;
+watch(
+  [
+    () => player.value.stats.currentPleasure,
+    () => player.value.stats.currentEndurance,
+    () => enemy.value.stats.currentPleasure,
+    () => enemy.value.stats.currentEndurance,
+  ],
+  () => {
+    if (turnState.phase === 'climaxResolution' || turnState.phase === 'victory' || turnState.phase === 'defeat') return;
 
-  // 检查体力耗尽
-  if (enemy.value.stats.currentEndurance <= 0) {
-    turnState.phase = 'victory';
-    addLog('对手体力耗尽！战斗胜利！', 'system', 'critical');
-    saveToMvu();
-    return;
-  }
-  if (player.value.stats.currentEndurance <= 0) {
-    turnState.phase = 'defeat';
-    addLog('你体力耗尽... 败北。', 'system', 'damage');
-    saveToMvu();
-    return;
-  }
+    // 检查体力耗尽
+    if (enemy.value.stats.currentEndurance <= 0) {
+      turnState.phase = 'victory';
+      addLog('对手体力耗尽！战斗胜利！', 'system', 'critical');
+      saveToMvu();
+      return;
+    }
+    if (player.value.stats.currentEndurance <= 0) {
+      turnState.phase = 'defeat';
+      addLog('你体力耗尽... 败北。', 'system', 'damage');
+      saveToMvu();
+      return;
+    }
 
-  // 检查高潮
-  if (enemy.value.stats.currentPleasure >= enemy.value.stats.maxPleasure) {
-    turnState.phase = 'climaxResolution';
-    turnState.climaxTarget = 'enemy';
-    return;
-  }
-  if (player.value.stats.currentPleasure >= player.value.stats.maxPleasure) {
-    turnState.phase = 'climaxResolution';
-    turnState.climaxTarget = 'player';
-    return;
-  }
-});
+    // 检查高潮
+    if (enemy.value.stats.currentPleasure >= enemy.value.stats.maxPleasure) {
+      turnState.phase = 'climaxResolution';
+      turnState.climaxTarget = 'enemy';
+      return;
+    }
+    if (player.value.stats.currentPleasure >= player.value.stats.maxPleasure) {
+      turnState.phase = 'climaxResolution';
+      turnState.climaxTarget = 'player';
+      return;
+    }
+  },
+);
 
 // ================= 初始化 =================
 onMounted(async () => {
@@ -933,7 +1044,9 @@ onMounted(async () => {
 }
 
 // ========== 菜单样式 ==========
-.menu-main, .menu-skills, .menu-items {
+.menu-main,
+.menu-skills,
+.menu-items {
   display: flex;
   gap: 0.5rem;
   height: 100%;
@@ -955,11 +1068,18 @@ onMounted(async () => {
   }
 }
 
-.icon-blue { color: #38bdf8; }
-.icon-green { color: #4ade80; }
-.icon-red { color: #f87171; }
+.icon-blue {
+  color: #38bdf8;
+}
+.icon-green {
+  color: #4ade80;
+}
+.icon-red {
+  color: #f87171;
+}
 
-.skill-card, .item-card {
+.skill-card,
+.item-card {
   flex: 1;
   min-width: 100px;
   display: flex;
@@ -1008,7 +1128,8 @@ onMounted(async () => {
   }
 }
 
-.skill-header, .item-header {
+.skill-header,
+.item-header {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
@@ -1043,7 +1164,8 @@ onMounted(async () => {
   }
 }
 
-.skill-desc, .item-desc {
+.skill-desc,
+.item-desc {
   font-size: 0.625rem;
   color: #94a3b8;
   line-height: 1.5;
@@ -1259,13 +1381,22 @@ onMounted(async () => {
 
 // ========== 动画 ==========
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 @keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.5; }
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
 }
 
 .slide-enter-active,

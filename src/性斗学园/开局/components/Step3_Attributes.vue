@@ -1,23 +1,23 @@
 <template>
   <div class="animate-slide-up space-y-6">
-    <div :class="[
-      'flex justify-between items-center p-4 rounded-xl border',
-      cheatMode 
-        ? 'bg-gradient-to-r from-yellow-900/50 to-orange-900/50 border-yellow-500/30' 
-        : 'bg-gradient-to-r from-indigo-900/50 to-purple-900/50 border-white/10'
-    ]">
+    <div
+      :class="[
+        'flex justify-between items-center p-4 rounded-xl border',
+        cheatMode
+          ? 'bg-gradient-to-r from-yellow-900/50 to-orange-900/50 border-yellow-500/30'
+          : 'bg-gradient-to-r from-indigo-900/50 to-purple-900/50 border-white/10',
+      ]"
+    >
       <div class="text-sm text-gray-300">
-        <p>当前难度: <span class="text-white font-bold">{{ data.difficulty }}</span>
+        <p>
+          当前难度: <span class="text-white font-bold">{{ data.difficulty }}</span>
           <span v-if="cheatMode" class="ml-2 text-xs text-yellow-400">[作弊模式]</span>
         </p>
         <p class="text-xs text-gray-500 mt-1">初始点数: {{ totalPointsAvailable }}</p>
       </div>
       <div class="text-right">
         <span class="block text-xs text-gray-400 uppercase tracking-wider">剩余点数</span>
-        <span :class="[
-          'text-3xl font-bold',
-          remaining === 0 ? 'text-gray-500' : 'text-secondary animate-pulse'
-        ]">
+        <span :class="['text-3xl font-bold', remaining === 0 ? 'text-gray-500' : 'text-secondary animate-pulse']">
           {{ remaining }}
         </span>
       </div>
@@ -38,7 +38,7 @@
             <span class="text-xs text-gray-500">{{ stat.costText }}</span>
           </div>
         </div>
-        
+
         <div class="flex items-center gap-3">
           <button
             @click="handleStatChange(stat.path, -1)"
@@ -47,11 +47,11 @@
           >
             <i class="fas fa-minus text-sm"></i>
           </button>
-          
+
           <span class="w-12 text-center font-mono font-bold text-lg text-white">
             {{ getCurrentValue(stat.path) }}
           </span>
-          
+
           <button
             @click="handleStatChange(stat.path, 1)"
             :disabled="remaining <= 0 || isUpdating"
@@ -118,11 +118,29 @@ const remaining = computed(() => totalPointsAvailable.value - pointsUsed.value);
 
 // 可分配的属性列表（只有6个可分配属性）
 const stats = [
-  { path: '角色基础._等级', label: '初始等级', icon: 'fa-arrow-trend-up', color: 'text-yellow-400', costText: '1点 = 1级' },
+  {
+    path: '角色基础._等级',
+    label: '初始等级',
+    icon: 'fa-arrow-trend-up',
+    color: 'text-yellow-400',
+    costText: '1点 = 1级',
+  },
   { path: '角色基础.$潜力', label: '潜力资质', icon: 'fa-star', color: 'text-purple-400', costText: '2点 = 0.1潜力' },
-  { path: '核心状态._最大耐力', label: '最大耐力', icon: 'fa-shield-halved', color: 'text-green-400', costText: '1点 = 5耐力' },
+  {
+    path: '核心状态._最大耐力',
+    label: '最大耐力',
+    icon: 'fa-shield-halved',
+    color: 'text-green-400',
+    costText: '1点 = 5耐力',
+  },
   { path: '核心状态._最大快感', label: '最大快感', icon: 'fa-heart', color: 'text-pink-400', costText: '1点 = 5快感' },
-  { path: '角色基础._魅力', label: '个人魅力', icon: 'fa-face-grin-hearts', color: 'text-rose-400', costText: '1点 = 1魅力' },
+  {
+    path: '角色基础._魅力',
+    label: '个人魅力',
+    icon: 'fa-face-grin-hearts',
+    color: 'text-rose-400',
+    costText: '1点 = 1魅力',
+  },
   { path: '角色基础._幸运', label: '幸运值', icon: 'fa-clover', color: 'text-cyan-400', costText: '1点 = 1幸运' },
 ];
 
@@ -153,17 +171,17 @@ const handleStatChange = async (path: string, delta: number) => {
 
   if (newVal <= maxVal && newVal >= minVal) {
     isUpdating.value = true;
-    
+
     try {
       // 更新本地状态
       const newAttributes = { ...props.data.attributes };
       const categoryObj = { ...newAttributes[category as keyof CharacterAttributes] } as any;
       categoryObj[key] = newVal;
       newAttributes[category as keyof CharacterAttributes] = categoryObj as any;
-      
+
       // 先更新本地状态（立即反馈）
       emit('update-data', {
-        attributes: newAttributes
+        attributes: newAttributes,
       });
 
       // 然后实时更新 MVU 变量
@@ -177,5 +195,4 @@ const handleStatChange = async (path: string, delta: number) => {
 };
 </script>
 
-<style lang="scss" scoped>
-</style>
+<style lang="scss" scoped></style>

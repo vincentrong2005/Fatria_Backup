@@ -1,8 +1,8 @@
 <template>
   <div class="option-beautifier">
     <div v-if="options.length > 0" class="options-container">
-      <div 
-        v-for="(option, index) in options" 
+      <div
+        v-for="(option, index) in options"
         :key="index"
         class="option-card"
         :class="{ 'option-card-hover': true }"
@@ -12,12 +12,12 @@
         <div class="option-label">
           {{ option.label }}
         </div>
-        
+
         <!-- 选项内容 -->
         <div class="option-content">
           {{ option.text }}
         </div>
-        
+
         <!-- 点击提示 -->
         <div class="option-hint">
           <i class="fas fa-mouse-pointer"></i>
@@ -47,10 +47,13 @@ const options = ref<OptionItem[]>([]);
 // 解析选项文本
 const parseOptions = (text: string): OptionItem[] => {
   const items: OptionItem[] = [];
-  
+
   // 按行分割
-  const lines = text.split('\n').map(line => line.trim()).filter(line => line.length > 0);
-  
+  const lines = text
+    .split('\n')
+    .map(line => line.trim())
+    .filter(line => line.length > 0);
+
   for (const line of lines) {
     // 匹配选项格式：
     // 1. A. 文本
@@ -67,7 +70,7 @@ const parseOptions = (text: string): OptionItem[] => {
     if (!match) {
       match = line.match(/^\(([A-Z])\)\s*(.+)$/);
     }
-    
+
     if (match) {
       items.push({
         label: match[1],
@@ -75,7 +78,7 @@ const parseOptions = (text: string): OptionItem[] => {
       });
     }
   }
-  
+
   // 如果没有匹配到标准格式，尝试按序号分割
   if (items.length === 0) {
     // 尝试匹配数字序号：1. 2. 3. 等
@@ -93,7 +96,7 @@ const parseOptions = (text: string): OptionItem[] => {
       }
     }
   }
-  
+
   return items;
 };
 
@@ -102,7 +105,7 @@ const extractOptions = () => {
   try {
     // 获取当前消息ID
     const messageId = getCurrentMessageId();
-    
+
     // 获取当前消息内容
     const messages = getChatMessages(messageId);
     if (messages.length === 0) {
@@ -116,7 +119,7 @@ const extractOptions = () => {
     // 使用正则表达式提取 <option> 标签中的内容
     const regex = /<option>([\s\S]*?)<\/option>/;
     const match = messageText.match(regex);
-    
+
     if (match && match[1]) {
       const optionText = match[1].trim();
       options.value = parseOptions(optionText);
@@ -135,7 +138,7 @@ const selectOption = (optionText: string) => {
     // 使用 window.parent 访问父窗口
     const parentWindow = window.parent;
     const $parent = (parentWindow as any).$ || parentWindow.jQuery;
-    
+
     if (!$parent) {
       console.warn('[选项美化] 无法访问父窗口的jQuery');
       return;
@@ -163,18 +166,18 @@ const selectOption = (optionText: string) => {
     if ($input && $input.length > 0) {
       // 设置输入框的值
       $input.val(optionText);
-      
+
       // 触发 input 事件，确保 Vue/React 等框架能检测到变化
       $input.trigger('input');
       $input.trigger('change');
-      
+
       // 聚焦输入框
       $input.focus();
-      
+
       console.info('[选项美化] 已选择选项:', optionText);
     } else {
       console.warn('[选项美化] 未找到输入框');
-      
+
       // 如果找不到输入框，尝试使用剪贴板API
       if (navigator.clipboard) {
         navigator.clipboard.writeText(optionText).catch(() => {
@@ -189,7 +192,7 @@ const selectOption = (optionText: string) => {
 
 onMounted(() => {
   console.info('[选项美化] 组件已加载');
-  
+
   // 延迟提取，确保消息已加载
   setTimeout(() => {
     extractOptions();
@@ -220,7 +223,7 @@ onMounted(() => {
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   backdrop-filter: blur(20px) saturate(180%);
-  box-shadow: 
+  box-shadow:
     0 4px 16px rgba(0, 0, 0, 0.2),
     0 2px 4px rgba(99, 102, 241, 0.15),
     inset 0 1px 0 rgba(255, 255, 255, 0.1);
@@ -228,12 +231,12 @@ onMounted(() => {
   display: flex;
   align-items: center;
   gap: 1rem;
-  
+
   // 渐变背景装饰
-  background-image: 
+  background-image:
     radial-gradient(circle at 20% 30%, rgba(99, 102, 241, 0.15) 0%, transparent 50%),
     radial-gradient(circle at 80% 70%, rgba(236, 72, 153, 0.15) 0%, transparent 50%);
-  
+
   // 装饰性渐变背景
   &::before {
     content: '';
@@ -242,7 +245,8 @@ onMounted(() => {
     left: 0;
     right: 0;
     height: 3px;
-    background: linear-gradient(90deg, 
+    background: linear-gradient(
+      90deg,
       transparent 0%,
       rgba(99, 102, 241, 0.6) 25%,
       rgba(236, 72, 153, 0.6) 75%,
@@ -251,7 +255,7 @@ onMounted(() => {
     opacity: 0;
     transition: opacity 0.3s ease;
   }
-  
+
   // 闪烁效果
   &::after {
     content: '';
@@ -260,54 +264,49 @@ onMounted(() => {
     left: -100%;
     width: 100%;
     height: 100%;
-    background: linear-gradient(
-      90deg,
-      transparent 0%,
-      rgba(255, 255, 255, 0.1) 50%,
-      transparent 100%
-    );
+    background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.1) 50%, transparent 100%);
     transition: left 0.5s ease;
   }
-  
+
   &:hover {
     background: linear-gradient(135deg, rgba(99, 102, 241, 0.18) 0%, rgba(236, 72, 153, 0.18) 100%);
-    background-image: 
+    background-image:
       radial-gradient(circle at 20% 30%, rgba(99, 102, 241, 0.25) 0%, transparent 50%),
       radial-gradient(circle at 80% 70%, rgba(236, 72, 153, 0.25) 0%, transparent 50%);
     border-color: rgba(236, 72, 153, 0.4);
-    box-shadow: 
+    box-shadow:
       0 6px 24px rgba(0, 0, 0, 0.3),
       0 2px 8px rgba(99, 102, 241, 0.25),
       inset 0 1px 0 rgba(255, 255, 255, 0.15);
     transform: translateY(-2px);
-    
+
     &::before {
       opacity: 1;
     }
-    
+
     &::after {
       left: 100%;
     }
-    
+
     .option-label {
       background: linear-gradient(135deg, #6366f1 0%, #ec4899 100%);
       transform: scale(1.05);
       box-shadow: 0 4px 12px rgba(99, 102, 241, 0.5);
     }
-    
+
     .option-content {
       color: #f3f4f6;
     }
-    
+
     .option-hint {
       opacity: 1;
       transform: translateY(0);
     }
   }
-  
+
   &:active {
     transform: translateY(0);
-    box-shadow: 
+    box-shadow:
       0 2px 8px rgba(0, 0, 0, 0.2),
       0 1px 2px rgba(99, 102, 241, 0.15);
   }
@@ -327,7 +326,7 @@ onMounted(() => {
   font-weight: 700;
   font-size: 1rem;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 
+  box-shadow:
     0 2px 8px rgba(99, 102, 241, 0.4),
     inset 0 1px 0 rgba(255, 255, 255, 0.2);
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
@@ -355,7 +354,7 @@ onMounted(() => {
   transform: translateY(10px);
   transition: all 0.3s ease;
   flex-shrink: 0;
-  
+
   i {
     font-size: 0.85rem;
   }
@@ -366,7 +365,7 @@ onMounted(() => {
   text-align: center;
   color: #9ca3af;
   font-size: 1rem;
-  
+
   p {
     margin: 0;
   }
@@ -378,17 +377,17 @@ onMounted(() => {
     grid-template-columns: 1fr;
     gap: 0.75rem;
   }
-  
+
   .option-card {
     padding: 0.875rem 1rem;
   }
-  
+
   .option-label {
     width: 2rem;
     height: 2rem;
     font-size: 0.9rem;
   }
-  
+
   .option-content {
     font-size: 0.9rem;
   }

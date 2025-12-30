@@ -4,26 +4,14 @@
     <div class="profile-header">
       <div class="profile-avatar" @click="handleAvatarClick">
         <div class="avatar-inner">
-          <img 
-            v-if="avatarUrl" 
-            :src="avatarUrl" 
-            alt="头像" 
-            class="avatar-image"
-            @error="handleImageError"
-          />
+          <img v-if="avatarUrl" :src="avatarUrl" alt="头像" class="avatar-image" @error="handleImageError" />
           <i v-else class="fas fa-user"></i>
         </div>
         <div class="avatar-upload-hint">
           <i class="fas fa-camera"></i>
         </div>
       </div>
-      <input 
-        ref="fileInputRef"
-        type="file" 
-        accept="image/*" 
-        style="display: none"
-        @change="handleAvatarChange"
-      />
+      <input ref="fileInputRef" type="file" accept="image/*" style="display: none" @change="handleAvatarChange" />
       <h2 class="profile-name">学员档案</h2>
       <div class="profile-level">
         <span class="level-badge">Lv.{{ characterData.角色基础?._等级 || 1 }}</span>
@@ -75,9 +63,11 @@
             </span>
           </div>
           <div class="progress-bar">
-            <div 
-              class="progress-fill stamina" 
-              :style="{ width: `${getPercentage(characterData.核心状态?._耐力 || 0, characterData.核心状态?._最大耐力 || 100)}%` }"
+            <div
+              class="progress-fill stamina"
+              :style="{
+                width: `${getPercentage(characterData.核心状态?._耐力 || 0, characterData.核心状态?._最大耐力 || 100)}%`,
+              }"
             ></div>
           </div>
         </div>
@@ -90,9 +80,11 @@
             </span>
           </div>
           <div class="progress-bar">
-            <div 
-              class="progress-fill lust" 
-              :style="{ width: `${getPercentage(characterData.核心状态?._快感 || 0, characterData.核心状态?._最大快感 || 100)}%` }"
+            <div
+              class="progress-fill lust"
+              :style="{
+                width: `${getPercentage(characterData.核心状态?._快感 || 0, characterData.核心状态?._最大快感 || 100)}%`,
+              }"
             ></div>
           </div>
         </div>
@@ -103,23 +95,18 @@
             <span class="progress-value">{{ characterData.核心状态?._意志力 || 0 }}%</span>
           </div>
           <div class="progress-bar">
-            <div 
-              class="progress-fill willpower" 
-              :style="{ width: `${characterData.核心状态?._意志力 || 0}%` }"
-            ></div>
+            <div class="progress-fill willpower" :style="{ width: `${characterData.核心状态?._意志力 || 0}%` }"></div>
           </div>
         </div>
 
         <div class="progress-item">
           <div class="progress-header">
             <span><i class="fas fa-star"></i> 经验值</span>
-            <span class="progress-value">
-              {{ getCurrentExp(characterData.角色基础?.经验值 || 0) }} / 100
-            </span>
+            <span class="progress-value"> {{ getCurrentExp(characterData.角色基础?.经验值 || 0) }} / 100 </span>
           </div>
           <div class="progress-bar">
-            <div 
-              class="progress-fill exp" 
+            <div
+              class="progress-fill exp"
               :style="{ width: `${getExpPercentage(getCurrentExp(characterData.角色基础?.经验值 || 0))}%` }"
             ></div>
           </div>
@@ -154,11 +141,7 @@
     <div class="detail-card" v-if="permanentStates && permanentStates.length > 0">
       <h3 class="detail-title"><i class="fas fa-gem"></i> 永久状态</h3>
       <div class="states-list">
-        <span 
-          v-for="(state, index) in permanentStates" 
-          :key="index" 
-          class="state-tag permanent"
-        >
+        <span v-for="(state, index) in permanentStates" :key="index" class="state-tag permanent">
           <i class="fas fa-sparkles"></i> {{ state }}
         </span>
       </div>
@@ -166,12 +149,7 @@
       <div v-if="hasPermanentBonuses" class="bonus-section">
         <div class="bonus-header">加成效果</div>
         <div class="bonus-grid">
-          <div 
-            v-for="(value, key) in permanentBonuses" 
-            :key="key" 
-            class="bonus-item"
-            v-show="value !== 0"
-          >
+          <div v-for="(value, key) in permanentBonuses" :key="key" class="bonus-item" v-show="value !== 0">
             <span class="bonus-label">{{ formatBonusLabel(key) }}</span>
             <span class="bonus-value" :class="getBonusClass(value)">
               {{ formatBonusValue(value) }}
@@ -185,11 +163,7 @@
     <div class="detail-card" v-if="hasTempStates">
       <h3 class="detail-title"><i class="fas fa-clock"></i> 临时状态</h3>
       <div class="states-list">
-        <span 
-          v-for="(turns, state) in tempStates" 
-          :key="state" 
-          class="state-tag temp"
-        >
+        <span v-for="(turns, state) in tempStates" :key="state" class="state-tag temp">
           <i class="fas fa-hourglass-half"></i> {{ state }}
           <span class="turns-badge">{{ turns }}回合</span>
         </span>
@@ -198,12 +172,7 @@
       <div v-if="hasTempBonuses" class="bonus-section">
         <div class="bonus-header">临时加成</div>
         <div class="bonus-grid">
-          <div 
-            v-for="(value, key) in tempBonuses" 
-            :key="key" 
-            class="bonus-item"
-            v-show="value !== 0"
-          >
+          <div v-for="(value, key) in tempBonuses" :key="key" class="bonus-item" v-show="value !== 0">
             <span class="bonus-label">{{ formatBonusLabel(key) }}</span>
             <span class="bonus-value" :class="getBonusClass(value)">
               {{ formatBonusValue(value) }}
@@ -262,7 +231,7 @@ const hasTempBonuses = computed(() => {
 function loadAvatarUrl() {
   try {
     const globalAny = window as any;
-    
+
     // 从MVU变量读取
     if (globalAny.Mvu) {
       const mvuData = globalAny.Mvu.getMvuData({ type: 'message', message_id: 'latest' });
@@ -282,7 +251,7 @@ function loadAvatarUrl() {
 async function saveAvatarUrl(url: string) {
   try {
     const globalAny = window as any;
-    
+
     if (globalAny.Mvu) {
       const mvuData = globalAny.Mvu.getMvuData({ type: 'message', message_id: 'latest' });
       if (mvuData && mvuData.stat_data) {
@@ -293,7 +262,7 @@ async function saveAvatarUrl(url: string) {
         await globalAny.Mvu.replaceMvuData(mvuData, { type: 'message', message_id: 'latest' });
       }
     }
-    
+
     avatarUrl.value = url;
     toastr.success('头像上传成功', '成功', { timeOut: 2000 });
   } catch (err) {
@@ -310,19 +279,19 @@ function handleAvatarChange(event: Event) {
   const target = event.target as HTMLInputElement;
   const file = target.files?.[0];
   if (!file) return;
-  
+
   // 检查文件类型
   if (!file.type.startsWith('image/')) {
     toastr.error('请选择图片文件', '错误', { timeOut: 3000 });
     return;
   }
-  
+
   // 检查文件大小（限制为5MB）
   if (file.size > 5 * 1024 * 1024) {
     toastr.error('图片大小不能超过5MB', '错误', { timeOut: 3000 });
     return;
   }
-  
+
   const reader = new FileReader();
   reader.onload = () => {
     if (typeof reader.result === 'string') {
@@ -330,7 +299,7 @@ function handleAvatarChange(event: Event) {
     }
   };
   reader.readAsDataURL(file);
-  
+
   // 清空input，允许重复选择同一文件
   target.value = '';
 }
@@ -342,15 +311,15 @@ function handleImageError() {
 // 格式化加成标签
 function formatBonusLabel(key: string): string {
   const labelMap: Record<string, string> = {
-    '$魅力加成': '魅力',
-    '$幸运加成': '幸运',
-    '$基础性斗力加成': '性斗力+',
-    '$基础性斗力成算': '性斗力%',
-    '$基础忍耐力加成': '忍耐力+',
-    '$基础忍耐力成算': '忍耐力%',
-    '$闪避率加成': '闪避率',
-    '$暴击率加成': '暴击率',
-    '$意志力加成': '意志力',
+    $魅力加成: '魅力',
+    $幸运加成: '幸运',
+    $基础性斗力加成: '性斗力+',
+    $基础性斗力成算: '性斗力%',
+    $基础忍耐力加成: '忍耐力+',
+    $基础忍耐力成算: '忍耐力%',
+    $闪避率加成: '闪避率',
+    $暴击率加成: '暴击率',
+    $意志力加成: '意志力',
   };
   return labelMap[key] || key;
 }
@@ -387,7 +356,7 @@ function getExpPercentage(current: number): number {
 
 onMounted(() => {
   loadAvatarUrl();
-  
+
   // 监听MVU变量更新，同步头像
   const globalAny = window as any;
   if (globalAny.eventOn && globalAny.Mvu) {
@@ -426,16 +395,16 @@ onMounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  
+
   &:hover {
     transform: scale(1.05);
     box-shadow: 0 12px 40px rgba(102, 126, 234, 0.5);
-    
+
     .avatar-upload-hint {
       opacity: 1;
     }
   }
-  
+
   .avatar-inner {
     width: 100%;
     height: 100%;
@@ -446,19 +415,19 @@ onMounted(() => {
     justify-content: center;
     overflow: hidden;
   }
-  
+
   .avatar-image {
     width: 100%;
     height: 100%;
     object-fit: cover;
     border-radius: 50%;
   }
-  
+
   i {
     font-size: 36px;
     color: rgba(255, 255, 255, 0.6);
   }
-  
+
   .avatar-upload-hint {
     position: absolute;
     bottom: 0;
@@ -474,7 +443,7 @@ onMounted(() => {
     transition: opacity 0.2s;
     border: 2px solid #1a1f35;
     z-index: 10;
-    
+
     i {
       font-size: 12px;
       color: white;
@@ -494,19 +463,20 @@ onMounted(() => {
   display: flex;
   gap: 8px;
   margin-top: 8px;
-  
-  .level-badge, .potential-badge {
+
+  .level-badge,
+  .potential-badge {
     padding: 4px 12px;
     border-radius: 20px;
     font-size: 12px;
     font-weight: 600;
   }
-  
+
   .level-badge {
     background: linear-gradient(135deg, #667eea, #764ba2);
     color: white;
   }
-  
+
   .potential-badge {
     background: rgba(255, 255, 255, 0.1);
     color: rgba(255, 255, 255, 0.8);
@@ -530,36 +500,52 @@ onMounted(() => {
   backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.1);
   transition: all 0.2s ease;
-  
+
   &:hover {
     transform: translateY(-2px);
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
   }
-  
+
   &.charm {
     background: linear-gradient(135deg, rgba(236, 72, 153, 0.2), rgba(236, 72, 153, 0.05));
-    .stat-icon { color: #ec4899; }
-    .stat-value { color: #f472b6; }
+    .stat-icon {
+      color: #ec4899;
+    }
+    .stat-value {
+      color: #f472b6;
+    }
   }
-  
+
   &.luck {
     background: linear-gradient(135deg, rgba(251, 191, 36, 0.2), rgba(251, 191, 36, 0.05));
-    .stat-icon { color: #fbbf24; }
-    .stat-value { color: #fcd34d; }
+    .stat-icon {
+      color: #fbbf24;
+    }
+    .stat-value {
+      color: #fcd34d;
+    }
   }
-  
+
   &.combat {
     background: linear-gradient(135deg, rgba(239, 68, 68, 0.2), rgba(239, 68, 68, 0.05));
-    .stat-icon { color: #ef4444; }
-    .stat-value { color: #f87171; }
+    .stat-icon {
+      color: #ef4444;
+    }
+    .stat-value {
+      color: #f87171;
+    }
   }
-  
+
   &.endurance {
     background: linear-gradient(135deg, rgba(52, 211, 153, 0.2), rgba(52, 211, 153, 0.05));
-    .stat-icon { color: #34d399; }
-    .stat-value { color: #6ee7b7; }
+    .stat-icon {
+      color: #34d399;
+    }
+    .stat-value {
+      color: #6ee7b7;
+    }
   }
-  
+
   .stat-icon {
     font-size: 20px;
     width: 32px;
@@ -568,18 +554,18 @@ onMounted(() => {
     align-items: center;
     justify-content: center;
   }
-  
+
   .stat-info {
     flex: 1;
   }
-  
+
   .stat-label {
     font-size: 11px;
     color: rgba(255, 255, 255, 0.5);
     text-transform: uppercase;
     letter-spacing: 0.5px;
   }
-  
+
   .stat-value {
     font-size: 20px;
     font-weight: 700;
@@ -603,7 +589,7 @@ onMounted(() => {
   display: flex;
   align-items: center;
   gap: 8px;
-  
+
   i {
     font-size: 14px;
     color: #667eea;
@@ -627,18 +613,18 @@ onMounted(() => {
   justify-content: space-between;
   font-size: 12px;
   color: white;
-  
+
   span:first-child {
     display: flex;
     align-items: center;
     gap: 6px;
-    
+
     i {
       font-size: 12px;
       opacity: 0.7;
     }
   }
-  
+
   .progress-value {
     color: rgba(255, 255, 255, 0.5);
     font-family: 'JetBrains Mono', monospace;
@@ -657,19 +643,19 @@ onMounted(() => {
   height: 100%;
   border-radius: 3px;
   transition: width 0.4s ease;
-  
+
   &.stamina {
     background: linear-gradient(90deg, #34d399, #10b981);
   }
-  
+
   &.lust {
     background: linear-gradient(90deg, #f472b6, #ec4899);
   }
-  
+
   &.willpower {
     background: linear-gradient(90deg, #60a5fa, #3b82f6);
   }
-  
+
   &.exp {
     background: linear-gradient(90deg, #fbbf24, #f59e0b);
   }
@@ -699,11 +685,19 @@ onMounted(() => {
 .attribute-value {
   font-size: 14px;
   font-weight: 600;
-  
-  &.dodge { color: #60a5fa; }
-  &.crit { color: #f87171; }
-  &.corruption { color: #a78bfa; }
-  &.rank { color: #fbbf24; }
+
+  &.dodge {
+    color: #60a5fa;
+  }
+  &.crit {
+    color: #f87171;
+  }
+  &.corruption {
+    color: #a78bfa;
+  }
+  &.rank {
+    color: #fbbf24;
+  }
 }
 
 .states-list {
@@ -721,23 +715,23 @@ onMounted(() => {
   border-radius: 20px;
   font-size: 12px;
   font-weight: 500;
-  
+
   i {
     font-size: 10px;
   }
-  
+
   &.permanent {
     background: linear-gradient(135deg, rgba(167, 139, 250, 0.3), rgba(139, 92, 246, 0.1));
     color: #c4b5fd;
     border: 1px solid rgba(167, 139, 250, 0.3);
   }
-  
+
   &.temp {
     background: linear-gradient(135deg, rgba(96, 165, 250, 0.3), rgba(59, 130, 246, 0.1));
     color: #93c5fd;
     border: 1px solid rgba(96, 165, 250, 0.3);
   }
-  
+
   .turns-badge {
     background: rgba(0, 0, 0, 0.3);
     padding: 2px 6px;
@@ -784,15 +778,15 @@ onMounted(() => {
 .bonus-value {
   font-weight: 600;
   font-family: 'JetBrains Mono', monospace;
-  
+
   &.positive {
     color: #34d399;
   }
-  
+
   &.negative {
     color: #f87171;
   }
-  
+
   &.neutral {
     color: rgba(255, 255, 255, 0.4);
   }

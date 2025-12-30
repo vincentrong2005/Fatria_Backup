@@ -4,7 +4,7 @@
       <!-- 装饰性渐变背景 -->
       <div class="gradient-overlay"></div>
       <div class="shimmer-effect"></div>
-      
+
       <!-- 顶部信息栏 -->
       <div v-if="hasDateInfo" class="info-bar" :style="infoBarStyle">
         <div class="info-item" v-if="dateInfo.日期">
@@ -24,23 +24,19 @@
           <span>{{ dateInfo.地点名称 }}</span>
         </div>
       </div>
-      
+
       <!-- 内容区域 -->
       <div class="beautified-content" :style="contentStyle" v-html="formattedContent"></div>
     </div>
     <div v-else class="no-content">
       <p>未找到需要美化的内容</p>
     </div>
-    
+
     <!-- 设置按钮 -->
-    <button 
-      class="settings-button"
-      @click="showSettings = true"
-      title="设置"
-    >
+    <button class="settings-button" @click="showSettings = true" title="设置">
       <i class="fas fa-cog"></i>
     </button>
-    
+
     <!-- 设置面板 -->
     <Teleport to="body">
       <div v-if="showSettings" class="settings-overlay" @click.self="closeSettings">
@@ -51,7 +47,7 @@
               <i class="fas fa-times"></i>
             </button>
           </div>
-          
+
           <div class="settings-content">
             <!-- 使用说明 -->
             <div class="help-section">
@@ -68,7 +64,7 @@
                 </ul>
               </div>
             </div>
-            
+
             <div class="setting-item">
               <label>
                 <i class="fas fa-text-height"></i>
@@ -77,18 +73,14 @@
                   <i class="fas fa-question-circle"></i>
                 </span>
               </label>
-              <input 
-                v-model="localConfig.字体大小"
-                type="text"
-                placeholder="例如: 1rem, 16px, 1.2em"
-              />
+              <input v-model="localConfig.字体大小" type="text" placeholder="例如: 1rem, 16px, 1.2em" />
               <div class="setting-hint">
                 <i class="fas fa-lightbulb"></i>
                 推荐值：<code>1rem</code>（默认）、<code>1.2rem</code>（稍大）、<code>0.9rem</code>（稍小）
-                <br>支持单位：px、rem、em、pt
+                <br />支持单位：px、rem、em、pt
               </div>
             </div>
-            
+
             <div class="setting-item">
               <label>
                 <i class="fas fa-arrows-alt-h"></i>
@@ -97,18 +89,14 @@
                   <i class="fas fa-question-circle"></i>
                 </span>
               </label>
-              <input 
-                v-model="localConfig.正文框宽度"
-                type="text"
-                placeholder="例如: 800px, 90%, 100%"
-              />
+              <input v-model="localConfig.正文框宽度" type="text" placeholder="例如: 800px, 90%, 100%" />
               <div class="setting-hint">
                 <i class="fas fa-lightbulb"></i>
                 推荐值：<code>100%</code>（全宽）、<code>800px</code>（固定宽度）、<code>90%</code>（留边距）
-                <br>使用百分比可自适应屏幕宽度，使用像素值可固定宽度
+                <br />使用百分比可自适应屏幕宽度，使用像素值可固定宽度
               </div>
             </div>
-            
+
             <div class="setting-item">
               <label>
                 <i class="fas fa-text-width"></i>
@@ -117,18 +105,14 @@
                   <i class="fas fa-question-circle"></i>
                 </span>
               </label>
-              <input 
-                v-model="localConfig.字间距"
-                type="text"
-                placeholder="例如: 0.05em, 2px, 0.1em"
-              />
+              <input v-model="localConfig.字间距" type="text" placeholder="例如: 0.05em, 2px, 0.1em" />
               <div class="setting-hint">
                 <i class="fas fa-lightbulb"></i>
                 推荐值：<code>0.05em</code>（默认）、<code>0.1em</code>（宽松）、<code>0.02em</code>（紧凑）
-                <br>使用 <code>em</code> 单位会根据字体大小自动调整，<code>px</code> 为固定值
+                <br />使用 <code>em</code> 单位会根据字体大小自动调整，<code>px</code> 为固定值
               </div>
             </div>
-            
+
             <div class="setting-item">
               <label>
                 <i class="fas fa-font"></i>
@@ -138,7 +122,9 @@
                 </span>
               </label>
               <select v-model="localConfig.字体选择">
-                <option value="system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif">系统默认</option>
+                <option value="system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif">
+                  系统默认
+                </option>
                 <option value="'Microsoft YaHei', '微软雅黑', sans-serif">微软雅黑</option>
                 <option value="'SimSun', '宋体', serif">宋体</option>
                 <option value="'SimHei', '黑体', sans-serif">黑体</option>
@@ -155,7 +141,7 @@
                 选择适合阅读的字体。中文字体推荐：微软雅黑、宋体；英文字体推荐：Georgia、Times New Roman
               </div>
             </div>
-            
+
             <div class="setting-item">
               <label>
                 <i class="fas fa-align-justify"></i>
@@ -164,18 +150,14 @@
                   <i class="fas fa-question-circle"></i>
                 </span>
               </label>
-              <input 
-                v-model="localConfig.行高"
-                type="text"
-                placeholder="例如: 1.8, 2, 1.6"
-              />
+              <input v-model="localConfig.行高" type="text" placeholder="例如: 1.8, 2, 1.6" />
               <div class="setting-hint">
                 <i class="fas fa-lightbulb"></i>
                 推荐值：<code>1.8</code>（默认，舒适阅读）、<code>2</code>（宽松）、<code>1.6</code>（紧凑）
-                <br>可以使用纯数字（相对字体大小）或带单位的值（如 <code>24px</code>）
+                <br />可以使用纯数字（相对字体大小）或带单位的值（如 <code>24px</code>）
               </div>
             </div>
-            
+
             <div class="setting-item">
               <label>
                 <i class="fas fa-expand-arrows-alt"></i>
@@ -184,26 +166,18 @@
                   <i class="fas fa-question-circle"></i>
                 </span>
               </label>
-              <input 
-                v-model="localConfig.内边距"
-                type="text"
-                placeholder="例如: 2rem, 24px, 1.5rem"
-              />
+              <input v-model="localConfig.内边距" type="text" placeholder="例如: 2rem, 24px, 1.5rem" />
               <div class="setting-hint">
                 <i class="fas fa-lightbulb"></i>
                 推荐值：<code>2rem</code>（默认）、<code>1.5rem</code>（紧凑）、<code>3rem</code>（宽松）
-                <br>控制正文四周的留白，影响阅读体验和视觉效果
+                <br />控制正文四周的留白，影响阅读体验和视觉效果
               </div>
             </div>
           </div>
-          
+
           <div class="settings-footer">
-            <button class="reset-button" @click="resetConfig">
-              <i class="fas fa-undo"></i> 重置为默认
-            </button>
-            <button class="save-button" @click="saveConfig">
-              <i class="fas fa-save"></i> 保存设置
-            </button>
+            <button class="reset-button" @click="resetConfig"><i class="fas fa-undo"></i> 重置为默认</button>
+            <button class="save-button" @click="saveConfig"><i class="fas fa-save"></i> 保存设置</button>
           </div>
         </div>
       </div>
@@ -246,16 +220,16 @@ const formatWeekday = (weekday: number): string => {
 const loadMvuInfo = async () => {
   try {
     const globalAny = window as any;
-    
+
     // 等待MVU初始化
     if (globalAny.waitGlobalInitialized) {
       await globalAny.waitGlobalInitialized('Mvu');
     }
-    
+
     if (!globalAny.Mvu) {
       console.warn('[正文美化] MVU 变量框架未初始化');
-    return;
-  }
+      return;
+    }
 
     // 获取MVU数据
     const mvuData = globalAny.Mvu.getMvuData({ type: 'message', message_id: 'latest' });
@@ -266,14 +240,14 @@ const loadMvuInfo = async () => {
 
     // 使用 lodash 获取变量（lodash 是全局可用的）
     const statData = mvuData.stat_data;
-    
+
     dateInfo.value = {
       日期: _.get(statData, '时间系统.日期'),
       星期: _.get(statData, '时间系统.星期'),
       时间: _.get(statData, '时间系统.时间'),
       地点名称: _.get(statData, '位置系统.地点名称'),
     };
-    
+
     console.info('[正文美化] MVU 信息已加载:', dateInfo.value);
   } catch (error) {
     console.warn('[正文美化] 加载 MVU 信息失败:', error);
@@ -307,7 +281,7 @@ const loadConfig = () => {
   try {
     const variables = getAllVariables();
     const beautifierConfig = variables['正文美化配置'] || {};
-    
+
     config.value = {
       字体大小: beautifierConfig['字体大小'] || defaultConfig.字体大小,
       正文框宽度: beautifierConfig['正文框宽度'] || defaultConfig.正文框宽度,
@@ -316,10 +290,10 @@ const loadConfig = () => {
       行高: beautifierConfig['行高'] || defaultConfig.行高,
       内边距: beautifierConfig['内边距'] || defaultConfig.内边距,
     };
-    
+
     // 同步到本地配置
     localConfig.value = { ...config.value };
-    
+
     console.info('[正文美化] 配置已加载:', config.value);
   } catch (error) {
     console.warn('[正文美化] 加载配置失败，使用默认值:', error);
@@ -332,15 +306,15 @@ const saveConfig = () => {
   try {
     // 更新当前配置
     config.value = { ...localConfig.value };
-    
+
     // 保存到酒馆变量（聊天变量）
-    insertOrAssignVariables({ '正文美化配置': localConfig.value }, { type: 'chat' });
-    
+    insertOrAssignVariables({ 正文美化配置: localConfig.value }, { type: 'chat' });
+
     console.info('[正文美化] 配置已保存:', config.value);
-    
+
     // 关闭设置面板
     showSettings.value = false;
-    
+
     // 显示成功提示
     if (typeof toastr !== 'undefined') {
       toastr.success('设置已保存', '正文美化');
@@ -382,7 +356,7 @@ const wrapperStyle = computed(() => ({
 
 const contentStyle = computed(() => {
   const paddingValue = config.value.内边距 || '2rem';
-  
+
   return {
     fontSize: config.value.字体大小,
     letterSpacing: config.value.字间距,
@@ -396,7 +370,7 @@ const contentStyle = computed(() => {
 // 信息栏样式（与正文内容内边距一致）
 const infoBarStyle = computed(() => {
   const paddingValue = config.value.内边距 || '2rem';
-  
+
   return {
     paddingLeft: paddingValue,
     paddingRight: paddingValue,
@@ -408,10 +382,10 @@ const infoBarStyle = computed(() => {
 // 格式化内容，保留换行
 const formattedContent = computed(() => {
   if (!content.value) return '';
-  
+
   // 检查内容是否已经包含HTML标签
   const hasHtmlTags = /<[^>]+>/.test(content.value);
-  
+
   if (hasHtmlTags) {
     // 如果已经包含HTML，将换行符转换为 <br>（但不在HTML标签内）
     // 使用更简单的方法：在非HTML标签的换行处插入 <br>
@@ -424,10 +398,10 @@ const formattedContent = computed(() => {
       .replace(/>/g, '&gt;')
       .replace(/"/g, '&quot;')
       .replace(/'/g, '&#039;');
-    
+
     // 将换行符转换为 <br>
     formatted = formatted.replace(/\n/g, '<br>');
-    
+
     return formatted;
   }
 });
@@ -448,10 +422,10 @@ const cleanThinkingTags = (text: string): string => {
     /<\/analysis>/gi,
     /<\/reflection>/gi,
   ];
-  
+
   // 查找最后一个思维链结束标签的位置
   let lastIndex = -1;
-  
+
   for (const pattern of thinkingTagPatterns) {
     const matches = text.matchAll(pattern);
     for (const match of matches) {
@@ -461,7 +435,7 @@ const cleanThinkingTags = (text: string): string => {
       }
     }
   }
-  
+
   // 如果找到了思维链标签，只保留标签之后的内容
   if (lastIndex > 0) {
     const cleaned = text.substring(lastIndex).trim();
@@ -470,7 +444,7 @@ const cleanThinkingTags = (text: string): string => {
       return cleaned;
     }
   }
-  
+
   return text;
 };
 
@@ -479,7 +453,7 @@ const extractContent = () => {
   try {
     // 获取当前消息ID
     const messageId = getCurrentMessageId();
-    
+
     // 获取当前消息内容
     const messages = getChatMessages(messageId);
     if (messages.length === 0) {
@@ -488,7 +462,7 @@ const extractContent = () => {
     }
 
     const message = messages[0];
-    
+
     // 获取格式化后的消息内容（应用了酒馆正则后的内容）
     // 因为前端界面是通过正则表达式替换加载的，所以需要获取原始消息内容
     const messageText = message.message;
@@ -497,12 +471,12 @@ const extractContent = () => {
     // 这样可以跳过思维链中可能出现的 <content> 标签
     const regex = /[\s\S]*?<content>([\s\S]*?)<\/content>/;
     const match = messageText.match(regex);
-    
+
     if (match && match[1]) {
       // 清理思维链标签及其之前的内容
       let extractedContent = match[1].trim();
       extractedContent = cleanThinkingTags(extractedContent);
-      
+
       content.value = extractedContent;
       console.info('[正文美化] 已提取内容，长度:', extractedContent.length);
     } else {
@@ -516,18 +490,18 @@ const extractContent = () => {
 
 onMounted(() => {
   console.info('[正文美化] 组件已加载');
-  
+
   // 加载配置
   loadConfig();
-  
+
   // 加载MVU信息
   loadMvuInfo();
-  
+
   // 延迟提取，确保消息已加载
   setTimeout(() => {
     extractContent();
   }, 100);
-  
+
   // 监听MVU变量更新事件
   const globalAny = window as any;
   if (globalAny.Mvu && globalAny.eventOn) {
@@ -554,13 +528,13 @@ onMounted(() => {
   display: flex;
   align-items: center;
   justify-content: space-evenly; // 均匀分布，充分利用宽度
-      padding: 1.5rem;
+  padding: 1.5rem;
   padding-bottom: 1rem;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   flex-wrap: wrap;
   background: transparent;
   gap: 1rem; // 作为最小间距的备用
-  
+
   .info-item {
     display: flex;
     align-items: center;
@@ -571,24 +545,24 @@ onMounted(() => {
     flex: 1 1 auto; // 允许增长和收缩，但保持自动基础大小
     min-width: 0; // 允许收缩到内容以下
     justify-content: center; // 内容居中对齐，配合 space-evenly 使用
-    
+
     i {
       color: #6366f1;
       width: 1rem;
       text-align: center;
       flex-shrink: 0;
     }
-    
+
     span {
       color: #f3f4f6;
       white-space: nowrap;
     }
   }
-  
+
   // 分隔线 - 使用伪元素在信息项之间创建分隔
   .info-item:not(:last-child) {
     position: relative;
-    
+
     &::after {
       content: '';
       position: absolute;
@@ -600,25 +574,25 @@ onMounted(() => {
       background: rgba(255, 255, 255, 0.2);
     }
   }
-  
+
   // 小屏幕时改为单列布局
   @media (max-width: 768px) {
     flex-direction: column;
     align-items: flex-start;
     justify-content: flex-start;
     gap: 0.75rem;
-    
+
     .info-item {
       flex: none;
       width: 100%;
       justify-content: flex-start;
-      
+
       &::after {
         display: none; // 小屏幕时隐藏分隔线
       }
     }
   }
-    }
+}
 
 .beautified-content-wrapper {
   position: relative;
@@ -629,12 +603,12 @@ onMounted(() => {
   background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(236, 72, 153, 0.1) 100%);
   border: 1px solid rgba(255, 255, 255, 0.15);
   backdrop-filter: blur(20px) saturate(180%);
-  box-shadow: 
+  box-shadow:
     0 8px 32px rgba(0, 0, 0, 0.3),
     0 2px 8px rgba(99, 102, 241, 0.2),
     inset 0 1px 0 rgba(255, 255, 255, 0.1);
   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-  
+
   &::before {
     content: '';
     position: absolute;
@@ -642,7 +616,8 @@ onMounted(() => {
     left: 0;
     right: 0;
     height: 2px;
-    background: linear-gradient(90deg, 
+    background: linear-gradient(
+      90deg,
       transparent 0%,
       rgba(99, 102, 241, 0.5) 25%,
       rgba(236, 72, 153, 0.5) 75%,
@@ -651,24 +626,24 @@ onMounted(() => {
     opacity: 0;
     transition: opacity 0.4s ease;
   }
-  
+
   &:hover {
     background: linear-gradient(135deg, rgba(99, 102, 241, 0.15) 0%, rgba(236, 72, 153, 0.15) 100%);
     border-color: rgba(236, 72, 153, 0.4);
-    box-shadow: 
+    box-shadow:
       0 12px 48px rgba(0, 0, 0, 0.4),
       0 4px 16px rgba(99, 102, 241, 0.3),
       inset 0 1px 0 rgba(255, 255, 255, 0.15);
     transform: translateY(-2px);
-    
+
     &::before {
       opacity: 1;
     }
-    
+
     .gradient-overlay {
       opacity: 0.3;
     }
-    
+
     .shimmer-effect {
       animation: shimmer 3s infinite;
     }
@@ -681,16 +656,9 @@ onMounted(() => {
   left: 0;
   right: 0;
   bottom: 0;
-  background: radial-gradient(
-    circle at 30% 20%,
-    rgba(99, 102, 241, 0.2) 0%,
-    transparent 50%
-  ),
-  radial-gradient(
-    circle at 70% 80%,
-    rgba(236, 72, 153, 0.2) 0%,
-    transparent 50%
-  );
+  background:
+    radial-gradient(circle at 30% 20%, rgba(99, 102, 241, 0.2) 0%, transparent 50%),
+    radial-gradient(circle at 70% 80%, rgba(236, 72, 153, 0.2) 0%, transparent 50%);
   opacity: 0.2;
   transition: opacity 0.4s ease;
   pointer-events: none;
@@ -703,12 +671,7 @@ onMounted(() => {
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(
-    90deg,
-    transparent 0%,
-    rgba(255, 255, 255, 0.1) 50%,
-    transparent 100%
-  );
+  background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.1) 50%, transparent 100%);
   pointer-events: none;
   z-index: 1;
 }
@@ -720,21 +683,21 @@ onMounted(() => {
   100% {
     left: 100%;
   }
-    }
+}
 
 .beautified-content {
   position: relative;
   z-index: 2;
   color: #f3f4f6;
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
-  
+
   :deep(p) {
     margin: 1rem 0;
     color: #e5e7eb;
     text-align: justify;
     word-wrap: break-word;
     word-break: break-word;
-    
+
     &:first-child {
       margin-top: 0;
     }
@@ -743,102 +706,102 @@ onMounted(() => {
       margin-bottom: 0;
     }
   }
-  
+
   // 保留换行和空格
   word-wrap: break-word;
   overflow-wrap: break-word;
-  
+
   :deep(h1),
   :deep(h2),
   :deep(h3),
   :deep(h4),
   :deep(h5),
   :deep(h6) {
-      margin: 1rem 0 0.75rem 0;
-      color: #ffffff;
-      font-weight: 600;
-    
+    margin: 1rem 0 0.75rem 0;
+    color: #ffffff;
+    font-weight: 600;
+
     &:first-child {
       margin-top: 0;
     }
   }
-  
+
   :deep(h1) {
     font-size: 2rem;
     font-weight: 700;
     margin: 1.5rem 0 1rem 0;
     background: linear-gradient(135deg, #6366f1 0%, #ec4899 50%, #8b5cf6 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
     text-shadow: 0 2px 4px rgba(99, 102, 241, 0.3);
     letter-spacing: 0.02em;
-    
+
     &:first-child {
       margin-top: 0;
     }
   }
-  
+
   :deep(h2) {
     font-size: 1.5rem;
     font-weight: 600;
-      color: #ec4899;
+    color: #ec4899;
     text-shadow: 0 1px 3px rgba(236, 72, 153, 0.3);
     margin: 1.25rem 0 0.75rem 0;
     letter-spacing: 0.01em;
-    
+
     &:first-child {
       margin-top: 0;
     }
   }
-  
+
   :deep(h3) {
     font-size: 1.25rem;
     font-weight: 600;
-      color: #8b5cf6;
+    color: #8b5cf6;
     text-shadow: 0 1px 2px rgba(139, 92, 246, 0.3);
     margin: 1rem 0 0.5rem 0;
     letter-spacing: 0.01em;
-    
+
     &:first-child {
       margin-top: 0;
     }
   }
-  
+
   :deep(strong),
   :deep(b) {
-      color: #ec4899;
-      font-weight: 600;
-    }
+    color: #ec4899;
+    font-weight: 600;
+  }
 
   :deep(em),
   :deep(i) {
-      color: #8b5cf6;
-      font-style: italic;
-    }
+    color: #8b5cf6;
+    font-style: italic;
+  }
 
   :deep(a) {
-      color: #6366f1;
-      text-decoration: none;
-      border-bottom: 1px solid rgba(99, 102, 241, 0.3);
-      transition: all 0.2s ease;
+    color: #6366f1;
+    text-decoration: none;
+    border-bottom: 1px solid rgba(99, 102, 241, 0.3);
+    transition: all 0.2s ease;
 
     &:hover {
       color: #ec4899;
       border-bottom-color: rgba(236, 72, 153, 0.5);
     }
-    }
+  }
 
   :deep(ul),
   :deep(ol) {
-      margin: 0.75rem 0;
-      padding-left: 1.5rem;
-      color: #d1d5db;
-    }
+    margin: 0.75rem 0;
+    padding-left: 1.5rem;
+    color: #d1d5db;
+  }
 
   :deep(li) {
-      margin: 0.5rem 0;
-    }
+    margin: 0.5rem 0;
+  }
 
   :deep(blockquote) {
     margin: 1.5rem 0;
@@ -847,11 +810,11 @@ onMounted(() => {
     border-image: linear-gradient(180deg, #6366f1 0%, #ec4899 100%) 1;
     background: linear-gradient(90deg, rgba(99, 102, 241, 0.15) 0%, rgba(236, 72, 153, 0.1) 100%);
     border-radius: 0.75rem;
-      color: #cbd5e1;
-      font-style: italic;
+    color: #cbd5e1;
+    font-style: italic;
     box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
     position: relative;
-    
+
     &::before {
       content: '"';
       position: absolute;
@@ -863,30 +826,30 @@ onMounted(() => {
       line-height: 1;
     }
   }
-  
+
   :deep(code) {
     padding: 0.25rem 0.6rem;
     background: linear-gradient(135deg, rgba(0, 0, 0, 0.4) 0%, rgba(99, 102, 241, 0.2) 100%);
     border-radius: 0.5rem;
-      color: #ec4899;
+    color: #ec4899;
     font-family: 'Fira Code', 'Courier New', 'Consolas', monospace;
-      font-size: 0.9em;
+    font-size: 0.9em;
     border: 1px solid rgba(236, 72, 153, 0.2);
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-    }
+  }
 
   :deep(pre) {
     margin: 1.5rem 0;
     padding: 1.5rem;
     background: linear-gradient(135deg, rgba(0, 0, 0, 0.5) 0%, rgba(30, 30, 50, 0.6) 100%);
     border-radius: 0.75rem;
-      overflow-x: auto;
+    overflow-x: auto;
     border: 1px solid rgba(255, 255, 255, 0.15);
-    box-shadow: 
+    box-shadow:
       inset 0 2px 4px rgba(0, 0, 0, 0.3),
       0 4px 8px rgba(0, 0, 0, 0.2);
     position: relative;
-    
+
     &::before {
       content: '';
       position: absolute;
@@ -897,7 +860,7 @@ onMounted(() => {
       background: linear-gradient(90deg, #6366f1 0%, #ec4899 100%);
       border-radius: 0.75rem 0.75rem 0 0;
     }
-    
+
     code {
       padding: 0;
       background: none;
@@ -906,34 +869,37 @@ onMounted(() => {
       box-shadow: none;
     }
   }
-  
+
   :deep(hr) {
     margin: 2rem 0;
     border: none;
     height: 2px;
-    background: linear-gradient(90deg, 
+    background: linear-gradient(
+      90deg,
       transparent 0%,
       rgba(99, 102, 241, 0.5) 25%,
       rgba(236, 72, 153, 0.5) 75%,
       transparent 100%
     );
     border-radius: 1px;
-    }
+  }
 
   :deep(img) {
-      max-width: 100%;
-      height: auto;
+    max-width: 100%;
+    height: auto;
     border-radius: 0.75rem;
     margin: 1.5rem 0;
-    box-shadow: 
+    box-shadow:
       0 8px 16px rgba(0, 0, 0, 0.3),
       0 2px 4px rgba(99, 102, 241, 0.2);
     border: 1px solid rgba(255, 255, 255, 0.1);
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-    
+    transition:
+      transform 0.3s ease,
+      box-shadow 0.3s ease;
+
     &:hover {
       transform: scale(1.02);
-      box-shadow: 
+      box-shadow:
         0 12px 24px rgba(0, 0, 0, 0.4),
         0 4px 8px rgba(99, 102, 241, 0.3);
     }
@@ -963,20 +929,20 @@ onMounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 
+  box-shadow:
     0 4px 12px rgba(99, 102, 241, 0.4),
     0 2px 4px rgba(0, 0, 0, 0.2);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   z-index: 1000;
-  
+
   &:hover {
     transform: scale(1.1) rotate(90deg);
-    box-shadow: 
+    box-shadow:
       0 6px 16px rgba(99, 102, 241, 0.5),
       0 4px 8px rgba(0, 0, 0, 0.3);
     background: linear-gradient(135deg, rgba(99, 102, 241, 1) 0%, rgba(236, 72, 153, 1) 100%);
   }
-  
+
   &:active {
     transform: scale(0.95) rotate(90deg);
   }
@@ -1005,7 +971,7 @@ onMounted(() => {
   to {
     opacity: 1;
   }
-  }
+}
 
 // 设置面板
 .settings-panel {
@@ -1016,13 +982,13 @@ onMounted(() => {
   max-width: 600px;
   max-height: 90vh;
   overflow-y: auto;
-  box-shadow: 
+  box-shadow:
     0 20px 60px rgba(0, 0, 0, 0.5),
     0 8px 24px rgba(99, 102, 241, 0.3),
     inset 0 1px 0 rgba(255, 255, 255, 0.1);
   animation: slideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   backdrop-filter: blur(20px) saturate(180%);
-  }
+}
 
 @keyframes slideUp {
   from {
@@ -1042,7 +1008,7 @@ onMounted(() => {
   padding: 1.5rem 2rem;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(236, 72, 153, 0.1) 100%);
-  
+
   h2 {
     margin: 0;
     font-size: 1.5rem;
@@ -1052,7 +1018,7 @@ onMounted(() => {
     -webkit-text-fill-color: transparent;
     background-clip: text;
   }
-  
+
   .close-button {
     width: 2.5rem;
     height: 2.5rem;
@@ -1065,7 +1031,7 @@ onMounted(() => {
     align-items: center;
     justify-content: center;
     transition: all 0.2s ease;
-    
+
     &:hover {
       background: rgba(255, 255, 255, 0.2);
       color: white;
@@ -1088,7 +1054,7 @@ onMounted(() => {
   border: 1px solid rgba(99, 102, 241, 0.2);
   border-radius: 0.75rem;
   border-left: 4px solid #6366f1;
-  
+
   .help-icon {
     flex-shrink: 0;
     width: 2rem;
@@ -1101,32 +1067,32 @@ onMounted(() => {
     color: #6366f1;
     font-size: 1.1rem;
   }
-  
+
   .help-content {
     flex: 1;
     color: #d1d5db;
     font-size: 0.9rem;
     line-height: 1.6;
-    
+
     p {
       margin: 0 0 0.5rem 0;
       color: #e5e7eb;
-      
+
       strong {
         color: #ec4899;
       }
     }
-    
+
     ul {
       margin: 0;
       padding-left: 1.25rem;
       list-style: none;
-      
+
       li {
         position: relative;
         padding-left: 1.25rem;
         margin-bottom: 0.4rem;
-        
+
         &::before {
           content: '•';
           position: absolute;
@@ -1136,7 +1102,7 @@ onMounted(() => {
         }
       }
     }
-    
+
     code {
       padding: 0.15rem 0.4rem;
       background: rgba(0, 0, 0, 0.3);
@@ -1144,13 +1110,13 @@ onMounted(() => {
       color: #ec4899;
       font-size: 0.85em;
       font-family: 'Courier New', monospace;
-      }
+    }
   }
 }
 
 .setting-item {
   margin-bottom: 2rem;
-  
+
   label {
     display: flex;
     align-items: center;
@@ -1159,24 +1125,24 @@ onMounted(() => {
     color: #e5e7eb;
     font-weight: 500;
     font-size: 0.95rem;
-    
+
     i {
       color: #6366f1;
       width: 1.2rem;
     }
-    
+
     .help-tooltip {
       margin-left: auto;
       color: #9ca3af;
       cursor: help;
       transition: color 0.2s ease;
-      
+
       &:hover {
         color: #6366f1;
-  }
+      }
     }
   }
-  
+
   input,
   select {
     width: 100%;
@@ -1187,28 +1153,28 @@ onMounted(() => {
     color: #f3f4f6;
     font-size: 0.95rem;
     transition: all 0.2s ease;
-    
+
     &:focus {
       outline: none;
       border-color: rgba(99, 102, 241, 0.5);
       background: rgba(255, 255, 255, 0.08);
       box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
     }
-    
+
     &::placeholder {
       color: #9ca3af;
     }
   }
-  
+
   select {
     cursor: pointer;
-    
+
     option {
       background: #1e293b;
       color: #f3f4f6;
     }
   }
-  
+
   .setting-hint {
     margin-top: 0.5rem;
     padding: 0.75rem;
@@ -1218,12 +1184,12 @@ onMounted(() => {
     color: #cbd5e1;
     font-size: 0.85rem;
     line-height: 1.6;
-    
+
     i {
       color: #fbbf24;
       margin-right: 0.5rem;
     }
-    
+
     code {
       padding: 0.1rem 0.3rem;
       background: rgba(0, 0, 0, 0.3);
@@ -1232,7 +1198,7 @@ onMounted(() => {
       font-size: 0.9em;
       font-family: 'Courier New', monospace;
     }
-    
+
     br {
       margin-top: 0.25rem;
     }
@@ -1245,7 +1211,7 @@ onMounted(() => {
   padding: 1.5rem 2rem;
   border-top: 1px solid rgba(255, 255, 255, 0.1);
   background: rgba(0, 0, 0, 0.2);
-  
+
   button {
     flex: 1;
     padding: 0.75rem 1.5rem;
@@ -1258,33 +1224,33 @@ onMounted(() => {
     justify-content: center;
     gap: 0.5rem;
     border: none;
-    
+
     i {
       font-size: 0.9rem;
     }
   }
-  
+
   .reset-button {
     background: rgba(255, 255, 255, 0.1);
     color: #e5e7eb;
     border: 1px solid rgba(255, 255, 255, 0.2);
-    
+
     &:hover {
       background: rgba(255, 255, 255, 0.15);
       color: white;
     }
   }
-  
+
   .save-button {
     background: linear-gradient(135deg, #6366f1 0%, #ec4899 100%);
     color: white;
     box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
-    
+
     &:hover {
       box-shadow: 0 6px 16px rgba(99, 102, 241, 0.5);
       transform: translateY(-1px);
     }
-    
+
     &:active {
       transform: translateY(0);
     }
