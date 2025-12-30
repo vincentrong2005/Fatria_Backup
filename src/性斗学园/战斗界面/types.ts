@@ -1,0 +1,194 @@
+/**
+ * 战斗界面类型定义
+ * 与MVU变量结构对应
+ */
+
+export type StatType = 
+  | 'sexPower' 
+  | 'endurance' 
+  | 'evasion' 
+  | 'crit' 
+  | 'charm' 
+  | 'luck' 
+  | 'willpower';
+
+/** 战斗属性 - 对应MVU变量 */
+export interface CombatStats {
+  maxEndurance: number;      // 核心状态._最大耐力
+  currentEndurance: number;  // 核心状态._耐力
+  maxPleasure: number;       // 核心状态._最大快感
+  currentPleasure: number;   // 核心状态._快感
+  willpower: number;         // 核心状态._意志力
+  climaxCount: number;       // 性斗系统.$高潮次数
+  maxClimaxCount: number;    // 性斗系统.胜负规则.高潮次数上限
+  
+  // 七大核心属性
+  sexPower: number;          // 性斗系统.$实时性斗力
+  baseEndurance: number;     // 性斗系统.$实时忍耐力
+  evasion: number;           // 核心状态.$闪避率
+  crit: number;              // 核心状态.$暴击率
+  charm: number;             // 核心状态._魅力
+  luck: number;              // 核心状态._幸运
+  baseWillpower: number;     // 核心状态.$基础意志力
+}
+
+/** 技能 */
+export interface Skill {
+  id: string;
+  name: string;
+  description: string;
+  cost: number;
+  type: 'attack' | 'heal' | 'buff' | 'debuff' | 'ultimate';
+  cooldown: number;
+  currentCooldown: number;
+  effect: (user: Character, target: Character) => CombatLogEntry;
+}
+
+/** 物品 */
+export interface Item {
+  id: string;
+  name: string;
+  description: string;
+  quantity: number;
+  effect: (user: Character, target: Character) => CombatLogEntry;
+}
+
+/** 角色 */
+export interface Character {
+  id: string;
+  name: string;
+  avatarUrl: string;
+  stats: CombatStats;
+  skills: Skill[];
+  items: Item[];
+  isPlayer: boolean;
+  statusEffects: StatusEffect[];
+}
+
+/** 状态效果 */
+export interface StatusEffect {
+  id: string;
+  name: string;
+  duration: number;
+  icon: string;
+  type: 'buff' | 'debuff';
+}
+
+/** 战斗日志条目 */
+export interface CombatLogEntry {
+  id: string;
+  turn: number;
+  message: string;
+  source: string;
+  type: 'damage' | 'heal' | 'info' | 'critical';
+}
+
+/** 回合状态 */
+export interface TurnState {
+  currentTurn: number;
+  phase: 'playerInput' | 'processing' | 'enemyAction' | 'victory' | 'defeat' | 'climaxResolution';
+  enemyIntention: Skill | null;
+  climaxTarget: 'player' | 'enemy' | null;
+}
+
+/** MVU数据结构 - 对应[initvar].yaml */
+export interface MvuStatData {
+  角色基础: {
+    _等级: number;
+    经验值: number;
+    _声望: number;
+    _段位: string;
+    段位积分: number;
+  };
+  核心状态: {
+    _最大耐力: number;
+    _耐力: number;
+    _最大快感: number;
+    _快感: number;
+    _堕落度: number;
+    $潜力: number;
+    _魅力: number;
+    $基础魅力: number;
+    _幸运: number;
+    $基础幸运: number;
+    $基础性斗力: number;
+    $基础忍耐力: number;
+    $闪避率: number;
+    $基础闪避率: number;
+    $暴击率: number;
+    $基础暴击率: number;
+    _意志力: number;
+    $基础意志力: number;
+  };
+  $临时状态: {
+    $状态列表: Record<string, number>;
+    $加成统计: BonusStats;
+  };
+  _永久状态: {
+    $状态列表: string[];
+    $加成统计: BonusStats;
+  };
+  性斗系统: {
+    对手名称: string;
+    性斗类型: string;
+    胜负规则: {
+      高潮次数上限: number;
+      允许认输: boolean;
+    };
+    $当前回合: number;
+    $行动日志: Record<string, string[]>;
+    $高潮次数: number;
+    $实时性斗力: number;
+    $实时忍耐力: number;
+    $对手耐力: number;
+    $对手最大耐力: number;
+    $对手快感: number;
+    $对手最大快感: number;
+    $对手高潮次数: number;
+    $对手性斗力: number;
+    $对手忍耐力: number;
+    $对手魅力: number;
+    $对手幸运: number;
+    $对手闪避率: number;
+    $对手暴击率: number;
+    $对手临时状态: {
+      $状态列表: Record<string, number>;
+      $加成统计: BonusStats;
+    };
+    $对手技能冷却: Record<string, number>;
+    $对手可用技能: Record<string, any>;
+    $技能冷却: Record<string, number>;
+    $可用技能: Record<string, any>;
+    $战斗物品: Record<string, number>;
+  };
+  物品系统: {
+    $学园金币: number;
+    $背包: Record<string, any>;
+    $装备栏: {
+      主装备: string;
+      副装备: string;
+      饰品1: string;
+      饰品2: string;
+      特殊装备: string;
+    };
+    $装备总加成: BonusStats;
+  };
+  技能系统: {
+    $主动技能: Record<string, any>;
+    $被动技能: Record<string, any>;
+  };
+}
+
+/** 加成统计 */
+export interface BonusStats {
+  $魅力加成: number;
+  $幸运加成: number;
+  $基础性斗力加成: number;
+  $基础性斗力成算: number;
+  $基础忍耐力加成: number;
+  $基础忍耐力成算: number;
+  $闪避率加成: number;
+  $暴击率加成: number;
+  $意志力加成: number;
+}
+

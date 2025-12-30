@@ -367,13 +367,74 @@ const QuestsView: React.FC<{ mvuStat: any | null }> = ({ mvuStat }) => {
   const listRoot = mvuStat?.['任务']?.['任务列表'] ?? {};
   const buildList = (key: '进行中的任务' | '已完成任务') => {
     const bucket = listRoot?.[key] ?? {};
-    const entries = Object.keys(bucket || {}).filter(k => k !== '$meta').map(name => ({ name, ...(bucket[name] || {}) }));
-    return entries.map(e => ({
-      title: e.描述 ? String(e.描述) : e.name,
-      desc: String(e.描述 ?? '无描述'),
-      rating: String(e.评级 ?? 'D'),
-      reward: String(e.奖励 ?? '无'),
-    }));
+    if (!bucket || typeof bucket !== 'object') {
+      return [];
+    }
+
+    // 调试输出
+    console.log(`[QuestsView] ${key} 数据:`, JSON.stringify(bucket, null, 2));
+
+    // 根据 MVU 结构：任务.任务列表.进行中的任务 是一个 record
+    // 键（key）是任务名，值（value）是包含 描述、评级、奖励 的对象
+    const entries = Object.keys(bucket)
+      .filter(k => k !== '$meta' && k !== '__proto__')
+      .map(taskKey => {
+        const taskValue = bucket[taskKey];
+
+        console.log(`[QuestsView] 处理任务 "${taskKey}":`, taskValue);
+
+        // 处理 taskValue 可能是字符串的情况（向后兼容）
+        if (typeof taskValue === 'string') {
+          return {
+            name: taskKey,
+            描述: taskValue,
+            评级: '',
+            奖励: '',
+          };
+        }
+
+        // 正常情况：taskValue 是对象
+        if (!taskValue || typeof taskValue !== 'object') {
+          return null;
+        }
+
+        // 明确提取字段，使用中文字段名
+        // 键（taskKey）应该是任务名，值（taskValue）中的 描述 是任务描述
+        // 但如果键本身就是描述（长度很长），我们需要特殊处理
+        const taskDesc = String(taskValue['描述'] ?? '').trim();
+        const taskRating = String(taskValue['评级'] ?? '').trim();
+        const taskReward = String(taskValue['奖励'] ?? '').trim();
+
+        // 如果键（taskKey）看起来像描述（长度>30 且与 taskDesc 相同或相似），
+        // 说明数据可能存储错误，键本身就是描述
+        // 这种情况下，我们无法获取真正的任务名，只能使用键作为标题
+        const result = {
+          name: String(taskKey), // 键是任务名（如"迷途羔羊"）
+          描述: taskDesc, // 值中的描述字段
+          评级: taskRating,
+          奖励: taskReward,
+        };
+
+        console.log(`[QuestsView] 提取的数据:`, result);
+
+        return result;
+      })
+      .filter((e): e is NonNullable<typeof e> => e !== null);
+
+    const result = entries.map(e => {
+      const quest = {
+        title: e.name, // 直接使用 name（任务键名）
+        desc: e.描述, // 直接使用描述
+        rating: e.评级 || 'D',
+        reward: e.奖励 || '无',
+      };
+
+      console.log(`[QuestsView] 最终任务对象:`, quest);
+
+      return quest;
+    });
+
+    return result;
   };
 
   const quests = {
@@ -399,20 +460,28 @@ const QuestsView: React.FC<{ mvuStat: any | null }> = ({ mvuStat }) => {
         </div>
 
         <div className="flex-1 overflow-y-auto custom-scrollbar space-y-4">
-           {quests[activeTab].map((quest, i) => (
-              <div key={i} className="relative pl-6 pb-2 border-l border-stone-800 ml-2">
-                 <div className={`absolute -left-[5px] top-1 w-2.5 h-2.5 rounded-full ${activeTab === 'active' ? 'bg-gold-600' : 'bg-green-600'} shadow-[0_0_8px_currentColor]`}></div>
+           {quests[activeTab].map((quest, i) => {
+              // 如果 title 和 desc 相同，说明数据可能有问题，只显示一次
+              const displayTitle = quest.title;
+              const displayDesc = (quest.desc && quest.desc !== quest.title) ? quest.desc : null;
 
-                 <div className="bg-stone-900/30 p-4 rounded border border-stone-800/50">
-                    <h3 className="text-stone-200 font-display text-lg mb-1">{quest.title}</h3>
-                    <p className="text-stone-400 text-sm font-serif mb-3">{quest.desc}</p>
-                    <div className="flex items-center gap-2 text-xs text-stone-500 border-t border-stone-800 pt-2">
-                       <Package size={12} />
-                       <span>评级: {quest.rating} · 奖励: {quest.reward}</span>
+              return (
+                 <div key={i} className="relative pl-6 pb-2 border-l border-stone-800 ml-2">
+                    <div className={`absolute -left-[5px] top-1 w-2.5 h-2.5 rounded-full ${activeTab === 'active' ? 'bg-gold-600' : 'bg-green-600'} shadow-[0_0_8px_currentColor]`}></div>
+
+                    <div className="bg-stone-900/30 p-4 rounded border border-stone-800/50">
+                       <h3 className="text-stone-200 font-display text-lg mb-1">{displayTitle}</h3>
+                       {displayDesc && (
+                          <p className="text-stone-400 text-sm font-serif mb-3">{displayDesc}</p>
+                       )}
+                       <div className="flex items-center gap-2 text-xs text-stone-500 border-t border-stone-800 pt-2">
+                          <Package size={12} />
+                          <span>评级: {quest.rating} · 奖励: {quest.reward}</span>
+                       </div>
                     </div>
                  </div>
-              </div>
-           ))}
+              );
+           })}
            {quests[activeTab].length === 0 && (
              <div className="text-center text-stone-600 mt-10 italic">暂无记录</div>
            )}
