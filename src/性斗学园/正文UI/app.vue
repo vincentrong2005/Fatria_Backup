@@ -215,8 +215,8 @@
 import { ref, onMounted, computed, watch } from 'vue';
 import { eventOn } from '@types/iframe/event';
 
-// 正则表达式：匹配 <content> 标签包裹的内容
-const CONTENT_REGEX = /<content>([\s\S]*?)<\/content>/g;
+// 正则表达式：匹配最后一个 <content> 标签包裹的内容（跳过思维链中的 <content>）
+const CONTENT_REGEX = /[\s\S]*?<content>([\s\S]*?)<\/content>/;
 
 const content = ref<string>('');
 const showSettings = ref(false);
@@ -432,6 +432,48 @@ const formattedContent = computed(() => {
   }
 });
 
+// 清理思维链标签及其之前的内容
+const cleanThinkingTags = (text: string): string => {
+  // 匹配各种思维链标签的结束标签，只保留标签之后的内容
+  // 支持的标签：</think>, </thinking>, </reasoning>, </think>, </thought>, </chain_of_thought> 等
+  // 匹配结束标签（以 </ 开头）或自闭合标签
+  const thinkingTagPatterns = [
+    /<\/redacted_reasoning>/gi,
+    /<\/reasoning>/gi,
+    /<\/thinking>/gi,
+    /<\/think>/gi,
+    /<\/thought>/gi,
+    /<\/chain_of_thought>/gi,
+    /<\/chain>/gi,
+    /<\/analysis>/gi,
+    /<\/reflection>/gi,
+  ];
+  
+  // 查找最后一个思维链结束标签的位置
+  let lastIndex = -1;
+  
+  for (const pattern of thinkingTagPatterns) {
+    const matches = text.matchAll(pattern);
+    for (const match of matches) {
+      const endIndex = match.index! + match[0].length;
+      if (endIndex > lastIndex) {
+        lastIndex = endIndex;
+      }
+    }
+  }
+  
+  // 如果找到了思维链标签，只保留标签之后的内容
+  if (lastIndex > 0) {
+    const cleaned = text.substring(lastIndex).trim();
+    // 如果清理后内容为空或只有空白，返回原始内容（可能是误匹配）
+    if (cleaned.length > 0) {
+      return cleaned;
+    }
+  }
+  
+  return text;
+};
+
 // 提取并显示内容
 const extractContent = () => {
   try {
@@ -451,15 +493,20 @@ const extractContent = () => {
     // 因为前端界面是通过正则表达式替换加载的，所以需要获取原始消息内容
     const messageText = message.message;
 
-    // 使用正则表达式提取 <content> 标签中的内容
-    // 创建一个新的正则表达式实例，避免全局标志的问题
-    const regex = /<content>([\s\S]*?)<\/content>/;
+    // 使用正则表达式提取最后一个 <content> 标签中的内容
+    // 这样可以跳过思维链中可能出现的 <content> 标签
+    const regex = /[\s\S]*?<content>([\s\S]*?)<\/content>/;
     const match = messageText.match(regex);
     
     if (match && match[1]) {
-      content.value = match[1];
-      console.info('[正文美化] 已提取内容，长度:', match[1].length);
+      // 清理思维链标签及其之前的内容
+      let extractedContent = match[1].trim();
+      extractedContent = cleanThinkingTags(extractedContent);
+      
+      content.value = extractedContent;
+      console.info('[正文美化] 已提取内容，长度:', extractedContent.length);
     } else {
+      content.value = ''; // 清空内容，避免显示旧内容
       console.info('[正文美化] 未找到 <content> 标签');
     }
   } catch (error) {
@@ -507,7 +554,7 @@ onMounted(() => {
   display: flex;
   align-items: center;
   justify-content: space-evenly; // 均匀分布，充分利用宽度
-  padding: 1.5rem;
+      padding: 1.5rem;
   padding-bottom: 1rem;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   flex-wrap: wrap;
@@ -571,7 +618,7 @@ onMounted(() => {
       }
     }
   }
-}
+    }
 
 .beautified-content-wrapper {
   position: relative;
@@ -673,7 +720,7 @@ onMounted(() => {
   100% {
     left: 100%;
   }
-}
+    }
 
 .beautified-content {
   position: relative;
@@ -826,8 +873,8 @@ onMounted(() => {
       font-size: 0.9em;
     border: 1px solid rgba(236, 72, 153, 0.2);
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-  }
-  
+    }
+
   :deep(pre) {
     margin: 1.5rem 0;
     padding: 1.5rem;
@@ -871,8 +918,8 @@ onMounted(() => {
       transparent 100%
     );
     border-radius: 1px;
-  }
-  
+    }
+
   :deep(img) {
       max-width: 100%;
       height: auto;
@@ -958,7 +1005,7 @@ onMounted(() => {
   to {
     opacity: 1;
   }
-}
+  }
 
 // 设置面板
 .settings-panel {
@@ -975,7 +1022,7 @@ onMounted(() => {
     inset 0 1px 0 rgba(255, 255, 255, 0.1);
   animation: slideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   backdrop-filter: blur(20px) saturate(180%);
-}
+  }
 
 @keyframes slideUp {
   from {
@@ -1097,7 +1144,7 @@ onMounted(() => {
       color: #ec4899;
       font-size: 0.85em;
       font-family: 'Courier New', monospace;
-    }
+      }
   }
 }
 
@@ -1126,7 +1173,7 @@ onMounted(() => {
       
       &:hover {
         color: #6366f1;
-      }
+  }
     }
   }
   

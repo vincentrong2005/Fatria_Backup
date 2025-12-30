@@ -126,38 +126,11 @@
       </div>
     </div>
 
-    <!-- 时间信息 -->
-    <div class="time-card">
-      <div class="time-icon">
-        <i class="fas fa-clock"></i>
-      </div>
-      <div class="time-info">
-        <div class="game-time">{{ characterData.时间系统?.时间 || '08:00' }}</div>
-        <div class="game-date">{{ characterData.时间系统?.日期 || '2024-01-01' }} 星期{{ weekDay }}</div>
-      </div>
-    </div>
-
-    <!-- 系统消息 -->
-    <div class="feed-section">
-      <div class="feed-header">
-        <i class="fas fa-bell"></i>
-        <span>系统通知</span>
-      </div>
-      <div class="feed-list">
-        <div class="feed-item" v-for="(feed, index) in systemFeeds" :key="index">
-          <div class="feed-dot" :class="feed.type"></div>
-          <div class="feed-content">
-            <div class="feed-text">{{ feed.content }}</div>
-            <div class="feed-time">{{ feed.time }}</div>
-          </div>
-        </div>
-      </div>
-    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { computed } from 'vue';
 
 const props = defineProps<{
   characterData: any;
@@ -171,30 +144,6 @@ const mainQuest = computed(() => {
   return props.characterData.任务系统?.主线任务 || {};
 });
 
-const weekDay = computed(() => {
-  const days = ['日', '一', '二', '三', '四', '五', '六'];
-  const day = props.characterData.时间系统?.星期 || 1;
-  return days[day % 7];
-});
-
-// 系统消息
-const systemFeeds = ref([
-  {
-    type: 'info',
-    content: '欢迎来到性斗学园！',
-    time: '刚刚'
-  },
-  {
-    type: 'warning',
-    content: '本周排位赛即将开始',
-    time: '10分钟前'
-  },
-  {
-    type: 'success',
-    content: '属性数据已同步',
-    time: '1小时前'
-  }
-]);
 
 function getPercentage(current: number, max: number): number {
   if (max === 0) return 0;
@@ -615,4 +564,5 @@ function formatNumber(num: number): string {
   color: rgba(255, 255, 255, 0.4);
   margin-top: 4px;
 }
+
 </style>
