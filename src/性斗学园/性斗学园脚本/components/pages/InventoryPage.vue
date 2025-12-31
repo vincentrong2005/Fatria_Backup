@@ -20,6 +20,10 @@
           v-for="slot in equipmentSlots" 
           :key="slot.key"
           :class="{ empty: !slot.value || !slot.value.名称 }"
+          @mouseenter="showEquipmentTooltip(slot.value, $event)"
+          @mouseleave="hideTooltip"
+          @touchstart="showEquipmentTooltipMobile(slot.value, $event)"
+          @touchend="hideTooltip"
         >
           <div class="slot-icon">
             <i :class="slot.icon"></i>
@@ -34,7 +38,7 @@
           <button 
             v-if="slot.value?.名称" 
             class="unequip-btn"
-            @click="unequipItem(slot.key)"
+            @click.stop="unequipItem(slot.key)"
             title="卸下装备"
           >
             <i class="fas fa-times"></i>
@@ -119,7 +123,10 @@
               <span class="item-count" v-if="item.数量 !== undefined && item.数量 > 1">×{{ item.数量 }}</span>
             </div>
           </div>
-          <div class="item-type">{{ item.类型 }}</div>
+          <div class="item-meta">
+            <span class="item-type">{{ item.类型 }}</span>
+            <span v-if="item.部位" class="item-slot">{{ item.部位 }}</span>
+          </div>
           <div class="item-desc" v-if="item.描述">
             {{ item.描述 }}
           </div>
@@ -341,7 +348,7 @@ function getItemRarityClass(level: string): string {
   return rarityMap[level] || 'rarity-c';
 }
 
-// 显示工具提示
+// 显示工具提示（背包物品）
 function showTooltip(itemKey: string, item: any, event: MouseEvent) {
   if (item.类型 !== '装备' || !item.加成属性) {
     return;
@@ -358,7 +365,7 @@ function showTooltip(itemKey: string, item: any, event: MouseEvent) {
   };
 }
 
-// 移动端显示工具提示
+// 移动端显示工具提示（背包物品）
 function showTooltipMobile(itemKey: string, item: any, event: TouchEvent) {
   if (item.类型 !== '装备' || !item.加成属性) {
     return;
@@ -371,6 +378,46 @@ function showTooltipMobile(itemKey: string, item: any, event: TouchEvent) {
     level: item.等级 || 'C',
     bonuses: item.加成属性 || {},
     desc: item.描述 || '',
+    x: touch.clientX + 10,
+    y: touch.clientY + 10,
+  };
+  
+  // 3秒后自动隐藏
+  setTimeout(() => {
+    tooltip.value.visible = false;
+  }, 3000);
+}
+
+// 显示装备槽位的工具提示
+function showEquipmentTooltip(equippedItem: any, event: MouseEvent) {
+  if (!equippedItem || !equippedItem.名称 || !equippedItem.加成属性) {
+    return;
+  }
+  
+  tooltip.value = {
+    visible: true,
+    name: equippedItem.名称,
+    level: equippedItem.等级 || 'C',
+    bonuses: equippedItem.加成属性 || {},
+    desc: equippedItem.描述 || '',
+    x: event.clientX + 10,
+    y: event.clientY + 10,
+  };
+}
+
+// 移动端显示装备槽位的工具提示
+function showEquipmentTooltipMobile(equippedItem: any, event: TouchEvent) {
+  if (!equippedItem || !equippedItem.名称 || !equippedItem.加成属性) {
+    return;
+  }
+  
+  const touch = event.touches[0];
+  tooltip.value = {
+    visible: true,
+    name: equippedItem.名称,
+    level: equippedItem.等级 || 'C',
+    bonuses: equippedItem.加成属性 || {},
+    desc: equippedItem.描述 || '',
     x: touch.clientX + 10,
     y: touch.clientY + 10,
   };
@@ -1044,10 +1091,26 @@ function calculateEquipmentBonuses(statData: any) {
     font-family: 'JetBrains Mono', monospace;
   }
   
+  .item-meta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 6px;
+    flex-wrap: wrap;
+  }
+  
   .item-type {
     font-size: 11px;
     color: rgba(255, 255, 255, 0.4);
-    margin-bottom: 6px;
+  }
+  
+  .item-slot {
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 6px;
+    background: rgba(102, 126, 234, 0.2);
+    color: #a78bfa;
+    font-weight: 500;
   }
   
   .item-desc {

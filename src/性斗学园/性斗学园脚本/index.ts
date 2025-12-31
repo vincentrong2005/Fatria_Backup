@@ -348,6 +348,63 @@ eventOn(Mvu.events.VARIABLE_INITIALIZED, async () => {
 });
 
 /**
+ * 处理对话后的耐力和快感更新
+ * 每次对话后：耐力+5，快感-5
+ */
+async function handleConversationUpdate() {
+  try {
+    // 获取当前消息楼层的 MVU 数据
+    const mvuData = Mvu.getMvuData({ type: 'message', message_id: 'latest' });
+    if (!mvuData || !mvuData.stat_data) {
+      console.warn('[性斗学园脚本] 无法获取 MVU 数据，跳过对话更新');
+      return;
+    }
+
+    const statData = mvuData.stat_data;
+    
+    // 获取当前耐力和快感值
+    const currentStamina = getValue(mvuData, '核心状态.$耐力', 0);
+    const maxStamina = getValue(mvuData, '核心状态.$最大耐力', 100);
+    const currentLust = getValue(mvuData, '核心状态.$快感', 0);
+    
+    // 计算新值（带上下限限制）
+    const newStamina = Math.min(maxStamina, Math.max(0, currentStamina + 5));
+    const newLust = Math.max(0, currentLust - 5);
+    
+    // 更新值
+    _.set(statData, '核心状态.$耐力', newStamina);
+    _.set(statData, '核心状态.$快感', newLust);
+    
+    // 写回 MVU 数据
+    await Mvu.replaceMvuData(mvuData, { type: 'message', message_id: 'latest' });
+    
+    console.info(`[性斗学园脚本] 对话后更新：耐力 ${currentStamina} → ${newStamina} (+5), 快感 ${currentLust} → ${newLust} (-5)`);
+  } catch (error) {
+    console.error('[性斗学园脚本] 对话更新时出错:', error);
+  }
+}
+
+/**
+ * 监听消息接收事件（AI回复后触发）
+ * 每次对话后更新耐力和快感
+ */
+// tavern_events 在脚本环境中是全局可用的
+if (typeof tavern_events !== 'undefined' && tavern_events.MESSAGE_RECEIVED) {
+  eventOn(tavern_events.MESSAGE_RECEIVED, async () => {
+    console.info('[性斗学园脚本] 检测到消息接收事件，开始更新对话后的状态');
+    // 延迟一点执行，确保消息已完全更新
+    setTimeout(async () => {
+      await handleConversationUpdate();
+      // 对话后也需要重新计算依赖变量
+      await updateDependentVariables();
+    }, 200);
+  });
+  console.info('[性斗学园脚本] 已注册对话后状态更新监听器');
+} else {
+  console.warn('[性斗学园脚本] tavern_events.MESSAGE_RECEIVED 不可用，无法监听对话事件');
+}
+
+/**
  * 初始化时执行一次计算
  */
 $(() => {
