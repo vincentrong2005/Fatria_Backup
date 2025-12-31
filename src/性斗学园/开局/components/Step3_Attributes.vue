@@ -103,14 +103,31 @@ const getInitialValue = (path: string): number => {
 // 计算已使用的点数（只计算可分配的6个属性）
 const pointsUsed = computed(() => {
   let used = 0;
-  // 角色基础
-  used += (props.data.attributes.角色基础._等级 - INITIAL_ATTRIBUTES.角色基础._等级) * 1;
-  used += (props.data.attributes.角色基础.$潜力 - INITIAL_ATTRIBUTES.角色基础.$潜力) * 20;
-  used += (props.data.attributes.角色基础._魅力 - INITIAL_ATTRIBUTES.角色基础._魅力) * 1;
-  used += (props.data.attributes.角色基础._幸运 - INITIAL_ATTRIBUTES.角色基础._幸运) * 1;
-  // 核心状态（只计算最大耐力和最大快感）
-  used += (props.data.attributes.核心状态._最大耐力 - INITIAL_ATTRIBUTES.核心状态._最大耐力) / 5;
-  used += (props.data.attributes.核心状态._最大快感 - INITIAL_ATTRIBUTES.核心状态._最大快感) / 5;
+  const attrs = props.data.attributes;
+  const init = INITIAL_ATTRIBUTES;
+  
+  // 确保所有值都存在，否则使用0
+  const getVal = (obj: any, path: string[], fallback: number) => {
+    let val = obj;
+    for (const key of path) {
+      val = val?.[key];
+      if (val === undefined) return fallback;
+    }
+    return val ?? fallback;
+  };
+  
+  // 角色基础 - 等级
+  used += (getVal(attrs, ['角色基础', '_等级'], 1) - getVal(init, ['角色基础', '_等级'], 1)) * 1;
+  // 核心状态 - 潜力
+  used += (getVal(attrs, ['核心状态', '_潜力'], 5.0) - getVal(init, ['核心状态', '_潜力'], 5.0)) * 20;
+  // 核心状态 - 基础魅力
+  used += (getVal(attrs, ['核心状态', '$基础魅力'], 10) - getVal(init, ['核心状态', '$基础魅力'], 10)) * 1;
+  // 核心状态 - 基础幸运
+  used += (getVal(attrs, ['核心状态', '$基础幸运'], 10) - getVal(init, ['核心状态', '$基础幸运'], 10)) * 1;
+  // 核心状态 - 最大耐力和最大快感
+  used += (getVal(attrs, ['核心状态', '$最大耐力'], 100) - getVal(init, ['核心状态', '$最大耐力'], 100)) / 5;
+  used += (getVal(attrs, ['核心状态', '$最大快感'], 100) - getVal(init, ['核心状态', '$最大快感'], 100)) / 5;
+  
   return Math.max(0, Math.ceil(used));
 });
 
@@ -119,11 +136,11 @@ const remaining = computed(() => totalPointsAvailable.value - pointsUsed.value);
 // 可分配的属性列表（只有6个可分配属性）
 const stats = [
   { path: '角色基础._等级', label: '初始等级', icon: 'fa-arrow-trend-up', color: 'text-yellow-400', costText: '1点 = 1级' },
-  { path: '角色基础.$潜力', label: '潜力资质', icon: 'fa-star', color: 'text-purple-400', costText: '2点 = 0.1潜力' },
-  { path: '核心状态._最大耐力', label: '最大耐力', icon: 'fa-shield-halved', color: 'text-green-400', costText: '1点 = 5耐力' },
-  { path: '核心状态._最大快感', label: '最大快感', icon: 'fa-heart', color: 'text-pink-400', costText: '1点 = 5快感' },
-  { path: '角色基础._魅力', label: '个人魅力', icon: 'fa-face-grin-hearts', color: 'text-rose-400', costText: '1点 = 1魅力' },
-  { path: '角色基础._幸运', label: '幸运值', icon: 'fa-clover', color: 'text-cyan-400', costText: '1点 = 1幸运' },
+  { path: '核心状态._潜力', label: '潜力资质', icon: 'fa-star', color: 'text-purple-400', costText: '2点 = 0.1潜力' },
+  { path: '核心状态.$最大耐力', label: '最大耐力', icon: 'fa-shield-halved', color: 'text-green-400', costText: '1点 = 5耐力' },
+  { path: '核心状态.$最大快感', label: '最大快感', icon: 'fa-heart', color: 'text-pink-400', costText: '1点 = 5快感' },
+  { path: '核心状态.$基础魅力', label: '基础魅力', icon: 'fa-face-grin-hearts', color: 'text-rose-400', costText: '1点 = 1魅力' },
+  { path: '核心状态.$基础幸运', label: '基础幸运', icon: 'fa-clover', color: 'text-cyan-400', costText: '1点 = 1幸运' },
 ];
 
 const handleStatChange = async (path: string, delta: number) => {
@@ -134,10 +151,10 @@ const handleStatChange = async (path: string, delta: number) => {
   let valueChange = delta;
 
   // 根据属性类型计算成本和变化值
-  if (path === '核心状态._最大耐力' || path === '核心状态._最大快感') {
+  if (path === '核心状态.$最大耐力' || path === '核心状态.$最大快感') {
     cost = 1;
     valueChange = delta * 5;
-  } else if (path === '角色基础.$潜力') {
+  } else if (path === '核心状态._潜力') {
     cost = 2;
     valueChange = delta * 0.1;
   }
@@ -149,7 +166,7 @@ const handleStatChange = async (path: string, delta: number) => {
   const minVal = getInitialValue(path);
 
   let newVal = currentVal + valueChange;
-  if (path === '角色基础.$潜力') newVal = parseFloat(newVal.toFixed(1));
+  if (path === '核心状态._潜力') newVal = parseFloat(newVal.toFixed(1));
 
   if (newVal <= maxVal && newVal >= minVal) {
     isUpdating.value = true;

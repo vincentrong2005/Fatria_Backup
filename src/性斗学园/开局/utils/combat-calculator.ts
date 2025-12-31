@@ -25,15 +25,15 @@ export const EXHAUSTION_STAMINA_REDUCTION = 0.3; // -30%
  * 加成统计结构
  */
 export interface BonusStats {
-  $魅力加成?: number;
-  $幸运加成?: number;
-  $基础性斗力加成?: number;
-  $基础性斗力成算?: number;
-  $基础忍耐力加成?: number;
-  $基础忍耐力成算?: number;
-  $闪避率加成?: number;
-  $暴击率加成?: number;
-  $意志力加成?: number;
+  魅力加成?: number;
+  幸运加成?: number;
+  基础性斗力加成?: number;
+  基础性斗力成算?: number;
+  基础忍耐力加成?: number;
+  基础忍耐力成算?: number;
+  闪避率加成?: number;
+  暴击率加成?: number;
+  意志力加成?: number;
 }
 
 /**
@@ -47,7 +47,7 @@ export interface MvuCombatData {
   };
   核心状态: {
     // 潜力
-    $潜力: number;
+    _潜力: number;
     // 基础值
     $基础魅力: number;
     $基础幸运: number;
@@ -57,25 +57,25 @@ export interface MvuCombatData {
     // 最终值
     _魅力: number;
     _幸运: number;
-    $闪避率: number;
-    $暴击率: number;
-    _意志力: number;
+    _闪避率: number;
+    _暴击率: number;
+    意志力: number;
     // 资源
-    _最大耐力: number;
-    _最大快感: number;
-    _快感: number;
-    _耐力: number;
+    $最大耐力: number;
+    $最大快感: number;
+    $快感: number;
+    $耐力: number;
   };
   物品系统?: {
-    $装备总加成?: BonusStats;
+    装备总加成?: BonusStats;
   };
-  _永久状态?: {
-    $状态列表?: string[];
-    $加成统计?: BonusStats;
+  永久状态?: {
+    状态列表?: string[];
+    加成统计?: BonusStats;
   };
-  $临时状态?: {
-    $状态列表?: Record<string, number>; // 状态名 -> 剩余回合
-    $加成统计?: BonusStats;
+  临时状态?: {
+    状态列表?: Record<string, number>; // 状态名 -> 剩余回合
+    加成统计?: BonusStats;
   };
 }
 
@@ -94,27 +94,27 @@ export function calculateSexualCombatPower(
   isPostOrgasm: boolean = false
 ): number {
   const level = data.角色基础._等级;
-  const potential = data.核心状态.$潜力;
+  const potential = data.核心状态._潜力;
   
   // 基础值：等级 x 潜力
   const baseValue = level * potential;
   
   // 装备加成
-  const equipmentBonus = data.物品系统?.$装备总加成?.$基础性斗力加成 || 0;
+  const equipmentBonus = data.物品系统?.装备总加成?.基础性斗力加成 || 0;
   
   // 永久状态加成
-  const permanentBonus = data._永久状态?.$加成统计?.$基础性斗力加成 || 0;
+  const permanentBonus = data.永久状态?.加成统计?.基础性斗力加成 || 0;
   
   // 临时状态加成（从临时状态的统一加成统计中获取）
-  const tempBonus = data.$临时状态?.$加成统计?.$基础性斗力加成 || 0;
+  const tempBonus = data.临时状态?.加成统计?.基础性斗力加成 || 0;
   
   // 加成总和
   const totalBonus = baseValue + equipmentBonus + permanentBonus + tempBonus;
   
   // 成算（百分比加成）
-  const equipmentMultiplier = data.物品系统?.$装备总加成?.$基础性斗力成算 || 0;
-  const permanentMultiplier = data._永久状态?.$加成统计?.$基础性斗力成算 || 0;
-  const tempMultiplier = data.$临时状态?.$加成统计?.$基础性斗力成算 || 0;
+  const equipmentMultiplier = data.物品系统?.装备总加成?.基础性斗力成算 || 0;
+  const permanentMultiplier = data.永久状态?.加成统计?.基础性斗力成算 || 0;
+  const tempMultiplier = data.临时状态?.加成统计?.基础性斗力成算 || 0;
   
   // 总成算（转换为倍数，例如 30% = 1.3）
   const totalMultiplier = 1 + (equipmentMultiplier + permanentMultiplier + tempMultiplier) / 100;
@@ -145,27 +145,27 @@ export function calculateEndurance(
   isExhausted: boolean = false
 ): number {
   const level = data.角色基础._等级;
-  const willpower = data.核心状态._意志力;
+  const willpower = data.核心状态.意志力;
   
   // 基础值：等级 x 意志力/10
   const baseValue = level * (willpower / 10);
   
   // 装备加成
-  const equipmentBonus = data.物品系统?.$装备总加成?.$基础忍耐力加成 || 0;
+  const equipmentBonus = data.物品系统?.装备总加成?.基础忍耐力加成 || 0;
   
   // 永久状态加成
-  const permanentBonus = data._永久状态?.$加成统计?.$基础忍耐力加成 || 0;
+  const permanentBonus = data.永久状态?.加成统计?.基础忍耐力加成 || 0;
   
   // 临时状态加成
-  const tempBonus = data.$临时状态?.$加成统计?.$基础忍耐力加成 || 0;
+  const tempBonus = data.临时状态?.加成统计?.基础忍耐力加成 || 0;
   
   // 加成总和
   const totalBonus = baseValue + equipmentBonus + permanentBonus + tempBonus;
   
   // 成算（百分比加成）
-  const equipmentMultiplier = data.物品系统?.$装备总加成?.$基础忍耐力成算 || 0;
-  const permanentMultiplier = data._永久状态?.$加成统计?.$基础忍耐力成算 || 0;
-  const tempMultiplier = data.$临时状态?.$加成统计?.$基础忍耐力成算 || 0;
+  const equipmentMultiplier = data.物品系统?.装备总加成?.基础忍耐力成算 || 0;
+  const permanentMultiplier = data.永久状态?.加成统计?.基础忍耐力成算 || 0;
+  const tempMultiplier = data.临时状态?.加成统计?.基础忍耐力成算 || 0;
   
   // 总成算
   const totalMultiplier = 1 + (equipmentMultiplier + permanentMultiplier + tempMultiplier) / 100;
@@ -206,17 +206,17 @@ export function shouldTriggerOrgasm(lust: number, maxLust: number): boolean {
 export function handleOrgasm(data: MvuCombatData): any {
   const updates: any = {
     核心状态: {
-      _快感: 0, // 清空快感值
+      $快感: 0, // 清空快感值
     },
-    $临时状态: {
-      $状态列表: {
-        ...data.$临时状态?.$状态列表,
+    临时状态: {
+      状态列表: {
+        ...data.临时状态?.状态列表,
         '贤者时间': 3, // 持续3回合
       },
-      $加成统计: {
-        ...data.$临时状态?.$加成统计,
-        $基础性斗力成算: (data.$临时状态?.$加成统计?.$基础性斗力成算 || 0) - 20,
-        $基础忍耐力成算: (data.$临时状态?.$加成统计?.$基础忍耐力成算 || 0) + 10,
+      加成统计: {
+        ...data.临时状态?.加成统计,
+        基础性斗力成算: (data.临时状态?.加成统计?.基础性斗力成算 || 0) - 20,
+        基础忍耐力成算: (data.临时状态?.加成统计?.基础忍耐力成算 || 0) + 10,
       },
     },
   };
@@ -279,7 +279,7 @@ export function handleLevelUp(data: MvuCombatData): any | null {
   }
   
   const newLevel = data.角色基础._等级 + 1;
-  const attributePoints = getAttributePointsOnLevelUp(data.核心状态.$潜力);
+  const attributePoints = getAttributePointsOnLevelUp(data.核心状态._潜力);
   
   return {
     角色基础: {
@@ -359,7 +359,7 @@ export function extractCombatData(mvuData: any): MvuCombatData {
     },
     核心状态: {
       // 潜力现在在核心状态中
-      $潜力: statData.核心状态?.$潜力 || 5.0,
+      _潜力: statData.核心状态?._潜力 || 5.0,
       // 基础值
       $基础魅力: statData.核心状态?.$基础魅力 || 10,
       $基础幸运: statData.核心状态?.$基础幸运 || 10,
@@ -369,17 +369,17 @@ export function extractCombatData(mvuData: any): MvuCombatData {
       // 最终值
       _魅力: statData.核心状态?._魅力 || 10,
       _幸运: statData.核心状态?._幸运 || 10,
-      $闪避率: statData.核心状态?.$闪避率 || 0,
-      $暴击率: statData.核心状态?.$暴击率 || 0,
-      _意志力: statData.核心状态?._意志力 || 100,
+      _闪避率: statData.核心状态?._闪避率 || 0,
+      _暴击率: statData.核心状态?._暴击率 || 0,
+      意志力: statData.核心状态?.意志力 || 100,
       // 资源
-      _最大耐力: statData.核心状态?._最大耐力 || 100,
-      _最大快感: statData.核心状态?._最大快感 || 100,
-      _快感: statData.核心状态?._快感 || 0,
-      _耐力: statData.核心状态?._耐力 || 100,
+      $最大耐力: statData.核心状态?.$最大耐力 || 100,
+      $最大快感: statData.核心状态?.$最大快感 || 100,
+      $快感: statData.核心状态?.$快感 || 0,
+      $耐力: statData.核心状态?.$耐力 || 100,
     },
     物品系统: statData.物品系统,
-    _永久状态: statData._永久状态,
-    $临时状态: statData.$临时状态,
+    永久状态: statData.永久状态,
+    临时状态: statData.临时状态,
   };
 }

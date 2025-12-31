@@ -186,37 +186,22 @@ const parseParallelEvents = (content: string): ParallelEvent[] => {
   const lines = content.split('\n').map(line => line.trim()).filter(line => line.length > 0);
   
   for (const line of lines) {
-    // 匹配格式：[角色名 | 描述内容]
-    const match = line.match(/^\[([^\|]+)\s*\|\s*(.+)\]$/);
+    // 只匹配标准格式：[角色名 | 描述内容]
+    // 使用严格的正则表达式，确保格式正确
+    const match = line.match(/^\[([^\|\[\]]+)\s*\|\s*(.+)\]$/);
     if (match) {
-      parsedEvents.push({
-        character: match[1].trim(),
-        description: match[2].trim(),
-      });
-    } else {
-      // 如果没有匹配到标准格式，尝试其他格式
-      // 例如：[角色名] 描述内容 或 角色名：描述内容
-      const altMatch1 = line.match(/^\[([^\]]+)\]\s*(.+)$/);
-      const altMatch2 = line.match(/^([^：:]+)[：:]\s*(.+)$/);
+      const character = match[1].trim();
+      const description = match[2].trim();
       
-      if (altMatch1) {
+      // 确保角色名和描述都不为空
+      if (character && description) {
         parsedEvents.push({
-          character: altMatch1[1].trim(),
-          description: altMatch1[2].trim(),
-        });
-      } else if (altMatch2) {
-        parsedEvents.push({
-          character: altMatch2[1].trim(),
-          description: altMatch2[2].trim(),
-        });
-      } else if (line.length > 0) {
-        // 如果都不匹配，将整行作为描述，角色名为"未知"
-        parsedEvents.push({
-          character: '未知',
-          description: line,
+          character: character,
+          description: description,
         });
       }
     }
+    // 不再处理其他格式，只接受标准格式 [名字 | 描述]
   }
   
   return parsedEvents;

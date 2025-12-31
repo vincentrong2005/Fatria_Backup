@@ -215,18 +215,18 @@ async function loadFromMvu() {
     const maxClimaxCount = _.get(data, '性斗系统.胜负规则.高潮次数上限', 3);
     
     // 同步玩家数据
-    player.value.stats.maxEndurance = _.get(data, '核心状态._最大耐力', 100);
-    player.value.stats.currentEndurance = _.get(data, '核心状态._耐力', 100);
-    player.value.stats.maxPleasure = _.get(data, '核心状态._最大快感', 100);
-    player.value.stats.currentPleasure = _.get(data, '核心状态._快感', 0);
-    player.value.stats.willpower = _.get(data, '核心状态._意志力', 100);
+    player.value.stats.maxEndurance = _.get(data, '核心状态.$最大耐力', 100);
+    player.value.stats.currentEndurance = _.get(data, '核心状态.$耐力', 100);
+    player.value.stats.maxPleasure = _.get(data, '核心状态.$最大快感', 100);
+    player.value.stats.currentPleasure = _.get(data, '核心状态.$快感', 0);
+    player.value.stats.willpower = _.get(data, '核心状态.意志力', 100);
     player.value.stats.charm = _.get(data, '核心状态._魅力', 10);
     player.value.stats.luck = _.get(data, '核心状态._幸运', 10);
-    player.value.stats.evasion = _.get(data, '核心状态.$闪避率', 0);
-    player.value.stats.crit = _.get(data, '核心状态.$暴击率', 0);
-    player.value.stats.sexPower = _.get(data, '性斗系统.$实时性斗力', 25);
-    player.value.stats.baseEndurance = _.get(data, '性斗系统.$实时忍耐力', 15);
-    player.value.stats.climaxCount = _.get(data, '性斗系统.$高潮次数', 0);
+    player.value.stats.evasion = _.get(data, '核心状态._闪避率', 0);
+    player.value.stats.crit = _.get(data, '核心状态._暴击率', 0);
+    player.value.stats.sexPower = _.get(data, '性斗系统.实时性斗力', 25);
+    player.value.stats.baseEndurance = _.get(data, '性斗系统.实时忍耐力', 15);
+    player.value.stats.climaxCount = _.get(data, '性斗系统.高潮次数', 0);
     player.value.stats.maxClimaxCount = maxClimaxCount;
 
     // 加载玩家技能
@@ -268,9 +268,9 @@ async function loadFromMvu() {
         console.info('[战斗界面] 已从数据库加载敌人:', enemyName);
         
         // 同步MVU中的对手数据到数据库加载的敌人
-        const existingEndurance = _.get(data, '性斗系统.$对手耐力');
-        const existingPleasure = _.get(data, '性斗系统.$对手快感');
-        const existingClimaxCount = _.get(data, '性斗系统.$对手高潮次数');
+        const existingEndurance = _.get(data, '性斗系统.对手耐力');
+        const existingPleasure = _.get(data, '性斗系统.对手快感');
+        const existingClimaxCount = _.get(data, '性斗系统.对手高潮次数');
         
         if (existingEndurance !== undefined) {
           enemy.value.stats.currentEndurance = existingEndurance;
@@ -286,7 +286,7 @@ async function loadFromMvu() {
         enemy.value.stats.maxClimaxCount = maxClimaxCount;
 
         // 加载敌人技能冷却
-        const enemySkillCooldowns = _.get(data, '性斗系统.$对手技能冷却', {});
+        const enemySkillCooldowns = _.get(data, '性斗系统.对手技能冷却', {});
         enemy.value.skills.forEach(skill => {
           const cooldown = enemySkillCooldowns[skill.id];
           if (cooldown !== undefined) {
@@ -307,7 +307,7 @@ async function loadFromMvu() {
     }
 
     // 同步回合数
-    turnState.currentTurn = _.get(data, '性斗系统.$当前回合', 1);
+    turnState.currentTurn = _.get(data, '性斗系统.当前回合', 1);
 
     console.info('[战斗界面] 已从MVU加载数据');
   } catch (e) {
@@ -319,18 +319,18 @@ async function loadFromMvu() {
 function loadEnemyFromMvuData(data: any, maxClimaxCount: number) {
   const enemyName = _.get(data, '性斗系统.对手名称', '风纪委员长');
   if (enemyName) enemy.value.name = enemyName;
-  enemy.value.stats.maxEndurance = _.get(data, '性斗系统.$对手最大耐力', 150);
-  enemy.value.stats.currentEndurance = _.get(data, '性斗系统.$对手耐力', 150);
-  enemy.value.stats.maxPleasure = _.get(data, '性斗系统.$对手最大快感', 100);
-  enemy.value.stats.currentPleasure = _.get(data, '性斗系统.$对手快感', 0);
-  enemy.value.stats.climaxCount = _.get(data, '性斗系统.$对手高潮次数', 0);
+  enemy.value.stats.maxEndurance = _.get(data, '性斗系统.对手最大耐力', 150);
+  enemy.value.stats.currentEndurance = _.get(data, '性斗系统.对手耐力', 150);
+  enemy.value.stats.maxPleasure = _.get(data, '性斗系统.对手最大快感', 100);
+  enemy.value.stats.currentPleasure = _.get(data, '性斗系统.对手快感', 0);
+  enemy.value.stats.climaxCount = _.get(data, '性斗系统.对手高潮次数', 0);
   enemy.value.stats.maxClimaxCount = maxClimaxCount; // 使用统一的高潮次数上限
-  enemy.value.stats.sexPower = _.get(data, '性斗系统.$对手性斗力', 20);
-  enemy.value.stats.baseEndurance = _.get(data, '性斗系统.$对手忍耐力', 20);
-  enemy.value.stats.charm = _.get(data, '性斗系统.$对手魅力', 10);
-  enemy.value.stats.luck = _.get(data, '性斗系统.$对手幸运', 5);
-  enemy.value.stats.evasion = _.get(data, '性斗系统.$对手闪避率', 5);
-  enemy.value.stats.crit = _.get(data, '性斗系统.$对手暴击率', 10);
+  enemy.value.stats.sexPower = _.get(data, '性斗系统.对手性斗力', 20);
+  enemy.value.stats.baseEndurance = _.get(data, '性斗系统.对手忍耐力', 20);
+  enemy.value.stats.charm = _.get(data, '性斗系统.对手魅力', 10);
+  enemy.value.stats.luck = _.get(data, '性斗系统.对手幸运', 5);
+  enemy.value.stats.evasion = _.get(data, '性斗系统.对手闪避率', 5);
+  enemy.value.stats.crit = _.get(data, '性斗系统.对手暴击率', 10);
 }
 
 // 保存敌人完整数据到MVU
@@ -343,17 +343,17 @@ async function saveMvuEnemyData() {
 
     // 更新敌人的完整数据
     _.set(mvuData.stat_data, '性斗系统.对手名称', enemy.value.name);
-    _.set(mvuData.stat_data, '性斗系统.$对手最大耐力', enemy.value.stats.maxEndurance);
-    _.set(mvuData.stat_data, '性斗系统.$对手耐力', enemy.value.stats.currentEndurance);
-    _.set(mvuData.stat_data, '性斗系统.$对手最大快感', enemy.value.stats.maxPleasure);
-    _.set(mvuData.stat_data, '性斗系统.$对手快感', enemy.value.stats.currentPleasure);
-    _.set(mvuData.stat_data, '性斗系统.$对手高潮次数', enemy.value.stats.climaxCount);
-    _.set(mvuData.stat_data, '性斗系统.$对手性斗力', enemy.value.stats.sexPower);
-    _.set(mvuData.stat_data, '性斗系统.$对手忍耐力', enemy.value.stats.baseEndurance);
-    _.set(mvuData.stat_data, '性斗系统.$对手魅力', enemy.value.stats.charm);
-    _.set(mvuData.stat_data, '性斗系统.$对手幸运', enemy.value.stats.luck);
-    _.set(mvuData.stat_data, '性斗系统.$对手闪避率', enemy.value.stats.evasion);
-    _.set(mvuData.stat_data, '性斗系统.$对手暴击率', enemy.value.stats.crit);
+    _.set(mvuData.stat_data, '性斗系统.对手最大耐力', enemy.value.stats.maxEndurance);
+    _.set(mvuData.stat_data, '性斗系统.对手耐力', enemy.value.stats.currentEndurance);
+    _.set(mvuData.stat_data, '性斗系统.对手最大快感', enemy.value.stats.maxPleasure);
+    _.set(mvuData.stat_data, '性斗系统.对手快感', enemy.value.stats.currentPleasure);
+    _.set(mvuData.stat_data, '性斗系统.对手高潮次数', enemy.value.stats.climaxCount);
+    _.set(mvuData.stat_data, '性斗系统.对手性斗力', enemy.value.stats.sexPower);
+    _.set(mvuData.stat_data, '性斗系统.对手忍耐力', enemy.value.stats.baseEndurance);
+    _.set(mvuData.stat_data, '性斗系统.对手魅力', enemy.value.stats.charm);
+    _.set(mvuData.stat_data, '性斗系统.对手幸运', enemy.value.stats.luck);
+    _.set(mvuData.stat_data, '性斗系统.对手闪避率', enemy.value.stats.evasion);
+    _.set(mvuData.stat_data, '性斗系统.对手暴击率', enemy.value.stats.crit);
 
     await Mvu.replaceMvuData(mvuData, { type: 'message', message_id: 'latest' });
     console.info('[战斗界面] 已保存敌人完整数据到MVU');
@@ -383,26 +383,26 @@ async function saveToMvu() {
 
     const updates: Record<string, any> = {
       // 玩家数据
-      '核心状态._耐力': player.value.stats.currentEndurance,
-      '核心状态._快感': player.value.stats.currentPleasure,
-      '性斗系统.$当前回合': turnState.currentTurn,
-      '性斗系统.$高潮次数': player.value.stats.climaxCount,
+      '核心状态.$耐力': player.value.stats.currentEndurance,
+      '核心状态.$快感': player.value.stats.currentPleasure,
+      '性斗系统.当前回合': turnState.currentTurn,
+      '性斗系统.高潮次数': player.value.stats.climaxCount,
       '性斗系统.$技能冷却': playerSkillCooldowns,
       
       // 敌人数据
       '性斗系统.对手名称': enemy.value.name,
-      '性斗系统.$对手耐力': enemy.value.stats.currentEndurance,
-      '性斗系统.$对手快感': enemy.value.stats.currentPleasure,
-      '性斗系统.$对手高潮次数': enemy.value.stats.climaxCount,
-      '性斗系统.$对手最大耐力': enemy.value.stats.maxEndurance,
-      '性斗系统.$对手最大快感': enemy.value.stats.maxPleasure,
-      '性斗系统.$对手性斗力': enemy.value.stats.sexPower,
-      '性斗系统.$对手忍耐力': enemy.value.stats.baseEndurance,
-      '性斗系统.$对手魅力': enemy.value.stats.charm,
-      '性斗系统.$对手幸运': enemy.value.stats.luck,
-      '性斗系统.$对手闪避率': enemy.value.stats.evasion,
-      '性斗系统.$对手暴击率': enemy.value.stats.crit,
-      '性斗系统.$对手技能冷却': enemySkillCooldowns,
+      '性斗系统.对手耐力': enemy.value.stats.currentEndurance,
+      '性斗系统.对手快感': enemy.value.stats.currentPleasure,
+      '性斗系统.对手高潮次数': enemy.value.stats.climaxCount,
+      '性斗系统.对手最大耐力': enemy.value.stats.maxEndurance,
+      '性斗系统.对手最大快感': enemy.value.stats.maxPleasure,
+      '性斗系统.对手性斗力': enemy.value.stats.sexPower,
+      '性斗系统.对手忍耐力': enemy.value.stats.baseEndurance,
+      '性斗系统.对手魅力': enemy.value.stats.charm,
+      '性斗系统.对手幸运': enemy.value.stats.luck,
+      '性斗系统.对手闪避率': enemy.value.stats.evasion,
+      '性斗系统.对手暴击率': enemy.value.stats.crit,
+      '性斗系统.对手技能冷却': enemySkillCooldowns,
     };
 
     for (const [path, value] of Object.entries(updates)) {

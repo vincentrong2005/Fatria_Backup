@@ -3,8 +3,8 @@ import { GameState, InventoryItem } from '../../types';
 import { GlassCard } from '../ui/GlassCard';
 
 export const InventoryContent: React.FC<{ state: GameState }> = ({ state }) => {
-  const items = Object.entries(state.物品系统.$背包);
-  const equipment = state.物品系统.$装备栏;
+  const items = Object.entries(state.物品系统.背包);
+  const equipment = state.物品系统._装备栏;
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -13,16 +13,19 @@ export const InventoryContent: React.FC<{ state: GameState }> = ({ state }) => {
       <div className="md:col-span-1 space-y-4">
         <h3 className="text-sm font-bold text-white/50 uppercase tracking-widest mb-4">当前装备</h3>
         <div className="space-y-3">
-          {Object.entries(equipment).map(([slot, name]) => (
+          {Object.entries(equipment).map(([slot, item]) => (
             <GlassCard key={slot} className="p-3 flex items-center gap-3 bg-black/20">
                <div className="w-10 h-10 rounded bg-white/5 flex items-center justify-center text-xs text-white/30 border border-white/5">
                  {slot[0]}
                </div>
                <div>
                  <div className="text-xs text-white/40">{slot}</div>
-                 <div className={`text-sm font-medium ${name ? 'text-brand-accent' : 'text-white/20'}`}>
-                   {name || "未装备"}
+                 <div className={`text-sm font-medium ${item?.名称 ? 'text-brand-accent' : 'text-white/20'}`}>
+                   {item?.名称 || "未装备"}
                  </div>
+                 {item?.等级 && (
+                   <div className="text-[10px] text-white/30 mt-1">{item.等级}</div>
+                 )}
                </div>
             </GlassCard>
           ))}

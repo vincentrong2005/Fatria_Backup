@@ -74,9 +74,6 @@
               <span v-if="skill.cooldown > 0" class="text-xs px-2 py-0.5 rounded bg-blue-500/20 text-blue-400 border border-blue-500/30">
                 <i class="fas fa-clock mr-1"></i>{{ skill.cooldown }}回合
               </span>
-              <span v-if="skill.castTime > 0" class="text-xs px-2 py-0.5 rounded bg-purple-500/20 text-purple-400 border border-purple-500/30">
-                <i class="fas fa-hourglass-half mr-1"></i>蓄力{{ skill.castTime }}
-              </span>
               <span class="text-xs px-2 py-0.5 rounded bg-yellow-500/20 text-yellow-400 border border-yellow-500/30">
                 <i class="fas fa-crosshairs mr-1"></i>{{ skill.accuracy }}%
               </span>
@@ -270,17 +267,17 @@ const getConstitutionRarityClass = (rarity: ConstitutionRarity): string => {
 // 获取属性修正标签
 const getModifierLabel = (stat: string): string => {
   const map: Record<string, string> = {
-    '$魅力加成': '魅力',
-    '$幸运加成': '幸运',
-    '$基础性斗力加成': '性斗力',
-    '$基础性斗力成算': '性斗力乘算',
-    '$基础忍耐力加成': '忍耐力',
-    '$基础忍耐力成算': '忍耐力乘算',
-    '$闪避率加成': '闪避率',
-    '$暴击率加成': '暴击率',
-    '$意志力加成': '意志力',
-    '$最大耐力加成': '最大耐力',
-    '$最大快感加成': '最大快感',
+    '魅力加成': '魅力',
+    '幸运加成': '幸运',
+    '基础性斗力加成': '性斗力',
+    '基础性斗力成算': '性斗力乘算',
+    '基础忍耐力加成': '忍耐力',
+    '基础忍耐力成算': '忍耐力乘算',
+    '闪避率加成': '闪避率',
+    '暴击率加成': '暴击率',
+    '意志力加成': '意志力',
+    '最大耐力加成': '最大耐力',
+    '最大快感加成': '最大快感',
   };
   return map[stat] || stat;
 };

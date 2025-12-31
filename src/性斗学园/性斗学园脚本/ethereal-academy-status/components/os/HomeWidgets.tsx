@@ -29,7 +29,7 @@ export const HomeWidgets: React.FC<{ state: GameState }> = ({ state }) => {
              <span>Assets</span>
            </div>
            <div className="text-right">
-             <div className="text-xl font-mono font-bold text-yellow-100">{物品系统.$学园金币.toLocaleString()}</div>
+             <div className="text-xl font-mono font-bold text-yellow-100">{物品系统.学园金币.toLocaleString()}</div>
              <div className="text-xs text-white/40">学园币</div>
            </div>
         </GlassCard>
@@ -54,13 +54,13 @@ export const HomeWidgets: React.FC<{ state: GameState }> = ({ state }) => {
             <div className="flex items-center gap-3">
                 <Icon name="Zap" size={14} className="text-teal-400" />
                 <div className="flex-1 h-1.5 bg-white/10 rounded-full overflow-hidden">
-                    <div className="h-full bg-teal-400" style={{ width: `${(核心状态._耐力 / 核心状态._最大耐力) * 100}%` }} />
+                    <div className="h-full bg-teal-400" style={{ width: `${(核心状态.$耐力 / 核心状态.$最大耐力) * 100}%` }} />
                 </div>
             </div>
             <div className="flex items-center gap-3">
                 <Icon name="Heart" size={14} className="text-pink-500" />
                 <div className="flex-1 h-1.5 bg-white/10 rounded-full overflow-hidden">
-                    <div className="h-full bg-pink-500" style={{ width: `${(核心状态._快感 / 核心状态._最大快感) * 100}%` }} />
+                    <div className="h-full bg-pink-500" style={{ width: `${(核心状态.$快感 / 核心状态.$最大快感) * 100}%` }} />
                 </div>
             </div>
         </div>

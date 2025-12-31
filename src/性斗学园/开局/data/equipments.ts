@@ -25,11 +25,11 @@ export const MAIN_EQUIPMENTS: EquipmentData[] = [
     type: EquipmentType.OFFENSIVE,
     rarity: EquipmentRarity.COMMON,
     baseBonus: {
-      $基础性斗力加成: 5,
+      基础性斗力加成: 5,
     },
     maxLevel: 5,
     upgradeBonus: {
-      $基础性斗力加成: 2,
+      基础性斗力加成: 2,
     },
     effects: [],
     levelRequirement: 1,
@@ -49,13 +49,13 @@ export const MAIN_EQUIPMENTS: EquipmentData[] = [
     type: EquipmentType.UTILITY,
     rarity: EquipmentRarity.COMMON,
     baseBonus: {
-      $基础性斗力加成: 3,
-      $魅力加成: 3,
+      基础性斗力加成: 3,
+      魅力加成: 3,
     },
     maxLevel: 5,
     upgradeBonus: {
-      $基础性斗力加成: 1,
-      $魅力加成: 1,
+      基础性斗力加成: 1,
+      魅力加成: 1,
     },
     effects: [
       {
@@ -85,13 +85,13 @@ export const MAIN_EQUIPMENTS: EquipmentData[] = [
     type: EquipmentType.CONTROL,
     rarity: EquipmentRarity.RARE,
     baseBonus: {
-      $基础性斗力加成: 8,
-      $暴击率加成: 5,
+      基础性斗力加成: 8,
+      暴击率加成: 5,
     },
     maxLevel: 8,
     upgradeBonus: {
-      $基础性斗力加成: 3,
-      $暴击率加成: 1,
+      基础性斗力加成: 3,
+      暴击率加成: 1,
     },
     effects: [
       {
@@ -120,13 +120,13 @@ export const MAIN_EQUIPMENTS: EquipmentData[] = [
     type: EquipmentType.OFFENSIVE,
     rarity: EquipmentRarity.RARE,
     baseBonus: {
-      $基础性斗力加成: 12,
-      $基础性斗力成算: 5,
+      基础性斗力加成: 12,
+      基础性斗力成算: 5,
     },
     maxLevel: 8,
     upgradeBonus: {
-      $基础性斗力加成: 4,
-      $基础性斗力成算: 2,
+      基础性斗力加成: 4,
+      基础性斗力成算: 2,
     },
     effects: [
       {
@@ -157,15 +157,15 @@ export const MAIN_EQUIPMENTS: EquipmentData[] = [
     type: EquipmentType.OFFENSIVE,
     rarity: EquipmentRarity.EPIC,
     baseBonus: {
-      $基础性斗力加成: 18,
-      $基础性斗力成算: 10,
-      $暴击率加成: 8,
+      基础性斗力加成: 18,
+      基础性斗力成算: 10,
+      暴击率加成: 8,
     },
     maxLevel: 10,
     upgradeBonus: {
-      $基础性斗力加成: 5,
-      $基础性斗力成算: 3,
-      $暴击率加成: 2,
+      基础性斗力加成: 5,
+      基础性斗力成算: 3,
+      暴击率加成: 2,
     },
     effects: [
       {
@@ -195,15 +195,15 @@ export const MAIN_EQUIPMENTS: EquipmentData[] = [
     type: EquipmentType.CONTROL,
     rarity: EquipmentRarity.EPIC,
     baseBonus: {
-      $基础性斗力加成: 10,
-      $魅力加成: 15,
-      $意志力加成: 10,
+      基础性斗力加成: 10,
+      魅力加成: 15,
+      意志力加成: 10,
     },
     maxLevel: 10,
     upgradeBonus: {
-      $基础性斗力加成: 3,
-      $魅力加成: 4,
-      $意志力加成: 3,
+      基础性斗力加成: 3,
+      魅力加成: 4,
+      意志力加成: 3,
     },
     effects: [
       {
@@ -234,16 +234,16 @@ export const MAIN_EQUIPMENTS: EquipmentData[] = [
     type: EquipmentType.AMPLIFIER,
     rarity: EquipmentRarity.LEGENDARY,
     baseBonus: {
-      $基础性斗力加成: 25,
-      $基础性斗力成算: 20,
-      $魅力加成: 20,
-      $暴击率加成: 10,
+      基础性斗力加成: 25,
+      基础性斗力成算: 20,
+      魅力加成: 20,
+      暴击率加成: 10,
     },
     maxLevel: 15,
     upgradeBonus: {
-      $基础性斗力加成: 6,
-      $基础性斗力成算: 4,
-      $魅力加成: 5,
+      基础性斗力加成: 6,
+      基础性斗力成算: 4,
+      魅力加成: 5,
     },
     effects: [
       {
@@ -287,11 +287,11 @@ export const SUB_EQUIPMENTS: EquipmentData[] = [
     type: EquipmentType.UTILITY,
     rarity: EquipmentRarity.COMMON,
     baseBonus: {
-      $魅力加成: 5,
+      魅力加成: 5,
     },
     maxLevel: 5,
     upgradeBonus: {
-      $魅力加成: 2,
+      魅力加成: 2,
     },
     effects: [
       {
@@ -320,12 +320,12 @@ export const SUB_EQUIPMENTS: EquipmentData[] = [
     type: EquipmentType.CONTROL,
     rarity: EquipmentRarity.UNCOMMON,
     baseBonus: {
-      $基础性斗力加成: 5,
-      $闪避率加成: -3,
+      基础性斗力加成: 5,
+      闪避率加成: -3,
     },
     maxLevel: 6,
     upgradeBonus: {
-      $基础性斗力加成: 2,
+      基础性斗力加成: 2,
     },
     effects: [
       {
@@ -354,13 +354,13 @@ export const SUB_EQUIPMENTS: EquipmentData[] = [
     type: EquipmentType.CONTROL,
     rarity: EquipmentRarity.RARE,
     baseBonus: {
-      $基础性斗力加成: 10,
-      $魅力加成: 8,
+      基础性斗力加成: 10,
+      魅力加成: 8,
     },
     maxLevel: 8,
     upgradeBonus: {
-      $基础性斗力加成: 3,
-      $魅力加成: 2,
+      基础性斗力加成: 3,
+      魅力加成: 2,
     },
     effects: [
       {
@@ -394,11 +394,11 @@ export const ACCESSORIES: EquipmentData[] = [
     type: EquipmentType.AMPLIFIER,
     rarity: EquipmentRarity.COMMON,
     baseBonus: {
-      $魅力加成: 8,
+      魅力加成: 8,
     },
     maxLevel: 5,
     upgradeBonus: {
-      $魅力加成: 3,
+      魅力加成: 3,
     },
     effects: [],
     levelRequirement: 1,
@@ -417,11 +417,11 @@ export const ACCESSORIES: EquipmentData[] = [
     type: EquipmentType.UTILITY,
     rarity: EquipmentRarity.COMMON,
     baseBonus: {
-      $幸运加成: 10,
+      幸运加成: 10,
     },
     maxLevel: 5,
     upgradeBonus: {
-      $幸运加成: 3,
+      幸运加成: 3,
     },
     effects: [],
     levelRequirement: 1,
@@ -441,12 +441,12 @@ export const ACCESSORIES: EquipmentData[] = [
     rarity: EquipmentRarity.UNCOMMON,
     baseBonus: {
       $最大耐力加成: 20,
-      $基础忍耐力加成: 5,
+      基础忍耐力加成: 5,
     },
     maxLevel: 6,
     upgradeBonus: {
       $最大耐力加成: 8,
-      $基础忍耐力加成: 2,
+      基础忍耐力加成: 2,
     },
     effects: [],
     levelRequirement: 5,
@@ -465,13 +465,13 @@ export const ACCESSORIES: EquipmentData[] = [
     type: EquipmentType.AMPLIFIER,
     rarity: EquipmentRarity.RARE,
     baseBonus: {
-      $魅力加成: 12,
-      $基础性斗力成算: 5,
+      魅力加成: 12,
+      基础性斗力成算: 5,
     },
     maxLevel: 8,
     upgradeBonus: {
-      $魅力加成: 4,
-      $基础性斗力成算: 2,
+      魅力加成: 4,
+      基础性斗力成算: 2,
     },
     effects: [
       {
@@ -501,15 +501,15 @@ export const ACCESSORIES: EquipmentData[] = [
     type: EquipmentType.DEFENSIVE,
     rarity: EquipmentRarity.EPIC,
     baseBonus: {
-      $意志力加成: 15,
-      $基础忍耐力加成: 10,
-      $基础忍耐力成算: 10,
+      意志力加成: 15,
+      基础忍耐力加成: 10,
+      基础忍耐力成算: 10,
     },
     maxLevel: 10,
     upgradeBonus: {
-      $意志力加成: 4,
-      $基础忍耐力加成: 3,
-      $基础忍耐力成算: 2,
+      意志力加成: 4,
+      基础忍耐力加成: 3,
+      基础忍耐力成算: 2,
     },
     effects: [
       {
@@ -543,13 +543,13 @@ export const SPECIAL_EQUIPMENTS: EquipmentData[] = [
     type: EquipmentType.CONTROL,
     rarity: EquipmentRarity.RARE,
     baseBonus: {
-      $基础性斗力加成: 8,
-      $魅力加成: 5,
+      基础性斗力加成: 8,
+      魅力加成: 5,
     },
     maxLevel: 8,
     upgradeBonus: {
-      $基础性斗力加成: 2,
-      $魅力加成: 2,
+      基础性斗力加成: 2,
+      魅力加成: 2,
     },
     effects: [
       {
@@ -579,13 +579,13 @@ export const SPECIAL_EQUIPMENTS: EquipmentData[] = [
     type: EquipmentType.UTILITY,
     rarity: EquipmentRarity.EPIC,
     baseBonus: {
-      $幸运加成: 10,
-      $魅力加成: 5,
+      幸运加成: 10,
+      魅力加成: 5,
     },
     maxLevel: 10,
     upgradeBonus: {
-      $幸运加成: 3,
-      $魅力加成: 2,
+      幸运加成: 3,
+      魅力加成: 2,
     },
     effects: [
       {
@@ -615,19 +615,19 @@ export const SPECIAL_EQUIPMENTS: EquipmentData[] = [
     type: EquipmentType.UTILITY,
     rarity: EquipmentRarity.LEGENDARY,
     baseBonus: {
-      $魅力加成: 10,
-      $幸运加成: 10,
-      $意志力加成: 10,
-      $基础性斗力加成: 10,
-      $基础忍耐力加成: 10,
+      魅力加成: 10,
+      幸运加成: 10,
+      意志力加成: 10,
+      基础性斗力加成: 10,
+      基础忍耐力加成: 10,
     },
     maxLevel: 15,
     upgradeBonus: {
-      $魅力加成: 3,
-      $幸运加成: 3,
-      $意志力加成: 3,
-      $基础性斗力加成: 3,
-      $基础忍耐力加成: 3,
+      魅力加成: 3,
+      幸运加成: 3,
+      意志力加成: 3,
+      基础性斗力加成: 3,
+      基础忍耐力加成: 3,
     },
     effects: [
       {
@@ -664,14 +664,14 @@ export const EQUIPMENT_SETS: EquipmentSetData[] = [
         piecesRequired: 2,
         description: '魅力+5',
         bonus: {
-          $魅力加成: 5,
+          魅力加成: 5,
         },
       },
       {
         piecesRequired: 3,
         description: '性斗力成算+10%，经验获取+10%',
         bonus: {
-          $基础性斗力成算: 10,
+          基础性斗力成算: 10,
         },
         specialEffectId: 'exp_bonus_10',
       },
@@ -689,7 +689,7 @@ export const EQUIPMENT_SETS: EquipmentSetData[] = [
         piecesRequired: 2,
         description: '性斗力成算+15%，控制技能持续+1回合',
         bonus: {
-          $基础性斗力成算: 15,
+          基础性斗力成算: 15,
         },
         specialEffectId: 'control_duration_1',
       },
@@ -712,7 +712,7 @@ export const EQUIPMENT_SETS: EquipmentSetData[] = [
         piecesRequired: 2,
         description: '魅力+15，魅惑技能成功率+10%',
         bonus: {
-          $魅力加成: 15,
+          魅力加成: 15,
         },
         specialEffectId: 'charm_skill_bonus',
       },

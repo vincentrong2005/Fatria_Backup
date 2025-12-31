@@ -181,32 +181,32 @@ export interface MvuStatData {
     段位积分: number;
   };
   核心状态: {
-    _最大耐力: number;
-    _耐力: number;
-    _最大快感: number;
-    _快感: number;
-    _堕落度: number;
-    $潜力: number;
+    $最大耐力: number;
+    $耐力: number;
+    $最大快感: number;
+    $快感: number;
+    堕落度: number;
+    _潜力: number;
     _魅力: number;
     $基础魅力: number;
     _幸运: number;
     $基础幸运: number;
     $基础性斗力: number;
     $基础忍耐力: number;
-    $闪避率: number;
+    _闪避率: number;
     $基础闪避率: number;
-    $暴击率: number;
+    _暴击率: number;
     $基础暴击率: number;
-    _意志力: number;
+    意志力: number;
     $基础意志力: number;
   };
-  $临时状态: {
-    $状态列表: Record<string, number>;
-    $加成统计: BonusStats;
+  临时状态: {
+    状态列表: Record<string, number>;
+    加成统计: BonusStats;
   };
-  _永久状态: {
-    $状态列表: string[];
-    $加成统计: BonusStats;
+  永久状态: {
+    状态列表: string[];
+    加成统计: BonusStats;
   };
   性斗系统: {
     对手名称: string;
@@ -215,60 +215,60 @@ export interface MvuStatData {
       高潮次数上限: number;
       允许认输: boolean;
     };
-    $当前回合: number;
-    $行动日志: Record<string, string[]>;
-    $高潮次数: number;
-    $实时性斗力: number;
-    $实时忍耐力: number;
-    $对手耐力: number;
-    $对手最大耐力: number;
-    $对手快感: number;
-    $对手最大快感: number;
-    $对手高潮次数: number;
-    $对手性斗力: number;
-    $对手忍耐力: number;
-    $对手魅力: number;
-    $对手幸运: number;
-    $对手闪避率: number;
-    $对手暴击率: number;
-    $对手临时状态: {
-      $状态列表: Record<string, number>;
-      $加成统计: BonusStats;
+    当前回合: number;
+    行动日志: Record<string, string[]>;
+    高潮次数: number;
+    实时性斗力: number;
+    实时忍耐力: number;
+    对手耐力: number;
+    对手最大耐力: number;
+    对手快感: number;
+    对手最大快感: number;
+    对手高潮次数: number;
+    对手性斗力: number;
+    对手忍耐力: number;
+    对手魅力: number;
+    对手幸运: number;
+    对手闪避率: number;
+    对手暴击率: number;
+    对手临时状态: {
+      状态列表: Record<string, number>;
+      加成统计: BonusStats;
     };
-    $对手技能冷却: Record<string, number>;
-    $对手可用技能: Record<string, any>;
-    $技能冷却: Record<string, number>;
-    $可用技能: Record<string, any>;
-    $战斗物品: Record<string, number>;
+    对手技能冷却: Record<string, number>;
+    对手可用技能: Record<string, any>;
+    技能冷却: Record<string, number>;
+    可用技能: Record<string, any>;
+    战斗物品: Record<string, number>;
   };
   物品系统: {
-    $学园金币: number;
-    $背包: Record<string, any>;
-    $装备栏: {
-      主装备: string;
-      副装备: string;
-      饰品1: string;
-      饰品2: string;
-      特殊装备: string;
+    学园金币: number;
+    背包: Record<string, any>;
+    _装备栏: {
+      主装备: { 名称: string; 等级: string; 加成属性: any; 描述: string };
+      副装备: { 名称: string; 等级: string; 加成属性: any; 描述: string };
+      饰品1: { 名称: string; 等级: string; 加成属性: any; 描述: string };
+      饰品2: { 名称: string; 等级: string; 加成属性: any; 描述: string };
+      特殊装备: { 名称: string; 等级: string; 加成属性: any; 描述: string };
     };
-    $装备总加成: BonusStats;
+    装备总加成: BonusStats;
   };
   技能系统: {
-    $主动技能: Record<string, any>;
-    $被动技能: Record<string, any>;
+    主动技能: Record<string, any>;
+    被动技能: Record<string, any>;
   };
 }
 
 /** 加成统计 */
 export interface BonusStats {
-  $魅力加成: number;
-  $幸运加成: number;
-  $基础性斗力加成: number;
-  $基础性斗力成算: number;
-  $基础忍耐力加成: number;
-  $基础忍耐力成算: number;
-  $闪避率加成: number;
-  $暴击率加成: number;
-  $意志力加成: number;
+  魅力加成: number;
+  幸运加成: number;
+  基础性斗力加成: number;
+  基础性斗力成算: number;
+  基础忍耐力加成: number;
+  基础忍耐力成算: number;
+  闪避率加成: number;
+  暴击率加成: number;
+  意志力加成: number;
 }
 

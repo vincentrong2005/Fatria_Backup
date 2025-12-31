@@ -167,6 +167,40 @@ const toggleExpand = () => {
   isExpanded.value = !isExpanded.value;
 };
 
+// 获取当前消息ID
+const getCurrentMessageId = (): string | null => {
+  try {
+    const globalAny = window as any;
+    if (globalAny.getCurrentMessageId) {
+      return globalAny.getCurrentMessageId();
+    }
+    // 备用方法：从URL获取
+    const urlParams = new URLSearchParams(window.location.search);
+    return urlParams.get('message_id') || null;
+  } catch (error) {
+    console.error('[变量更新] 获取消息ID失败:', error);
+    return null;
+  }
+};
+
+// 获取聊天消息
+const getChatMessages = (messageId: string | null): any[] => {
+  try {
+    const globalAny = window as any;
+    if (globalAny.getChatMessages && messageId) {
+      return globalAny.getChatMessages(messageId);
+    }
+    // 备用方法：从全局变量获取
+    if (globalAny.chat && globalAny.chat.messages) {
+      return globalAny.chat.messages;
+    }
+    return [];
+  } catch (error) {
+    console.error('[变量更新] 获取消息失败:', error);
+    return [];
+  }
+};
+
 // 提取并显示更新内容
 const extractUpdateContent = () => {
   try {
@@ -183,18 +217,45 @@ const extractUpdateContent = () => {
     const message = messages[0];
     const messageText = message.message;
 
-    // 使用正则表达式提取 <update> 或 <UpdateVariable> 标签中的内容
-    const regex = /<update(?:variable)?>([\s\S]*?)<\/update(?:variable)?>/gi;
-    const match = regex.exec(messageText);
+    // 使用正则表达式提取所有 <UpdateVariable> 标签中的内容
+    // 匹配最后一个标签（跳过思维链中的标签）
+    const regex = /<UpdateVariable>([\s\S]*?)<\/UpdateVariable>/gi;
+    const matches = Array.from(messageText.matchAll(regex));
 
-    if (match && match[1]) {
-      updateContent.value = match[1].trim();
-      console.info('[变量更新] 已提取更新内容，长度:', updateContent.value.length);
+    if (matches.length > 0) {
+      // 取最后一个匹配（最新的变量更新）
+      const lastMatch = matches[matches.length - 1];
+      const updateVariableContent = lastMatch[1].trim();
+      
+      // 只提取 <Analysis> 和 <JSONPatch> 部分
+      let extractedContent = '';
+      
+      // 提取 Analysis 部分
+      const analysisMatch = updateVariableContent.match(/<Analysis>([\s\S]*?)<\/Analysis>/i);
+      if (analysisMatch && analysisMatch[1]) {
+        extractedContent += `<Analysis>${analysisMatch[1].trim()}</Analysis>\n\n`;
+      }
+      
+      // 提取 JSONPatch 部分
+      const jsonPatchMatch = updateVariableContent.match(/<JSONPatch>([\s\S]*?)<\/JSONPatch>/i);
+      if (jsonPatchMatch && jsonPatchMatch[1]) {
+        extractedContent += `<JSONPatch>${jsonPatchMatch[1].trim()}</JSONPatch>`;
+      }
+      
+      if (extractedContent.trim()) {
+        updateContent.value = extractedContent.trim();
+        console.info('[变量更新] 已提取更新内容，长度:', updateContent.value.length);
+      } else {
+        updateContent.value = '';
+        console.info('[变量更新] 未找到 <Analysis> 或 <JSONPatch> 标签');
+      }
     } else {
-      console.info('[变量更新] 未找到 <update> 或 <UpdateVariable> 标签');
+      updateContent.value = '';
+      console.info('[变量更新] 未找到 <UpdateVariable> 标签');
     }
   } catch (error) {
     console.error('[变量更新] 提取内容时出错:', error);
+    updateContent.value = '';
   }
 };
 

@@ -72,27 +72,27 @@ export enum EquipmentSource {
 /** 基础属性加成 */
 export interface EquipmentBonus {
   /** 魅力加成 */
-  $魅力加成?: number;
+  魅力加成?: number;
   /** 幸运加成 */
-  $幸运加成?: number;
+  幸运加成?: number;
   /** 基础性斗力加成（固定值） */
-  $基础性斗力加成?: number;
+  基础性斗力加成?: number;
   /** 基础性斗力成算（百分比） */
-  $基础性斗力成算?: number;
+  基础性斗力成算?: number;
   /** 基础忍耐力加成（固定值） */
-  $基础忍耐力加成?: number;
+  基础忍耐力加成?: number;
   /** 基础忍耐力成算（百分比） */
-  $基础忍耐力成算?: number;
+  基础忍耐力成算?: number;
   /** 闪避率加成 */
-  $闪避率加成?: number;
+  闪避率加成?: number;
   /** 暴击率加成 */
-  $暴击率加成?: number;
+  暴击率加成?: number;
   /** 意志力加成 */
-  $意志力加成?: number;
+  意志力加成?: number;
   /** 最大耐力加成 */
-  $最大耐力加成?: number;
+  最大耐力加成?: number;
   /** 最大快感加成 */
-  $最大快感加成?: number;
+  最大快感加成?: number;
 }
 
 /** 装备特效 */

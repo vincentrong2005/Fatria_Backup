@@ -4,7 +4,7 @@ import { GlassCard } from '../ui/GlassCard';
 import Icon from '../Icon';
 
 export const CharacterApp: React.FC<{ state: GameState }> = ({ state }) => {
-  const { 角色基础, 核心状态, _永久状态 } = state;
+  const { 角色基础, 核心状态, 永久状态 } = state;
 
   return (
     <div className="space-y-6">
@@ -48,30 +48,30 @@ export const CharacterApp: React.FC<{ state: GameState }> = ({ state }) => {
            <div>
              <div className="flex justify-between text-xs mb-1">
                <span>耐力</span>
-               <span className="text-white/60">{核心状态._耐力} / {核心状态._最大耐力}</span>
+               <span className="text-white/60">{核心状态.$耐力} / {核心状态.$最大耐力}</span>
              </div>
              <div className="h-2 bg-white/10 rounded-full overflow-hidden">
-               <div className="h-full bg-emerald-500" style={{ width: `${(核心状态._耐力 / 核心状态._最大耐力) * 100}%` }} />
+               <div className="h-full bg-emerald-500" style={{ width: `${(核心状态.$耐力 / 核心状态.$最大耐力) * 100}%` }} />
              </div>
            </div>
            {/* Willpower */}
            <div>
              <div className="flex justify-between text-xs mb-1">
                <span>意志力</span>
-               <span className="text-white/60">{核心状态._意志力}%</span>
+               <span className="text-white/60">{核心状态.意志力}%</span>
              </div>
              <div className="h-2 bg-white/10 rounded-full overflow-hidden">
-               <div className="h-full bg-blue-500" style={{ width: `${核心状态._意志力}%` }} />
+               <div className="h-full bg-blue-500" style={{ width: `${核心状态.意志力}%` }} />
              </div>
            </div>
            {/* Pleasure */}
            <div>
              <div className="flex justify-between text-xs mb-1">
                <span>快感积累</span>
-               <span className="text-white/60">{核心状态._快感} / {核心状态._最大快感}</span>
+               <span className="text-white/60">{核心状态.$快感} / {核心状态.$最大快感}</span>
              </div>
              <div className="h-2 bg-white/10 rounded-full overflow-hidden">
-               <div className="h-full bg-pink-500" style={{ width: `${(核心状态._快感 / 核心状态._最大快感) * 100}%` }} />
+               <div className="h-full bg-pink-500" style={{ width: `${(核心状态.$快感 / 核心状态.$最大快感) * 100}%` }} />
              </div>
            </div>
         </div>
@@ -81,7 +81,7 @@ export const CharacterApp: React.FC<{ state: GameState }> = ({ state }) => {
       <div>
         <h3 className="text-sm font-bold text-white/60 mb-3 px-1">被动特质</h3>
         <div className="flex flex-wrap gap-2">
-            {_永久状态.$状态列表.map((trait, i) => (
+            {永久状态.状态列表.map((trait, i) => (
                 <span key={i} className="px-3 py-1.5 rounded-lg bg-glass-300 text-xs border border-white/10 shadow-sm">
                     {trait}
                 </span>

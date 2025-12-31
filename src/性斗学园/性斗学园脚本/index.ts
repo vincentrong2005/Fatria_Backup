@@ -74,13 +74,13 @@ async function updateDependentVariables() {
     // ==================== 步骤1: 获取所有加成源 ====================
     
     // 永久状态加成
-    const permanentBonuses = statData._永久状态?.$加成统计 || {};
+    const permanentBonuses = statData.永久状态?.加成统计 || {};
     
     // 装备加成
-    const equipmentBonuses = statData.物品系统?.$装备总加成 || {};
+    const equipmentBonuses = statData.物品系统?.装备总加成 || {};
     
     // 临时状态加成
-    const tempBonuses = statData.$临时状态?.$加成统计 || {};
+    const tempBonuses = statData.临时状态?.加成统计 || {};
     
     // ==================== 步骤2: 计算基础属性最终值 ====================
     // 公式: 最终值 = 基础值 + 永久状态加成 + 装备加成 + 临时状态加成
@@ -92,12 +92,12 @@ async function updateDependentVariables() {
     const baseCrit = getValue(mvuData, '核心状态.$基础暴击率', 0);
     const baseWillpower = getValue(mvuData, '核心状态.$基础意志力', 100);
     
-    // 获取各项加成
-    const charmBonus = (permanentBonuses.$魅力加成 || 0) + (equipmentBonuses.$魅力加成 || 0) + (tempBonuses.$魅力加成 || 0);
-    const luckBonus = (permanentBonuses.$幸运加成 || 0) + (equipmentBonuses.$幸运加成 || 0) + (tempBonuses.$幸运加成 || 0);
-    const dodgeBonus = (permanentBonuses.$闪避率加成 || 0) + (equipmentBonuses.$闪避率加成 || 0) + (tempBonuses.$闪避率加成 || 0);
-    const critBonus = (permanentBonuses.$暴击率加成 || 0) + (equipmentBonuses.$暴击率加成 || 0) + (tempBonuses.$暴击率加成 || 0);
-    const willpowerBonus = (permanentBonuses.$意志力加成 || 0) + (equipmentBonuses.$意志力加成 || 0) + (tempBonuses.$意志力加成 || 0);
+    // 获取各项加成（根据 initvar.yaml，加成统计内的键名无前缀）
+    const charmBonus = (permanentBonuses.魅力加成 || 0) + (equipmentBonuses.魅力加成 || 0) + (tempBonuses.魅力加成 || 0);
+    const luckBonus = (permanentBonuses.幸运加成 || 0) + (equipmentBonuses.幸运加成 || 0) + (tempBonuses.幸运加成 || 0);
+    const dodgeBonus = (permanentBonuses.闪避率加成 || 0) + (equipmentBonuses.闪避率加成 || 0) + (tempBonuses.闪避率加成 || 0);
+    const critBonus = (permanentBonuses.暴击率加成 || 0) + (equipmentBonuses.暴击率加成 || 0) + (tempBonuses.暴击率加成 || 0);
+    const willpowerBonus = (permanentBonuses.意志力加成 || 0) + (equipmentBonuses.意志力加成 || 0) + (tempBonuses.意志力加成 || 0);
     
     // 计算最终值（带上下限限制）
     const finalCharm = Math.max(0, baseCharm + charmBonus);
@@ -109,9 +109,9 @@ async function updateDependentVariables() {
     // 更新最终值到核心状态（如果发生变化）
     const currentFinalCharm = getValue(mvuData, '核心状态._魅力', 10);
     const currentFinalLuck = getValue(mvuData, '核心状态._幸运', 10);
-    const currentFinalDodge = getValue(mvuData, '核心状态.$闪避率', 0);
-    const currentFinalCrit = getValue(mvuData, '核心状态.$暴击率', 0);
-    const currentFinalWillpower = getValue(mvuData, '核心状态._意志力', 100);
+    const currentFinalDodge = getValue(mvuData, '核心状态._闪避率', 0);
+    const currentFinalCrit = getValue(mvuData, '核心状态._暴击率', 0);
+    const currentFinalWillpower = getValue(mvuData, '核心状态.意志力', 100);
     
     if (finalCharm !== currentFinalCharm) {
       updates['核心状态._魅力'] = finalCharm;
@@ -124,39 +124,39 @@ async function updateDependentVariables() {
       console.info(`[性斗学园脚本] 幸运: ${baseLuck}(基础) + ${luckBonus}(加成) = ${finalLuck}`);
     }
     if (finalDodge !== currentFinalDodge) {
-      updates['核心状态.$闪避率'] = finalDodge;
+      updates['核心状态._闪避率'] = finalDodge;
       hasUpdates = true;
       console.info(`[性斗学园脚本] 闪避率: ${baseDodge}(基础) + ${dodgeBonus}(加成) = ${finalDodge}%`);
     }
     if (finalCrit !== currentFinalCrit) {
-      updates['核心状态.$暴击率'] = finalCrit;
+      updates['核心状态._暴击率'] = finalCrit;
       hasUpdates = true;
       console.info(`[性斗学园脚本] 暴击率: ${baseCrit}(基础) + ${critBonus}(加成) = ${finalCrit}%`);
     }
     if (finalWillpower !== currentFinalWillpower) {
-      updates['核心状态._意志力'] = finalWillpower;
+      updates['核心状态.意志力'] = finalWillpower;
       hasUpdates = true;
       console.info(`[性斗学园脚本] 意志力: ${baseWillpower}(基础) + ${willpowerBonus}(加成) = ${finalWillpower}`);
     }
     
     // 先应用意志力更新（因为忍耐力依赖意志力）
-    if (updates['核心状态._意志力'] !== undefined) {
-      _.set(mvuData.stat_data, '核心状态._意志力', finalWillpower);
+    if (updates['核心状态.意志力'] !== undefined) {
+      _.set(mvuData.stat_data, '核心状态.意志力', finalWillpower);
     }
 
     // ==================== 步骤3: 计算性斗力 ====================
     // 公式: ((等级 x 潜力) + 装备加成 + 状态加成) x (1 + 成算/100)
     
     const level = getValue(mvuData, '角色基础._等级', 1);
-    const potential = getValue(mvuData, '核心状态.$潜力', 5.0);
+    const potential = getValue(mvuData, '核心状态._潜力', 5.0);
     
     // 检查是否处于贤者时间
-    const tempStates = statData.$临时状态?.$状态列表 || {};
+    const tempStates = statData.临时状态?.状态列表 || {};
     const isPostOrgasm = '贤者时间' in tempStates;
     
     // 性斗力加成和成算
-    const sexPowerBonus = (permanentBonuses.$基础性斗力加成 || 0) + (equipmentBonuses.$基础性斗力加成 || 0) + (tempBonuses.$基础性斗力加成 || 0);
-    const sexPowerMulti = (permanentBonuses.$基础性斗力成算 || 0) + (equipmentBonuses.$基础性斗力成算 || 0) + (tempBonuses.$基础性斗力成算 || 0);
+    const sexPowerBonus = (permanentBonuses.基础性斗力加成 || 0) + (equipmentBonuses.基础性斗力加成 || 0) + (tempBonuses.基础性斗力加成 || 0);
+    const sexPowerMulti = (permanentBonuses.基础性斗力成算 || 0) + (equipmentBonuses.基础性斗力成算 || 0) + (tempBonuses.基础性斗力成算 || 0);
     
     // 计算性斗力
     const baseSexPower = level * potential;
@@ -169,10 +169,10 @@ async function updateDependentVariables() {
     
     sexPower = Math.max(0, Math.floor(sexPower));
     
-    const currentSexPower = getValue(mvuData, '性斗系统.$实时性斗力', 0);
+    const currentSexPower = getValue(mvuData, '性斗系统.实时性斗力', 0);
     
     if (sexPower !== currentSexPower) {
-      updates['性斗系统.$实时性斗力'] = sexPower;
+      updates['性斗系统.实时性斗力'] = sexPower;
       hasUpdates = true;
       console.info(`[性斗学园脚本] 性斗力: (${level}x${potential} + ${sexPowerBonus}) x (1 + ${sexPowerMulti}/100) = ${sexPower}`);
     }
@@ -182,11 +182,11 @@ async function updateDependentVariables() {
     // 注意：这里使用已计算好的最终意志力
     
     // 忍耐力加成和成算
-    const enduranceBonus = (permanentBonuses.$基础忍耐力加成 || 0) + (equipmentBonuses.$基础忍耐力加成 || 0) + (tempBonuses.$基础忍耐力加成 || 0);
-    const enduranceMulti = (permanentBonuses.$基础忍耐力成算 || 0) + (equipmentBonuses.$基础忍耐力成算 || 0) + (tempBonuses.$基础忍耐力成算 || 0);
+    const enduranceBonus = (permanentBonuses.基础忍耐力加成 || 0) + (equipmentBonuses.基础忍耐力加成 || 0) + (tempBonuses.基础忍耐力加成 || 0);
+    const enduranceMulti = (permanentBonuses.基础忍耐力成算 || 0) + (equipmentBonuses.基础忍耐力成算 || 0) + (tempBonuses.基础忍耐力成算 || 0);
     
     // 检查是否虚脱
-    const orgasmCount = getValue(mvuData, '性斗系统.$高潮次数', 0);
+    const orgasmCount = getValue(mvuData, '性斗系统.高潮次数', 0);
     const maxOrgasmCount = getValue(mvuData, '性斗系统.胜负规则.高潮次数上限', 0);
     const isExhausted = maxOrgasmCount > 0 && orgasmCount >= maxOrgasmCount;
     
@@ -206,39 +206,39 @@ async function updateDependentVariables() {
     
     endurance = Math.max(0, Math.floor(endurance));
     
-    const currentEndurance = getValue(mvuData, '性斗系统.$实时忍耐力', 0);
+    const currentEndurance = getValue(mvuData, '性斗系统.实时忍耐力', 0);
     
     if (endurance !== currentEndurance) {
-      updates['性斗系统.$实时忍耐力'] = endurance;
+      updates['性斗系统.实时忍耐力'] = endurance;
       hasUpdates = true;
       console.info(`[性斗学园脚本] 忍耐力: (${level}x${finalWillpower}/10 + ${enduranceBonus}) x (1 + ${enduranceMulti}/100) = ${endurance}`);
     }
 
     // ==================== 步骤5: 检查快感是否达到上限（触发高潮）====================
-    const currentLust = getValue(mvuData, '核心状态._快感', 0);
-    const maxLust = getValue(mvuData, '核心状态._最大快感', 100);
+    const currentLust = getValue(mvuData, '核心状态.$快感', 0);
+    const maxLust = getValue(mvuData, '核心状态.$最大快感', 100);
     
     if (shouldTriggerOrgasm(currentLust, maxLust)) {
       // 清空快感值
-      updates['核心状态._快感'] = 0;
+      updates['核心状态.$快感'] = 0;
       
       // 添加贤者时间状态
-      const currentTempStates = statData.$临时状态?.$状态列表 || {};
-      const currentTempBonuses = statData.$临时状态?.$加成统计 || {};
+      const currentTempStates = statData.临时状态?.状态列表 || {};
+      const currentTempBonuses = statData.临时状态?.加成统计 || {};
       
-      updates['$临时状态.$状态列表'] = {
+      updates['临时状态.状态列表'] = {
         ...currentTempStates,
         '贤者时间': 3, // 持续3回合
       };
       
-      updates['$临时状态.$加成统计'] = {
+      updates['临时状态.加成统计'] = {
         ...currentTempBonuses,
-        $基础性斗力成算: (currentTempBonuses.$基础性斗力成算 || 0) - 20,
-        $基础忍耐力成算: (currentTempBonuses.$基础忍耐力成算 || 0) + 10,
+        基础性斗力成算: (currentTempBonuses.基础性斗力成算 || 0) - 20,
+        基础忍耐力成算: (currentTempBonuses.基础忍耐力成算 || 0) + 10,
       };
       
       // 增加高潮次数
-      updates['性斗系统.$高潮次数'] = orgasmCount + 1;
+      updates['性斗系统.高潮次数'] = orgasmCount + 1;
       hasUpdates = true;
       
       console.info('[性斗学园脚本] 触发高潮！进入贤者时间');
@@ -294,24 +294,24 @@ eventOn(Mvu.events.VARIABLE_UPDATE_ENDED, async (variables, variables_before_upd
     '角色基础._等级',
     '角色基础.经验值',
     // 核心状态基础值
-    '核心状态.$潜力',
+    '核心状态._潜力',
     '核心状态.$基础魅力',
     '核心状态.$基础幸运',
     '核心状态.$基础闪避率',
     '核心状态.$基础暴击率',
     '核心状态.$基础意志力',
     // 核心状态资源
-    '核心状态._最大快感',
-    '核心状态._快感',
-    '核心状态._最大耐力',
-    '核心状态._耐力',
+    '核心状态.$最大快感',
+    '核心状态.$快感',
+    '核心状态.$最大耐力',
+    '核心状态.$耐力',
     // 装备和状态
-    '物品系统.$装备总加成',
-    '_永久状态.$加成统计',
-    '_永久状态.$状态列表',
-    '$临时状态.$状态列表',
-    '$临时状态.$加成统计',
-    '性斗系统.$高潮次数',
+    '物品系统.装备总加成',
+    '永久状态.加成统计',
+    '永久状态.状态列表',
+    '临时状态.状态列表',
+    '临时状态.加成统计',
+    '性斗系统.高潮次数',
   ];
   
   let hasBaseChange = false;

@@ -27,7 +27,47 @@
       <h2 class="profile-name">学员档案</h2>
       <div class="profile-level">
         <span class="level-badge">Lv.{{ characterData.角色基础?._等级 || 1 }}</span>
-        <span class="potential-badge">潜力 {{ (characterData.角色基础?.$潜力 || 5.0).toFixed(1) }}</span>
+        <span class="potential-badge">潜力 {{ (characterData.核心状态?._潜力 || 5.0).toFixed(1) }}</span>
+      </div>
+    </div>
+
+    <!-- 可用点数显示 -->
+    <div class="points-section">
+      <div class="points-card attribute-points">
+        <i class="fas fa-star"></i>
+        <div class="points-info">
+          <span class="points-label">属性点</span>
+          <span class="points-value">{{ characterData.核心状态?.$属性点 || 0 }}</span>
+        </div>
+      </div>
+      <div class="points-card skill-points">
+        <i class="fas fa-book-sparkles"></i>
+        <div class="points-info">
+          <span class="points-label">技能点</span>
+          <span class="points-value">{{ characterData.核心状态?.$技能点 || 0 }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 可加点属性 -->
+    <div class="detail-card" v-if="availablePoints > 0">
+      <h3 class="detail-title"><i class="fas fa-plus-circle"></i> 属性加点 <span class="points-remaining">(剩余 {{ availablePoints }} 点)</span></h3>
+      <div class="attribute-upgrade-grid">
+        <div class="upgrade-item" v-for="attr in upgradeableAttributes" :key="attr.key">
+          <div class="upgrade-info">
+            <i :class="['fas', attr.icon]"></i>
+            <span class="upgrade-label">{{ attr.label }}</span>
+            <span class="upgrade-value">{{ getAttributeValue(attr.key) }}</span>
+          </div>
+          <button 
+            class="upgrade-btn"
+            @click="upgradeAttribute(attr.key, attr.increment)"
+            :disabled="availablePoints <= 0"
+          >
+            <i class="fas fa-plus"></i>
+            <span>+{{ attr.increment }}{{ attr.isPercent ? '%' : '' }}</span>
+          </button>
+        </div>
       </div>
     </div>
 
@@ -51,14 +91,14 @@
         <div class="stat-icon"><i class="fas fa-fire"></i></div>
         <div class="stat-info">
           <div class="stat-label">性斗力</div>
-          <div class="stat-value">{{ characterData.性斗系统?.$实时性斗力 || 0 }}</div>
+          <div class="stat-value">{{ characterData.性斗系统?.实时性斗力 || 0 }}</div>
         </div>
       </div>
       <div class="stat-card endurance">
         <div class="stat-icon"><i class="fas fa-shield-halved"></i></div>
         <div class="stat-info">
           <div class="stat-label">忍耐力</div>
-          <div class="stat-value">{{ characterData.性斗系统?.$实时忍耐力 || 0 }}</div>
+          <div class="stat-value">{{ characterData.性斗系统?.实时忍耐力 || 0 }}</div>
         </div>
       </div>
     </div>
@@ -71,13 +111,13 @@
           <div class="progress-header">
             <span><i class="fas fa-bolt"></i> 耐力</span>
             <span class="progress-value">
-              {{ characterData.核心状态?._耐力 || 0 }} / {{ characterData.核心状态?._最大耐力 || 100 }}
+              {{ characterData.核心状态?.$耐力 || 100 }} / {{ characterData.核心状态?.$最大耐力 || 100 }}
             </span>
           </div>
           <div class="progress-bar">
             <div 
               class="progress-fill stamina" 
-              :style="{ width: `${getPercentage(characterData.核心状态?._耐力 || 0, characterData.核心状态?._最大耐力 || 100)}%` }"
+              :style="{ width: `${getPercentage(characterData.核心状态?.$耐力 || 100, characterData.核心状态?.$最大耐力 || 100)}%` }"
             ></div>
           </div>
         </div>
@@ -86,13 +126,13 @@
           <div class="progress-header">
             <span><i class="fas fa-heart-pulse"></i> 快感</span>
             <span class="progress-value">
-              {{ characterData.核心状态?._快感 || 0 }} / {{ characterData.核心状态?._最大快感 || 100 }}
+              {{ characterData.核心状态?.$快感 || 0 }} / {{ characterData.核心状态?.$最大快感 || 100 }}
             </span>
           </div>
           <div class="progress-bar">
             <div 
               class="progress-fill lust" 
-              :style="{ width: `${getPercentage(characterData.核心状态?._快感 || 0, characterData.核心状态?._最大快感 || 100)}%` }"
+              :style="{ width: `${getPercentage(characterData.核心状态?.$快感 || 0, characterData.核心状态?.$最大快感 || 100)}%` }"
             ></div>
           </div>
         </div>
@@ -100,12 +140,12 @@
         <div class="progress-item">
           <div class="progress-header">
             <span><i class="fas fa-brain"></i> 意志力</span>
-            <span class="progress-value">{{ characterData.核心状态?._意志力 || 0 }}%</span>
+            <span class="progress-value">{{ characterData.核心状态?.意志力 || 100 }}%</span>
           </div>
           <div class="progress-bar">
             <div 
               class="progress-fill willpower" 
-              :style="{ width: `${characterData.核心状态?._意志力 || 0}%` }"
+              :style="{ width: `${characterData.核心状态?.意志力 || 100}%` }"
             ></div>
           </div>
         </div>
@@ -114,13 +154,13 @@
           <div class="progress-header">
             <span><i class="fas fa-star"></i> 经验值</span>
             <span class="progress-value">
-              {{ getCurrentExp(characterData.角色基础?.经验值 || 0) }} / 100
+              {{ characterData.角色基础?.经验值 || 0 }} / 100
             </span>
           </div>
           <div class="progress-bar">
             <div 
               class="progress-fill exp" 
-              :style="{ width: `${getExpPercentage(getCurrentExp(characterData.角色基础?.经验值 || 0))}%` }"
+              :style="{ width: `${getExpPercentage(characterData.角色基础?.经验值 || 0)}%` }"
             ></div>
           </div>
         </div>
@@ -133,15 +173,15 @@
       <div class="attribute-grid">
         <div class="attribute-item">
           <span class="attribute-label">闪避率</span>
-          <span class="attribute-value dodge">{{ characterData.核心状态?.$闪避率 || 0 }}%</span>
+          <span class="attribute-value dodge">{{ characterData.核心状态?._闪避率 || 0 }}%</span>
         </div>
         <div class="attribute-item">
           <span class="attribute-label">暴击率</span>
-          <span class="attribute-value crit">{{ characterData.核心状态?.$暴击率 || 0 }}%</span>
+          <span class="attribute-value crit">{{ characterData.核心状态?._暴击率 || 0 }}%</span>
         </div>
         <div class="attribute-item">
           <span class="attribute-label">堕落度</span>
-          <span class="attribute-value corruption">{{ characterData.核心状态?._堕落度 || 0 }}%</span>
+          <span class="attribute-value corruption">{{ characterData.核心状态?.堕落度 || 0 }}%</span>
         </div>
         <div class="attribute-item">
           <span class="attribute-label">段位</span>
@@ -226,13 +266,80 @@ const props = defineProps<{
 const fileInputRef = ref<HTMLInputElement | null>(null);
 const avatarUrl = ref<string>('');
 
+// 可用属性点
+const availablePoints = computed(() => {
+  return props.characterData.核心状态?.$属性点 || 0;
+});
+
+// 可加点的属性列表（修改 $基础xxx 值，最终值 _xxx 会自动计算）
+const upgradeableAttributes = [
+  { key: '核心状态.$基础魅力', label: '魅力', icon: 'fa-heart', increment: 5, isPercent: false },
+  { key: '核心状态.$基础幸运', label: '幸运', icon: 'fa-clover', increment: 5, isPercent: false },
+  { key: '核心状态.$基础闪避率', label: '闪避率', icon: 'fa-running', increment: 2, isPercent: true },
+  { key: '核心状态.$基础暴击率', label: '暴击率', icon: 'fa-crosshairs', increment: 3, isPercent: true },
+  { key: '核心状态.$基础意志力', label: '意志力', icon: 'fa-brain', increment: 5, isPercent: false },
+];
+
+// 获取属性值
+function getAttributeValue(key: string): number {
+  const parts = key.split('.');
+  let value: any = props.characterData;
+  for (const part of parts) {
+    value = value?.[part];
+  }
+  return value || 0;
+}
+
+// 升级属性
+async function upgradeAttribute(key: string, increment: number) {
+  if (availablePoints.value <= 0) return;
+  
+  try {
+    const globalAny = window as any;
+    if (!globalAny.Mvu) return;
+    
+    const mvuData = globalAny.Mvu.getMvuData({ type: 'message', message_id: 'latest' });
+    if (!mvuData || !mvuData.stat_data) return;
+    
+    // 获取当前值
+    const parts = key.split('.');
+    let currentValue = mvuData.stat_data;
+    for (const part of parts.slice(0, -1)) {
+      if (!currentValue[part]) currentValue[part] = {};
+      currentValue = currentValue[part];
+    }
+    const lastKey = parts[parts.length - 1];
+    const oldValue = currentValue[lastKey] || 0;
+    
+    // 更新属性值
+    currentValue[lastKey] = oldValue + increment;
+    
+    // 减少属性点
+    if (!mvuData.stat_data.核心状态) mvuData.stat_data.核心状态 = {};
+    mvuData.stat_data.核心状态.$属性点 = (mvuData.stat_data.核心状态.$属性点 || 0) - 1;
+    
+    // 写回MVU
+    await globalAny.Mvu.replaceMvuData(mvuData, { type: 'message', message_id: 'latest' });
+    
+    // 显示成功提示
+    if (typeof toastr !== 'undefined') {
+      toastr.success(`属性提升成功！`, '成功', { timeOut: 1500 });
+    }
+  } catch (error) {
+    console.error('[档案] 属性升级失败:', error);
+    if (typeof toastr !== 'undefined') {
+      toastr.error('属性升级失败', '错误', { timeOut: 2000 });
+    }
+  }
+}
+
 // 永久状态
 const permanentStates = computed(() => {
-  return props.characterData._永久状态?.$状态列表 || [];
+  return props.characterData.永久状态?.状态列表 || [];
 });
 
 const permanentBonuses = computed(() => {
-  return props.characterData._永久状态?.$加成统计 || {};
+  return props.characterData.永久状态?.加成统计 || {};
 });
 
 const hasPermanentBonuses = computed(() => {
@@ -242,7 +349,7 @@ const hasPermanentBonuses = computed(() => {
 
 // 临时状态
 const tempStates = computed(() => {
-  return props.characterData.$临时状态?.$状态列表 || {};
+  return props.characterData.临时状态?.状态列表 || {};
 });
 
 const hasTempStates = computed(() => {
@@ -250,7 +357,7 @@ const hasTempStates = computed(() => {
 });
 
 const tempBonuses = computed(() => {
-  return props.characterData.$临时状态?.$加成统计 || {};
+  return props.characterData.临时状态?.加成统计 || {};
 });
 
 const hasTempBonuses = computed(() => {
@@ -342,15 +449,15 @@ function handleImageError() {
 // 格式化加成标签
 function formatBonusLabel(key: string): string {
   const labelMap: Record<string, string> = {
-    '$魅力加成': '魅力',
-    '$幸运加成': '幸运',
-    '$基础性斗力加成': '性斗力+',
-    '$基础性斗力成算': '性斗力%',
-    '$基础忍耐力加成': '忍耐力+',
-    '$基础忍耐力成算': '忍耐力%',
-    '$闪避率加成': '闪避率',
-    '$暴击率加成': '暴击率',
-    '$意志力加成': '意志力',
+    '魅力加成': '魅力',
+    '幸运加成': '幸运',
+    '基础性斗力加成': '性斗力+',
+    '基础性斗力成算': '性斗力%',
+    '基础忍耐力加成': '忍耐力+',
+    '基础忍耐力成算': '忍耐力%',
+    '闪避率加成': '闪避率',
+    '暴击率加成': '暴击率',
+    '意志力加成': '意志力',
   };
   return labelMap[key] || key;
 }
@@ -374,15 +481,9 @@ function getPercentage(current: number, max: number): number {
   return Math.min(100, Math.max(0, (current / max) * 100));
 }
 
-// 获取当前经验值（满100后自动扣除）
-function getCurrentExp(totalExp: number): number {
-  // 每100经验升一级，当前等级的经验 = 总经验 % 100
-  return totalExp % 100;
-}
-
-function getExpPercentage(current: number): number {
+function getExpPercentage(exp: number): number {
   // 经验值上限固定为100
-  return getPercentage(current, 100);
+  return getPercentage(exp % 100, 100);
 }
 
 onMounted(() => {
@@ -512,6 +613,135 @@ onMounted(() => {
     color: rgba(255, 255, 255, 0.8);
     border: 1px solid rgba(255, 255, 255, 0.2);
   }
+}
+
+.points-section {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.points-card {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  border-radius: 14px;
+  backdrop-filter: blur(10px);
+  
+  i {
+    font-size: 20px;
+  }
+  
+  &.attribute-points {
+    background: linear-gradient(135deg, rgba(251, 191, 36, 0.2), rgba(251, 191, 36, 0.05));
+    border: 1px solid rgba(251, 191, 36, 0.3);
+    
+    i { color: #fbbf24; }
+    .points-value { color: #fcd34d; }
+  }
+  
+  &.skill-points {
+    background: linear-gradient(135deg, rgba(139, 92, 246, 0.2), rgba(139, 92, 246, 0.05));
+    border: 1px solid rgba(139, 92, 246, 0.3);
+    
+    i { color: #8b5cf6; }
+    .points-value { color: #a78bfa; }
+  }
+  
+  .points-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  
+  .points-label {
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.5);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  
+  .points-value {
+    font-size: 20px;
+    font-weight: 700;
+  }
+}
+
+.attribute-upgrade-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.upgrade-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.upgrade-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  
+  i {
+    font-size: 14px;
+    color: #667eea;
+    width: 20px;
+    text-align: center;
+  }
+  
+  .upgrade-label {
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.8);
+  }
+  
+  .upgrade-value {
+    font-size: 14px;
+    font-weight: 600;
+    color: white;
+    background: rgba(255, 255, 255, 0.1);
+    padding: 2px 8px;
+    border-radius: 6px;
+  }
+}
+
+.upgrade-btn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 12px;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  border: none;
+  border-radius: 8px;
+  color: white;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  
+  &:hover:not(:disabled) {
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+  }
+  
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+.points-remaining {
+  font-size: 12px;
+  font-weight: normal;
+  color: #fbbf24;
+  margin-left: 8px;
 }
 
 .stats-grid {

@@ -162,6 +162,7 @@ import { getMvuData, syncFromMvu, updateMvuVariables } from './utils/mvu-helper'
 import { STARTER_SKILLS } from './data/skills';
 import { getConstitutionById } from './data/constitutions';
 import { ARCHETYPES } from './constants';
+import { convertSkillsToMvu } from './utils/skill-converter';
 
 const step = ref(1);
 const loading = ref(false);
@@ -277,17 +278,32 @@ const resetAttributes = () => {
   characterData.value.attributes = {
     角色基础: {
       _等级: INITIAL_ATTRIBUTES.角色基础._等级,
-      $潜力: INITIAL_ATTRIBUTES.角色基础.$潜力,
-      _魅力: INITIAL_ATTRIBUTES.角色基础._魅力,
-      _幸运: INITIAL_ATTRIBUTES.角色基础._幸运,
+      经验值: INITIAL_ATTRIBUTES.角色基础.经验值,
+      声望: INITIAL_ATTRIBUTES.角色基础.声望,
+      _段位: INITIAL_ATTRIBUTES.角色基础._段位,
+      段位积分: INITIAL_ATTRIBUTES.角色基础.段位积分,
     },
     核心状态: {
-      _最大耐力: INITIAL_ATTRIBUTES.核心状态._最大耐力,
-      _最大快感: INITIAL_ATTRIBUTES.核心状态._最大快感,
+      $属性点: INITIAL_ATTRIBUTES.核心状态.$属性点,
+      $技能点: INITIAL_ATTRIBUTES.核心状态.$技能点,
+      $最大耐力: INITIAL_ATTRIBUTES.核心状态.$最大耐力,
+      $耐力: INITIAL_ATTRIBUTES.核心状态.$耐力,
+      $最大快感: INITIAL_ATTRIBUTES.核心状态.$最大快感,
+      $快感: INITIAL_ATTRIBUTES.核心状态.$快感,
+      堕落度: INITIAL_ATTRIBUTES.核心状态.堕落度,
+      _潜力: INITIAL_ATTRIBUTES.核心状态._潜力,
+      _魅力: INITIAL_ATTRIBUTES.核心状态._魅力,
+      $基础魅力: INITIAL_ATTRIBUTES.核心状态.$基础魅力,
+      _幸运: INITIAL_ATTRIBUTES.核心状态._幸运,
+      $基础幸运: INITIAL_ATTRIBUTES.核心状态.$基础幸运,
       $基础性斗力: INITIAL_ATTRIBUTES.核心状态.$基础性斗力,
       $基础忍耐力: INITIAL_ATTRIBUTES.核心状态.$基础忍耐力,
-      $闪避率: INITIAL_ATTRIBUTES.核心状态.$闪避率,
-      $暴击率: INITIAL_ATTRIBUTES.核心状态.$暴击率,
+      _闪避率: INITIAL_ATTRIBUTES.核心状态._闪避率,
+      $基础闪避率: INITIAL_ATTRIBUTES.核心状态.$基础闪避率,
+      _暴击率: INITIAL_ATTRIBUTES.核心状态._暴击率,
+      $基础暴击率: INITIAL_ATTRIBUTES.核心状态.$基础暴击率,
+      意志力: INITIAL_ATTRIBUTES.核心状态.意志力,
+      $基础意志力: INITIAL_ATTRIBUTES.核心状态.$基础意志力,
     },
   };
 };
@@ -297,15 +313,8 @@ const handleStartGame = async () => {
   
   try {
     // 保存选中的主动技能到 MVU 变量
-    // 变量类型是 z.record(z.string(), z.object({ $描述: z.string() }))
-    // 所以需要构建为对象，键为技能名称，值为 { $描述: string }
-    const activeSkillsRecord: Record<string, { $描述: string }> = {};
-    for (const skillId of characterData.value.initialActiveSkills) {
-      const skill = STARTER_SKILLS.find(s => s.id === skillId);
-      if (skill) {
-        activeSkillsRecord[skill.name] = { $描述: skill.description };
-      }
-    }
+    // 使用新的 ActiveSkillSchema 结构
+    const activeSkillsRecord = convertSkillsToMvu(STARTER_SKILLS, characterData.value.initialActiveSkills);
 
     // 获取当前角色类型的永久状态
     const currentArchetypes = ARCHETYPES[characterData.value.gender] || ARCHETYPES[Gender.OTHER];
@@ -314,15 +323,15 @@ const handleStartGame = async () => {
     // 构建永久状态列表和加成统计
     const permanentStateList: string[] = [];
     const permanentBonusStats: Record<string, number> = {
-      $魅力加成: 0,
-      $幸运加成: 0,
-      $基础性斗力加成: 0,
-      $基础性斗力成算: 0,
-      $基础忍耐力加成: 0,
-      $基础忍耐力成算: 0,
-      $闪避率加成: 0,
-      $暴击率加成: 0,
-      $意志力加成: 0,
+      魅力加成: 0,
+      幸运加成: 0,
+      基础性斗力加成: 0,
+      基础性斗力成算: 0,
+      基础忍耐力加成: 0,
+      基础忍耐力成算: 0,
+      闪避率加成: 0,
+      暴击率加成: 0,
+      意志力加成: 0,
     };
     
     // 添加角色类型的永久状态
@@ -349,10 +358,9 @@ const handleStartGame = async () => {
     }
 
     await updateMvuVariables({
-      '技能系统.$主动技能': activeSkillsRecord,
-      '技能系统.$被动体质': characterData.value.initialPassiveSkills,
-      '_永久状态.$状态列表': permanentStateList,
-      '_永久状态.$加成统计': permanentBonusStats,
+      '技能系统.主动技能': activeSkillsRecord,
+      '永久状态.状态列表': permanentStateList,
+      '永久状态.加成统计': permanentBonusStats,
     });
 
     console.info('[开局] 数据已保存到 MVU');

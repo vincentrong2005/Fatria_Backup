@@ -10,43 +10,57 @@ export enum Difficulty {
   HARDCORE = '地狱开局 (困难)'
 }
 
-// 根据 MVU 变量结构定义的属性路径
+// 根据 [initvar].yaml 的 MVU 变量结构定义
+// _ 前缀：只读属性（对AI不可修改）
+// $ 前缀：对AI不可见、不可修改
+// 无前缀：普通属性（对AI可见可修改）
+// 对脚本来说所有属性都可修改
 export interface CharacterAttributes {
   // 角色基础
   角色基础: {
-    _等级: number;
-    $潜力: number;
-    _魅力: number;
-    _幸运: number;
-    经验值?: number; // 当前经验值
-    $今日经验?: number; // 今日获得经验
+    _等级: number;       // 只读 (1-100)
+    经验值: number;      // 普通
+    声望?: number;       // 普通
+    _段位?: string;      // 只读
+    段位积分?: number;   // 普通
   };
   
   // 核心状态
   核心状态: {
-    _最大耐力: number;
-    _最大快感: number;
-    _耐力?: number; // 当前耐力
-    _快感?: number; // 当前快感
-    _意志力?: number; // 意志力（用于计算忍耐力）
-    $基础性斗力: number; // 注意：实际性斗力由公式计算，此值仅用于显示
-    $基础忍耐力: number; // 注意：实际忍耐力由公式计算，此值仅用于显示
-    $闪避率: number;
-    $暴击率: number;
+    $属性点: number;     // 可修改 - 用于升级分配
+    $技能点: number;     // 可修改 - 用于技能升级
+    $最大耐力: number;   // 可修改
+    $耐力: number;       // 可修改
+    $最大快感: number;   // 可修改
+    $快感: number;       // 可修改
+    堕落度: number;      // 普通
+    _潜力: number;       // 只读 (5.0-10.0) - 用于计算升级获得的点数
+    _魅力: number;       // 只读 - 最终魅力值
+    $基础魅力: number;   // 可修改 - 基础魅力值
+    _幸运: number;       // 只读 - 最终幸运值
+    $基础幸运: number;   // 可修改 - 基础幸运值
+    $基础性斗力: number; // 可修改
+    $基础忍耐力: number; // 可修改
+    _闪避率: number;     // 只读 - 最终闪避率 (0-60)
+    $基础闪避率: number; // 可修改
+    _暴击率: number;     // 只读 - 最终暴击率 (0-100)
+    $基础暴击率: number; // 可修改
+    意志力: number;      // 普通 (0-100)
+    $基础意志力: number; // 可修改
   };
 }
 
-// 永久状态加成统计
+// 永久状态加成统计（匹配MVU变量结构，无前缀）
 export interface PermanentBonus {
-  $魅力加成: number;
-  $幸运加成: number;
-  $基础性斗力加成: number;
-  $基础性斗力成算: number;
-  $基础忍耐力加成: number;
-  $基础忍耐力成算: number;
-  $闪避率加成: number;
-  $暴击率加成: number;
-  $意志力加成: number;
+  魅力加成: number;
+  幸运加成: number;
+  基础性斗力加成: number;
+  基础性斗力成算: number;
+  基础忍耐力加成: number;
+  基础忍耐力成算: number;
+  闪避率加成: number;
+  暴击率加成: number;
+  意志力加成: number;
 }
 
 export interface Skill {
@@ -106,26 +120,36 @@ export interface CharacterData {
   initialPassiveSkills: string[]; // IDs of selected constitution skills
 }
 
-// Default starting values based on MVU schema defaults
+// Default starting values based on [initvar].yaml
 export const INITIAL_ATTRIBUTES: CharacterAttributes = {
   角色基础: {
     _等级: 1,
-    $潜力: 5.0,
-    _魅力: 10,
-    _幸运: 10,
     经验值: 0,
-    $今日经验: 0,
+    声望: 0,
+    _段位: '无段位',
+    段位积分: 0,
   },
   核心状态: {
-    _最大耐力: 100,
-    _最大快感: 100,
-    _耐力: 100,
-    _快感: 0,
-    _意志力: 100,
-    $基础性斗力: 10, // 注意：实际性斗力 = (等级 x 潜力) + 加成，此值仅用于显示
-    $基础忍耐力: 10, // 注意：实际忍耐力 = (等级 x 意志力/10) + 加成，此值仅用于显示
-    $闪避率: 0,
-    $暴击率: 0,
+    $属性点: 0,
+    $技能点: 0,
+    $最大耐力: 100,
+    $耐力: 100,
+    $最大快感: 100,
+    $快感: 0,
+    堕落度: 0,
+    _潜力: 5.0,
+    _魅力: 10,
+    $基础魅力: 10,
+    _幸运: 10,
+    $基础幸运: 10,
+    $基础性斗力: 10,
+    $基础忍耐力: 10,
+    _闪避率: 0,
+    $基础闪避率: 0,
+    _暴击率: 0,
+    $基础暴击率: 0,
+    意志力: 100,
+    $基础意志力: 100,
   },
 };
 

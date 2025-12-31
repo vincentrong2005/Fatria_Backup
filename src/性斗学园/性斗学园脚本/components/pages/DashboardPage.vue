@@ -21,7 +21,7 @@
         </div>
         <div class="card-content">
           <div class="card-label">金币</div>
-          <div class="card-value gold">{{ formatNumber(characterData.物品系统?.$学园金币 || 0) }}</div>
+          <div class="card-value gold">{{ formatNumber(characterData.物品系统?.学园金币 || 0) }}</div>
         </div>
       </div>
     </div>
@@ -36,11 +36,11 @@
         <div class="combat-stats">
           <div class="stat-item">
             <i class="fas fa-fire"></i>
-            <span>{{ characterData.性斗系统?.$实时性斗力 || 0 }}</span>
+            <span>{{ characterData.性斗系统?.实时性斗力 || 0 }}</span>
           </div>
           <div class="stat-item">
             <i class="fas fa-shield-halved"></i>
-            <span>{{ characterData.性斗系统?.$实时忍耐力 || 0 }}</span>
+            <span>{{ characterData.性斗系统?.实时忍耐力 || 0 }}</span>
           </div>
         </div>
       </div>
@@ -51,12 +51,12 @@
           <div class="bar-header">
             <i class="fas fa-bolt stamina-icon"></i>
             <span class="bar-label">耐力</span>
-            <span class="bar-value">{{ characterData.核心状态?._耐力 || 0 }}/{{ characterData.核心状态?._最大耐力 || 100 }}</span>
+            <span class="bar-value">{{ characterData.核心状态?.$耐力 || 0 }}/{{ characterData.核心状态?.$最大耐力 || 100 }}</span>
           </div>
           <div class="bar-track">
             <div 
               class="bar-fill stamina" 
-              :style="{ width: `${getPercentage(characterData.核心状态?._耐力 || 0, characterData.核心状态?._最大耐力 || 100)}%` }"
+              :style="{ width: `${getPercentage(characterData.核心状态?.$耐力 || 0, characterData.核心状态?.$最大耐力 || 100)}%` }"
             ></div>
           </div>
         </div>
@@ -65,12 +65,12 @@
           <div class="bar-header">
             <i class="fas fa-heart-pulse lust-icon"></i>
             <span class="bar-label">快感</span>
-            <span class="bar-value">{{ characterData.核心状态?._快感 || 0 }}/{{ characterData.核心状态?._最大快感 || 100 }}</span>
+            <span class="bar-value">{{ characterData.核心状态?.$快感 || 0 }}/{{ characterData.核心状态?.$最大快感 || 100 }}</span>
           </div>
           <div class="bar-track">
             <div 
               class="bar-fill lust" 
-              :style="{ width: `${getPercentage(characterData.核心状态?._快感 || 0, characterData.核心状态?._最大快感 || 100)}%` }"
+              :style="{ width: `${getPercentage(characterData.核心状态?.$快感 || 0, characterData.核心状态?.$最大快感 || 100)}%` }"
             ></div>
           </div>
         </div>
@@ -79,12 +79,12 @@
           <div class="bar-header">
             <i class="fas fa-brain willpower-icon"></i>
             <span class="bar-label">意志</span>
-            <span class="bar-value">{{ characterData.核心状态?._意志力 || 0 }}%</span>
+            <span class="bar-value">{{ characterData.核心状态?.意志力 || 0 }}%</span>
           </div>
           <div class="bar-track">
             <div 
               class="bar-fill willpower" 
-              :style="{ width: `${characterData.核心状态?._意志力 || 0}%` }"
+              :style="{ width: `${characterData.核心状态?.意志力 || 0}%` }"
             ></div>
           </div>
         </div>
@@ -103,11 +103,11 @@
       </div>
       <div class="quick-stat">
         <span class="qs-label">闪避</span>
-        <span class="qs-value dodge">{{ characterData.核心状态?.$闪避率 || 0 }}%</span>
+        <span class="qs-value dodge">{{ characterData.核心状态?._闪避率 || 0 }}%</span>
       </div>
       <div class="quick-stat">
         <span class="qs-label">暴击</span>
-        <span class="qs-value crit">{{ characterData.核心状态?.$暴击率 || 0 }}%</span>
+        <span class="qs-value crit">{{ characterData.核心状态?._暴击率 || 0 }}%</span>
       </div>
     </div>
 

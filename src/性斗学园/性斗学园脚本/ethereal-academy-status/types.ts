@@ -2,7 +2,7 @@
 
 export interface CharacterBase {
   _等级: number;
-  $潜力: number;
+  _潜力: number;
   经验值: number;
   $今日经验: number;
   _魅力: number;
@@ -13,44 +13,75 @@ export interface CharacterBase {
 }
 
 export interface CoreStats {
-  _最大耐力: number;
-  _耐力: number;
-  _最大快感: number;
-  _快感: number;
+  $最大耐力: number;
+  $耐力: number;
+  $最大快感: number;
+  $快感: number;
   $基础性斗力: number;
   $基础忍耐力: number;
-  $闪避率: number;
-  $暴击率: number;
-  _堕落度: number;
-  _意志力: number;
+  _闪避率: number;
+  _暴击率: number;
+  堕落度: number;
+  意志力: number;
 }
 
 export interface PermanentBonus {
-  $魅力加成: number;
-  $幸运加成: number;
-  $基础性斗力加成: number;
-  $基础性斗力成算: number;
-  $基础忍耐力加成: number;
-  $基础忍耐力成算: number;
-  $闪避率加成: number;
-  $暴击率加成: number;
-  $意志力加成: number;
+  魅力加成: number;
+  幸运加成: number;
+  基础性斗力加成: number;
+  基础性斗力成算: number;
+  基础忍耐力加成: number;
+  基础忍耐力成算: number;
+  闪避率加成: number;
+  暴击率加成: number;
+  意志力加成: number;
 }
 
-export interface InventoryItem {
-  类型: "消耗品" | "装备" | "材料" | "特殊";
+// 背包物品基础结构
+export interface BaseItem {
   等级: "C" | "B" | "A" | "S" | "SS";
+  描述: string;
+}
+
+// 装备（背包中）
+export interface EquipmentInBag extends BaseItem {
+  类型: "装备";
+  加成属性: PermanentBonus;
+  部位: "主装备" | "副装备" | "饰品" | "特殊装备";
+  数量: 1;
+}
+
+// 消耗品
+export interface ConsumableItem extends BaseItem {
+  类型: "消耗品";
+  加成属性?: PermanentBonus;
+  耐力增加?: number;
+  快感降低?: number;
   数量: number;
-  效果描述: string;
+}
+
+// 其他物品
+export interface OtherItem extends BaseItem {
+  类型: "其他";
+  数量: number;
+}
+
+export type InventoryItem = EquipmentInBag | ConsumableItem | OtherItem;
+
+// 已装备物品
+export interface EquippedItem {
+  名称: string;
+  等级: "C" | "B" | "A" | "S" | "SS";
+  加成属性: PermanentBonus;
   描述: string;
 }
 
 export interface Equipment {
-  主装备: string;
-  副装备: string;
-  饰品1: string;
-  饰品2: string;
-  特殊装备: string;
+  主装备: EquippedItem;
+  副装备: EquippedItem;
+  饰品1: EquippedItem;
+  饰品2: EquippedItem;
+  特殊装备: EquippedItem;
 }
 
 export interface Quest {
@@ -85,14 +116,15 @@ export interface TimeSystem {
 export interface GameState {
   角色基础: CharacterBase;
   核心状态: CoreStats;
-  _永久状态: {
-    $状态列表: string[];
-    $加成统计: PermanentBonus;
+  永久状态: {
+    状态列表: string[];
+    加成统计: PermanentBonus;
   };
   物品系统: {
-    $学园金币: number;
-    $背包: Record<string, InventoryItem>;
-    $装备栏: Equipment;
+    学园金币: number;
+    背包: Record<string, InventoryItem>;
+    _装备栏: Equipment;
+    装备总加成: PermanentBonus;
   };
   任务系统: {
     主线任务: Quest;
