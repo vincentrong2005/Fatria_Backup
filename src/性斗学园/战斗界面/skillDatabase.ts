@@ -254,10 +254,7 @@ export const ADVANCED_SKILLS: SkillData[] = [
 
 // ==================== 所有技能 ====================
 
-export const ALL_SKILLS: SkillData[] = [
-  ...COMMON_SKILLS,
-  ...ADVANCED_SKILLS,
-];
+export const ALL_SKILLS: SkillData[] = [...COMMON_SKILLS, ...ADVANCED_SKILLS];
 
 /** 按ID获取技能 */
 export function getSkillById(id: string): SkillData | undefined {
@@ -268,4 +265,3 @@ export function getSkillById(id: string): SkillData | undefined {
 export function getSkillsByType(type: SkillType): SkillData[] {
   return ALL_SKILLS.filter(skill => skill.type === type);
 }
-

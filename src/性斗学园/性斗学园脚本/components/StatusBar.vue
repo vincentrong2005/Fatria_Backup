@@ -134,7 +134,7 @@ async function loadMvuData() {
 
     characterData.value = mvuData.stat_data;
     combatData.value = mvuData.stat_data;
-    
+
     // 调试：检查背包数据
     console.log('[状态栏] 物品系统:', mvuData.stat_data?.物品系统);
     console.log('[状态栏] 背包数据:', mvuData.stat_data?.物品系统?.背包);
@@ -276,7 +276,7 @@ onMounted(() => {
       }
     });
   }
-  
+
   // 监听自定义数据更新事件（用于背包界面等）
   const dataUpdateHandler = () => {
     if (props.isVisible) {
@@ -284,7 +284,7 @@ onMounted(() => {
     }
   };
   window.addEventListener('mvu-data-updated', dataUpdateHandler);
-  
+
   // 保存处理器引用以便清理
   (window as any).__statusBarDataUpdateHandler = dataUpdateHandler;
 });

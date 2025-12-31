@@ -84,14 +84,14 @@ export function checkDodge(
   attackerLuck: number,
   targetEvasion: number,
   skillAccuracy: number,
-  canBeDodged: boolean
+  canBeDodged: boolean,
 ): boolean {
   if (!canBeDodged) {
     return false;
   }
 
   // 计算最终命中率 = 技能基础命中率 - 目标闪避率 + (攻击者幸运 / 10)
-  const finalAccuracy = skillAccuracy - targetEvasion + (attackerLuck / 10);
+  const finalAccuracy = skillAccuracy - targetEvasion + attackerLuck / 10;
 
   // 命中率最低10%,最高95%
   const clampedAccuracy = Math.max(10, Math.min(95, finalAccuracy));
@@ -110,7 +110,7 @@ export function checkDodge(
  */
 export function checkCritical(attackerCrit: number, attackerLuck: number, skillCritModifier: number): boolean {
   // 计算最终暴击率 = 基础暴击率 + (幸运 / 5) + 技能修正
-  const finalCritRate = attackerCrit + (attackerLuck / 5) + skillCritModifier;
+  const finalCritRate = attackerCrit + attackerLuck / 5 + skillCritModifier;
 
   // 暴击率最低0%,最高80%
   const clampedCritRate = Math.max(0, Math.min(80, finalCritRate));
@@ -219,9 +219,7 @@ export function applySkillBuffs(target: Character, skill: SkillData): string[] {
 
   for (const buff of skill.buffs) {
     // 检查是否已有相同类型的buff
-    const existingBuffIndex = target.statusEffects.findIndex(
-      effect => effect.effect.type === buff.type
-    );
+    const existingBuffIndex = target.statusEffects.findIndex(effect => effect.effect.type === buff.type);
 
     if (existingBuffIndex >= 0 && !buff.stackable) {
       // 不可叠加,刷新持续时间
@@ -229,9 +227,7 @@ export function applySkillBuffs(target: Character, skill: SkillData): string[] {
       logs.push(`刷新了 ${target.statusEffects[existingBuffIndex].name} 的持续时间`);
     } else if (existingBuffIndex >= 0 && buff.stackable) {
       // 可叠加,检查层数限制
-      const currentStacks = target.statusEffects.filter(
-        effect => effect.effect.type === buff.type
-      ).length;
+      const currentStacks = target.statusEffects.filter(effect => effect.effect.type === buff.type).length;
       if (!buff.maxStacks || currentStacks < buff.maxStacks) {
         // 添加新层
         const newEffect: StatusEffect = {
@@ -290,11 +286,11 @@ export function updateStatusEffects(character: Character): string[] {
       logs.push(`${character.name} 受到持续快感影响 (${lustChange > 0 ? '+' : ''}${lustChange})`);
     } else if (effect.effect.type === BuffType.REGEN) {
       const regenValue = effect.effect.isPercent
-        ? Math.floor(character.stats.maxEndurance * effect.effect.value / 100)
+        ? Math.floor((character.stats.maxEndurance * effect.effect.value) / 100)
         : effect.effect.value;
       character.stats.currentEndurance = Math.min(
         character.stats.maxEndurance,
-        character.stats.currentEndurance + regenValue
+        character.stats.currentEndurance + regenValue,
       );
       logs.push(`${character.name} 回复了 ${regenValue} 点耐力`);
     }
@@ -348,4 +344,3 @@ function isDebuff(type: BuffType): boolean {
   ];
   return debuffs.includes(type);
 }
-
