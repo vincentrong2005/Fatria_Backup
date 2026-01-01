@@ -55,7 +55,6 @@
       />
     </main>
 
-
     <!-- 底部操作区域 -->
     <footer class="combat-footer">
       <div class="footer-content">
@@ -1260,7 +1259,7 @@ async function initializeCombatSystem() {
     _.set(mvuData.stat_data, '性斗系统.行动日志', {});
     _.set(mvuData.stat_data, '性斗系统.对手技能冷却', {});
     _.set(mvuData.stat_data, '性斗系统.战斗物品', {});
-    
+
     // 清空对手数据（可选，根据需求决定是否清空）
     // _.set(mvuData.stat_data, '性斗系统.对手名称', '');
     // _.set(mvuData.stat_data, '性斗系统.对手性斗力', 0);
@@ -1487,7 +1486,7 @@ function handlePlayerSkill(skill: Skill) {
         } else {
           console.warn('[战斗界面] 玩家攻击 - result.logs 为空或未定义');
         }
-        
+
         if (result.isCritical) {
           addLog(`暴击！造成 ${result.actualDamage} 点快感伤害！`, 'player', 'critical');
           triggerEffect('critical');
@@ -1752,7 +1751,7 @@ function handleEnemyTurn() {
           } else {
             console.warn('[战斗界面] 敌人攻击 - result.logs 为空或未定义');
           }
-          
+
           if (result.isCritical) {
             addLog(`暴击！造成 ${result.actualDamage} 点快感伤害！`, 'enemy', 'critical');
             triggerEffect('critical');
@@ -1939,7 +1938,7 @@ async function sendCombatLogToLLM(context: string) {
   try {
     const combatLogText = collectCombatLogs();
     const totalTurns = turnState.currentTurn;
-    
+
     // 判断是胜利还是失败
     const isVictory = turnState.phase === 'victory';
     const resultText = isVictory ? '胜利' : '战败';
@@ -1979,7 +1978,7 @@ async function sendCombatLogToLLM(context: string) {
     } else {
       console.warn('[战斗界面] generate函数不可用');
       addLog('无法生成过程描述，generate函数不可用', 'system', 'warn');
-      
+
       // 如果 generate 不可用，直接触发一次AI回复
       if (typeof triggerSlash === 'function') {
         await triggerSlash('/trigger');
@@ -1995,10 +1994,10 @@ async function sendCombatLogToLLM(context: string) {
 async function handleSendCombatLogToLLM() {
   const context = turnState.phase === 'victory' ? '获得胜利' : turnState.phase === 'defeat' ? '败北' : '战斗结束';
   await sendCombatLogToLLM(context);
-  
+
   // 清空战斗日志
   logs.value = [];
-  
+
   // 清空MVU中的行动日志
   try {
     if (typeof Mvu !== 'undefined') {
@@ -2289,7 +2288,9 @@ onMounted(async () => {
   border-top: 1px solid rgba(255, 255, 255, 0.1);
   backdrop-filter: blur(30px) saturate(180%);
   padding: 1rem 1.5rem 1.5rem;
-  box-shadow: 0 -20px 60px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.05) inset;
+  box-shadow:
+    0 -20px 60px rgba(0, 0, 0, 0.7),
+    0 0 0 1px rgba(255, 255, 255, 0.05) inset;
 }
 
 .footer-content {
@@ -2344,7 +2345,9 @@ onMounted(async () => {
     background: linear-gradient(135deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.1));
     color: white;
     border-color: rgba(255, 255, 255, 0.3);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.1) inset;
+    box-shadow:
+      0 4px 12px rgba(0, 0, 0, 0.3),
+      0 0 0 1px rgba(255, 255, 255, 0.1) inset;
   }
 
   &:hover:not(.active) {
@@ -2416,20 +2419,20 @@ onMounted(async () => {
   scroll-behavior: smooth;
   scrollbar-width: thin;
   scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
-  
+
   // Webkit浏览器滚动条样式
   &::-webkit-scrollbar {
     height: 6px;
   }
-  
+
   &::-webkit-scrollbar-track {
     background: transparent;
   }
-  
+
   &::-webkit-scrollbar-thumb {
     background: rgba(255, 255, 255, 0.2);
     border-radius: 3px;
-    
+
     &:hover {
       background: rgba(255, 255, 255, 0.3);
     }
@@ -2469,7 +2472,9 @@ onMounted(async () => {
   &:hover {
     transform: translateY(-4px) scale(1.02);
     border-color: rgba(255, 255, 255, 0.2);
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.1) inset;
+    box-shadow:
+      0 8px 24px rgba(0, 0, 0, 0.4),
+      0 0 0 1px rgba(255, 255, 255, 0.1) inset;
   }
 
   span {
@@ -2522,7 +2527,9 @@ onMounted(async () => {
   &:hover:not(.disabled) {
     transform: translateY(-2px);
     border-color: rgba(255, 255, 255, 0.2);
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.1) inset;
+    box-shadow:
+      0 8px 24px rgba(0, 0, 0, 0.4),
+      0 0 0 1px rgba(255, 255, 255, 0.1) inset;
     background: linear-gradient(135deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.05));
   }
 
@@ -2825,7 +2832,9 @@ onMounted(async () => {
 .btn-process {
   background: linear-gradient(135deg, #db2777, #ec4899);
   color: white;
-  box-shadow: 0 8px 24px rgba(219, 39, 119, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.1) inset;
+  box-shadow:
+    0 8px 24px rgba(219, 39, 119, 0.5),
+    0 0 0 1px rgba(255, 255, 255, 0.1) inset;
   font-size: 1rem;
   font-weight: 700;
   letter-spacing: 0.05em;
@@ -2833,7 +2842,9 @@ onMounted(async () => {
   &:hover {
     background: linear-gradient(135deg, #ec4899, #f472b6);
     transform: translateY(-2px);
-    box-shadow: 0 12px 32px rgba(219, 39, 119, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.2) inset;
+    box-shadow:
+      0 12px 32px rgba(219, 39, 119, 0.6),
+      0 0 0 1px rgba(255, 255, 255, 0.2) inset;
   }
 
   &:active {
@@ -2871,7 +2882,9 @@ onMounted(async () => {
   background: linear-gradient(135deg, rgba(15, 23, 42, 0.95), rgba(9, 9, 11, 0.98));
   border-radius: 1.5rem;
   border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(255, 255, 255, 0.05) inset;
+  box-shadow:
+    0 20px 60px rgba(0, 0, 0, 0.8),
+    0 0 0 1px rgba(255, 255, 255, 0.05) inset;
   backdrop-filter: blur(30px);
   max-width: 500px;
   width: 90%;

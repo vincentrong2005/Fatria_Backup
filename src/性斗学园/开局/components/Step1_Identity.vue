@@ -9,7 +9,7 @@
         <input
           type="text"
           :value="data.name"
-          @input="(e) => updateData({ name: (e.target as HTMLInputElement).value })"
+          @input="e => updateData({ name: (e.target as HTMLInputElement).value })"
           class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-secondary/50 focus:border-transparent transition-all duration-300 backdrop-blur-sm"
           placeholder="输入你的角色名..."
         />
@@ -25,7 +25,7 @@
           min="15"
           max="25"
           :value="data.age"
-          @input="(e) => updateData({ age: parseInt((e.target as HTMLInputElement).value) || 16 })"
+          @input="e => updateData({ age: parseInt((e.target as HTMLInputElement).value) || 16 })"
           class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-secondary/50 transition-all backdrop-blur-sm"
         />
       </div>
@@ -44,7 +44,7 @@
               'flex-1 py-2 rounded-lg text-sm font-medium transition-all duration-300',
               data.gender === g
                 ? 'bg-secondary text-white shadow-lg shadow-pink-500/30'
-                : 'text-gray-400 hover:text-white hover:bg-white/5'
+                : 'text-gray-400 hover:text-white hover:bg-white/5',
             ]"
           >
             {{ g }}
@@ -59,21 +59,16 @@
         </label>
         <select
           :value="data.difficulty"
-          @change="(e) => updateData({ difficulty: (e.target as HTMLSelectElement).value as Difficulty })"
+          @change="e => updateData({ difficulty: (e.target as HTMLSelectElement).value as Difficulty })"
           :disabled="data.difficulty === Difficulty.CHEATER"
           :class="[
             'w-full bg-white/5 border rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-red-500/50 appearance-none backdrop-blur-sm',
             data.difficulty === Difficulty.CHEATER
               ? 'border-yellow-500/50 cursor-not-allowed opacity-75 bg-yellow-500/10'
-              : 'border-white/10 cursor-pointer'
+              : 'border-white/10 cursor-pointer',
           ]"
         >
-          <option
-            v-for="d in availableDifficulties"
-            :key="d"
-            :value="d"
-            class="bg-slate-900 text-white"
-          >
+          <option v-for="d in availableDifficulties" :key="d" :value="d" class="bg-slate-900 text-white">
             {{ d }}
           </option>
         </select>
@@ -91,7 +86,7 @@
       <textarea
         rows="2"
         :value="data.appearance"
-        @input="(e) => updateData({ appearance: (e.target as HTMLTextAreaElement).value })"
+        @input="e => updateData({ appearance: (e.target as HTMLTextAreaElement).value })"
         class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-secondary/50 transition-all backdrop-blur-sm resize-none"
         placeholder="例如：银色长发，红瞳，身材娇小，常年围着一条红色围巾..."
       />
@@ -105,7 +100,7 @@
       <textarea
         rows="3"
         :value="data.personality"
-        @input="(e) => updateData({ personality: (e.target as HTMLTextAreaElement).value })"
+        @input="e => updateData({ personality: (e.target as HTMLTextAreaElement).value })"
         class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-secondary/50 transition-all backdrop-blur-sm resize-none"
         placeholder="你的性格特点，以及你是如何进入这所学院的..."
       />
@@ -170,11 +165,9 @@ const handleGenderChange = (gender: Gender) => {
     configFeatures,
     // 清除性器特征（因为性别改变了）
     maleGenitalType: undefined,
-    femaleGenitalType: undefined
+    femaleGenitalType: undefined,
   });
 };
 </script>
 
-<style lang="scss" scoped>
-</style>
-
+<style lang="scss" scoped></style>

@@ -4,10 +4,7 @@
     <div class="name-badge" :class="isEnemy ? 'badge-enemy' : 'badge-player'">
       <span class="name-text">{{ character.name }}</span>
       <!-- 敌人预告提示 -->
-      <div 
-        v-if="isEnemy && turnState.phase === 'playerInput' && enemyIntention"
-        class="intention-hint"
-      >
+      <div v-if="isEnemy && turnState.phase === 'playerInput' && enemyIntention" class="intention-hint">
         <span class="intention-icon">⚠️</span>
         预告: {{ enemyIntention.name }}
       </div>
@@ -16,8 +13,8 @@
     <!-- 头像与悬停属性 -->
     <div class="avatar-container">
       <div class="avatar-glow" :class="isEnemy ? 'glow-enemy' : 'glow-player'"></div>
-      
-      <img 
+
+      <img
         :src="character.avatarUrl"
         :alt="character.name"
         class="avatar-image"
@@ -26,7 +23,8 @@
           'avatar-player': !isEnemy,
           'avatar-pulse': turnState.phase === 'processing' && !isEnemy,
           'avatar-scale': turnState.phase === 'enemyAction' && isEnemy,
-          'avatar-climax': turnState.phase === 'climaxResolution' && turnState.climaxTarget === (isEnemy ? 'enemy' : 'player')
+          'avatar-climax':
+            turnState.phase === 'climaxResolution' && turnState.climaxTarget === (isEnemy ? 'enemy' : 'player'),
         }"
       />
 
@@ -344,8 +342,12 @@ const zapIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" 
 }
 
 @keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.6; }
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.6;
+  }
 }
 </style>
-
