@@ -273,11 +273,12 @@ const availablePoints = computed(() => {
 
 // 可加点的属性列表（修改 $基础xxx 值，最终值 _xxx 会自动计算）
 const upgradeableAttributes = [
-  { key: '核心状态.$基础魅力', label: '魅力', icon: 'fa-heart', increment: 5, isPercent: false },
-  { key: '核心状态.$基础幸运', label: '幸运', icon: 'fa-clover', increment: 5, isPercent: false },
+  { key: '核心状态.$基础魅力', label: '魅力', icon: 'fa-heart', increment: 2, isPercent: false },
+  { key: '核心状态.$基础幸运', label: '幸运', icon: 'fa-clover', increment: 2, isPercent: false },
   { key: '核心状态.$基础闪避率', label: '闪避率', icon: 'fa-running', increment: 2, isPercent: true },
-  { key: '核心状态.$基础暴击率', label: '暴击率', icon: 'fa-crosshairs', increment: 3, isPercent: true },
-  { key: '核心状态.$基础意志力', label: '意志力', icon: 'fa-brain', increment: 5, isPercent: false },
+  { key: '核心状态.$基础暴击率', label: '暴击率', icon: 'fa-crosshairs', increment: 2, isPercent: true },
+  { key: '核心状态.$最大耐力', label: '最大耐力', icon: 'fa-bolt', increment: 10, isPercent: false },
+  { key: '核心状态.$最大快感', label: '最大快感', icon: 'fa-heart-pulse', increment: 10, isPercent: false },
 ];
 
 // 获取属性值

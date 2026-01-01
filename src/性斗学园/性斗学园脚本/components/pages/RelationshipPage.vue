@@ -241,7 +241,7 @@ function getReputationIcon(name: string): string {
     '研究会': 'fas fa-book',
     '地下联盟': 'fas fa-mask',
     '男性自保联盟': 'fas fa-shield-alt',
-    '雌堕会': 'fas fa-butterfly'
+    '雌堕会': 'fas fa-feather'
   };
   return map[name] || 'fas fa-flag';
 }

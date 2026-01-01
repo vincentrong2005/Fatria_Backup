@@ -67,7 +67,12 @@ export function calculateBaseDamage(attacker: Character, skill: SkillData): numb
 
 /**
  * 应用非线性减伤模型
- * 公式: 最终伤害 = 基础伤害 * 忍耐力 / (忍耐力 + 100)
+ * 公式: 最终伤害 = 基础伤害 * 100 / (忍耐力 + 100)
+ * 这意味着：
+ * - 忍耐力为0时，最终伤害 = 基础伤害 * 100/100 = 基础伤害（无减伤）
+ * - 忍耐力为100时，最终伤害 = 基础伤害 * 100/200 = 基础伤害 * 0.5（减伤50%）
+ * - 忍耐力为200时，最终伤害 = 基础伤害 * 100/300 = 基础伤害 * 0.333（减伤66.7%）
+ * - 忍耐力越高，减伤越多，但永远不会完全减伤到0
  * @param baseDamage 基础伤害
  * @param targetEndurance 目标的忍耐力
  * @param ignoreDefense 是否忽视防御
@@ -75,12 +80,20 @@ export function calculateBaseDamage(attacker: Character, skill: SkillData): numb
  */
 export function applyDefenseReduction(baseDamage: number, targetEndurance: number, ignoreDefense: boolean): number {
   if (ignoreDefense) {
+    console.info(`[防御减伤] 忽视防御，伤害不变: ${baseDamage}`);
     return baseDamage;
   }
 
-  // 非线性减伤公式
-  const defenseFactor = targetEndurance / (targetEndurance + 100);
-  const finalDamage = baseDamage * (1 - defenseFactor);
+  // 非线性减伤公式：最终伤害 = 基础伤害 * 100 / (忍耐力 + 100)
+  // 这个公式确保：忍耐力越高，减伤越多
+  const denominator = targetEndurance + 100;
+  const finalDamage = (baseDamage * 100) / denominator;
+  const reductionPercent = ((targetEndurance / denominator) * 100).toFixed(1);
+  
+  console.info(`[防御减伤] 基础伤害: ${baseDamage}, 目标忍耐力: ${targetEndurance}`);
+  console.info(`[防御减伤] 减伤公式: ${baseDamage} * 100 / (${targetEndurance} + 100) = ${baseDamage} * 100 / ${denominator}`);
+  console.info(`[防御减伤] 计算过程: ${baseDamage} * 100 = ${baseDamage * 100}, ${baseDamage * 100} / ${denominator} = ${finalDamage}`);
+  console.info(`[防御减伤] 减伤比例: ${reductionPercent}%, 最终伤害: ${Math.floor(finalDamage)}`);
 
   return Math.max(1, Math.floor(finalDamage));
 }
@@ -206,9 +219,28 @@ export function executeAttack(attacker: Character, target: Character, skill: Ski
   }
 
   // 4. 应用防御减伤
-  finalDamage = applyDefenseReduction(finalDamage, target.stats.baseEndurance, skill.ignoreDefense);
+  const damageBeforeDefense = finalDamage;
+  const targetEndurance = target.stats.baseEndurance;
+  console.info(`[executeAttack] 准备应用防御减伤: 原始伤害=${damageBeforeDefense}, 目标忍耐力=${targetEndurance}, 忽视防御=${skill.ignoreDefense}`);
+  
+  const damageAfterDefense = applyDefenseReduction(finalDamage, targetEndurance, skill.ignoreDefense);
+  
   if (!skill.ignoreDefense) {
-    logs.push(`防御减伤后: ${finalDamage}`);
+    const reductionPercent = ((targetEndurance / (targetEndurance + 100)) * 100).toFixed(1);
+    const actualReduction = damageBeforeDefense - damageAfterDefense;
+    logs.push(`原始伤害: ${damageBeforeDefense}`);
+    logs.push(`目标忍耐力: ${targetEndurance}`);
+    logs.push(`防御减伤公式: ${damageBeforeDefense} × 100 ÷ (${targetEndurance} + 100) = ${damageBeforeDefense} × 100 ÷ ${targetEndurance + 100}`);
+    logs.push(`计算过程: ${damageBeforeDefense} × 100 = ${damageBeforeDefense * 100}, ${damageBeforeDefense * 100} ÷ ${targetEndurance + 100} = ${Math.floor((damageBeforeDefense * 100) / (targetEndurance + 100))}`);
+    logs.push(`减伤比例: ${reductionPercent}% (减伤 ${actualReduction} 点)`);
+    logs.push(`减伤后伤害: ${damageAfterDefense}`);
+    finalDamage = damageAfterDefense;
+    console.info(`[executeAttack] 防御减伤完成: ${damageBeforeDefense} -> ${damageAfterDefense}, 日志数量=${logs.length}`);
+  } else {
+    logs.push(`原始伤害: ${damageBeforeDefense}`);
+    logs.push(`忽视防御: 伤害不变，最终伤害: ${damageAfterDefense}`);
+    finalDamage = damageAfterDefense;
+    console.info(`[executeAttack] 忽视防御，伤害不变: ${damageAfterDefense}`);
   }
 
   // 5. 应用buff修正

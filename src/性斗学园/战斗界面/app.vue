@@ -55,64 +55,6 @@
       />
     </main>
 
-    <!-- 高潮处理弹窗 -->
-    <Teleport to="body">
-      <div v-if="turnState.phase === 'climaxResolution'" class="modal-overlay">
-        <div class="climax-modal">
-          <div class="modal-bg-pattern"></div>
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="64"
-            height="64"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            class="climax-icon"
-          >
-            <path
-              d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"
-            />
-            <path d="M3.22 12H9.5l.5-1 2 4.5 2-7 1.5 3.5h5.27" />
-          </svg>
-          <h2 class="climax-title">高潮降临</h2>
-          <p class="climax-desc">
-            {{ turnState.climaxTarget === 'enemy' ? enemy.name : player.name }} 已经达到了极限...
-          </p>
-          <div class="climax-actions">
-            <button class="btn btn-process" @click="handleClimaxResolution('process')">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="20"
-                height="20"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-              >
-                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-              </svg>
-              输出过程
-            </button>
-            <button class="btn btn-skip" @click="handleClimaxResolution('continue')">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="20"
-                height="20"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-              >
-                <polygon points="5 4 15 12 5 20 5 4" />
-                <line x1="19" y1="5" x2="19" y2="19" />
-              </svg>
-              继续
-            </button>
-          </div>
-        </div>
-      </div>
-    </Teleport>
 
     <!-- 底部操作区域 -->
     <footer class="combat-footer">
@@ -352,6 +294,9 @@
         </div>
       </Teleport>
     </footer>
+
+    <!-- 战斗特效 -->
+    <CombatEffect :type="effectType!" :show="showEffect" v-if="effectType" />
   </div>
 </template>
 
@@ -361,6 +306,7 @@ import BackgroundAmbience from './components/BackgroundAmbience.vue';
 import Card from './components/Card.vue';
 import CharacterPanel from './components/CharacterPanel.vue';
 import CombatLog from './components/CombatLog.vue';
+import CombatEffect from './components/CombatEffect.vue';
 import { createDefaultEnemy, createDefaultPlayer } from './constants';
 import type { Character, CombatLogEntry, Item, Skill, TurnState } from './types';
 
@@ -378,6 +324,10 @@ const activeMenu = ref<'main' | 'skills' | 'items'>('main');
 const allowSurrender = ref<boolean>(true); // 允许认输：true时不可认输，false时允许认输
 const playerBoundTurns = ref<number>(0); // 玩家被束缚的回合数
 const enemyBoundTurns = ref<number>(0); // 敌人被束缚的回合数
+
+// 特效状态
+const effectType = ref<'critical' | 'dodge' | 'climax' | 'victory' | 'defeat' | null>(null);
+const showEffect = ref(false);
 
 // ================= MVU 集成 =================
 // 获取用户名字
@@ -446,7 +396,7 @@ async function loadFromMvu() {
     player.value.stats.evasion = _.get(data, '核心状态._闪避率', 0);
     player.value.stats.crit = _.get(data, '核心状态._暴击率', 0);
 
-    // 性斗系统数据
+    // 性斗系统数据 - 直接读取实时值
     player.value.stats.sexPower = _.get(data, '性斗系统.实时性斗力', 25);
     player.value.stats.baseEndurance = _.get(data, '性斗系统.实时忍耐力', 15);
     player.value.stats.climaxCount = _.get(data, '性斗系统.高潮次数', 0);
@@ -533,7 +483,7 @@ async function loadFromMvu() {
                 accuracy: mvuSkill.伤害与效果?.基础命中率 || 100,
                 critModifier: 0,
                 buffs: [],
-                ignoreDefense: mvuSkill.特殊机制?.是否忽视防御 || false,
+                ignoreDefense: mvuSkill.特殊机制?.是否忽视防御 ?? false,
                 canBeDodged: mvuSkill.特殊机制?.是否可被闪避 !== false,
                 canBeReflected: false,
                 hitCount: 1,
@@ -556,6 +506,19 @@ async function loadFromMvu() {
           // 获取技能当前冷却 - 注意：Schema中没有明确的玩家技能冷却字段
           // 技能冷却在战斗中管理，不需要从MVU读取（每次战斗开始时冷却为0）
           const currentCooldown = 0;
+
+          // 如果MVU中有该技能的数据，优先使用MVU中的特殊机制设置
+          // 如果MVU中没有设置，默认使用 false（不使用数据库中的默认值）
+          const mvuSkill = availableSkills[skillId];
+          if (mvuSkill && mvuSkill.特殊机制) {
+            // 使用MVU中的特殊机制覆盖数据库中的值
+            skillData.ignoreDefense = mvuSkill.特殊机制.是否忽视防御 ?? false;
+            skillData.canBeDodged = mvuSkill.特殊机制.是否可被闪避 ?? true;
+          } else {
+            // MVU中没有设置，使用默认值 false
+            skillData.ignoreDefense = false;
+            // canBeDodged 保持数据库中的值（因为通常技能应该可以被闪避）
+          }
 
           return {
             id: skillData.id,
@@ -1205,35 +1168,9 @@ async function reloadStatusFromMvu() {
 
     // 更新玩家的属性（基础值 + 临时加成 + 永久加成 + 装备加成）
     // 注意：这里只是更新显示，实际计算应该在战斗计算时应用
-    // 性斗力 = 基础性斗力 + 基础性斗力加成 + (基础性斗力 * 基础性斗力成算 / 100)
-    const playerBaseSexPower = _.get(data, '核心状态.$基础性斗力', 10);
-    const playerSexPowerBonus =
-      _.get(playerTempBonus, '基础性斗力加成', 0) +
-      _.get(playerPermBonus, '基础性斗力加成', 0) +
-      _.get(playerEquipBonus, '基础性斗力加成', 0);
-    const playerSexPowerMultiplier =
-      _.get(playerTempBonus, '基础性斗力成算', 0) +
-      _.get(playerPermBonus, '基础性斗力成算', 0) +
-      _.get(playerEquipBonus, '基础性斗力成算', 0);
-    player.value.stats.sexPower =
-      playerBaseSexPower +
-      playerSexPowerBonus +
-      Math.floor(((playerBaseSexPower + playerSexPowerBonus) * playerSexPowerMultiplier) / 100);
-
-    // 忍耐力
-    const playerBaseEndurance = _.get(data, '核心状态.$基础忍耐力', 10);
-    const playerEnduranceBonus =
-      _.get(playerTempBonus, '基础忍耐力加成', 0) +
-      _.get(playerPermBonus, '基础忍耐力加成', 0) +
-      _.get(playerEquipBonus, '基础忍耐力加成', 0);
-    const playerEnduranceMultiplier =
-      _.get(playerTempBonus, '基础忍耐力成算', 0) +
-      _.get(playerPermBonus, '基础忍耐力成算', 0) +
-      _.get(playerEquipBonus, '基础忍耐力成算', 0);
-    player.value.stats.baseEndurance =
-      playerBaseEndurance +
-      playerEnduranceBonus +
-      Math.floor(((playerBaseEndurance + playerEnduranceBonus) * playerEnduranceMultiplier) / 100);
+    // 玩家的性斗力和忍耐力直接从性斗系统读取实时值（已经包含了所有加成）
+    player.value.stats.sexPower = _.get(data, '性斗系统.实时性斗力', 25);
+    player.value.stats.baseEndurance = _.get(data, '性斗系统.实时忍耐力', 15);
 
     // 其他属性
     const playerBaseCharm = _.get(data, '核心状态.$基础魅力', 10);
@@ -1295,6 +1232,44 @@ async function reloadStatusFromMvu() {
     );
   } catch (e) {
     console.error('[战斗界面] 重新读取状态失败', e);
+  }
+}
+
+// 触发战斗特效
+function triggerEffect(type: 'critical' | 'dodge' | 'climax' | 'victory' | 'defeat') {
+  effectType.value = type;
+  showEffect.value = true;
+  setTimeout(() => {
+    showEffect.value = false;
+    setTimeout(() => {
+      effectType.value = null;
+    }, 300);
+  }, 1500);
+}
+
+// 初始化性斗系统数据（战斗结束后调用）
+async function initializeCombatSystem() {
+  try {
+    if (typeof Mvu === 'undefined') return;
+
+    const mvuData = Mvu.getMvuData({ type: 'message', message_id: 'latest' });
+    if (!mvuData) return;
+
+    // 初始化性斗系统数据
+    _.set(mvuData.stat_data, '性斗系统.当前回合', 0);
+    _.set(mvuData.stat_data, '性斗系统.行动日志', {});
+    _.set(mvuData.stat_data, '性斗系统.对手技能冷却', {});
+    _.set(mvuData.stat_data, '性斗系统.战斗物品', {});
+    
+    // 清空对手数据（可选，根据需求决定是否清空）
+    // _.set(mvuData.stat_data, '性斗系统.对手名称', '');
+    // _.set(mvuData.stat_data, '性斗系统.对手性斗力', 0);
+    // ...
+
+    await Mvu.replaceMvuData(mvuData, { type: 'message', message_id: 'latest' });
+    console.info('[战斗界面] 已初始化性斗系统数据');
+  } catch (e) {
+    console.error('[战斗界面] 初始化性斗系统数据失败', e);
   }
 }
 
@@ -1501,9 +1476,21 @@ function handlePlayerSkill(skill: Skill) {
 
       if (result.isDodged) {
         addLog(`${nextEnemy.name} 闪避了攻击！`, 'system', 'info');
+        triggerEffect('dodge');
       } else {
+        // 输出详细的伤害计算过程（包括减伤过程）
+        console.info('[战斗界面] 玩家攻击 - result.logs:', result.logs);
+        if (result.logs && result.logs.length > 0) {
+          result.logs.forEach(log => {
+            addLog(log, 'system', 'info');
+          });
+        } else {
+          console.warn('[战斗界面] 玩家攻击 - result.logs 为空或未定义');
+        }
+        
         if (result.isCritical) {
           addLog(`暴击！造成 ${result.actualDamage} 点快感伤害！`, 'player', 'critical');
+          triggerEffect('critical');
         } else {
           addLog(`造成 ${result.actualDamage} 点快感伤害`, 'player', 'damage');
         }
@@ -1539,8 +1526,11 @@ function handlePlayerSkill(skill: Skill) {
       // 检查是否高潮
       if (nextEnemy.stats.currentPleasure >= nextEnemy.stats.maxPleasure) {
         turnState.climaxTarget = 'enemy';
-        turnState.phase = 'climaxResolution';
         addLog(`${nextEnemy.name} 达到了快感上限！`, 'system', 'critical');
+        // 自动继续，不显示按钮
+        addLog(`${nextEnemy.name} 达到了高潮！ (过程略)`, 'system', 'info');
+        triggerEffect('climax');
+        await processClimaxAfterLLM(true);
       } else {
         // 使用技能后，轮到对方结算快感
         addLog(`--- 轮到 ${nextEnemy.name} 行动 ---`, 'system', 'info');
@@ -1719,7 +1709,7 @@ function handleEnemyTurn() {
                 accuracy: damageInfo.基础命中率 || 100,
                 critModifier: 0,
                 buffs: [],
-                ignoreDefense: mvuSkill.特殊机制?.是否忽视防御 || false,
+                ignoreDefense: mvuSkill.特殊机制?.是否忽视防御 ?? false,
                 canBeDodged: mvuSkill.特殊机制?.是否可被闪避 !== false,
                 canBeReflected: false,
                 hitCount: 1,
@@ -1744,45 +1734,28 @@ function handleEnemyTurn() {
           return;
         }
 
-        // 输出调试信息
-        console.info('[战斗界面] 敌人攻击计算开始:');
-        console.info('  攻击者:', nextEnemy.name, {
-          性斗力: nextEnemy.stats.sexPower,
-          魅力: nextEnemy.stats.charm,
-          幸运: nextEnemy.stats.luck,
-          意志力: nextEnemy.stats.willpower,
-          暴击率: nextEnemy.stats.crit,
-        });
-        console.info('  目标:', nextPlayer.name, {
-          忍耐力: nextPlayer.stats.baseEndurance,
-          闪避率: nextPlayer.stats.evasion,
-        });
-        console.info('  技能数据:', {
-          名称: skill.name,
-          伤害来源: skill.data.damageFormula[0]?.source,
-          系数: skill.data.damageFormula[0]?.coefficient,
-          基础命中率: skill.data.accuracy,
-          忽视防御: skill.data.ignoreDefense,
-          可被闪避: skill.data.canBeDodged,
-        });
-
         const result = executeAttack(nextEnemy, nextPlayer, skill.data);
-
-        // 输出计算过程的详细日志
-        console.info('[战斗界面] 伤害计算过程:');
-        result.logs.forEach(log => {
-          console.info('  ', log);
-          addLog(log, 'system', 'info');
-        });
 
         // 记录战斗日志
         addLog(`${nextEnemy.name} 使用了 ${skill.name}！`, 'enemy', 'info');
 
         if (result.isDodged) {
           addLog(`${nextPlayer.name} 闪避了攻击！`, 'system', 'info');
+          triggerEffect('dodge');
         } else {
+          // 输出详细的伤害计算过程（包括减伤过程）
+          console.info('[战斗界面] 敌人攻击 - result.logs:', result.logs);
+          if (result.logs && result.logs.length > 0) {
+            result.logs.forEach(log => {
+              addLog(log, 'system', 'info');
+            });
+          } else {
+            console.warn('[战斗界面] 敌人攻击 - result.logs 为空或未定义');
+          }
+          
           if (result.isCritical) {
             addLog(`暴击！造成 ${result.actualDamage} 点快感伤害！`, 'enemy', 'critical');
+            triggerEffect('critical');
           } else {
             addLog(`造成 ${result.actualDamage} 点快感伤害`, 'enemy', 'damage');
           }
@@ -1822,8 +1795,11 @@ function handleEnemyTurn() {
         // 检查是否高潮
         if (nextPlayer.stats.currentPleasure >= nextPlayer.stats.maxPleasure) {
           turnState.climaxTarget = 'player';
-          turnState.phase = 'climaxResolution';
           addLog(`${nextPlayer.name} 达到了快感上限！`, 'system', 'critical');
+          // 自动继续，不显示按钮
+          addLog(`${nextPlayer.name} 达到了高潮！ (过程略)`, 'system', 'info');
+          triggerEffect('climax');
+          await processClimaxAfterLLM(false);
         } else {
           // 对方执行完技能后，回合+1，进入下一回合
           setTimeout(startNewTurn, 1000);
@@ -1963,16 +1939,16 @@ async function sendCombatLogToLLM(context: string) {
   try {
     const combatLogText = collectCombatLogs();
     const totalTurns = turnState.currentTurn;
-
+    
     // 判断是胜利还是失败
     const isVictory = turnState.phase === 'victory';
     const resultText = isVictory ? '胜利' : '战败';
-    const contextText = isVictory ? '调教场景' : '被调教场景';
+    const contextText = isVictory ? '调教/羞辱场景' : '被调教场景';
 
     // 构建完整的提示词（包含开头和结尾）
     const fullPrompt = `请根据以下战斗日志生成${resultText}剧情\n[战斗日志]\n${combatLogText}\n共${totalTurns}回合。\n请根据以上战斗过程，生成一段${resultText}后的剧情描写（${contextText}）。`;
 
-    // 先发送战斗日志文本到聊天中显示
+    // 先发送战斗日志文本到聊天中显示（作为用户消息）
     if (typeof createChatMessages === 'function') {
       await createChatMessages([
         {
@@ -1987,25 +1963,27 @@ async function sendCombatLogToLLM(context: string) {
       addLog('正在生成过程描述...', 'system', 'info');
       const generatedText = await generate({ user_input: fullPrompt });
 
-      // 将生成的内容发送到聊天
+      // 将生成的内容发送到聊天（作为AI助手消息）
       if (typeof createChatMessages === 'function') {
         await createChatMessages([
           {
-            role: 'user',
+            role: 'assistant',
             message: `[战斗过程] ${generatedText}`,
           },
         ]);
 
-        // 触发生成回复
-        if (typeof triggerSlash === 'function') {
-          await triggerSlash('/trigger');
-        }
-
+        // 只触发一次AI回复（移除重复触发）
+        // 注意：createChatMessages 已经会触发AI回复，所以不需要再调用 triggerSlash
         addLog('已将过程描述发送给LLM，等待AI回复...', 'system', 'info');
       }
     } else {
       console.warn('[战斗界面] generate函数不可用');
       addLog('无法生成过程描述，generate函数不可用', 'system', 'warn');
+      
+      // 如果 generate 不可用，直接触发一次AI回复
+      if (typeof triggerSlash === 'function') {
+        await triggerSlash('/trigger');
+      }
     }
   } catch (e) {
     console.error('[战斗界面] 发送日志给LLM失败', e);
@@ -2017,30 +1995,25 @@ async function sendCombatLogToLLM(context: string) {
 async function handleSendCombatLogToLLM() {
   const context = turnState.phase === 'victory' ? '获得胜利' : turnState.phase === 'defeat' ? '败北' : '战斗结束';
   await sendCombatLogToLLM(context);
-  // 发送后关闭弹窗（可选）
-  // turnState.phase = null;
-}
-
-function handleClimaxResolution(action: 'continue' | 'process') {
-  const targetIsEnemy = turnState.climaxTarget === 'enemy';
-  const char = targetIsEnemy ? enemy.value : player.value;
-
-  if (action === 'process') {
-    // 暂停战斗，发送日志给LLM生成过程
-    addLog('暂停战斗，正在生成过程描述...', 'system', 'info');
-    sendCombatLogToLLM('达到高潮').then(() => {
-      // LLM生成完成后，继续处理高潮
-      processClimaxAfterLLM(targetIsEnemy);
-    });
-    return; // 暂停，等待LLM生成
-  } else {
-    // 继续战斗，跳过过程描述
-    addLog(`${char.name} 达到了高潮！ (过程略)`, 'system', 'info');
-    processClimaxAfterLLM(targetIsEnemy);
+  
+  // 清空战斗日志
+  logs.value = [];
+  
+  // 清空MVU中的行动日志
+  try {
+    if (typeof Mvu !== 'undefined') {
+      const mvuData = Mvu.getMvuData({ type: 'message', message_id: 'latest' });
+      if (mvuData) {
+        _.set(mvuData.stat_data, '性斗系统.行动日志', {});
+        await Mvu.replaceMvuData(mvuData, { type: 'message', message_id: 'latest' });
+      }
+    }
+  } catch (e) {
+    console.warn('[战斗界面] 清空行动日志失败', e);
   }
 }
 
-// 处理高潮后的逻辑（在LLM生成完成后或选择继续时调用）
+// 处理高潮后的逻辑（自动继续，不显示按钮）
 async function processClimaxAfterLLM(targetIsEnemy: boolean) {
   const char = targetIsEnemy ? enemy.value : player.value;
   const newChar = cloneCharacter(char);
@@ -2062,8 +2035,12 @@ async function processClimaxAfterLLM(targetIsEnemy: boolean) {
     const resultText = targetIsEnemy ? '战斗胜利！' : `败北，共${turnState.currentTurn}回合。`;
     addLog(targetIsEnemy ? `对手彻底崩溃！${resultText}` : `你彻底崩溃... ${resultText}`, 'system', 'critical');
 
-    // 清空临时状态
+    // 触发结算特效
+    triggerEffect(targetIsEnemy ? 'victory' : 'defeat');
+
+    // 清空临时状态和初始化性斗系统数据
     await clearTemporaryStatus();
+    await initializeCombatSystem();
     saveToMvu();
     return;
   }
@@ -2127,25 +2104,39 @@ watch(
     if (enemy.value.stats.currentEndurance <= 0) {
       turnState.phase = 'victory';
       addLog(`对手体力耗尽！战斗胜利！共${turnState.currentTurn}回合。`, 'system', 'critical');
-      clearTemporaryStatus().then(() => saveToMvu());
+      triggerEffect('victory');
+      clearTemporaryStatus().then(async () => {
+        await initializeCombatSystem();
+        saveToMvu();
+      });
       return;
     }
     if (player.value.stats.currentEndurance <= 0) {
       turnState.phase = 'defeat';
       addLog(`你体力耗尽... 败北，共${turnState.currentTurn}回合。`, 'system', 'damage');
-      clearTemporaryStatus().then(() => saveToMvu());
+      triggerEffect('defeat');
+      clearTemporaryStatus().then(async () => {
+        await initializeCombatSystem();
+        saveToMvu();
+      });
       return;
     }
 
-    // 检查高潮
+    // 检查高潮（自动处理，不显示按钮）
     if (enemy.value.stats.currentPleasure >= enemy.value.stats.maxPleasure) {
-      turnState.phase = 'climaxResolution';
       turnState.climaxTarget = 'enemy';
+      addLog(`${enemy.value.name} 达到了快感上限！`, 'system', 'critical');
+      addLog(`${enemy.value.name} 达到了高潮！ (过程略)`, 'system', 'info');
+      triggerEffect('climax');
+      processClimaxAfterLLM(true);
       return;
     }
     if (player.value.stats.currentPleasure >= player.value.stats.maxPleasure) {
-      turnState.phase = 'climaxResolution';
       turnState.climaxTarget = 'player';
+      addLog(`${player.value.name} 达到了快感上限！`, 'system', 'critical');
+      addLog(`${player.value.name} 达到了高潮！ (过程略)`, 'system', 'info');
+      triggerEffect('climax');
+      processClimaxAfterLLM(false);
       return;
     }
   },
@@ -2158,6 +2149,9 @@ onMounted(async () => {
   // 确保玩家名字已设置
   const userName = getUserName();
   player.value.name = userName;
+
+  // 重新计算所有属性（包括加成）
+  await reloadStatusFromMvu();
 
   addLog(`遭遇了 ${enemy.value.name} !`, 'system', 'info');
 
@@ -2189,8 +2183,10 @@ onMounted(async () => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 1rem 1.5rem;
-  background: transparent;
+  padding: 1.5rem 2rem;
+  background: linear-gradient(to bottom, rgba(9, 9, 11, 0.95), transparent);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .header-left {
@@ -2204,10 +2200,14 @@ onMounted(async () => {
 }
 
 .title {
-  font-size: 1.5rem;
-  font-weight: 700;
+  font-size: 1.75rem;
+  font-weight: 900;
   letter-spacing: -0.025em;
-  color: white;
+  background: linear-gradient(135deg, #c084fc, #f472b6, #fb7185);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-shadow: 0 0 30px rgba(192, 132, 252, 0.5);
 }
 
 .header-right {
@@ -2217,17 +2217,24 @@ onMounted(async () => {
 }
 
 .turn-counter {
-  font-size: 1.5rem;
+  font-size: 1.75rem;
   font-family: ui-monospace, monospace;
-  font-weight: 700;
-  color: rgba(255, 255, 255, 0.9);
+  font-weight: 900;
+  background: linear-gradient(135deg, #60a5fa, #a78bfa);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-shadow: 0 0 20px rgba(96, 165, 250, 0.5);
+  letter-spacing: 0.05em;
 }
 
 .phase-indicator {
   font-size: 0.75rem;
-  color: #64748b;
+  color: #94a3b8;
   text-transform: uppercase;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.15em;
+  font-weight: 600;
+  margin-top: 0.25rem;
 }
 
 // ========== 战斗区域 ==========
@@ -2278,11 +2285,11 @@ onMounted(async () => {
   left: 0;
   width: 100%;
   z-index: 30;
-  background: rgba(9, 9, 11, 0.9);
-  border-top: 1px solid rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(20px);
-  padding: 0.5rem 1rem 1.5rem;
-  box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.5);
+  background: linear-gradient(to top, rgba(9, 9, 11, 0.98), rgba(9, 9, 11, 0.85));
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(30px) saturate(180%);
+  padding: 1rem 1.5rem 1.5rem;
+  box-shadow: 0 -20px 60px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.05) inset;
 }
 
 .footer-content {
@@ -2321,25 +2328,30 @@ onMounted(async () => {
 }
 
 .tab-btn {
-  padding: 0.25rem 1rem;
+  padding: 0.5rem 1.25rem;
   border-radius: 9999px;
   font-size: 0.75rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.1em;
-  background: transparent;
-  color: #64748b;
-  border: none;
+  background: rgba(255, 255, 255, 0.05);
+  color: #94a3b8;
+  border: 1px solid rgba(255, 255, 255, 0.1);
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 
   &.active {
-    background: white;
-    color: black;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.1));
+    color: white;
+    border-color: rgba(255, 255, 255, 0.3);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.1) inset;
   }
 
   &:hover:not(.active) {
     color: white;
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.2);
+    transform: translateY(-1px);
   }
 }
 
@@ -2431,11 +2443,48 @@ onMounted(async () => {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 0.5rem;
+  gap: 0.75rem;
+  padding: 1.5rem 1rem;
+  border-radius: 1rem;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02));
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), transparent);
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+
+  &:hover::before {
+    opacity: 1;
+  }
+
+  &:hover {
+    transform: translateY(-4px) scale(1.02);
+    border-color: rgba(255, 255, 255, 0.2);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.1) inset;
+  }
 
   span {
     font-weight: 700;
     white-space: nowrap;
+    font-size: 0.875rem;
+    color: rgba(255, 255, 255, 0.9);
+  }
+
+  svg {
+    transition: transform 0.3s;
+  }
+
+  &:hover svg {
+    transform: scale(1.1) rotate(5deg);
   }
 }
 
@@ -2455,19 +2504,33 @@ onMounted(async () => {
 .skill-card,
 .item-card {
   flex: 0 0 auto; // 不允许收缩，保持固定宽度
-  min-width: 200px; // 增加最小宽度，确保内容可读
-  max-width: 250px; // 设置最大宽度，避免过宽
-  width: 200px; // 固定宽度
+  min-width: 220px; // 增加最小宽度，确保内容可读
+  max-width: 280px; // 设置最大宽度，避免过宽
+  width: 220px; // 固定宽度
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   position: relative;
   overflow: hidden;
+  padding: 1rem;
+  border-radius: 0.75rem;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.03));
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+
+  &:hover:not(.disabled) {
+    transform: translateY(-2px);
+    border-color: rgba(255, 255, 255, 0.2);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.1) inset;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.05));
+  }
 
   &.disabled {
-    opacity: 0.6;
-    filter: grayscale(0.5);
+    opacity: 0.5;
+    filter: grayscale(0.7);
     pointer-events: none;
+    cursor: not-allowed;
   }
 }
 
@@ -2645,22 +2708,26 @@ onMounted(async () => {
 }
 
 .back-btn {
-  background: rgba(255, 255, 255, 0.05);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
   border-radius: 0.75rem;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 0.875rem;
   font-weight: 700;
-  color: #94a3b8;
+  color: #cbd5e1;
   min-width: 60px;
   flex-shrink: 0; // 防止返回按钮被压缩
-  border: none;
+  border: 1px solid rgba(255, 255, 255, 0.1);
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  padding: 0.75rem 1rem;
 
   &:hover {
-    background: rgba(255, 255, 255, 0.1);
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0.1));
+    border-color: rgba(255, 255, 255, 0.2);
+    transform: translateX(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
   }
 }
 
@@ -2756,12 +2823,21 @@ onMounted(async () => {
 }
 
 .btn-process {
-  background: #db2777;
+  background: linear-gradient(135deg, #db2777, #ec4899);
   color: white;
-  box-shadow: 0 4px 14px rgba(219, 39, 119, 0.5);
+  box-shadow: 0 8px 24px rgba(219, 39, 119, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.1) inset;
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
 
   &:hover {
-    background: #ec4899;
+    background: linear-gradient(135deg, #ec4899, #f472b6);
+    transform: translateY(-2px);
+    box-shadow: 0 12px 32px rgba(219, 39, 119, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.2) inset;
+  }
+
+  &:active {
+    transform: translateY(0);
   }
 }
 
@@ -2791,32 +2867,62 @@ onMounted(async () => {
 
 .result-content {
   text-align: center;
+  padding: 3rem 2rem;
+  background: linear-gradient(135deg, rgba(15, 23, 42, 0.95), rgba(9, 9, 11, 0.98));
+  border-radius: 1.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(255, 255, 255, 0.05) inset;
+  backdrop-filter: blur(30px);
+  max-width: 500px;
+  width: 90%;
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at 50% 0%, rgba(255, 255, 255, 0.05), transparent 70%);
+    pointer-events: none;
+  }
 }
 
 .result-title {
-  font-size: 4rem;
+  font-size: 4.5rem;
   font-weight: 900;
   margin-bottom: 1rem;
-  letter-spacing: -0.025em;
+  letter-spacing: -0.05em;
+  text-shadow: 0 0 40px currentColor;
+  position: relative;
+  z-index: 1;
 
   &.victory {
-    background: linear-gradient(to right, #fde047, #f59e0b);
+    background: linear-gradient(135deg, #fde047, #f59e0b, #f97316);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
+    filter: drop-shadow(0 0 20px rgba(253, 224, 71, 0.5));
   }
 
   &.defeat {
-    color: #64748b;
+    background: linear-gradient(135deg, #94a3b8, #64748b, #475569);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    filter: drop-shadow(0 0 20px rgba(148, 163, 184, 0.3));
   }
 }
 
 .result-subtitle {
-  font-size: 1.25rem;
+  font-size: 1.5rem;
   color: #cbd5e1;
-  font-weight: 300;
-  letter-spacing: 0.1em;
-  margin-bottom: 2rem;
+  font-weight: 400;
+  letter-spacing: 0.15em;
+  margin-bottom: 2.5rem;
+  text-transform: uppercase;
+  position: relative;
+  z-index: 1;
+  opacity: 0.8;
 }
 
 .restart-btn {
