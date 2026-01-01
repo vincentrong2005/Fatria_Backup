@@ -452,8 +452,8 @@ function initStatusBar() {
       left: '0',
       width: '100%',
       height: '100%',
-      zIndex: '9999',
-      pointerEvents: 'none'
+      zIndex: '99999', // 提高 z-index 确保在最上层
+      pointerEvents: 'none' // 容器本身不拦截事件，但内部元素可以
     });
     $('body').append(statusBarContainer);
     
