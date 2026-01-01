@@ -420,6 +420,7 @@ const cleanThinkingTags = (text: string): string => {
     /<\/chain>/gi,
     /<\/analysis>/gi,
     /<\/reflection>/gi,
+    /<\/think_nya~>/gi,
   ];
 
   // 查找最后一个思维链结束标签的位置

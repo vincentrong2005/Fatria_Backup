@@ -2386,13 +2386,42 @@ onMounted(async () => {
 }
 
 // ========== 菜单样式 ==========
-.menu-main,
+.menu-main {
+  display: flex;
+  gap: 0.5rem;
+  height: 100%;
+  width: 100%;
+}
+
 .menu-skills,
 .menu-items {
   display: flex;
   gap: 0.5rem;
   height: 100%;
   width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-behavior: smooth;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+  
+  // Webkit浏览器滚动条样式
+  &::-webkit-scrollbar {
+    height: 6px;
+  }
+  
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  
+  &::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 3px;
+    
+    &:hover {
+      background: rgba(255, 255, 255, 0.3);
+    }
+  }
 }
 
 .menu-card {
@@ -2425,8 +2454,10 @@ onMounted(async () => {
 
 .skill-card,
 .item-card {
-  flex: 1;
-  min-width: 100px;
+  flex: 0 0 auto; // 不允许收缩，保持固定宽度
+  min-width: 200px; // 增加最小宽度，确保内容可读
+  max-width: 250px; // 设置最大宽度，避免过宽
+  width: 200px; // 固定宽度
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -2623,6 +2654,7 @@ onMounted(async () => {
   font-weight: 700;
   color: #94a3b8;
   min-width: 60px;
+  flex-shrink: 0; // 防止返回按钮被压缩
   border: none;
   cursor: pointer;
   transition: all 0.2s;

@@ -327,18 +327,22 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 20px;
+  padding: 10px;
   pointer-events: all;
+  overflow-y: auto;
+  box-sizing: border-box;
 }
 
 .status-bar-container {
   position: relative;
   width: 100%;
   max-width: 390px;
-  max-height: 90vh;
+  max-height: calc(100vh - 20px);
   display: flex;
   align-items: center;
   justify-content: center;
+  margin: auto;
+  flex-shrink: 0;
 }
 
 .phone-frame {
@@ -346,7 +350,7 @@ onUnmounted(() => {
   width: 100%;
   max-width: 390px;
   height: 844px;
-  max-height: 90vh;
+  max-height: calc(100vh - 20px);
   background: #0f172a;
   border-radius: 40px;
   overflow: hidden;
@@ -354,6 +358,27 @@ onUnmounted(() => {
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
   display: flex;
   flex-direction: column;
+  flex-shrink: 0;
+  
+  // 手机端响应式处理
+  @media (max-height: 900px) {
+    max-height: calc(100vh - 20px);
+    height: auto;
+    min-height: 500px;
+  }
+  
+  @media (max-width: 420px) {
+    max-width: calc(100vw - 20px);
+    border-radius: 30px;
+    border-width: 6px;
+  }
+  
+  // 超小屏幕处理
+  @media (max-height: 700px) {
+    max-height: calc(100vh - 10px);
+    border-radius: 20px;
+    border-width: 4px;
+  }
 }
 
 .phone-background {
