@@ -246,9 +246,10 @@ export const ACTIVE_SKILLS: Skill[] = [
   { id: 's_force', name: '强行压制', description: '【控制】利用体格压制', effectDescription: '封锁对方物理行动', type: 'active', icon: 'Dumbbell' },
   { id: 's_deny', name: '寸止', description: '【特殊】在关键时刻停手', effectDescription: '积累大量压力值', type: 'active', icon: 'Hand' },
   { id: 's_worship', name: '崇拜', description: '【精神】奉对方为主人', effectDescription: '回复对方意志，降低自身意志', type: 'active', icon: 'Crown' },
-  { id: 's_hypnosis', name: '催眠', description: '【特殊】暗示与诱导', effectDescription: '改变对方常识', type: 'active', icon: 'Disc' },
   { id: 's_aphrodisiac', name: '媚药投毒', description: '【道具】悄悄下药', effectDescription: '赋予持续发情状态', type: 'active', icon: 'FlaskConical' },
-  { id: 's_group', name: '呼叫同伴', description: '【特殊】摇人', effectDescription: '进入多人模式', type: 'active', icon: 'Users' }
+  { id: 's_charm_kiss', name: '魅惑之吻', description: '【攻击】用魅惑的吻技攻击', effectDescription: '造成50%魅力伤害，降低目标意志力', type: 'active', icon: 'Heart' },
+  { id: 's_counter', name: '快速反击', description: '【攻击】在闪避后立即反击', effectDescription: '造成80%性斗力伤害，无视防御', type: 'active', icon: 'Shield' },
+  { id: 's_lucky_strike', name: '幸运一击', description: '【攻击】依靠运气发动的强力攻击', effectDescription: '造成60%性斗力+40%幸运伤害', type: 'active', icon: 'Clover' }
 ];
 
 // --- Constitution/Passive Skills (Gender Specific) ---
@@ -301,7 +302,8 @@ export const MAX_STATS = {
 export const DIFFICULTY_POINTS = {
   '剧情模式 (简单)': 100,
   '学园生活 (普通)': 60,
-  '地狱开局 (困难)': 30
+  '地狱开局 (困难)': 30,
+  '作弊者': 999
 };
 
 export const CUP_SIZES = ['AA', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I+', 'Z'];

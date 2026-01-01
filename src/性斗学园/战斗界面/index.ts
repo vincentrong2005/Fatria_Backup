@@ -1,6 +1,7 @@
 import { createApp } from 'vue';
 import './index.scss';
 import App from './app.vue';
+import './mvuSchema'; // 注册MVU Schema
 
 $(() => {
   // 创建并挂载Vue应用

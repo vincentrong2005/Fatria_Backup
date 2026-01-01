@@ -5,24 +5,35 @@
         v-for="(option, index) in options" 
         :key="index"
         class="option-card"
-        :class="{ 'option-card-hover': true }"
-        @click="selectOption(option.text)"
+        :class="{ 
+          'option-card-hover': true,
+          'option-card-fight': option.isFight
+        }"
+        @click="option.isFight ? triggerFight() : selectOption(option.text)"
       >
-        <!-- 选项标签 -->
-        <div class="option-label">
-          {{ option.label }}
+        <!-- 性斗按钮特殊显示 -->
+        <div v-if="option.isFight" class="fight-button-content">
+          <div class="fight-button-text">【发起性斗】</div>
         </div>
         
-        <!-- 选项内容 -->
-        <div class="option-content">
-          {{ option.text }}
-        </div>
-        
-        <!-- 点击提示 -->
-        <div class="option-hint">
-          <i class="fas fa-mouse-pointer"></i>
-          点击选择
-        </div>
+        <!-- 普通选项显示 -->
+        <template v-else>
+          <!-- 选项标签 -->
+          <div class="option-label">
+            {{ option.label }}
+          </div>
+          
+          <!-- 选项内容 -->
+          <div class="option-content">
+            {{ option.text }}
+          </div>
+          
+          <!-- 点击提示 -->
+          <div class="option-hint">
+            <i class="fas fa-mouse-pointer"></i>
+            点击选择
+          </div>
+        </template>
       </div>
     </div>
     <div v-else class="no-options">
@@ -40,6 +51,7 @@ const OPTION_REGEX = /<option>([\s\S]*?)<\/option>/g;
 interface OptionItem {
   label: string;
   text: string;
+  isFight?: boolean; // 标记是否为性斗选项（E.开头）
 }
 
 const options = ref<OptionItem[]>([]);
@@ -52,6 +64,19 @@ const parseOptions = (text: string): OptionItem[] => {
   const lines = text.split('\n').map(line => line.trim()).filter(line => line.length > 0);
   
   for (const line of lines) {
+    // 特殊处理：E. 开头的选项为性斗选项
+    if (line.match(/^E\.\s*(.+)$/i)) {
+      const match = line.match(/^E\.\s*(.+)$/i);
+      if (match) {
+        items.push({
+          label: 'E',
+          text: match[1].trim(),
+          isFight: true,
+        });
+        continue; // 跳过后续匹配
+      }
+    }
+    
     // 匹配选项格式：
     // 1. A. 文本
     // 2. A、文本
@@ -97,6 +122,40 @@ const parseOptions = (text: string): OptionItem[] => {
   return items;
 };
 
+// 获取当前消息ID
+const getCurrentMessageId = (): string | null => {
+  try {
+    const globalAny = window as any;
+    if (globalAny.getCurrentMessageId) {
+      return globalAny.getCurrentMessageId();
+    }
+    // 备用方法：从URL获取
+    const urlParams = new URLSearchParams(window.location.search);
+    return urlParams.get('message_id') || null;
+  } catch (error) {
+    console.error('[选项美化] 获取消息ID失败:', error);
+    return null;
+  }
+};
+
+// 获取聊天消息
+const getChatMessages = (messageId: string | null): any[] => {
+  try {
+    const globalAny = window as any;
+    if (globalAny.getChatMessages && messageId) {
+      return globalAny.getChatMessages(messageId);
+    }
+    // 备用方法：从全局变量获取
+    if (globalAny.chat && globalAny.chat.messages) {
+      return globalAny.chat.messages;
+    }
+    return [];
+  } catch (error) {
+    console.error('[选项美化] 获取消息失败:', error);
+    return [];
+  }
+};
+
 // 提取并显示选项
 const extractOptions = () => {
   try {
@@ -126,6 +185,160 @@ const extractOptions = () => {
     }
   } catch (error) {
     console.error('[选项美化] 提取选项时出错:', error);
+  }
+};
+
+// 触发性斗（使用 /sendas 命令生成一个包含 <fight> 的角色消息楼层，不触发自动回复）
+const triggerFight = () => {
+  try {
+    const parentWindow = window.parent;
+    const parentAny = parentWindow as any;
+    const $parent = parentAny.$ || parentAny.jQuery;
+    
+    if (!$parent) {
+      console.warn('[选项美化] 无法访问父窗口的jQuery');
+      return;
+    }
+    
+    // 获取当前角色信息
+    const getCharacterInfo = () => {
+      // 方法1：从 chat 对象获取
+      if (parentAny.chat) {
+        const chat = parentAny.chat;
+        if (chat.characters && chat.characters.length > 0) {
+          return {
+            name: chat.characters[0].name || chat.characters[0].title || 'Assistant',
+            avatar: chat.characters[0].avatar || '',
+          };
+        }
+        if (chat.character) {
+          return {
+            name: chat.character.name || chat.character.title || 'Assistant',
+            avatar: chat.character.avatar || '',
+          };
+        }
+      }
+      
+      // 方法2：从全局变量获取
+      if (parentAny.character) {
+        return {
+          name: parentAny.character.name || parentAny.character.title || 'Assistant',
+          avatar: parentAny.character.avatar || '',
+        };
+      }
+      
+      // 方法3：从当前消息中获取角色名
+      if (parentAny.chat && parentAny.chat.messages && parentAny.chat.messages.length > 0) {
+        const lastMessage = parentAny.chat.messages[parentAny.chat.messages.length - 1];
+        if (lastMessage && lastMessage.name && !lastMessage.is_user) {
+          return {
+            name: lastMessage.name,
+            avatar: lastMessage.avatar || '',
+          };
+        }
+      }
+      
+      // 默认值
+      return {
+        name: 'Assistant',
+        avatar: '',
+      };
+    };
+    
+    const charInfo = getCharacterInfo();
+    
+    // 方法1：尝试使用 SillyTavern 的命令执行器
+    if (parentAny.executeSlashCommand && typeof parentAny.executeSlashCommand === 'function') {
+      // 构建 /sendas 命令
+      const command = `/sendas name="${charInfo.name}"${charInfo.avatar ? ` avatar="${charInfo.avatar}"` : ''} <fight>`;
+      parentAny.executeSlashCommand(command);
+      console.info('[选项美化] 已通过 executeSlashCommand 执行 /sendas 命令');
+      return;
+    }
+    
+    // 方法2：通过输入框执行命令（不触发自动回复）
+    const inputSelectors = [
+      '#send_textarea',
+      'textarea[name="send_textarea"]',
+      '.send_textarea',
+      'textarea[placeholder*="Message"]',
+      'textarea[placeholder*="消息"]',
+      '.chat-input textarea',
+      '#chat-input textarea',
+    ];
+    
+    let $input: JQuery | null = null;
+    for (const selector of inputSelectors) {
+      $input = $parent(selector);
+      if ($input.length > 0) {
+        break;
+      }
+    }
+    
+    if (!$input || $input.length === 0) {
+      console.warn('[选项美化] 未找到输入框，无法执行 /sendas 命令');
+      return;
+    }
+    
+    // 构建 /sendas 命令字符串
+    let command = `/sendas name="${charInfo.name}"`;
+    if (charInfo.avatar) {
+      command += ` avatar="${charInfo.avatar}"`;
+    }
+    command += ' <fight>';
+    
+    // 设置输入框的值
+    $input.val(command);
+    
+    // 触发 input 和 change 事件
+    $input.trigger('input');
+    $input.trigger('change');
+    
+    // 等待一小段时间确保命令已设置
+    setTimeout(() => {
+      // 查找发送按钮并点击（这会执行命令但不会触发AI生成）
+      const sendButtonSelectors = [
+        '#send_but',
+        'button[type="submit"]',
+        '.send-button',
+        'button.send',
+        '[data-send-button]',
+        'button[aria-label*="Send"]',
+        'button[aria-label*="发送"]',
+      ];
+      
+      let $sendButton: JQuery | null = null;
+      for (const selector of sendButtonSelectors) {
+        $sendButton = $parent(selector);
+        if ($sendButton.length > 0 && !$sendButton.prop('disabled')) {
+          break;
+        }
+      }
+      
+      if ($sendButton && $sendButton.length > 0) {
+        // 点击发送按钮执行命令
+        $sendButton.trigger('click');
+        console.info('[选项美化] 已通过发送按钮执行 /sendas 命令');
+      } else {
+        // 如果找不到发送按钮，尝试触发 Enter 键
+        const inputElement = $input[0] as HTMLElement;
+        if (inputElement) {
+          const enterEvent = new KeyboardEvent('keydown', {
+            key: 'Enter',
+            code: 'Enter',
+            keyCode: 13,
+            which: 13,
+            bubbles: true,
+            cancelable: true,
+          });
+          inputElement.dispatchEvent(enterEvent);
+          console.info('[选项美化] 已通过Enter键执行 /sendas 命令');
+        }
+      }
+    }, 50);
+    
+  } catch (error) {
+    console.error('[选项美化] 触发性斗时出错:', error);
   }
 };
 
@@ -209,6 +422,93 @@ onMounted(() => {
   grid-template-columns: repeat(2, 1fr);
   gap: 1rem;
   padding: 1rem 0;
+  
+  // 性斗选项独占一行，宽度为两倍
+  .option-card-fight {
+    grid-column: 1 / -1; // 跨越所有列
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.15) 0%, rgba(220, 38, 38, 0.15) 100%) !important;
+    border-color: rgba(239, 68, 68, 0.4) !important;
+    background-image: 
+      radial-gradient(circle at 20% 30%, rgba(239, 68, 68, 0.2) 0%, transparent 50%),
+      radial-gradient(circle at 80% 70%, rgba(220, 38, 38, 0.2) 0%, transparent 50%) !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 1.5rem 2rem !important;
+    
+    &::before {
+      background: linear-gradient(90deg, 
+        transparent 0%,
+        rgba(239, 68, 68, 0.6) 25%,
+        rgba(220, 38, 38, 0.6) 75%,
+        transparent 100%
+      ) !important;
+    }
+    
+    &:hover {
+      background: linear-gradient(135deg, rgba(239, 68, 68, 0.25) 0%, rgba(220, 38, 38, 0.25) 100%) !important;
+      background-image: 
+        radial-gradient(circle at 20% 30%, rgba(239, 68, 68, 0.35) 0%, transparent 50%),
+        radial-gradient(circle at 80% 70%, rgba(220, 38, 38, 0.35) 0%, transparent 50%) !important;
+      border-color: rgba(239, 68, 68, 0.7) !important;
+      box-shadow: 
+        0 12px 40px rgba(239, 68, 68, 0.5),
+        0 6px 20px rgba(220, 38, 38, 0.4),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
+      transform: translateY(-3px) scale(1.02) !important;
+      
+      .fight-button-text {
+        transform: scale(1.05);
+        text-shadow: 
+          0 0 15px rgba(239, 68, 68, 1),
+          0 2px 6px rgba(0, 0, 0, 0.6),
+          0 0 30px rgba(239, 68, 68, 0.6);
+      }
+    }
+    
+    &:active {
+      transform: translateY(-1px) scale(1.0) !important;
+    }
+  }
+  
+  // 性斗按钮内容区域
+  .fight-button-content {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem 0;
+  }
+  
+  .fight-button-text {
+    color: #ffffff;
+    font-size: 1.5rem;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    text-align: center;
+    text-shadow: 
+      0 0 10px rgba(239, 68, 68, 0.8),
+      0 2px 4px rgba(0, 0, 0, 0.5),
+      0 0 20px rgba(239, 68, 68, 0.4);
+    background: linear-gradient(135deg, #ffffff 0%, #fee2e2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    position: relative;
+    
+    // 添加发光效果
+    &::before {
+      content: '【发起性斗】';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      color: rgba(239, 68, 68, 0.3);
+      filter: blur(8px);
+      z-index: -1;
+    }
+  }
 }
 
 .option-card {

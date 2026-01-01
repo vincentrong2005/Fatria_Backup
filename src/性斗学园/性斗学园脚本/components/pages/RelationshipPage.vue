@@ -39,9 +39,17 @@
             </div>
             <div class="rel-info">
               <div class="rel-name">{{ name }}</div>
-              <div class="rel-type" :class="getRelationTypeClass(rel.关系类型)">
+              <div 
+                v-if="rel.关系类型" 
+                class="rel-type" 
+                :class="getRelationTypeClass(rel.关系类型)"
+              >
                 <i :class="getRelationIcon(rel.关系类型)"></i>
-                {{ rel.关系类型 || '陌生人' }}
+                {{ rel.关系类型 }}
+              </div>
+              <div v-else class="rel-type type-unknown">
+                <i class="fas fa-user-circle"></i>
+                未建立关系
               </div>
             </div>
           </div>
@@ -132,7 +140,8 @@ const relationships = computed(() => {
   return result;
 });
 
-function getRelationTypeClass(type: string): string {
+function getRelationTypeClass(type: string | undefined): string {
+  if (!type) return 'type-unknown';
   const map: Record<string, string> = {
     '陌生人': 'type-stranger',
     '同学': 'type-classmate',
@@ -142,10 +151,11 @@ function getRelationTypeClass(type: string): string {
     '完全臣服': 'type-submissive',
     '仇敌': 'type-enemy'
   };
-  return map[type] || 'type-stranger';
+  return map[type] || 'type-unknown';
 }
 
-function getRelationIcon(type: string): string {
+function getRelationIcon(type: string | undefined): string {
+  if (!type) return 'fas fa-user-circle';
   const map: Record<string, string> = {
     '陌生人': 'fas fa-question',
     '同学': 'fas fa-graduation-cap',
@@ -155,7 +165,7 @@ function getRelationIcon(type: string): string {
     '完全臣服': 'fas fa-link',
     '仇敌': 'fas fa-skull'
   };
-  return map[type] || 'fas fa-question';
+  return map[type] || 'fas fa-user-circle';
 }
 
 function getAffectionClass(value: number): string {
@@ -339,6 +349,11 @@ function getSubmissionClass(value: number): string {
   &.type-enemy {
     background: rgba(248, 113, 113, 0.15);
     color: #fca5a5;
+  }
+  
+  &.type-unknown {
+    background: rgba(156, 163, 175, 0.1);
+    color: rgba(255, 255, 255, 0.4);
   }
 }
 

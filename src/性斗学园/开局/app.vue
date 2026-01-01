@@ -111,25 +111,100 @@
 
     <!-- Generic Modal for Placeholder Interactions -->
     <div v-if="showModal" class="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" @click="closeModal"></div>
-      <div class="relative bg-[#1e293b] w-full max-w-md p-8 rounded-2xl border border-white/10 shadow-2xl animate-fade-in transform transition-all scale-100">
-        <h3 class="text-xl font-bold text-white mb-4">{{ modalTitle }}</h3>
-        <div class="h-32 bg-black/20 rounded-xl flex items-center justify-center border border-white/5 border-dashed">
-          <p class="text-gray-500 text-sm">{{ modalContent || '此功能模块已就绪，等待内容注入。' }}</p>
+      <div class="absolute inset-0 bg-black/80 backdrop-blur-md" @click="closeModal"></div>
+      <div 
+        :class="[
+          'relative w-full max-w-lg rounded-3xl border-2 shadow-2xl animate-fade-in transform transition-all scale-100 overflow-hidden',
+          modalTitle === 'CHEAT MODE ACTIVATE'
+            ? 'bg-gradient-to-br from-yellow-900/40 via-orange-900/40 to-red-900/40 border-yellow-500/50 shadow-yellow-500/20'
+            : 'bg-[#1e293b] border-white/10'
+        ]"
+      >
+        <!-- Cheat Mode Special Header -->
+        <div v-if="modalTitle === 'CHEAT MODE ACTIVATE'" class="relative p-8 pb-6">
+          <div class="absolute inset-0 bg-gradient-to-r from-yellow-500/10 via-orange-500/10 to-red-500/10"></div>
+          <div class="relative">
+            <h3 class="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 via-orange-400 to-red-400 mb-2 tracking-wider drop-shadow-lg">
+              {{ modalTitle }}
+            </h3>
+            <div class="h-1 w-24 bg-gradient-to-r from-yellow-400 to-red-400 rounded-full mt-3"></div>
+          </div>
         </div>
-        <div class="mt-6 flex justify-end">
+        
+        <!-- Normal Header -->
+        <div v-else class="p-8 pb-6">
+          <h3 class="text-2xl font-bold text-white mb-4">{{ modalTitle }}</h3>
+        </div>
+        
+        <!-- Content -->
+        <div 
+          :class="[
+            'px-8 pb-8',
+            modalTitle === 'CHEAT MODE ACTIVATE' ? 'space-y-4' : ''
+          ]"
+        >
+          <div 
+            :class="[
+              'rounded-xl border p-6',
+              modalTitle === 'CHEAT MODE ACTIVATE'
+                ? 'bg-black/30 border-yellow-500/30 backdrop-blur-sm'
+                : 'h-32 bg-black/20 border-white/5 border-dashed flex items-center justify-center'
+            ]"
+          >
+            <p 
+              :class="[
+                modalTitle === 'CHEAT MODE ACTIVATE'
+                  ? 'text-white text-base leading-relaxed space-y-2'
+                  : 'text-gray-500 text-sm'
+              ]"
+            >
+              <template v-if="modalTitle === 'CHEAT MODE ACTIVATE'">
+                <div class="space-y-3">
+                  <div class="flex items-center gap-3">
+                    <i class="fas fa-dice-d20 text-yellow-400 text-xl"></i>
+                    <span class="text-lg font-semibold text-yellow-300">天赋点数已设为 <span class="text-yellow-400 font-black">999</span></span>
+                  </div>
+                  <div class="flex items-center gap-3">
+                    <i class="fas fa-gem text-orange-400 text-xl"></i>
+                    <span class="text-lg font-semibold text-orange-300">获得特殊装备 <span class="text-orange-400 font-black">「作弊者之证」</span></span>
+                  </div>
+                  <div class="flex items-center gap-3">
+                    <i class="fas fa-chart-line text-red-400 text-xl"></i>
+                    <span class="text-lg font-semibold text-red-300">全属性 <span class="text-red-400 font-black">+999</span></span>
+                  </div>
+                </div>
+              </template>
+              <template v-else>
+                {{ modalContent || '此功能模块已就绪，等待内容注入。' }}
+              </template>
+            </p>
+          </div>
+        </div>
+        
+        <!-- Footer -->
+        <div 
+          :class="[
+            'px-8 pb-8 flex justify-end',
+            modalTitle === 'CHEAT MODE ACTIVATE' ? 'pt-0' : 'pt-0'
+          ]"
+        >
           <button 
             @click="closeModal"
-            class="px-4 py-2 rounded-lg bg-white/10 hover:bg-white/20 text-white text-sm font-medium transition-colors"
+            :class="[
+              'px-6 py-3 rounded-xl font-semibold text-sm transition-all duration-300',
+              modalTitle === 'CHEAT MODE ACTIVATE'
+                ? 'bg-gradient-to-r from-yellow-500/20 to-orange-500/20 hover:from-yellow-500/30 hover:to-orange-500/30 text-yellow-200 border border-yellow-500/50 hover:border-yellow-400/70 shadow-lg shadow-yellow-500/20 hover:shadow-yellow-500/30'
+                : 'bg-white/10 hover:bg-white/20 text-white'
+            ]"
           >
-            关闭
+            <i class="fas fa-check mr-2"></i> 确认
           </button>
         </div>
       </div>
     </div>
 
     <!-- Cheat Code Button -->
-    <div class="fixed bottom-4 left-4 z-50">
+    <div v-if="!isCheatActive" class="fixed bottom-4 left-4 z-50">
       <button
         @click="showCheatInput = !showCheatInput"
         class="w-6 h-6 rounded-full bg-black/30 hover:bg-black/50 text-gray-500 hover:text-gray-300 text-xs transition-all flex items-center justify-center"
@@ -152,7 +227,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
-import { CharacterData, INITIAL_CHARACTER_DATA, INITIAL_ATTRIBUTES, Gender } from './types';
+import { CharacterData, INITIAL_CHARACTER_DATA, INITIAL_ATTRIBUTES, Gender, Difficulty } from './types';
 import FloatingShapes from './components/FloatingShapes.vue';
 import Step1_Identity from './components/Step1_Identity.vue';
 import Step2_Archetype from './components/Step2_Archetype.vue';
@@ -192,7 +267,7 @@ onMounted(async () => {
 });
 
 // 作弊码验证
-const applyCheatCode = () => {
+const applyCheatCode = async () => {
   const code = cheatCode.value.trim();
 
   if (code === '0210') {
@@ -200,7 +275,41 @@ const applyCheatCode = () => {
     isCheatActive.value = true;
     showCheatInput.value = false;
     cheatCode.value = '';
-    openModal('作弊模式已激活', '天赋点数已设为 999');
+    
+    // 设置难度为作弊者
+    updateCharacterData({ difficulty: Difficulty.CHEATER });
+    
+    // 添加全属性+999的特殊装备到MVU背包
+    try {
+      const specialEquipment = {
+        类型: '装备',
+        等级: 'SS',
+        描述: '作弊模式专属装备，全属性大幅提升',
+        加成属性: {
+          魅力加成: 999,
+          幸运加成: 999,
+          基础性斗力加成: 999,
+          基础性斗力成算: 0,
+          基础忍耐力加成: 999,
+          基础忍耐力成算: 0,
+          闪避率加成: 999,
+          暴击率加成: 999,
+          意志力加成: 999,
+        },
+        部位: '特殊装备',
+        数量: 1,
+      };
+      
+      await updateMvuVariables({
+        '物品系统.背包.作弊者之证': specialEquipment,
+      });
+      
+      console.info('[开局] 作弊装备已添加到背包');
+      openModal('CHEAT MODE ACTIVATE', '');
+    } catch (error) {
+      console.error('[开局] 添加作弊装备失败:', error);
+      openModal('CHEAT MODE ACTIVATE', '');
+    }
   } else if (code === '1011') {
     // 提示用户 1011 是隐藏角色码，应该在角色类型界面的锁图标中输入
     openModal(
@@ -461,7 +570,7 @@ const sendCharacterDataToTavern = async () => {
   infoParts.push(`专属被动：${selectedArchetype?.passiveSkill.name || '无'}`);
   infoParts.push(`特性描述：${selectedArchetype?.description || ''}`);
   
-  const characterDescription = infoParts.join('\n');
+  const characterDescription = `<用户信息>\n${infoParts.join('\n')}\n</用户信息>`;
   
   // 尝试发送到酒馆并写入世界书
   try {
@@ -477,7 +586,7 @@ const sendCharacterDataToTavern = async () => {
         }
       ]);
       
-      // 2. 将角色信息写入世界书「性斗学园」的user条目（uid=0）
+      // 2. 将角色信息写入世界书「性斗学园」的user条目（uid=712056）
       // 直接访问世界书数据并更新，避免通过消息发送
       try {
         const globalAny = window as any;
@@ -511,10 +620,10 @@ const sendCharacterDataToTavern = async () => {
             const entries = book.entries || book.getEntries?.() || book.getAllEntries?.();
             if (!entries) continue;
             
-            // 查找uid为0的条目
+            // 查找uid为712056的条目
             const entry = Array.isArray(entries)
-              ? entries.find((e: any) => String(e.uid) === '0' || e.uid === 0)
-              : entries['0'] || entries[0];
+              ? entries.find((e: any) => String(e.uid) === '712056' || e.uid === 712056)
+              : entries['712056'];
             
             if (entry) {
               entry.content = characterDescription;
@@ -541,7 +650,7 @@ const sendCharacterDataToTavern = async () => {
           // 这样世界书中会保留真实的换行格式（与你手动输入的效果一致）
           const escapedContent = characterDescription;
           
-          const command = `/setentryfield file=性斗学园 uid=0 field=content ${escapedContent}`;
+          const command = `/setentryfield file=性斗学园 uid=712056 field=content ${escapedContent}`;
           
           // 尝试通过triggerSlash执行命令（如果可用）
           try {
@@ -597,7 +706,7 @@ const sendCharacterDataToTavern = async () => {
         
         if (!worldbookUpdated) {
           console.warn('[开局] 无法自动更新世界书，请手动执行以下命令:');
-          console.warn(`/setentryfield file=性斗学园 uid=0 field=content ${characterDescription}`);
+          console.warn(`/setentryfield file=性斗学园 uid=712056 field=content ${characterDescription}`);
         }
       } catch (worldbookError) {
         console.warn('[开局] 更新世界书失败:', worldbookError);

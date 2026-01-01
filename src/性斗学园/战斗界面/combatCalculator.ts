@@ -25,6 +25,14 @@ export interface CombatResult {
 export function calculateBaseDamage(attacker: Character, skill: SkillData): number {
   let totalDamage = 0;
 
+  console.info('[战斗计算] 计算基础伤害:');
+  console.info('  技能伤害公式组件数量:', skill.damageFormula.length);
+  
+  if (skill.damageFormula.length === 0) {
+    console.warn('[战斗计算] 技能伤害公式为空，返回0');
+    return 0;
+  }
+
   for (const component of skill.damageFormula) {
     let sourceValue = 0;
 
@@ -46,10 +54,15 @@ export function calculateBaseDamage(attacker: Character, skill: SkillData): numb
         break;
     }
 
-    totalDamage += sourceValue * component.coefficient + component.baseValue;
+    const componentDamage = sourceValue * component.coefficient + component.baseValue;
+    totalDamage += componentDamage;
+    
+    console.info(`  组件: ${component.source}, 来源值: ${sourceValue}, 系数: ${component.coefficient}, 基础值: ${component.baseValue}, 组件伤害: ${componentDamage}`);
   }
 
-  return Math.max(0, Math.floor(totalDamage));
+  const finalDamage = Math.max(0, Math.floor(totalDamage));
+  console.info(`  总基础伤害: ${finalDamage}`);
+  return finalDamage;
 }
 
 /**

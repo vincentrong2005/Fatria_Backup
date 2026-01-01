@@ -60,7 +60,13 @@
         <select
           :value="data.difficulty"
           @change="(e) => updateData({ difficulty: (e.target as HTMLSelectElement).value as Difficulty })"
-          class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-red-500/50 appearance-none cursor-pointer backdrop-blur-sm"
+          :disabled="data.difficulty === Difficulty.CHEATER"
+          :class="[
+            'w-full bg-white/5 border rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-red-500/50 appearance-none backdrop-blur-sm',
+            data.difficulty === Difficulty.CHEATER
+              ? 'border-yellow-500/50 cursor-not-allowed opacity-75 bg-yellow-500/10'
+              : 'border-white/10 cursor-pointer'
+          ]"
         >
           <option
             v-for="d in Object.values(Difficulty)"
@@ -71,6 +77,9 @@
             {{ d }}
           </option>
         </select>
+        <p v-if="data.difficulty === Difficulty.CHEATER" class="mt-2 text-xs text-yellow-400 flex items-center gap-1">
+          <i class="fas fa-lock"></i> 作弊模式已激活，难度已锁定
+        </p>
       </div>
     </div>
 

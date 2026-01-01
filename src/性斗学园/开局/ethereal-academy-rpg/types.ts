@@ -7,7 +7,8 @@ export enum Gender {
 export enum Difficulty {
   STORY = '剧情模式 (简单)',
   NORMAL = '学园生活 (普通)',
-  HARDCORE = '地狱开局 (困难)'
+  HARDCORE = '地狱开局 (困难)',
+  CHEATER = '作弊者'
 }
 
 // Strictly matching the user's provided Zod schema keys for stats

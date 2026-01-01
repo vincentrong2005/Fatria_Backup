@@ -106,6 +106,7 @@ export const PLAYER_ITEMS: Item[] = [
     name: '强走饮料',
     description: '恢复 30 点耐力。',
     quantity: 3,
+    staminaRestore: 30,
     effect: (user, _target) => {
       user.stats.currentEndurance = Math.min(user.stats.maxEndurance, user.stats.currentEndurance + 30);
       return createLog(`${user.name} 喝下 [强走饮料]，耐力恢复了。`, 'player', 'heal');
@@ -116,6 +117,7 @@ export const PLAYER_ITEMS: Item[] = [
     name: '抑制剂',
     description: '减少 20 点当前快感。',
     quantity: 2,
+    pleasureReduce: 20,
     effect: (user, _target) => {
       user.stats.currentPleasure = Math.max(0, user.stats.currentPleasure - 20);
       return createLog(`${user.name} 注射了 [抑制剂]，身体稍微冷却下来。`, 'player', 'heal');

@@ -12,14 +12,30 @@
         </p>
         <p class="text-xs text-gray-500 mt-1">初始点数: {{ totalPointsAvailable }}</p>
       </div>
-      <div class="text-right">
-        <span class="block text-xs text-gray-400 uppercase tracking-wider">剩余点数</span>
-        <span :class="[
-          'text-3xl font-bold',
-          remaining === 0 ? 'text-gray-500' : 'text-secondary animate-pulse'
-        ]">
-          {{ remaining }}
-        </span>
+      <div class="flex items-center gap-4">
+        <!-- x10 切换按钮 -->
+        <button
+          @click="x10Mode = !x10Mode"
+          :class="[
+            'px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-300 border-2',
+            x10Mode
+              ? 'bg-secondary/20 border-secondary text-secondary shadow-lg shadow-pink-500/30'
+              : 'bg-white/5 border-white/10 text-gray-400 hover:text-white hover:border-white/20'
+          ]"
+          title="点击切换x10模式"
+        >
+          <i :class="['fas', x10Mode ? 'fa-check-circle' : 'fa-times-circle', 'mr-2']"></i>
+          <span class="font-mono">{{ x10Mode ? 'x10' : 'x1' }}</span>
+        </button>
+        <div class="text-right">
+          <span class="block text-xs text-gray-400 uppercase tracking-wider">剩余点数</span>
+          <span :class="[
+            'text-3xl font-bold',
+            remaining === 0 ? 'text-gray-500' : 'text-secondary animate-pulse'
+          ]">
+            {{ remaining }}
+          </span>
+        </div>
       </div>
     </div>
 
@@ -43,9 +59,16 @@
           <button
             @click="handleStatChange(stat.path, -1)"
             :disabled="getCurrentValue(stat.path) <= getInitialValue(stat.path) || isUpdating"
-            class="w-8 h-8 flex items-center justify-center rounded-full bg-white/5 text-gray-400 hover:bg-white/10 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+            :class="[
+              'w-8 h-8 flex items-center justify-center rounded-full text-gray-400 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-all',
+              x10Mode 
+                ? 'bg-white/10 hover:bg-white/20 border border-orange-500/30' 
+                : 'bg-white/5 hover:bg-white/10'
+            ]"
+            :title="x10Mode ? 'x10模式：点击一次减少10点' : '点击减少1点'"
           >
-            <i class="fas fa-minus text-sm"></i>
+            <span v-if="x10Mode" class="text-xs font-bold">-10</span>
+            <i v-else class="fas fa-minus text-sm"></i>
           </button>
           
           <span class="w-12 text-center font-mono font-bold text-lg text-white">
@@ -55,9 +78,16 @@
           <button
             @click="handleStatChange(stat.path, 1)"
             :disabled="remaining <= 0 || isUpdating"
-            class="w-8 h-8 flex items-center justify-center rounded-full bg-secondary text-white shadow-lg shadow-pink-500/20 hover:scale-110 active:scale-95 disabled:opacity-30 disabled:cursor-not-allowed disabled:transform-none transition-all"
+            :class="[
+              'w-8 h-8 flex items-center justify-center rounded-full text-white shadow-lg hover:scale-110 active:scale-95 disabled:opacity-30 disabled:cursor-not-allowed disabled:transform-none transition-all',
+              x10Mode 
+                ? 'bg-gradient-to-br from-orange-500 to-red-500 shadow-orange-500/30' 
+                : 'bg-secondary shadow-pink-500/20'
+            ]"
+            :title="x10Mode ? 'x10模式：点击一次增加10点' : '点击增加1点'"
           >
-            <i class="fas fa-plus text-sm"></i>
+            <span v-if="x10Mode" class="text-xs font-bold">+10</span>
+            <i v-else class="fas fa-plus text-sm"></i>
           </button>
         </div>
       </div>
@@ -81,6 +111,7 @@ const emit = defineEmits<{
 }>();
 
 const isUpdating = ref(false);
+const x10Mode = ref(false);
 
 // 作弊模式下使用999点，否则使用难度对应的点数
 const totalPointsAvailable = computed(() => {
@@ -147,25 +178,56 @@ const handleStatChange = async (path: string, delta: number) => {
   if (isUpdating.value) return;
 
   const [category, key] = path.split('.');
+  
+  // 计算实际的变化倍数
+  const multiplier = x10Mode.value ? 10 : 1;
+  const actualDelta = delta * multiplier;
+  
   let cost = 1;
-  let valueChange = delta;
+  let valueChange = actualDelta;
 
   // 根据属性类型计算成本和变化值
   if (path === '核心状态.$最大耐力' || path === '核心状态.$最大快感') {
     cost = 1;
-    valueChange = delta * 5;
+    valueChange = actualDelta * 5;
   } else if (path === '核心状态._潜力') {
     cost = 2;
-    valueChange = delta * 0.1;
+    valueChange = actualDelta * 0.1;
   }
 
-  if (delta > 0 && remaining.value < cost) return;
+  // 计算总成本
+  const totalCost = cost * multiplier;
+  
+  // 检查剩余点数是否足够
+  if (delta > 0 && remaining.value < totalCost) return;
 
   const currentVal = getCurrentValue(path);
   const maxVal = MAX_STATS[path as keyof typeof MAX_STATS] || 9999;
   const minVal = getInitialValue(path);
 
+  // 计算新值
   let newVal = currentVal + valueChange;
+  
+  // 如果超过上限，调整到上限
+  if (newVal > maxVal) {
+    newVal = maxVal;
+    // 重新计算实际使用的点数
+    const actualValueChange = newVal - currentVal;
+    if (path === '核心状态.$最大耐力' || path === '核心状态.$最大快感') {
+      valueChange = actualValueChange;
+    } else if (path === '核心状态._潜力') {
+      valueChange = actualValueChange;
+    } else {
+      valueChange = actualValueChange;
+    }
+  }
+  
+  // 如果低于下限，调整到下限
+  if (newVal < minVal) {
+    newVal = minVal;
+    valueChange = newVal - currentVal;
+  }
+  
   if (path === '核心状态._潜力') newVal = parseFloat(newVal.toFixed(1));
 
   if (newVal <= maxVal && newVal >= minVal) {

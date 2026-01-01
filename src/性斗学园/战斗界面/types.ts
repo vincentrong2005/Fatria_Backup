@@ -130,6 +130,9 @@ export interface Item {
   description: string;
   quantity: number;
   effect: (user: Character, target: Character) => CombatLogEntry;
+  // 物品数值信息（用于显示）
+  staminaRestore?: number;
+  pleasureReduce?: number;
 }
 
 /** 角色 */
@@ -171,16 +174,18 @@ export interface TurnState {
   climaxTarget: 'player' | 'enemy' | null;
 }
 
-/** MVU数据结构 - 对应[initvar].yaml */
+/** MVU数据结构 - 对应新的Schema */
 export interface MvuStatData {
   角色基础: {
     _等级: number;
     经验值: number;
-    _声望: number;
+    声望: number;
     _段位: string;
     段位积分: number;
   };
   核心状态: {
+    $属性点: number;
+    $技能点: number;
     $最大耐力: number;
     $耐力: number;
     $最大快感: number;
@@ -216,10 +221,16 @@ export interface MvuStatData {
       允许认输: boolean;
     };
     当前回合: number;
-    行动日志: Record<string, string[]>;
+    行动日志: Record<string, string>;
     高潮次数: number;
     实时性斗力: number;
     实时忍耐力: number;
+    // 对手属性
+    对手魅力: number;
+    对手幸运: number;
+    对手闪避率: number;
+    对手暴击率: number;
+    对手意志力: number;
     对手耐力: number;
     对手最大耐力: number;
     对手快感: number;
@@ -227,35 +238,64 @@ export interface MvuStatData {
     对手高潮次数: number;
     对手性斗力: number;
     对手忍耐力: number;
-    对手魅力: number;
-    对手幸运: number;
-    对手闪避率: number;
-    对手暴击率: number;
     对手临时状态: {
       状态列表: Record<string, number>;
       加成统计: BonusStats;
     };
     对手技能冷却: Record<string, number>;
     对手可用技能: Record<string, any>;
-    技能冷却: Record<string, number>;
-    可用技能: Record<string, any>;
     战斗物品: Record<string, number>;
   };
   物品系统: {
     学园金币: number;
     背包: Record<string, any>;
     _装备栏: {
-      主装备: { 名称: string; 等级: string; 加成属性: any; 描述: string };
-      副装备: { 名称: string; 等级: string; 加成属性: any; 描述: string };
-      饰品1: { 名称: string; 等级: string; 加成属性: any; 描述: string };
-      饰品2: { 名称: string; 等级: string; 加成属性: any; 描述: string };
-      特殊装备: { 名称: string; 等级: string; 加成属性: any; 描述: string };
+      主装备: { 名称: string; 等级: string; 加成属性: BonusStats; 描述: string };
+      副装备: { 名称: string; 等级: string; 加成属性: BonusStats; 描述: string };
+      饰品1: { 名称: string; 等级: string; 加成属性: BonusStats; 描述: string };
+      饰品2: { 名称: string; 等级: string; 加成属性: BonusStats; 描述: string };
+      特殊装备: { 名称: string; 等级: string; 加成属性: BonusStats; 描述: string };
     };
     装备总加成: BonusStats;
   };
   技能系统: {
     主动技能: Record<string, any>;
-    被动技能: Record<string, any>;
+  };
+  关系系统: {
+    在场人物: string[];
+    [key: string]: any; // 动态关系字段
+  };
+  任务系统: {
+    主线任务: {
+      名称: string;
+      描述: string;
+      状态: string;
+      目标: Record<string, any>;
+      奖励: string;
+      期限: string;
+    };
+    支线任务: Record<string, any>;
+    已完成记录: string[];
+  };
+  位置系统: {
+    坐标: string;
+    楼层: number;
+    地点名称: string;
+  };
+  时间系统: {
+    日期: string;
+    星期: number;
+    时间: string;
+  };
+  势力声望: {
+    学生会: number;
+    女权协会: number;
+    BF社: number;
+    体育联盟: number;
+    研究会: number;
+    地下联盟: number;
+    男性自保联盟: number;
+    雌堕会: number;
   };
 }
 

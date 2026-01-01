@@ -835,14 +835,6 @@ export const ACTIVE_SKILLS: Skill[] = [
     icon: 'Crown',
   },
   {
-    id: 's_hypnosis',
-    name: '催眠',
-    description: '【特殊】暗示与诱导',
-    effectDescription: '改变对方常识',
-    type: 'active',
-    icon: 'Disc',
-  },
-  {
     id: 's_aphrodisiac',
     name: '媚药投毒',
     description: '【道具】悄悄下药',
@@ -851,12 +843,28 @@ export const ACTIVE_SKILLS: Skill[] = [
     icon: 'Flask',
   },
   {
-    id: 's_group',
-    name: '呼叫同伴',
-    description: '【特殊】摇人',
-    effectDescription: '进入多人模式',
+    id: 's_charm_kiss',
+    name: '魅惑之吻',
+    description: '【攻击】用魅惑的吻技攻击',
+    effectDescription: '造成50%魅力伤害，降低目标意志力',
     type: 'active',
-    icon: 'Users',
+    icon: 'Heart',
+  },
+  {
+    id: 's_counter',
+    name: '快速反击',
+    description: '【攻击】在闪避后立即反击',
+    effectDescription: '造成80%性斗力伤害，无视防御',
+    type: 'active',
+    icon: 'Shield',
+  },
+  {
+    id: 's_lucky_strike',
+    name: '幸运一击',
+    description: '【攻击】依靠运气发动的强力攻击',
+    effectDescription: '造成60%性斗力+40%幸运伤害',
+    type: 'active',
+    icon: 'Clover',
   },
 ];
 
@@ -1069,6 +1077,7 @@ export const DIFFICULTY_POINTS = {
   '剧情模式 (简单)': 100,
   '学园生活 (普通)': 60,
   '地狱开局 (困难)': 30,
+  '作弊者': 999,
 };
 
 export const CUP_SIZES = ['AA', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I+', 'Z'];
