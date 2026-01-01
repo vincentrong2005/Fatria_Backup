@@ -113,6 +113,50 @@
         <p class="empty-desc">与学园中的人物互动来建立关系</p>
       </div>
     </div>
+
+    <!-- 势力声望 -->
+    <div class="section">
+      <div class="section-header">
+        <i class="fas fa-flag"></i>
+        <span>势力声望</span>
+      </div>
+
+      <div class="reputation-list" v-if="Object.keys(reputations).length > 0">
+        <div 
+          class="reputation-card" 
+          v-for="(value, name) in reputations" 
+          :key="name"
+        >
+          <div class="rep-header">
+            <div class="rep-icon">
+              <i :class="getReputationIcon(name)"></i>
+            </div>
+            <div class="rep-info">
+              <div class="rep-name">{{ name }}</div>
+              <div class="rep-value" :class="getReputationClass(value)">
+                {{ value > 0 ? '+' : '' }}{{ value }}
+              </div>
+            </div>
+          </div>
+          <div class="rep-bar">
+            <div 
+              class="rep-fill" 
+              :class="getReputationClass(value)"
+              :style="{ width: `${getReputationPercentage(value)}%` }"
+            ></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 空状态 -->
+      <div class="empty-state" v-else>
+        <div class="empty-icon">
+          <i class="fas fa-flag"></i>
+        </div>
+        <p class="empty-title">暂无声望数据</p>
+        <p class="empty-desc">与各势力互动来建立声望</p>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -138,6 +182,10 @@ const relationships = computed(() => {
   }
   
   return result;
+});
+
+const reputations = computed(() => {
+  return props.characterData.势力声望 || {};
 });
 
 function getRelationTypeClass(type: string | undefined): string {
@@ -182,6 +230,33 @@ function getSubmissionClass(value: number): string {
   if (value >= 40) return 'medium';
   if (value >= 20) return 'low';
   return 'very-low';
+}
+
+function getReputationIcon(name: string): string {
+  const map: Record<string, string> = {
+    '学生会': 'fas fa-crown',
+    '女权协会': 'fas fa-venus',
+    'BF社': 'fas fa-flask',
+    '体育联盟': 'fas fa-dumbbell',
+    '研究会': 'fas fa-book',
+    '地下联盟': 'fas fa-mask',
+    '男性自保联盟': 'fas fa-shield-alt',
+    '雌堕会': 'fas fa-butterfly'
+  };
+  return map[name] || 'fas fa-flag';
+}
+
+function getReputationClass(value: number): string {
+  if (value >= 50) return 'very-high';
+  if (value >= 20) return 'high';
+  if (value >= -20) return 'medium';
+  if (value >= -50) return 'low';
+  return 'very-low';
+}
+
+function getReputationPercentage(value: number): number {
+  // 将 -100 到 100 的范围映射到 0 到 100
+  return Math.max(0, Math.min(100, ((value + 100) / 2)));
 }
 </script>
 
@@ -461,5 +536,84 @@ function getSubmissionClass(value: number): string {
     font-size: 13px;
     color: rgba(255, 255, 255, 0.3);
   }
+}
+
+.reputation-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.reputation-card {
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.rep-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.rep-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.3), rgba(118, 75, 162, 0.2));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  
+  i {
+    font-size: 16px;
+    color: rgba(255, 255, 255, 0.7);
+  }
+}
+
+.rep-info {
+  flex: 1;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.rep-name {
+  font-size: 14px;
+  font-weight: 500;
+  color: white;
+}
+
+.rep-value {
+  font-size: 14px;
+  font-weight: 600;
+  font-family: 'JetBrains Mono', monospace;
+  
+  &.very-high { color: #34d399; }
+  &.high { color: #60a5fa; }
+  &.medium { color: rgba(255, 255, 255, 0.6); }
+  &.low { color: #fbbf24; }
+  &.very-low { color: #f87171; }
+}
+
+.rep-bar {
+  height: 4px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.rep-fill {
+  height: 100%;
+  border-radius: 2px;
+  transition: width 0.4s ease;
+  
+  &.very-high { background: linear-gradient(90deg, #10b981, #34d399); }
+  &.high { background: linear-gradient(90deg, #3b82f6, #60a5fa); }
+  &.medium { background: rgba(255, 255, 255, 0.3); }
+  &.low { background: linear-gradient(90deg, #f59e0b, #fbbf24); }
+  &.very-low { background: linear-gradient(90deg, #ef4444, #f87171); }
 }
 </style>

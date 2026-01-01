@@ -69,7 +69,7 @@
           ]"
         >
           <option
-            v-for="d in Object.values(Difficulty)"
+            v-for="d in availableDifficulties"
             :key="d"
             :value="d"
             class="bg-slate-900 text-white"
@@ -114,15 +114,27 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue';
 import { Gender, Difficulty, CharacterData } from '../types';
 
-defineProps<{
+const props = defineProps<{
   data: CharacterData;
 }>();
 
 const emit = defineEmits<{
   (e: 'update-data', fields: Partial<CharacterData>): void;
 }>();
+
+// 过滤难度选项：隐藏"作弊者"，除非当前已经是"作弊者"
+const availableDifficulties = computed(() => {
+  const allDifficulties = Object.values(Difficulty);
+  // 如果当前难度是"作弊者"，则显示所有选项（包括作弊者）
+  if (props.data.difficulty === Difficulty.CHEATER) {
+    return allDifficulties;
+  }
+  // 否则隐藏"作弊者"选项
+  return allDifficulties.filter(d => d !== Difficulty.CHEATER);
+});
 
 const updateData = (fields: Partial<CharacterData>) => {
   emit('update-data', fields);

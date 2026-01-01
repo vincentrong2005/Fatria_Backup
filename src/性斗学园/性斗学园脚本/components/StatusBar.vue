@@ -50,6 +50,9 @@
 
           <!-- Skills 技能页 -->
           <SkillPage v-if="currentPage === 'skills'" :character-data="characterData" />
+
+          <!-- Map 地图页 -->
+          <MapPage v-if="currentPage === 'map'" :character-data="characterData" />
         </div>
 
         <!-- 底部导航栏 -->
@@ -82,6 +85,14 @@
             <i class="fas fa-heart"></i>
             <span>关系</span>
           </button>
+          <button
+            class="nav-button"
+            :class="{ active: currentPage === 'map' }"
+            @click="currentPage = 'map'"
+          >
+            <i class="fas fa-map"></i>
+            <span>地图</span>
+          </button>
         </div>
 
         <!-- 底部指示器 -->
@@ -104,6 +115,7 @@ import ProfilePage from './pages/ProfilePage.vue';
 import QuestPage from './pages/QuestPage.vue';
 import RelationshipPage from './pages/RelationshipPage.vue';
 import SkillPage from './pages/SkillPage.vue';
+import MapPage from './pages/MapPage.vue';
 
 const props = defineProps<{
   isVisible: boolean;
@@ -116,7 +128,7 @@ const emit = defineEmits<{
 const characterData = ref<any>({});
 const combatData = ref<any>({});
 const currentTime = ref('12:00');
-const currentPage = ref<'dashboard' | 'profile' | 'skills' | 'inventory' | 'quest' | 'relationship'>('dashboard');
+const currentPage = ref<'dashboard' | 'profile' | 'skills' | 'inventory' | 'quest' | 'relationship' | 'map'>('dashboard');
 
 // 从 MVU 获取数据
 async function loadMvuData() {
@@ -487,6 +499,8 @@ onUnmounted(() => {
   backdrop-filter: blur(10px);
   border-top: 1px solid rgba(255, 255, 255, 0.1);
   z-index: 50;
+  flex-wrap: wrap;
+  gap: 4px;
 }
 
 .nav-button {
@@ -494,21 +508,23 @@ onUnmounted(() => {
   flex-direction: column;
   align-items: center;
   gap: 4px;
-  padding: 8px 16px;
+  padding: 6px 12px;
   background: transparent;
   border: none;
   color: rgba(255, 255, 255, 0.5);
   cursor: pointer;
   transition: all 0.2s;
   border-radius: 12px;
+  flex: 0 0 auto;
+  min-width: 50px;
 
   i {
-    font-size: 20px;
+    font-size: 18px;
     margin-bottom: 2px;
   }
 
   span {
-    font-size: 11px;
+    font-size: 10px;
     font-weight: 500;
   }
 
