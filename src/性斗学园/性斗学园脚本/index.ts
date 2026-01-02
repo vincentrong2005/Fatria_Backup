@@ -42,6 +42,53 @@ function getValue(data: any, path: string, defaultValue: number = 0): number {
 }
 
 /**
+ * 根据等级计算段位
+ * - 无段位: 0-9
+ * - D段: 10-19
+ * - C段: 20-29
+ * - B段: 30-39
+ * - A段: 40-59
+ * - S段: 60-79
+ * - SS段: 80-99
+ * - SSS段: 100
+ */
+function calculateRank(level: number): string {
+  if (level >= 100) return 'SSS';
+  if (level >= 80) return 'SS';
+  if (level >= 60) return 'S';
+  if (level >= 40) return 'A';
+  if (level >= 30) return 'B';
+  if (level >= 20) return 'C';
+  if (level >= 10) return 'D';
+  return '无段位';
+}
+
+/**
+ * 独立更新段位（确保段位始终与等级匹配）
+ */
+async function updateRank() {
+  try {
+    const mvuData = Mvu.getMvuData({ type: 'message', message_id: 'latest' });
+    if (!mvuData || !mvuData.stat_data) {
+      console.warn('[性斗学园脚本] 无法获取 MVU 数据，跳过段位更新');
+      return;
+    }
+    
+    const level = getValue(mvuData, '角色基础._等级', 1);
+    const expectedRank = calculateRank(level);
+    const currentRank = _.get(mvuData.stat_data, '角色基础._段位', '无段位');
+    
+    if (expectedRank !== currentRank) {
+      _.set(mvuData.stat_data, '角色基础._段位', expectedRank);
+      await Mvu.replaceMvuData(mvuData, { type: 'message', message_id: 'latest' });
+      console.info(`[性斗学园脚本] [独立段位更新] 等级 ${level} → ${expectedRank}段 (从 "${currentRank}" 更新为 "${expectedRank}")`);
+    }
+  } catch (error) {
+    console.error('[性斗学园脚本] 独立段位更新时出错:', error);
+  }
+}
+
+/**
  * 计算并更新所有依赖变量
  * 
  * 计算顺序很重要：
@@ -248,6 +295,8 @@ async function updateDependentVariables() {
     const currentLevel = getValue(mvuData, '角色基础._等级', 1);
     const currentExp = getValue(mvuData, '角色基础.经验值', 0);
     
+    let finalLevel = currentLevel; // 用于后续段位计算
+    
     if (canLevelUp(currentLevel, currentExp)) {
       const newLevel = currentLevel + 1;
       const expNeeded = currentLevel * EXP_PER_LEVEL;
@@ -256,7 +305,22 @@ async function updateDependentVariables() {
       updates['角色基础.经验值'] = currentExp - expNeeded;
       hasUpdates = true;
       
+      finalLevel = newLevel; // 更新最终等级
       console.info(`[性斗学园脚本] 升级！${currentLevel} → ${newLevel}`);
+    }
+
+    // ==================== 步骤6.5: 根据等级自动更新段位 ====================
+    const expectedRank = calculateRank(finalLevel);
+    const currentRank = _.get(mvuData.stat_data, '角色基础._段位', '无段位');
+    
+    console.info(`[性斗学园脚本] 段位检查：当前等级=${finalLevel}, 当前段位="${currentRank}", 期望段位="${expectedRank}"`);
+    
+    if (expectedRank !== currentRank) {
+      updates['角色基础._段位'] = expectedRank;
+      hasUpdates = true;
+      console.info(`[性斗学园脚本] 段位需要更新：等级 ${finalLevel} → ${expectedRank}段 (从 "${currentRank}" 更新为 "${expectedRank}")`);
+    } else {
+      console.info(`[性斗学园脚本] 段位无需更新：等级 ${finalLevel} 对应段位 "${expectedRank}" 已正确`);
     }
 
     // ==================== 步骤7: 应用所有更新 ====================
@@ -266,11 +330,19 @@ async function updateDependentVariables() {
       // 直接使用 _.set 更新数据，然后一次性写回
       for (const [path, value] of Object.entries(updates)) {
         _.set(mvuData.stat_data, path, value);
+        console.info(`[性斗学园脚本] 设置变量: ${path} = ${JSON.stringify(value)}`);
       }
       
       // 写回 MVU 数据
       await Mvu.replaceMvuData(mvuData, { type: 'message', message_id: 'latest' });
-      console.info('[性斗学园脚本] 变量更新完成');
+      console.info('[性斗学园脚本] 变量更新完成，已写回MVU数据');
+      
+      // 验证段位是否已更新
+      if (updates['角色基础._段位']) {
+        const verifyData = Mvu.getMvuData({ type: 'message', message_id: 'latest' });
+        const verifyRank = _.get(verifyData?.stat_data, '角色基础._段位', '未知');
+        console.info(`[性斗学园脚本] 段位更新验证：写回后的段位值为 "${verifyRank}"`);
+      }
     } else {
       console.info('[性斗学园脚本] 无需更新变量（所有值已是最新）');
     }
@@ -293,6 +365,7 @@ eventOn(Mvu.events.VARIABLE_UPDATE_ENDED, async (variables, variables_before_upd
   const basePaths = [
     '角色基础._等级',
     '角色基础.经验值',
+    '角色基础._段位', // 段位变化时也需要重新检查并更新
     // 核心状态基础值
     '核心状态._潜力',
     '核心状态.$基础魅力',
@@ -419,6 +492,8 @@ $(() => {
     await new Promise(resolve => setTimeout(resolve, 500));
     console.info('[性斗学园脚本] 初始化：开始首次计算');
     await updateDependentVariables();
+    // 初始化时也更新段位
+    await updateRank();
   })();
   
   // 添加定时检查机制（每10秒检查一次，确保实时更新）
@@ -426,6 +501,8 @@ $(() => {
     if (!isUpdating) {
       await updateDependentVariables();
     }
+    // 独立更新段位，确保段位始终与等级匹配
+    await updateRank();
   }, 10000);
   
   // 初始化状态栏
