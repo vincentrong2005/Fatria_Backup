@@ -55,7 +55,6 @@
       />
     </main>
 
-
     <!-- 底部操作区域 -->
     <footer class="combat-footer">
       <div class="footer-content">
@@ -93,7 +92,7 @@
             <Transition name="slide" mode="out-in">
               <!-- 主菜单 -->
               <div v-if="activeMenu === 'main'" key="main" class="menu-main">
-                <Card hover @click="activeMenu = 'skills'" class="menu-card">
+                <Card hover class="menu-card" @click="activeMenu = 'skills'">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     width="32"
@@ -111,7 +110,7 @@
                   </svg>
                   <span>战斗技能</span>
                 </Card>
-                <Card hover @click="activeMenu = 'items'" class="menu-card">
+                <Card hover class="menu-card" @click="activeMenu = 'items'">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     width="32"
@@ -127,7 +126,7 @@
                   </svg>
                   <span>物品背包</span>
                 </Card>
-                <Card hover @click="handleSkipTurn" class="menu-card">
+                <Card hover class="menu-card" @click="handleSkipTurn">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     width="32"
@@ -145,9 +144,9 @@
                 </Card>
                 <Card
                   :hover="!allowSurrender"
-                  @click="handleSurrender"
                   class="menu-card"
                   :class="{ disabled: allowSurrender }"
+                  @click="handleSurrender"
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -172,9 +171,9 @@
                   v-for="skill in player.skills"
                   :key="skill.id"
                   :hover="!isSkillDisabled(skill)"
-                  @click="handlePlayerSkill(skill)"
                   class="skill-card"
                   :class="{ disabled: isSkillDisabled(skill) }"
+                  @click="handlePlayerSkill(skill)"
                 >
                   <div v-if="skill.currentCooldown > 0" class="cooldown-overlay">
                     <svg
@@ -216,8 +215,8 @@
                     v-for="item in player.items.filter(i => i.quantity > 0)"
                     :key="item.id"
                     :hover="true"
-                    @click="handlePlayerItem(item)"
                     class="item-card"
+                    @click="handlePlayerItem(item)"
                   >
                     <div class="item-header">
                       <span class="item-name">{{ item.name }}</span>
@@ -296,7 +295,7 @@
     </footer>
 
     <!-- 战斗特效 -->
-    <CombatEffect :type="effectType!" :show="showEffect" v-if="effectType" />
+    <CombatEffect v-if="effectType" :type="effectType!" :show="showEffect" />
   </div>
 </template>
 
@@ -305,8 +304,8 @@ import { onMounted, reactive, ref, watch } from 'vue';
 import BackgroundAmbience from './components/BackgroundAmbience.vue';
 import Card from './components/Card.vue';
 import CharacterPanel from './components/CharacterPanel.vue';
-import CombatLog from './components/CombatLog.vue';
 import CombatEffect from './components/CombatEffect.vue';
+import CombatLog from './components/CombatLog.vue';
 import { createDefaultEnemy, createDefaultPlayer } from './constants';
 import type { Character, CombatLogEntry, Item, Skill, TurnState } from './types';
 
@@ -504,7 +503,6 @@ async function loadFromMvu() {
           // 获取技能当前冷却 - 注意：Schema中没有明确的玩家技能冷却字段
           // 技能冷却在战斗中管理，不需要从MVU读取（每次战斗开始时冷却为0）
           const currentCooldown = 0;
-
 
           return {
             id: skillData.id,
@@ -1246,7 +1244,7 @@ async function initializeCombatSystem() {
     _.set(mvuData.stat_data, '性斗系统.行动日志', {});
     _.set(mvuData.stat_data, '性斗系统.对手技能冷却', {});
     _.set(mvuData.stat_data, '性斗系统.战斗物品', {});
-    
+
     // 清空对手数据（可选，根据需求决定是否清空）
     // _.set(mvuData.stat_data, '性斗系统.对手名称', '');
     // _.set(mvuData.stat_data, '性斗系统.对手性斗力', 0);
@@ -1473,7 +1471,7 @@ function handlePlayerSkill(skill: Skill) {
         } else {
           console.warn('[战斗界面] 玩家攻击 - result.logs 为空或未定义');
         }
-        
+
         if (result.isCritical) {
           addLog(`暴击！造成 ${result.actualDamage} 点快感伤害！`, 'player', 'critical');
           triggerEffect('critical');
@@ -1736,7 +1734,7 @@ function handleEnemyTurn() {
           } else {
             console.warn('[战斗界面] 敌人攻击 - result.logs 为空或未定义');
           }
-          
+
           if (result.isCritical) {
             addLog(`暴击！造成 ${result.actualDamage} 点快感伤害！`, 'enemy', 'critical');
             triggerEffect('critical');
@@ -1923,14 +1921,14 @@ async function sendCombatLogToLLM(context: string) {
   try {
     const combatLogText = collectCombatLogs();
     const totalTurns = turnState.currentTurn;
-    
+
     // 判断是胜利还是失败
     const isVictory = turnState.phase === 'victory';
     const resultText = isVictory ? '胜利' : '战败';
     const contextText = isVictory ? '调教/羞辱场景' : '被调教场景';
 
     // 构建完整的提示词（包含开头和结尾）
-    const fullPrompt = `请根据以下战斗日志生成${resultText}剧情\n[战斗日志]\n${combatLogText}\n共${totalTurns}回合。\n请根据以上战斗过程，生成一段${resultText}后的剧情描写（${contextText}）。`;
+    const fullPrompt = `请根据以下战斗日志生成${resultText}剧情\n[战斗日志]\n${combatLogText}\n共${totalTurns}回合。\n请根据以上性斗过程，生成一段性斗时的剧情描写（${contextText}）。`;
 
     // 先发送战斗日志文本到聊天中显示（作为用户消息）
     if (typeof createChatMessages === 'function') {
@@ -1963,7 +1961,7 @@ async function sendCombatLogToLLM(context: string) {
     } else {
       console.warn('[战斗界面] generate函数不可用');
       addLog('无法生成过程描述，generate函数不可用', 'system', 'warn');
-      
+
       // 如果 generate 不可用，直接触发一次AI回复
       if (typeof triggerSlash === 'function') {
         await triggerSlash('/trigger');
@@ -1979,10 +1977,10 @@ async function sendCombatLogToLLM(context: string) {
 async function handleSendCombatLogToLLM() {
   const context = turnState.phase === 'victory' ? '获得胜利' : turnState.phase === 'defeat' ? '败北' : '战斗结束';
   await sendCombatLogToLLM(context);
-  
+
   // 清空战斗日志
   logs.value = [];
-  
+
   // 清空MVU中的行动日志
   try {
     if (typeof Mvu !== 'undefined') {
@@ -2273,7 +2271,9 @@ onMounted(async () => {
   border-top: 1px solid rgba(255, 255, 255, 0.1);
   backdrop-filter: blur(30px) saturate(180%);
   padding: 1rem 1.5rem 1.5rem;
-  box-shadow: 0 -20px 60px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.05) inset;
+  box-shadow:
+    0 -20px 60px rgba(0, 0, 0, 0.7),
+    0 0 0 1px rgba(255, 255, 255, 0.05) inset;
 }
 
 .footer-content {
@@ -2328,7 +2328,9 @@ onMounted(async () => {
     background: linear-gradient(135deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.1));
     color: white;
     border-color: rgba(255, 255, 255, 0.3);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.1) inset;
+    box-shadow:
+      0 4px 12px rgba(0, 0, 0, 0.3),
+      0 0 0 1px rgba(255, 255, 255, 0.1) inset;
   }
 
   &:hover:not(.active) {
@@ -2400,20 +2402,20 @@ onMounted(async () => {
   scroll-behavior: smooth;
   scrollbar-width: thin;
   scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
-  
+
   // Webkit浏览器滚动条样式
   &::-webkit-scrollbar {
     height: 6px;
   }
-  
+
   &::-webkit-scrollbar-track {
     background: transparent;
   }
-  
+
   &::-webkit-scrollbar-thumb {
     background: rgba(255, 255, 255, 0.2);
     border-radius: 3px;
-    
+
     &:hover {
       background: rgba(255, 255, 255, 0.3);
     }
@@ -2453,7 +2455,9 @@ onMounted(async () => {
   &:hover {
     transform: translateY(-4px) scale(1.02);
     border-color: rgba(255, 255, 255, 0.2);
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.1) inset;
+    box-shadow:
+      0 8px 24px rgba(0, 0, 0, 0.4),
+      0 0 0 1px rgba(255, 255, 255, 0.1) inset;
   }
 
   span {
@@ -2506,7 +2510,9 @@ onMounted(async () => {
   &:hover:not(.disabled) {
     transform: translateY(-2px);
     border-color: rgba(255, 255, 255, 0.2);
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.1) inset;
+    box-shadow:
+      0 8px 24px rgba(0, 0, 0, 0.4),
+      0 0 0 1px rgba(255, 255, 255, 0.1) inset;
     background: linear-gradient(135deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.05));
   }
 
@@ -2809,7 +2815,9 @@ onMounted(async () => {
 .btn-process {
   background: linear-gradient(135deg, #db2777, #ec4899);
   color: white;
-  box-shadow: 0 8px 24px rgba(219, 39, 119, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.1) inset;
+  box-shadow:
+    0 8px 24px rgba(219, 39, 119, 0.5),
+    0 0 0 1px rgba(255, 255, 255, 0.1) inset;
   font-size: 1rem;
   font-weight: 700;
   letter-spacing: 0.05em;
@@ -2817,7 +2825,9 @@ onMounted(async () => {
   &:hover {
     background: linear-gradient(135deg, #ec4899, #f472b6);
     transform: translateY(-2px);
-    box-shadow: 0 12px 32px rgba(219, 39, 119, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.2) inset;
+    box-shadow:
+      0 12px 32px rgba(219, 39, 119, 0.6),
+      0 0 0 1px rgba(255, 255, 255, 0.2) inset;
   }
 
   &:active {
@@ -2855,7 +2865,9 @@ onMounted(async () => {
   background: linear-gradient(135deg, rgba(15, 23, 42, 0.95), rgba(9, 9, 11, 0.98));
   border-radius: 1.5rem;
   border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(255, 255, 255, 0.05) inset;
+  box-shadow:
+    0 20px 60px rgba(0, 0, 0, 0.8),
+    0 0 0 1px rgba(255, 255, 255, 0.05) inset;
   backdrop-filter: blur(30px);
   max-width: 500px;
   width: 90%;
