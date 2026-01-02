@@ -102,11 +102,6 @@
         <!-- 底部指示器 -->
         <div class="home-indicator"></div>
       </div>
-
-      <!-- 关闭按钮 -->
-      <button class="close-button" @click="close">
-        <i class="fas fa-times"></i>
-      </button>
     </div>
   </div>
 </template>
@@ -367,7 +362,8 @@ onUnmounted(() => {
   width: 100%;
   max-width: 390px;
   max-width: min(390px, calc(100vw - 20px)); // 手机端适配
-  height: 844px;
+  height: 722px;
+  min-height: 722px; // 固定最小高度，防止内容少时缩短
   max-height: calc(100vh - 20px);
   max-height: calc(100dvh - 20px); // 移动端视口单位
   background: #0f172a;
@@ -380,12 +376,12 @@ onUnmounted(() => {
   flex-shrink: 0;
   min-width: 0; // 防止 flex 子元素溢出
   
-  // 手机端响应式处理
+  // 手机端响应式处理 - 保持固定高度
   @media (max-height: 900px) {
     max-height: calc(100vh - 20px);
     max-height: calc(100dvh - 20px);
-    height: auto;
-    min-height: 500px;
+    height: 722px;
+    min-height: 722px; // 保持固定高度
   }
   
   @media (max-width: 420px) {
@@ -395,15 +391,17 @@ onUnmounted(() => {
     border-width: 6px;
   }
   
-  // 超小屏幕处理
+  // 超小屏幕处理 - 如果屏幕太小，允许缩小但保持最小高度
   @media (max-height: 700px) {
     max-height: calc(100vh - 10px);
     max-height: calc(100dvh - 10px);
+    height: 599px;
+    min-height: 599px; // 超小屏幕的最小高度
     border-radius: 20px;
     border-width: 4px;
   }
   
-  // 移动端特殊处理
+  // 移动端特殊处理 - 保持固定高度
   @media (max-width: 768px) {
     border-radius: 20px;
     border-width: 4px;
@@ -411,6 +409,8 @@ onUnmounted(() => {
     max-width: calc(100dvw - 10px);
     max-height: calc(100vh - 10px);
     max-height: calc(100dvh - 10px);
+    height: 722px;
+    min-height: 722px; // 保持固定高度
   }
 }
 
@@ -639,32 +639,5 @@ onUnmounted(() => {
   border-radius: 2px;
   z-index: 50;
   pointer-events: none;
-}
-
-.close-button {
-  position: absolute;
-  top: -50px;
-  right: 0;
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  color: white;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.2s;
-  backdrop-filter: blur(10px);
-
-  &:hover {
-    background: rgba(255, 255, 255, 0.2);
-    transform: scale(1.1);
-  }
-
-  i {
-    font-size: 18px;
-  }
 }
 </style>
