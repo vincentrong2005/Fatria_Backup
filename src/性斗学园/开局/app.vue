@@ -122,22 +122,114 @@
       <div class="absolute inset-0 bg-black/80 backdrop-blur-md" @click="closeModal"></div>
       <div
         :class="[
-          'animate-fade-in relative w-full max-w-lg scale-100 transform overflow-hidden rounded-3xl border-2 shadow-2xl transition-all',
+          'relative w-full max-w-lg transform overflow-hidden rounded-3xl border-2 shadow-2xl transition-all duration-500',
           modalTitle === 'CHEAT MODE ACTIVATE'
-            ? 'border-yellow-500/50 bg-gradient-to-br from-yellow-900/40 via-orange-900/40 to-red-900/40 shadow-yellow-500/20'
-            : 'border-white/10 bg-[#1e293b]',
+            ? 'animate-scale-in border-yellow-500/50 bg-gradient-to-br from-yellow-900/40 via-orange-900/40 to-red-900/40 shadow-yellow-500/20'
+            : modalTitle === '作弊码激活'
+              ? 'animate-scale-in border-purple-500/50 bg-gradient-to-br from-purple-900/40 via-pink-900/40 to-indigo-900/40 shadow-purple-500/20'
+              : modalTitle === '草莓套装激活'
+                ? 'animate-scale-in border-pink-500/50 bg-gradient-to-br from-pink-900/40 via-rose-900/40 to-red-900/40 shadow-pink-500/20'
+                : modalTitle === '警告'
+                  ? 'animate-shake border-red-500/50 bg-gradient-to-br from-red-900/40 via-orange-900/40 to-yellow-900/40 shadow-red-500/20'
+                  : 'animate-fade-in border-white/10 bg-[#1e293b]',
         ]"
       >
+        <!-- 作弊码激活特效背景 -->
+        <div v-if="modalTitle === '作弊码激活'" class="pointer-events-none absolute inset-0 overflow-hidden">
+          <div
+            class="animate-spin-slow absolute -top-1/2 -left-1/2 h-full w-full bg-gradient-to-r from-purple-500/20 via-pink-500/20 to-indigo-500/20 blur-3xl"
+          ></div>
+          <div
+            class="animate-spin-slow-reverse absolute -right-1/2 -bottom-1/2 h-full w-full bg-gradient-to-r from-indigo-500/20 via-purple-500/20 to-pink-500/20 blur-3xl"
+          ></div>
+        </div>
+
+        <!-- 草莓套装激活特效背景 -->
+        <div v-if="modalTitle === '草莓套装激活'" class="pointer-events-none absolute inset-0 overflow-hidden">
+          <div
+            class="animate-spin-slow absolute -top-1/2 -left-1/2 h-full w-full bg-gradient-to-r from-pink-500/20 via-rose-500/20 to-red-500/20 blur-3xl"
+          ></div>
+          <div
+            class="animate-spin-slow-reverse absolute -right-1/2 -bottom-1/2 h-full w-full bg-gradient-to-r from-red-500/20 via-pink-500/20 to-rose-500/20 blur-3xl"
+          ></div>
+        </div>
+
         <!-- Cheat Mode Special Header -->
         <div v-if="modalTitle === 'CHEAT MODE ACTIVATE'" class="relative p-8 pb-6">
           <div class="absolute inset-0 bg-gradient-to-r from-yellow-500/10 via-orange-500/10 to-red-500/10"></div>
           <div class="relative">
-            <h3
-              class="mb-2 bg-gradient-to-r from-yellow-400 via-orange-400 to-red-400 bg-clip-text text-4xl font-black tracking-wider text-transparent drop-shadow-lg"
-            >
-              {{ modalTitle }}
-            </h3>
-            <div class="mt-3 h-1 w-24 rounded-full bg-gradient-to-r from-yellow-400 to-red-400"></div>
+            <div class="mb-4 flex items-center justify-center gap-3">
+              <i class="fas fa-star animate-pulse text-3xl text-yellow-400"></i>
+              <h3
+                class="animate-pulse bg-gradient-to-r from-yellow-400 via-orange-400 to-red-400 bg-clip-text text-5xl font-black tracking-wider text-transparent drop-shadow-2xl"
+              >
+                {{ modalTitle }}
+              </h3>
+              <i class="fas fa-star animate-pulse text-3xl text-yellow-400"></i>
+            </div>
+            <div
+              class="mx-auto mt-3 h-1.5 w-32 rounded-full bg-gradient-to-r from-yellow-400 via-orange-400 to-red-400 shadow-lg shadow-yellow-400/50"
+            ></div>
+          </div>
+        </div>
+
+        <!-- 作弊码激活特殊标题 -->
+        <div v-else-if="modalTitle === '作弊码激活'" class="relative z-10 p-8 pb-6">
+          <div
+            class="pointer-events-none absolute inset-0 bg-gradient-to-r from-purple-500/10 via-pink-500/10 to-indigo-500/10"
+          ></div>
+          <div class="relative">
+            <div class="mb-4 flex items-center justify-center gap-3">
+              <i class="fas fa-gift animate-bounce text-3xl text-purple-400"></i>
+              <h3
+                class="bg-gradient-to-r from-purple-400 via-pink-400 to-indigo-400 bg-clip-text text-4xl font-black tracking-wider text-transparent drop-shadow-2xl"
+              >
+                {{ modalTitle }}
+              </h3>
+              <i class="fas fa-sparkles animate-pulse text-3xl text-pink-400"></i>
+            </div>
+            <div
+              class="mx-auto mt-3 h-1.5 w-32 rounded-full bg-gradient-to-r from-purple-400 via-pink-400 to-indigo-400 shadow-lg shadow-purple-400/50"
+            ></div>
+          </div>
+        </div>
+
+        <!-- 草莓套装激活特殊标题 -->
+        <div v-else-if="modalTitle === '草莓套装激活'" class="relative z-10 p-8 pb-6">
+          <div
+            class="pointer-events-none absolute inset-0 bg-gradient-to-r from-pink-500/10 via-rose-500/10 to-red-500/10"
+          ></div>
+          <div class="relative">
+            <div class="mb-4 flex items-center justify-center gap-3">
+              <i class="fas fa-heart animate-bounce text-3xl text-pink-400"></i>
+              <h3
+                class="bg-gradient-to-r from-pink-300 via-rose-300 to-red-300 bg-clip-text text-4xl font-black tracking-wider text-transparent drop-shadow-2xl"
+              >
+                {{ modalTitle }}
+              </h3>
+              <i class="fas fa-heart animate-bounce text-3xl text-rose-400"></i>
+            </div>
+            <div
+              class="mx-auto mt-3 h-1.5 w-32 rounded-full bg-gradient-to-r from-pink-400 via-rose-400 to-red-400 shadow-lg shadow-pink-400/50"
+            ></div>
+          </div>
+        </div>
+
+        <!-- 警告标题 -->
+        <div v-else-if="modalTitle === '警告'" class="relative z-10 p-8 pb-6">
+          <div
+            class="pointer-events-none absolute inset-0 bg-gradient-to-r from-red-500/10 via-orange-500/10 to-yellow-500/10"
+          ></div>
+          <div class="relative">
+            <div class="mb-4 flex items-center justify-center gap-3">
+              <i class="fas fa-exclamation-triangle animate-pulse text-3xl text-red-400"></i>
+              <h3
+                class="bg-gradient-to-r from-red-400 via-orange-400 to-yellow-400 bg-clip-text text-3xl font-black tracking-wider text-transparent drop-shadow-lg"
+              >
+                {{ modalTitle }}
+              </h3>
+              <i class="fas fa-exclamation-triangle animate-pulse text-3xl text-red-400"></i>
+            </div>
           </div>
         </div>
 
@@ -147,41 +239,138 @@
         </div>
 
         <!-- Content -->
-        <div :class="['px-8 pb-8', modalTitle === 'CHEAT MODE ACTIVATE' ? 'space-y-4' : '']">
+        <div
+          :class="[
+            'relative z-10 px-8 pb-8',
+            modalTitle === 'CHEAT MODE ACTIVATE' || modalTitle === '作弊码激活' || modalTitle === '草莓套装激活'
+              ? 'space-y-4'
+              : '',
+          ]"
+        >
           <div
             :class="[
-              'rounded-xl border p-6',
+              'rounded-xl border p-6 backdrop-blur-sm',
               modalTitle === 'CHEAT MODE ACTIVATE'
-                ? 'border-yellow-500/30 bg-black/30 backdrop-blur-sm'
-                : 'flex h-32 items-center justify-center border-dashed border-white/5 bg-black/20',
+                ? 'border-yellow-500/30 bg-black/30'
+                : modalTitle === '作弊码激活'
+                  ? 'relative overflow-hidden border-purple-500/30 bg-black/40'
+                  : modalTitle === '草莓套装激活'
+                    ? 'relative overflow-hidden border-pink-500/30 bg-black/40'
+                    : modalTitle === '警告'
+                      ? 'border-red-500/30 bg-black/30'
+                      : 'flex h-32 items-center justify-center border-dashed border-white/5 bg-black/20',
             ]"
           >
+            <!-- 作弊码激活内容特效 -->
+            <div v-if="modalTitle === '作弊码激活'" class="pointer-events-none absolute inset-0">
+              <div
+                class="absolute top-0 left-0 h-full w-full animate-pulse bg-gradient-to-br from-purple-500/5 via-pink-500/5 to-indigo-500/5"
+              ></div>
+            </div>
+
+            <!-- 草莓套装激活内容特效 -->
+            <div v-if="modalTitle === '草莓套装激活'" class="pointer-events-none absolute inset-0">
+              <div
+                class="absolute top-0 left-0 h-full w-full animate-pulse bg-gradient-to-br from-pink-500/5 via-rose-500/5 to-red-500/5"
+              ></div>
+            </div>
+
             <p
               :class="[
                 modalTitle === 'CHEAT MODE ACTIVATE'
                   ? 'space-y-2 text-base leading-relaxed text-white'
-                  : 'text-sm text-gray-500',
+                  : modalTitle === '作弊码激活'
+                    ? 'relative space-y-4 text-lg leading-relaxed text-white'
+                    : modalTitle === '草莓套装激活'
+                      ? 'relative space-y-4 text-lg leading-relaxed text-white'
+                      : modalTitle === '警告'
+                        ? 'text-base leading-relaxed text-red-200'
+                        : 'text-sm text-gray-500',
               ]"
             >
               <template v-if="modalTitle === 'CHEAT MODE ACTIVATE'">
                 <div class="space-y-3">
-                  <div class="flex items-center gap-3">
-                    <i class="fas fa-dice-d20 text-xl text-yellow-400"></i>
+                  <div class="animate-fade-in-delay flex items-center gap-3">
+                    <i class="fas fa-dice-d20 animate-spin-slow text-2xl text-yellow-400"></i>
                     <span class="text-lg font-semibold text-yellow-300"
-                      >天赋点数已设为 <span class="font-black text-yellow-400">999</span></span
+                      >天赋点数已设为 <span class="text-xl font-black text-yellow-400">999</span></span
                     >
                   </div>
-                  <div class="flex items-center gap-3">
-                    <i class="fas fa-gem text-xl text-orange-400"></i>
+                  <div class="animate-fade-in-delay-2 flex items-center gap-3">
+                    <i class="fas fa-gem animate-pulse text-2xl text-orange-400"></i>
                     <span class="text-lg font-semibold text-orange-300"
-                      >获得特殊装备 <span class="font-black text-orange-400">「作弊者之证」</span></span
+                      >获得特殊装备 <span class="text-xl font-black text-orange-400">「作弊者之证」</span></span
                     >
                   </div>
-                  <div class="flex items-center gap-3">
-                    <i class="fas fa-chart-line text-xl text-red-400"></i>
+                  <div class="animate-fade-in-delay-3 flex items-center gap-3">
+                    <i class="fas fa-chart-line animate-bounce text-2xl text-red-400"></i>
                     <span class="text-lg font-semibold text-red-300"
-                      >全属性 <span class="font-black text-red-400">+999</span></span
+                      >全属性 <span class="text-xl font-black text-red-400">+999</span></span
                     >
+                  </div>
+                </div>
+              </template>
+              <template v-else-if="modalTitle === '作弊码激活'">
+                <div class="relative space-y-3">
+                  <div class="flex items-center justify-center gap-3">
+                    <i class="fas fa-trophy animate-bounce text-3xl text-yellow-400"></i>
+                  </div>
+                  <div class="text-center">
+                    <p
+                      class="mb-2 bg-gradient-to-r from-purple-300 via-pink-300 to-indigo-300 bg-clip-text text-2xl font-bold text-transparent"
+                    >
+                      {{ modalContent.split('\n')[0] || '已获得装备！' }}
+                    </p>
+                    <p v-if="modalContent.includes('+')" class="mt-2 text-lg font-semibold text-green-300">
+                      <i class="fas fa-coins mr-2 text-yellow-400"></i>
+                      {{ modalContent.split('\n')[1] }}
+                    </p>
+                  </div>
+                  <div class="mt-4 flex items-center justify-center gap-2 text-sm text-purple-300">
+                    <i class="fas fa-check-circle text-green-400"></i>
+                    <span>装备已添加到背包</span>
+                  </div>
+                </div>
+              </template>
+              <template v-else-if="modalTitle === '草莓套装激活'">
+                <div class="relative space-y-3">
+                  <div class="flex items-center justify-center gap-3">
+                    <i class="fas fa-cat animate-bounce text-4xl text-pink-400"></i>
+                    <i class="fas fa-heart animate-pulse text-3xl text-rose-400"></i>
+                    <i class="fas fa-cat animate-bounce text-4xl text-pink-400"></i>
+                  </div>
+                  <div class="text-center">
+                    <p
+                      class="mb-3 bg-gradient-to-r from-pink-200 via-rose-200 to-red-200 bg-clip-text text-3xl font-bold text-transparent"
+                    >
+                      {{ modalContent.split('\n')[0] || '草莓套装已装备！' }}
+                    </p>
+                    <div class="mt-4 space-y-2 text-left">
+                      <div class="flex items-center gap-2 text-pink-200">
+                        <i class="fas fa-umbrella text-pink-400"></i>
+                        <span>草莓奶油洋伞</span>
+                      </div>
+                      <div class="flex items-center gap-2 text-rose-200">
+                        <i class="fas fa-tshirt text-rose-400"></i>
+                        <span>「草莓奶芙」层叠蕾丝蓬蓬裙</span>
+                      </div>
+                      <div class="flex items-center gap-2 text-pink-200">
+                        <i class="fas fa-headphones text-pink-400"></i>
+                        <span>摇晃的猫耳发箍</span>
+                      </div>
+                      <div class="flex items-center gap-2 text-rose-200">
+                        <i class="fas fa-gem text-rose-400"></i>
+                        <span>铃铛丝绒项圈</span>
+                      </div>
+                      <div class="flex items-center gap-2 text-pink-200">
+                        <i class="fas fa-cat text-pink-400"></i>
+                        <span>灵魂伴侣·懒洋洋猫</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="mt-4 flex items-center justify-center gap-2 text-sm text-pink-300">
+                    <i class="fas fa-check-circle text-green-400"></i>
+                    <span>所有装备已自动装备到身上！</span>
                   </div>
                 </div>
               </template>
@@ -193,13 +382,26 @@
         </div>
 
         <!-- Footer -->
-        <div :class="['flex justify-end px-8 pb-8', modalTitle === 'CHEAT MODE ACTIVATE' ? 'pt-0' : 'pt-0']">
+        <div
+          :class="[
+            'relative z-10 flex justify-end px-8 pb-8',
+            modalTitle === 'CHEAT MODE ACTIVATE' || modalTitle === '作弊码激活' || modalTitle === '草莓套装激活'
+              ? 'pt-0'
+              : 'pt-0',
+          ]"
+        >
           <button
             :class="[
-              'rounded-xl px-6 py-3 text-sm font-semibold transition-all duration-300',
+              'transform rounded-xl px-8 py-3 text-sm font-semibold transition-all duration-300 hover:scale-105 active:scale-95',
               modalTitle === 'CHEAT MODE ACTIVATE'
-                ? 'border border-yellow-500/50 bg-gradient-to-r from-yellow-500/20 to-orange-500/20 text-yellow-200 shadow-lg shadow-yellow-500/20 hover:border-yellow-400/70 hover:from-yellow-500/30 hover:to-orange-500/30 hover:shadow-yellow-500/30'
-                : 'bg-white/10 text-white hover:bg-white/20',
+                ? 'border-2 border-yellow-500/50 bg-gradient-to-r from-yellow-500/20 to-orange-500/20 text-yellow-200 shadow-lg shadow-yellow-500/20 hover:border-yellow-400/70 hover:from-yellow-500/30 hover:to-orange-500/30 hover:shadow-yellow-500/30'
+                : modalTitle === '作弊码激活'
+                  ? 'border-2 border-purple-500/50 bg-gradient-to-r from-purple-500/20 to-pink-500/20 text-purple-200 shadow-lg shadow-purple-500/20 hover:border-purple-400/70 hover:from-purple-500/30 hover:to-pink-500/30 hover:shadow-purple-500/30'
+                  : modalTitle === '草莓套装激活'
+                    ? 'border-2 border-pink-500/50 bg-gradient-to-r from-pink-500/20 to-rose-500/20 text-pink-200 shadow-lg shadow-pink-500/20 hover:border-pink-400/70 hover:from-pink-500/30 hover:to-rose-500/30 hover:shadow-pink-500/30'
+                    : modalTitle === '警告'
+                      ? 'border-2 border-red-500/50 bg-gradient-to-r from-red-500/20 to-orange-500/20 text-red-200 shadow-lg shadow-red-500/20 hover:border-red-400/70 hover:from-red-500/30 hover:to-orange-500/30 hover:shadow-red-500/30'
+                      : 'bg-white/10 text-white hover:bg-white/20',
             ]"
             @click="closeModal"
           >
@@ -210,7 +412,7 @@
     </div>
 
     <!-- Cheat Code Button -->
-    <div v-if="!isCheatActive" class="fixed bottom-4 left-4 z-50">
+    <div class="fixed bottom-4 left-4 z-50">
       <button
         class="flex h-6 w-6 items-center justify-center rounded-full bg-black/30 text-xs text-gray-500 transition-all hover:bg-black/50 hover:text-gray-300"
         title="?"
@@ -256,6 +458,7 @@ const modalContent = ref('');
 const showCheatInput = ref(false);
 const cheatCode = ref('');
 const isCheatActive = ref(false);
+const activatedCheatCodes = ref<Set<string>>(new Set());
 
 // 从 MVU 变量同步初始数据
 onMounted(async () => {
@@ -266,15 +469,41 @@ onMounted(async () => {
       if (syncedAttributes) {
         characterData.value.attributes = syncedAttributes;
       }
+      // 同步已激活的作弊码
+      const activatedCodes = mvuData?.stat_data?.物品系统?.已激活作弊码 || [];
+      if (Array.isArray(activatedCodes)) {
+        activatedCheatCodes.value = new Set(activatedCodes);
+      }
     }
   } catch (error) {
     console.warn('无法从 MVU 同步数据，使用默认值:', error);
   }
 });
 
+// 记录已激活的作弊码
+const recordActivatedCheatCode = async (code: string) => {
+  activatedCheatCodes.value.add(code);
+  const activatedCodesArray = Array.from(activatedCheatCodes.value);
+  await updateMvuVariables({
+    '物品系统.已激活作弊码': activatedCodesArray,
+  });
+};
+
 // 作弊码验证
 const applyCheatCode = async () => {
-  const code = cheatCode.value.trim();
+  let code = cheatCode.value.trim().toUpperCase();
+
+  // 处理 1011 的别名
+  if (code === 'LOLI' || code === 'LOLICON') {
+    code = '1011';
+  }
+
+  // 检查是否已激活
+  if (activatedCheatCodes.value.has(code)) {
+    openModal('警告', `作弊码 ${code} 已经激活过了，无法重复使用！`);
+    cheatCode.value = '';
+    return;
+  }
 
   if (code === '0210') {
     // 天赋作弊码
@@ -309,6 +538,7 @@ const applyCheatCode = async () => {
       await updateMvuVariables({
         '物品系统.背包.作弊者之证': specialEquipment,
       });
+      await recordActivatedCheatCode('0210');
 
       console.info('[开局] 作弊装备已添加到背包');
       openModal('CHEAT MODE ACTIVATE', '');
@@ -408,12 +638,306 @@ const applyCheatCode = async () => {
       };
 
       await updateMvuVariables(equipmentSet);
+      await recordActivatedCheatCode('1011');
 
       console.info('[开局] 草莓套装已自动装备');
-      openModal('装备完成', '草莓套装已自动装备到身上！');
+      openModal('草莓套装激活', '草莓套装已自动装备到身上！');
     } catch (error) {
       console.error('[开局] 装备失败:', error);
       openModal('错误', '装备失败，请检查MVU变量');
+    }
+  } else if (code === 'SNOW') {
+    // SNOW：纯黑丝绒长围巾
+    showCheatInput.value = false;
+    cheatCode.value = '';
+
+    try {
+      const equipment = {
+        类型: '装备',
+        等级: 'A',
+        描述: '那种"可远观而不可亵玩"的气质。因为太高冷，敌人的攻击似乎都因为自惭形秽而无法命中，同时也散发着致命的成熟魅力',
+        加成属性: {
+          魅力加成: 10,
+          幸运加成: 0,
+          基础性斗力加成: 0,
+          基础性斗力成算: 0,
+          基础忍耐力加成: 0,
+          基础忍耐力成算: 0,
+          闪避率加成: 10,
+          暴击率加成: 0,
+          意志力加成: 0,
+        },
+        部位: '饰品',
+        数量: 1,
+      };
+
+      await updateMvuVariables({
+        '物品系统.背包.纯黑丝绒长围巾': equipment,
+      });
+      await recordActivatedCheatCode('SNOW');
+
+      console.info('[开局] SNOW 作弊码已激活');
+      openModal('作弊码激活', '已获得：纯黑丝绒长围巾');
+    } catch (error) {
+      console.error('[开局] 添加装备失败:', error);
+      openModal('错误', '添加装备失败');
+    }
+  } else if (code === 'PROTECT') {
+    // PROTECT：袖子过长的宽大卫衣
+    showCheatInput.value = false;
+    cheatCode.value = '';
+
+    try {
+      const equipment = {
+        类型: '装备',
+        等级: 'B',
+        描述: '激发所有人的保护欲。虽然本体很脆弱，但总能因为奇迹般的运气（幸运）躲过灾难，或者让敌人不忍心下重手。',
+        加成属性: {
+          魅力加成: 0,
+          幸运加成: 10,
+          基础性斗力加成: 0,
+          基础性斗力成算: 0,
+          基础忍耐力加成: 0,
+          基础忍耐力成算: 0,
+          闪避率加成: 0,
+          暴击率加成: 0,
+          意志力加成: 0,
+        },
+        部位: '副装备',
+        数量: 1,
+      };
+
+      await updateMvuVariables({
+        '物品系统.背包.袖子过长的宽大卫衣': equipment,
+      });
+      await recordActivatedCheatCode('PROTECT');
+
+      console.info('[开局] PROTECT 作弊码已激活');
+      openModal('作弊码激活', '已获得：袖子过长的宽大卫衣');
+    } catch (error) {
+      console.error('[开局] 添加装备失败:', error);
+      openModal('错误', '添加装备失败');
+    }
+  } else if (code === 'ENERGY') {
+    // ENERGY：荧光色运动护腕
+    showCheatInput.value = false;
+    cheatCode.value = '';
+
+    try {
+      const equipment = {
+        类型: '装备',
+        等级: 'A',
+        描述: '永远停不下来，充满朝气。比起防御，更相信速度和汗水。',
+        加成属性: {
+          魅力加成: 0,
+          幸运加成: 0,
+          基础性斗力加成: 0,
+          基础性斗力成算: 0,
+          基础忍耐力加成: 0,
+          基础忍耐力成算: 0,
+          闪避率加成: 0,
+          暴击率加成: 10,
+          意志力加成: 0,
+        },
+        部位: '饰品',
+        数量: 1,
+      };
+
+      await updateMvuVariables({
+        '物品系统.背包.荧光色运动护腕': equipment,
+      });
+      await recordActivatedCheatCode('ENERGY');
+
+      console.info('[开局] ENERGY 作弊码已激活');
+      openModal('作弊码激活', '已获得：荧光色运动护腕');
+    } catch (error) {
+      console.error('[开局] 添加装备失败:', error);
+      openModal('错误', '添加装备失败');
+    }
+  } else if (code === 'SILENCE') {
+    // SILENCE：挂颈式头戴耳机
+    showCheatInput.value = false;
+    cheatCode.value = '';
+
+    try {
+      const equipment = {
+        类型: '装备',
+        等级: 'B',
+        描述: '只要戴上耳机，世界就与我无关。极低的存在感让他很容易躲开麻烦（闪避），但也因此变得很难交到朋友。',
+        加成属性: {
+          魅力加成: -5,
+          幸运加成: 0,
+          基础性斗力加成: 0,
+          基础性斗力成算: 0,
+          基础忍耐力加成: 0,
+          基础忍耐力成算: 0,
+          闪避率加成: 15,
+          暴击率加成: 0,
+          意志力加成: 0,
+        },
+        部位: '饰品',
+        数量: 1,
+      };
+
+      await updateMvuVariables({
+        '物品系统.背包.挂颈式头戴耳机': equipment,
+      });
+      await recordActivatedCheatCode('SILENCE');
+
+      console.info('[开局] SILENCE 作弊码已激活');
+      openModal('作弊码激活', '已获得：挂颈式头戴耳机');
+    } catch (error) {
+      console.error('[开局] 添加装备失败:', error);
+      openModal('错误', '添加装备失败');
+    }
+  } else if (code === 'QUEEN') {
+    // QUEEN：精致的手工缎带
+    showCheatInput.value = false;
+    cheatCode.value = '';
+
+    try {
+      const equipment = {
+        类型: '装备',
+        等级: 'S',
+        描述: '举手投足间都是金钱的味道。在校园里，魅力就是她的通行证，没人能拒绝她的请求。',
+        加成属性: {
+          魅力加成: 10,
+          幸运加成: 0,
+          基础性斗力加成: 0,
+          基础性斗力成算: 0,
+          基础忍耐力加成: 0,
+          基础忍耐力成算: 0,
+          闪避率加成: 0,
+          暴击率加成: 0,
+          意志力加成: 0,
+        },
+        部位: '饰品',
+        数量: 1,
+      };
+
+      // 获取当前金币，如果没有则默认为0
+      const mvuData = await getMvuData();
+      const currentGold = mvuData?.stat_data?.物品系统?.学园金币 || 0;
+
+      await updateMvuVariables({
+        '物品系统.背包.精致的手工缎带': equipment,
+        '物品系统.学园金币': currentGold + 2000,
+      });
+      await recordActivatedCheatCode('QUEEN');
+
+      console.info('[开局] QUEEN 作弊码已激活');
+      openModal('作弊码激活', '已获得：精致的手工缎带\n校园金币 +2000');
+    } catch (error) {
+      console.error('[开局] 添加装备失败:', error);
+      openModal('错误', '添加装备失败');
+    }
+  } else if (code === 'UNKNOWN') {
+    // UNKNOWN：黑猫造型的小挎包
+    showCheatInput.value = false;
+    cheatCode.value = '';
+
+    try {
+      const equipment = {
+        类型: '装备',
+        等级: 'A',
+        描述: '充满不确定性。没人知道他到底擅长什么，但也可能在关键时刻爆发出惊人的力量。',
+        加成属性: {
+          魅力加成: 1,
+          幸运加成: 1,
+          基础性斗力加成: 1,
+          基础性斗力成算: 0,
+          基础忍耐力加成: 1,
+          基础忍耐力成算: 0,
+          闪避率加成: 1,
+          暴击率加成: 1,
+          意志力加成: 1,
+        },
+        部位: '特殊装备',
+        数量: 1,
+      };
+
+      await updateMvuVariables({
+        '物品系统.背包.黑猫造型的小挎包': equipment,
+      });
+      await recordActivatedCheatCode('UNKNOWN');
+
+      console.info('[开局] UNKNOWN 作弊码已激活');
+      openModal('作弊码激活', '已获得：黑猫造型的小挎包');
+    } catch (error) {
+      console.error('[开局] 添加装备失败:', error);
+      openModal('错误', '添加装备失败');
+    }
+  } else if (code === 'HOT') {
+    // HOT：五彩渐变美甲
+    showCheatInput.value = false;
+    cheatCode.value = '';
+
+    try {
+      const equipment = {
+        类型: '装备',
+        等级: 'B',
+        描述: '虽然看起来爱玩，但吐槽和扇巴掌的力度绝对是校园顶级的。',
+        加成属性: {
+          魅力加成: 5,
+          幸运加成: 0,
+          基础性斗力加成: 0,
+          基础性斗力成算: 0,
+          基础忍耐力加成: 0,
+          基础忍耐力成算: 0,
+          闪避率加成: 0,
+          暴击率加成: 5,
+          意志力加成: 0,
+        },
+        部位: '饰品',
+        数量: 1,
+      };
+
+      await updateMvuVariables({
+        '物品系统.背包.五彩渐变美甲': equipment,
+      });
+      await recordActivatedCheatCode('HOT');
+
+      console.info('[开局] HOT 作弊码已激活');
+      openModal('作弊码激活', '已获得：五彩渐变美甲');
+    } catch (error) {
+      console.error('[开局] 添加装备失败:', error);
+      openModal('错误', '添加装备失败');
+    }
+  } else if (code === 'LOVESICK') {
+    // LOVESICK：藏在袖子里的美工刀
+    showCheatInput.value = false;
+    cheatCode.value = '';
+
+    try {
+      const equipment = {
+        类型: '装备',
+        等级: 'S',
+        描述: '只要是为了心中所爱（或者执念），可以不计代价毁灭一切。',
+        加成属性: {
+          魅力加成: 0,
+          幸运加成: 0,
+          基础性斗力加成: 0,
+          基础性斗力成算: 20,
+          基础忍耐力加成: 0,
+          基础忍耐力成算: -20,
+          闪避率加成: 0,
+          暴击率加成: 0,
+          意志力加成: 0,
+        },
+        部位: '主装备',
+        数量: 1,
+      };
+
+      await updateMvuVariables({
+        '物品系统.背包.藏在袖子里的美工刀': equipment,
+      });
+      await recordActivatedCheatCode('LOVESICK');
+
+      console.info('[开局] LOVESICK 作弊码已激活');
+      openModal('作弊码激活', '已获得：藏在袖子里的美工刀');
+    } catch (error) {
+      console.error('[开局] 添加装备失败:', error);
+      openModal('错误', '添加装备失败');
     }
   } else {
     openModal('错误', '无效的代码');

@@ -36,6 +36,41 @@
   100% { opacity: 1; transform: translateY(0); }
 }
 
+@keyframes scaleIn {
+  0% { 
+    opacity: 0; 
+    transform: scale(0.8) translateY(-20px); 
+  }
+  50% {
+    transform: scale(1.05) translateY(0);
+  }
+  100% { 
+    opacity: 1; 
+    transform: scale(1) translateY(0); 
+  }
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+  20%, 40%, 60%, 80% { transform: translateX(5px); }
+}
+
+@keyframes spinSlow {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes spinSlowReverse {
+  0% { transform: rotate(360deg); }
+  100% { transform: rotate(0deg); }
+}
+
+@keyframes fadeInDelay {
+  0% { opacity: 0; transform: translateY(10px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
 .animate-blob {
   animation: blob 7s infinite;
 }
@@ -54,6 +89,37 @@
 
 .animate-slide-up {
   animation: slideUp 0.5s ease-out forwards;
+}
+
+.animate-scale-in {
+  animation: scaleIn 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+.animate-shake {
+  animation: shake 0.5s ease-in-out forwards;
+}
+
+.animate-spin-slow {
+  animation: spinSlow 20s linear infinite;
+}
+
+.animate-spin-slow-reverse {
+  animation: spinSlowReverse 25s linear infinite;
+}
+
+.animate-fade-in-delay {
+  animation: fadeInDelay 0.6s ease-out 0.2s forwards;
+  opacity: 0;
+}
+
+.animate-fade-in-delay-2 {
+  animation: fadeInDelay 0.6s ease-out 0.4s forwards;
+  opacity: 0;
+}
+
+.animate-fade-in-delay-3 {
+  animation: fadeInDelay 0.6s ease-out 0.6s forwards;
+  opacity: 0;
 }
 
 // 基础样式
