@@ -67,11 +67,12 @@ export function calculateBaseDamage(attacker: Character, skill: SkillData): numb
 
 /**
  * 应用非线性减伤模型
- * 公式: 最终伤害 = 基础伤害 * 100 / (忍耐力 + 100)
+ * 公式: 最终伤害 = 基础伤害 * 90 / (忍耐力 + 100)
  * 这意味着：
- * - 忍耐力为0时，最终伤害 = 基础伤害 * 100/100 = 基础伤害（无减伤）
- * - 忍耐力为100时，最终伤害 = 基础伤害 * 100/200 = 基础伤害 * 0.5（减伤50%）
- * - 忍耐力为200时，最终伤害 = 基础伤害 * 100/300 = 基础伤害 * 0.333（减伤66.7%）
+ * - 忍耐力为0时，最终伤害 = 基础伤害 * 90/100 = 基础伤害 * 0.9（减伤10%）
+ * - 忍耐力为50时，最终伤害 = 基础伤害 * 90/150 = 基础伤害 * 0.6（减伤40%）
+ * - 忍耐力为100时，最终伤害 = 基础伤害 * 90/200 = 基础伤害 * 0.45（减伤55%）
+ * - 忍耐力为200时，最终伤害 = 基础伤害 * 90/300 = 基础伤害 * 0.3（减伤70%）
  * - 忍耐力越高，减伤越多，但永远不会完全减伤到0
  * @param baseDamage 基础伤害
  * @param targetEndurance 目标的忍耐力
@@ -84,15 +85,15 @@ export function applyDefenseReduction(baseDamage: number, targetEndurance: numbe
     return baseDamage;
   }
 
-  // 非线性减伤公式：最终伤害 = 基础伤害 * 100 / (忍耐力 + 100)
+  // 非线性减伤公式：最终伤害 = 基础伤害 * 90 / (忍耐力 + 100)
   // 这个公式确保：忍耐力越高，减伤越多
   const denominator = targetEndurance + 100;
-  const finalDamage = (baseDamage * 100) / denominator;
+  const finalDamage = (baseDamage * 90) / denominator;
   const reductionPercent = ((targetEndurance / denominator) * 100).toFixed(1);
   
   console.info(`[防御减伤] 基础伤害: ${baseDamage}, 目标忍耐力: ${targetEndurance}`);
-  console.info(`[防御减伤] 减伤公式: ${baseDamage} * 100 / (${targetEndurance} + 100) = ${baseDamage} * 100 / ${denominator}`);
-  console.info(`[防御减伤] 计算过程: ${baseDamage} * 100 = ${baseDamage * 100}, ${baseDamage * 100} / ${denominator} = ${finalDamage}`);
+  console.info(`[防御减伤] 减伤公式: ${baseDamage} * 90 / (${targetEndurance} + 100) = ${baseDamage} * 90 / ${denominator}`);
+  console.info(`[防御减伤] 计算过程: ${baseDamage} * 90 = ${baseDamage * 90}, ${baseDamage * 90} / ${denominator} = ${finalDamage}`);
   console.info(`[防御减伤] 减伤比例: ${reductionPercent}%, 最终伤害: ${Math.floor(finalDamage)}`);
 
   return Math.max(1, Math.floor(finalDamage));
@@ -135,11 +136,11 @@ export function checkDodge(
  * @returns 是否暴击
  */
 export function checkCritical(attackerCrit: number, attackerLuck: number, skillCritModifier: number): boolean {
-  // 计算最终暴击率 = 基础暴击率 + (幸运 / 5) + 技能修正
-  const finalCritRate = attackerCrit + (attackerLuck / 5) + skillCritModifier;
+  // 计算最终暴击率 = 基础暴击率 + (幸运 / 10) + 技能修正
+  const finalCritRate = attackerCrit + (attackerLuck / 10) + skillCritModifier;
 
-  // 暴击率最低0%,最高80%
-  const clampedCritRate = Math.max(0, Math.min(80, finalCritRate));
+  // 暴击率最低0%,最高100%
+  const clampedCritRate = Math.max(0, Math.min(100, finalCritRate));
 
   // 随机判定
   const roll = Math.random() * 100;
@@ -230,8 +231,8 @@ export function executeAttack(attacker: Character, target: Character, skill: Ski
     const actualReduction = damageBeforeDefense - damageAfterDefense;
     logs.push(`原始伤害: ${damageBeforeDefense}`);
     logs.push(`目标忍耐力: ${targetEndurance}`);
-    logs.push(`防御减伤公式: ${damageBeforeDefense} × 100 ÷ (${targetEndurance} + 100) = ${damageBeforeDefense} × 100 ÷ ${targetEndurance + 100}`);
-    logs.push(`计算过程: ${damageBeforeDefense} × 100 = ${damageBeforeDefense * 100}, ${damageBeforeDefense * 100} ÷ ${targetEndurance + 100} = ${Math.floor((damageBeforeDefense * 100) / (targetEndurance + 100))}`);
+    logs.push(`防御减伤公式: ${damageBeforeDefense} × 90 ÷ (${targetEndurance} + 100) = ${damageBeforeDefense} × 90 ÷ ${targetEndurance + 100}`);
+    logs.push(`计算过程: ${damageBeforeDefense} × 90 = ${damageBeforeDefense * 90}, ${damageBeforeDefense * 90} ÷ ${targetEndurance + 100} = ${Math.floor((damageBeforeDefense * 90) / (targetEndurance + 100))}`);
     logs.push(`减伤比例: ${reductionPercent}% (减伤 ${actualReduction} 点)`);
     logs.push(`减伤后伤害: ${damageAfterDefense}`);
     finalDamage = damageAfterDefense;

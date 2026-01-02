@@ -316,41 +316,56 @@ onUnmounted(() => {
 
 <style scoped lang="scss">
 .status-bar-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.7);
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  width: 100% !important;
+  width: 100vw !important;
+  width: 100dvw !important; // 移动端视口单位
+  height: 100% !important;
+  height: 100vh !important;
+  height: 100dvh !important; // 移动端视口单位
+  background: rgba(0, 0, 0, 0.7) !important;
   backdrop-filter: blur(4px);
-  z-index: 99999;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  z-index: 99999 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
   padding: 10px;
+  padding: max(10px, env(safe-area-inset-top)) max(10px, env(safe-area-inset-right)) max(10px, env(safe-area-inset-bottom)) max(10px, env(safe-area-inset-left)); // 安全区域适配
   pointer-events: all !important; // 确保可以接收事件
   overflow-y: auto;
   box-sizing: border-box;
+  -webkit-overflow-scrolling: touch; // iOS 平滑滚动
+  margin: 0 !important;
+  transform: none !important;
 }
 
 .status-bar-container {
   position: relative;
   width: 100%;
   max-width: 390px;
+  max-width: min(390px, calc(100vw - 20px)); // 手机端适配
   max-height: calc(100vh - 20px);
+  max-height: calc(100dvh - 20px); // 移动端视口单位
   display: flex;
   align-items: center;
   justify-content: center;
   margin: auto;
   flex-shrink: 0;
+  min-width: 0; // 防止 flex 子元素溢出
 }
 
 .phone-frame {
   position: relative;
   width: 100%;
   max-width: 390px;
+  max-width: min(390px, calc(100vw - 20px)); // 手机端适配
   height: 844px;
   max-height: calc(100vh - 20px);
+  max-height: calc(100dvh - 20px); // 移动端视口单位
   background: #0f172a;
   border-radius: 40px;
   overflow: hidden;
@@ -359,16 +374,19 @@ onUnmounted(() => {
   display: flex;
   flex-direction: column;
   flex-shrink: 0;
+  min-width: 0; // 防止 flex 子元素溢出
   
   // 手机端响应式处理
   @media (max-height: 900px) {
     max-height: calc(100vh - 20px);
+    max-height: calc(100dvh - 20px);
     height: auto;
     min-height: 500px;
   }
   
   @media (max-width: 420px) {
     max-width: calc(100vw - 20px);
+    max-width: calc(100dvw - 20px);
     border-radius: 30px;
     border-width: 6px;
   }
@@ -376,8 +394,19 @@ onUnmounted(() => {
   // 超小屏幕处理
   @media (max-height: 700px) {
     max-height: calc(100vh - 10px);
+    max-height: calc(100dvh - 10px);
     border-radius: 20px;
     border-width: 4px;
+  }
+  
+  // 移动端特殊处理
+  @media (max-width: 768px) {
+    border-radius: 20px;
+    border-width: 4px;
+    max-width: calc(100vw - 10px);
+    max-width: calc(100dvw - 10px);
+    max-height: calc(100vh - 10px);
+    max-height: calc(100dvh - 10px);
   }
 }
 

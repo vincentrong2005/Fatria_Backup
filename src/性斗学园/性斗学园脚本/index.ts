@@ -450,11 +450,21 @@ function initStatusBar() {
       position: 'fixed',
       top: '0',
       left: '0',
+      right: '0',
+      bottom: '0',
       width: '100%',
       height: '100%',
       zIndex: '99999', // 提高 z-index 确保在最上层
-      pointerEvents: 'none' // 容器本身不拦截事件，但内部元素可以
+      pointerEvents: 'none', // 容器本身不拦截事件，但内部元素可以
+      // 移动端适配
+      touchAction: 'none', // 防止移动端手势冲突
+      WebkitOverflowScrolling: 'touch', // iOS 平滑滚动
+      margin: '0',
+      padding: '0',
+      overflow: 'visible' // 确保内容可见
     });
+    
+    // 确保添加到 body 的最上层
     $('body').append(statusBarContainer);
     
     const app = createApp(StatusBarWrapper);
