@@ -1077,7 +1077,7 @@ export const DIFFICULTY_POINTS = {
   '剧情模式 (简单)': 100,
   '学园生活 (普通)': 60,
   '地狱开局 (困难)': 30,
-  '作弊者': 999,
+  作弊者: 999,
 };
 
 export const CUP_SIZES = ['AA', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I+', 'Z'];
