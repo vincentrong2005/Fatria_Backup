@@ -22,16 +22,14 @@
             </button>
             <div class="header-time">{{ currentTime }}</div>
           </div>
-          <div class="header-right">
-            <div class="header-icons">
-              <i class="fas fa-signal"></i>
-              <span class="signal-text">5G</span>
-              <div class="battery-indicator">
-                <div class="battery-fill"></div>
-              </div>
+          <div class="header-icons">
+            <i class="fas fa-signal"></i>
+            <span class="signal-text">5G</span>
+            <div class="battery-indicator">
+              <div class="battery-fill"></div>
             </div>
-            <!-- 手机端关闭按钮 -->
-            <button class="mobile-close-button" @click="close" title="关闭">
+            <!-- 关闭按钮 -->
+            <button class="close-header-button" @click="close" title="关闭">
               <i class="fas fa-times"></i>
             </button>
           </div>
@@ -467,12 +465,6 @@ onUnmounted(() => {
   gap: 12px;
 }
 
-.header-right {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
 .back-button {
   width: 28px;
   height: 28px;
@@ -489,6 +481,34 @@ onUnmounted(() => {
   &:hover {
     background: rgba(255, 255, 255, 0.2);
     transform: scale(1.1);
+  }
+
+  i {
+    font-size: 14px;
+  }
+}
+
+.close-header-button {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-left: 8px;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: scale(1.1);
+  }
+
+  &:active {
+    transform: scale(0.95);
   }
 
   i {
@@ -532,41 +552,6 @@ onUnmounted(() => {
       background: rgba(255, 255, 255, 0.9);
       border-radius: 1px;
     }
-  }
-}
-
-.mobile-close-button {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  background: rgba(239, 68, 68, 0.2);
-  border: 1px solid rgba(239, 68, 68, 0.4);
-  color: #f87171;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.2s;
-  margin-left: 8px;
-  flex-shrink: 0;
-
-  &:hover {
-    background: rgba(239, 68, 68, 0.3);
-    border-color: rgba(239, 68, 68, 0.6);
-    transform: scale(1.1);
-  }
-
-  &:active {
-    transform: scale(0.95);
-  }
-
-  i {
-    font-size: 14px;
-  }
-
-  // 桌面端隐藏，只在移动端显示
-  @media (min-width: 769px) {
-    display: none;
   }
 }
 
