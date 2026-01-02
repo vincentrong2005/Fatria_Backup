@@ -53,10 +53,6 @@ const ActiveSkillSchema = z.object({
     基础命中率: z.coerce.number().prefault(100), // 百分比
     效果列表: z.record(z.string(), SkillEffectSchema).prefault({}), // Key为效果自定义名称
   }).prefault({}),
-  特殊机制: z.object({
-    是否忽视防御: z.boolean().prefault(false),
-    是否可被闪避: z.boolean().prefault(true),
-  }).prefault({}),
 });
 
 // 6. 定义物品系统相关 Schema

@@ -104,8 +104,6 @@ export interface SkillData {
   accuracy: number;
   critModifier: number;
   buffs: BuffEffect[];
-  ignoreDefense: boolean;
-  canBeDodged: boolean;
   canBeReflected: boolean;
   hitCount: number;
   voiceLine?: string;

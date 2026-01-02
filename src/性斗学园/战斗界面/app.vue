@@ -483,8 +483,6 @@ async function loadFromMvu() {
                 accuracy: mvuSkill.伤害与效果?.基础命中率 || 100,
                 critModifier: 0,
                 buffs: [],
-                ignoreDefense: mvuSkill.特殊机制?.是否忽视防御 ?? false,
-                canBeDodged: mvuSkill.特殊机制?.是否可被闪避 !== false,
                 canBeReflected: false,
                 hitCount: 1,
               };
@@ -507,18 +505,6 @@ async function loadFromMvu() {
           // 技能冷却在战斗中管理，不需要从MVU读取（每次战斗开始时冷却为0）
           const currentCooldown = 0;
 
-          // 如果MVU中有该技能的数据，优先使用MVU中的特殊机制设置
-          // 如果MVU中没有设置，默认使用 false（不使用数据库中的默认值）
-          const mvuSkill = availableSkills[skillId];
-          if (mvuSkill && mvuSkill.特殊机制) {
-            // 使用MVU中的特殊机制覆盖数据库中的值
-            skillData.ignoreDefense = mvuSkill.特殊机制.是否忽视防御 ?? false;
-            skillData.canBeDodged = mvuSkill.特殊机制.是否可被闪避 ?? true;
-          } else {
-            // MVU中没有设置，使用默认值 false
-            skillData.ignoreDefense = false;
-            // canBeDodged 保持数据库中的值（因为通常技能应该可以被闪避）
-          }
 
           return {
             id: skillData.id,
@@ -1709,8 +1695,6 @@ function handleEnemyTurn() {
                 accuracy: damageInfo.基础命中率 || 100,
                 critModifier: 0,
                 buffs: [],
-                ignoreDefense: mvuSkill.特殊机制?.是否忽视防御 ?? false,
-                canBeDodged: mvuSkill.特殊机制?.是否可被闪避 !== false,
                 canBeReflected: false,
                 hitCount: 1,
               };
