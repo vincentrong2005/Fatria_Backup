@@ -217,15 +217,35 @@ const extractUpdateContent = () => {
     const message = messages[0];
     const messageText = message.message;
 
-    // 使用正则表达式提取所有 <UpdateVariable> 标签中的内容
+    // 使用正则表达式提取所有 <UpdateVariable> 或 <update> 标签中的内容
     // 匹配最后一个标签（跳过思维链中的标签）
-    const regex = /<UpdateVariable>([\s\S]*?)<\/UpdateVariable>/gi;
-    const matches = Array.from(messageText.matchAll(regex));
-
-    if (matches.length > 0) {
-      // 取最后一个匹配（最新的变量更新）
-      const lastMatch = matches[matches.length - 1];
-      const updateVariableContent = lastMatch[1].trim();
+    const regexUpdateVariable = /<UpdateVariable>([\s\S]*?)<\/UpdateVariable>/gi;
+    const regexUpdate = /<update>([\s\S]*?)<\/update>/gi;
+    
+    // 分别匹配两种标签
+    const matchesUpdateVariable = Array.from(messageText.matchAll(regexUpdateVariable));
+    const matchesUpdate = Array.from(messageText.matchAll(regexUpdate));
+    
+    // 合并所有匹配，并记录每个匹配的位置
+    const allMatches: Array<{ content: string; index: number }> = [];
+    
+    matchesUpdateVariable.forEach(match => {
+      if (match.index !== undefined) {
+        allMatches.push({ content: match[1], index: match.index });
+      }
+    });
+    
+    matchesUpdate.forEach(match => {
+      if (match.index !== undefined) {
+        allMatches.push({ content: match[1], index: match.index });
+      }
+    });
+    
+    // 按位置排序，取最后一个匹配（最新的变量更新）
+    if (allMatches.length > 0) {
+      allMatches.sort((a, b) => a.index - b.index);
+      const lastMatch = allMatches[allMatches.length - 1];
+      const updateVariableContent = lastMatch.content.trim();
       
       // 只提取 <Analysis> 和 <JSONPatch> 部分
       let extractedContent = '';
@@ -251,7 +271,7 @@ const extractUpdateContent = () => {
       }
     } else {
       updateContent.value = '';
-      console.info('[变量更新] 未找到 <UpdateVariable> 标签');
+      console.info('[变量更新] 未找到 <UpdateVariable> 或 <update> 标签');
     }
   } catch (error) {
     console.error('[变量更新] 提取内容时出错:', error);
