@@ -132,4 +132,3 @@ export function syncFromMvu(mvuData: any): any {
     },
   };
 }
-

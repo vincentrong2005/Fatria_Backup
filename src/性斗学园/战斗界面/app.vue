@@ -913,7 +913,9 @@ async function saveToMvu() {
 // ================= 辅助函数 =================
 // 本地状态管理：跟踪已应用的效果（避免重复应用）
 // 存储格式：effectKey -> { duration: number, applied: boolean, changeValue: number, effectType: string, isPercentage: boolean }
-const appliedEffects = ref<Map<string, { duration: number; applied: boolean; changeValue: number; effectType: string; isPercentage: boolean }>>(new Map());
+const appliedEffects = ref<
+  Map<string, { duration: number; applied: boolean; changeValue: number; effectType: string; isPercentage: boolean }>
+>(new Map());
 
 // 直接应用技能效果到角色属性（不读写MVU的对手临时状态）
 async function applySkillEffectsFromMvu(skillId: string, isPlayerSkill: boolean): Promise<string[]> {
@@ -957,13 +959,7 @@ async function applySkillEffectsFromMvu(skillId: string, isPlayerSkill: boolean)
       const actualValue = Math.abs(effectValue);
 
       // 确定目标角色
-      const target = isPlayerSkill
-        ? isSelf
-          ? player.value
-          : enemy.value
-        : isSelf
-          ? enemy.value
-          : player.value;
+      const target = isPlayerSkill ? (isSelf ? player.value : enemy.value) : isSelf ? enemy.value : player.value;
       const targetName = target.name;
 
       // 特殊处理：束缚效果
@@ -1009,7 +1005,9 @@ async function applySkillEffectsFromMvu(skillId: string, isPlayerSkill: boolean)
           const baseValue = target.stats.sexPower;
           changeValue = Math.floor((baseValue * effectDelta) / 100);
           target.stats.sexPower += changeValue;
-          logs.push(`${targetName} ${effectDelta > 0 ? '+' : ''}${effectDelta}% 性斗力 (${changeValue > 0 ? '+' : ''}${changeValue}) (持续 ${duration} 回合)`);
+          logs.push(
+            `${targetName} ${effectDelta > 0 ? '+' : ''}${effectDelta}% 性斗力 (${changeValue > 0 ? '+' : ''}${changeValue}) (持续 ${duration} 回合)`,
+          );
         } else {
           changeValue = effectDelta;
           target.stats.sexPower += changeValue;
@@ -1029,7 +1027,9 @@ async function applySkillEffectsFromMvu(skillId: string, isPlayerSkill: boolean)
           const baseValue = target.stats.baseEndurance;
           changeValue = Math.floor((baseValue * effectDelta) / 100);
           target.stats.baseEndurance += changeValue;
-          logs.push(`${targetName} ${effectDelta > 0 ? '+' : ''}${effectDelta}% 忍耐力 (${changeValue > 0 ? '+' : ''}${changeValue}) (持续 ${duration} 回合)`);
+          logs.push(
+            `${targetName} ${effectDelta > 0 ? '+' : ''}${effectDelta}% 忍耐力 (${changeValue > 0 ? '+' : ''}${changeValue}) (持续 ${duration} 回合)`,
+          );
         } else {
           changeValue = effectDelta;
           target.stats.baseEndurance += changeValue;
@@ -1142,15 +1142,9 @@ async function updateStatusEffectsFromMvu(): Promise<string[]> {
           const effectType = effectInfo.effectType;
           const isPlayerSkill = parts[2] === 'player';
           const isSelf = parts[3] === 'self';
-          const target = isPlayerSkill
-            ? isSelf
-              ? player.value
-              : enemy.value
-            : isSelf
-              ? enemy.value
-              : player.value;
+          const target = isPlayerSkill ? (isSelf ? player.value : enemy.value) : isSelf ? enemy.value : player.value;
           const targetName = target.name;
-          
+
           // 恢复属性（减去之前应用的值）
           const changeValue = effectInfo.changeValue;
           if (effectType === '性斗力') {
@@ -1231,7 +1225,7 @@ async function updateStatusEffectsFromMvu(): Promise<string[]> {
               }
             }
           }
-          
+
           logs.push(`${targetName} 的 ${getEffectTypeName(effectType)} 效果消失了`);
         }
       }
@@ -1292,7 +1286,7 @@ function clearBonusFromStatus(statusKey: string, bonusPath: string, mvuData: any
     const parts = statusKey.split('_');
     // 兼容旧格式（没有正负号）和新格式（有正负号）
     let effectType: string, effectValue: number, isPositive: boolean, isPercentage: boolean;
-    
+
     if (parts.length >= 6) {
       // 新格式：效果类型_技能ID_效果名称_效果值_正负号_类型_时间戳
       effectType = parts[0];
@@ -1306,7 +1300,11 @@ function clearBonusFromStatus(statusKey: string, bonusPath: string, mvuData: any
       effectValue = parseFloat(parts[3]) || 0;
       isPercentage = parts[4] === 'pct';
       // 对于旧格式，通过检查当前加成来判断正负（如果加成为负，说明原始效果是负数）
-      const currentBonus = _.get(mvuData.stat_data, `${bonusPath}.${effectType === '性斗力' ? (isPercentage ? '基础性斗力成算' : '基础性斗力加成') : (effectType === '忍耐力' ? (isPercentage ? '基础忍耐力成算' : '基础忍耐力加成') : '')}`, 0);
+      const currentBonus = _.get(
+        mvuData.stat_data,
+        `${bonusPath}.${effectType === '性斗力' ? (isPercentage ? '基础性斗力成算' : '基础性斗力加成') : effectType === '忍耐力' ? (isPercentage ? '基础忍耐力成算' : '基础忍耐力加成') : ''}`,
+        0,
+      );
       isPositive = currentBonus >= 0; // 如果当前加成为负，说明原始效果是负数
       console.warn('[战斗界面] 检测到旧格式状态key，通过当前加成判断正负:', statusKey);
     } else {
@@ -1346,7 +1344,9 @@ function clearBonusFromStatus(statusKey: string, bonusPath: string, mvuData: any
     const currentBonus = _.get(mvuData.stat_data, `${bonusPath}.${bonusField}`, 0);
     const newBonus = currentBonus - (isPositive ? effectValue : -effectValue);
     _.set(mvuData.stat_data, `${bonusPath}.${bonusField}`, newBonus);
-    console.info(`[战斗界面] 清除${effectType}加成: ${currentBonus} -> ${newBonus} (${isPositive ? '减少' : '增加'}${effectValue})`);
+    console.info(
+      `[战斗界面] 清除${effectType}加成: ${currentBonus} -> ${newBonus} (${isPositive ? '减少' : '增加'}${effectValue})`,
+    );
   } catch (e) {
     console.error('[战斗界面] 清除状态加成失败', e);
   }
@@ -2255,7 +2255,7 @@ async function processClimaxAfterLLM(targetIsEnemy: boolean) {
   }
 
   const char = targetIsEnemy ? enemy.value : player.value;
-  
+
   // 再次检查快感是否真的达到最大值（防止重复触发）
   if (char.stats.currentPleasure < char.stats.maxPleasure) {
     console.warn('[战斗界面] 快感未达到最大值，跳过高潮处理');

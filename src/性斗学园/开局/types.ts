@@ -1,7 +1,7 @@
 export enum Gender {
   MALE = '男',
   FEMALE = '女',
-  OTHER = '非二元'
+  OTHER = '非二元',
 }
 
 export enum Difficulty {
@@ -9,7 +9,7 @@ export enum Difficulty {
   NORMAL = '学园生活 (普通)',
   HARDCORE = '地狱开局 (困难)',
   CHEATER = '作弊者',
-  MASOCHIST = '抖M'
+  MASOCHIST = '抖M',
 }
 
 // 根据 [initvar].yaml 的 MVU 变量结构定义
@@ -20,34 +20,34 @@ export enum Difficulty {
 export interface CharacterAttributes {
   // 角色基础
   角色基础: {
-    _等级: number;       // 只读 (1-100)
-    经验值: number;      // 普通
-    声望?: number;       // 普通
-    _段位?: string;      // 只读
-    段位积分?: number;   // 普通
+    _等级: number; // 只读 (1-100)
+    经验值: number; // 普通
+    声望?: number; // 普通
+    _段位?: string; // 只读
+    段位积分?: number; // 普通
   };
-  
+
   // 核心状态
   核心状态: {
-    $属性点: number;     // 可修改 - 用于升级分配
-    $技能点: number;     // 可修改 - 用于技能升级
-    $最大耐力: number;   // 可修改
-    $耐力: number;       // 可修改
-    $最大快感: number;   // 可修改
-    $快感: number;       // 可修改
-    堕落度: number;      // 普通
-    _潜力: number;       // 只读 (5.0-10.0) - 用于计算升级获得的点数
-    _魅力: number;       // 只读 - 最终魅力值
-    $基础魅力: number;   // 可修改 - 基础魅力值
-    _幸运: number;       // 只读 - 最终幸运值
-    $基础幸运: number;   // 可修改 - 基础幸运值
+    $属性点: number; // 可修改 - 用于升级分配
+    $技能点: number; // 可修改 - 用于技能升级
+    $最大耐力: number; // 可修改
+    $耐力: number; // 可修改
+    $最大快感: number; // 可修改
+    $快感: number; // 可修改
+    堕落度: number; // 普通
+    _潜力: number; // 只读 (5.0-10.0) - 用于计算升级获得的点数
+    _魅力: number; // 只读 - 最终魅力值
+    $基础魅力: number; // 可修改 - 基础魅力值
+    _幸运: number; // 只读 - 最终幸运值
+    $基础幸运: number; // 可修改 - 基础幸运值
     $基础性斗力: number; // 可修改
     $基础忍耐力: number; // 可修改
-    _闪避率: number;     // 只读 - 最终闪避率 (0-60)
+    _闪避率: number; // 只读 - 最终闪避率 (0-60)
     $基础闪避率: number; // 可修改
-    _暴击率: number;     // 只读 - 最终暴击率 (0-100)
+    _暴击率: number; // 只读 - 最终暴击率 (0-100)
     $基础暴击率: number; // 可修改
-    意志力: number;      // 普通 (0-100)
+    意志力: number; // 普通 (0-100)
     $基础意志力: number; // 可修改
   };
 }
@@ -79,7 +79,7 @@ export interface Archetype {
   id: string;
   name: string;
   description: string;
-  icon: string; 
+  icon: string;
   passiveSkill: Skill;
   // 永久状态
   permanentState: {
@@ -98,18 +98,18 @@ export interface CharacterData {
   background: string;
   difficulty: Difficulty;
   archetypeId: string | null;
-  
+
   // The core stats - 使用嵌套结构匹配 MVU 变量
   attributes: CharacterAttributes;
-  
+
   // Body stats
-  height: number; 
-  weight: number; 
-  cupSize: string; 
-  hips: number; 
-  cockLength: number; 
+  height: number;
+  weight: number;
+  cupSize: string;
+  hips: number;
+  cockLength: number;
   maleGenitalType?: string; // 男性性器特征（当hasPenis为true时使用）
-  femaleGenitalType?: string; // 女性性器特征（当hasBreasts为true时使用） 
+  femaleGenitalType?: string; // 女性性器特征（当hasBreasts为true时使用）
 
   // Body Configuration (For Non-binary mostly)
   configFeatures: {
@@ -174,7 +174,7 @@ export const INITIAL_CHARACTER_DATA: CharacterData = {
   femaleGenitalType: undefined,
   configFeatures: {
     hasBreasts: true,
-    hasPenis: false
+    hasPenis: false,
   },
   initialActiveSkills: [],
   initialPassiveSkills: [],

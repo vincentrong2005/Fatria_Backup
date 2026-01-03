@@ -6,7 +6,7 @@ const createLog = (msg: string, source: string, type: CombatLogEntry['type'] = '
   turn: 0,
   message: msg,
   source,
-  type
+  type,
 });
 
 // --- 玩家技能 ---
@@ -23,7 +23,7 @@ export const PLAYER_SKILLS: Skill[] = [
       const dmg = Math.floor(user.stats.charm * 1.5 + user.stats.sexPower * 0.5);
       target.stats.currentPleasure += dmg;
       return createLog(`${user.name} 使用 [挑逗言语]，消耗体力，造成了 ${dmg} 点快感！`, 'player', 'damage');
-    }
+    },
   },
   {
     id: 's2',
@@ -35,7 +35,7 @@ export const PLAYER_SKILLS: Skill[] = [
     currentCooldown: 0,
     effect: (user, _target) => {
       return createLog(`${user.name} 展开 [绝对领域]，消耗体力提升闪避！`, 'player', 'info');
-    }
+    },
   },
   {
     id: 's3',
@@ -49,8 +49,8 @@ export const PLAYER_SKILLS: Skill[] = [
       const dmg = Math.floor(user.stats.sexPower * 3.5);
       target.stats.currentPleasure += dmg;
       return createLog(`${user.name} 发动 [必杀·纯爱战神]，造成 ${dmg} 点暴击快感！`, 'player', 'critical');
-    }
-  }
+    },
+  },
 ];
 
 // --- 敌人技能 ---
@@ -67,7 +67,7 @@ export const ENEMY_SKILLS: Skill[] = [
       const dmg = 15;
       target.stats.currentEndurance -= dmg;
       return createLog(`${user.name} 使用 [强硬手段]，你的耐力减少了 ${dmg}！`, 'enemy', 'damage');
-    }
+    },
   },
   {
     id: 'e2',
@@ -81,7 +81,7 @@ export const ENEMY_SKILLS: Skill[] = [
       const dmg = 10;
       target.stats.currentEndurance -= dmg;
       return createLog(`${user.name} 施展 [深渊凝视]，你的耐力被削弱了 ${dmg} 点。`, 'enemy', 'damage');
-    }
+    },
   },
   {
     id: 'e3',
@@ -95,8 +95,8 @@ export const ENEMY_SKILLS: Skill[] = [
       const dmg = 25;
       target.stats.currentPleasure += dmg;
       return createLog(`${user.name} 使用 [触手纠缠]，快感上升了 ${dmg} 点！`, 'enemy', 'damage');
-    }
-  }
+    },
+  },
 ];
 
 // --- 玩家物品 ---
@@ -110,7 +110,7 @@ export const PLAYER_ITEMS: Item[] = [
     effect: (user, _target) => {
       user.stats.currentEndurance = Math.min(user.stats.maxEndurance, user.stats.currentEndurance + 30);
       return createLog(`${user.name} 喝下 [强走饮料]，耐力恢复了。`, 'player', 'heal');
-    }
+    },
   },
   {
     id: 'i2',
@@ -121,8 +121,8 @@ export const PLAYER_ITEMS: Item[] = [
     effect: (user, _target) => {
       user.stats.currentPleasure = Math.max(0, user.stats.currentPleasure - 20);
       return createLog(`${user.name} 注射了 [抑制剂]，身体稍微冷却下来。`, 'player', 'heal');
-    }
-  }
+    },
+  },
 ];
 
 // --- 创建默认角色数据 ---
@@ -150,7 +150,7 @@ export function createDefaultPlayer(): Character {
       crit: 5,
       charm: 30,
       luck: 15,
-    }
+    },
   };
 }
 
@@ -178,7 +178,7 @@ export function createDefaultEnemy(): Character {
       crit: 10,
       charm: 10,
       luck: 5,
-    }
+    },
   };
 }
 
@@ -186,6 +186,5 @@ export function createDefaultEnemy(): Character {
 export const CLIMAX_TEXTS = [
   (name: string) => `${name} 身体弓起，眼神失焦，无法抑制地颤抖着...`,
   (name: string) => `剧烈的快感如潮水般淹没了 ${name} 的理智...`,
-  (name: string) => `${name} 发出了甜美的悲鸣，身体彻底瘫软下来...`
+  (name: string) => `${name} 发出了甜美的悲鸣，身体彻底瘫软下来...`,
 ];
-
