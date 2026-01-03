@@ -420,14 +420,26 @@
       >
         ?
       </button>
-      <div v-if="showCheatInput" class="absolute bottom-8 left-0 rounded-lg border border-white/10 bg-black/90 p-2">
-        <input
-          v-model="cheatCode"
-          type="password"
-          placeholder="输入代码"
-          class="focus:border-secondary focus:outline-none w-24 rounded border border-white/10 bg-white/5 px-2 py-1 text-xs text-white placeholder-gray-500"
-          @keydown.enter="applyCheatCode"
-        />
+      <div
+        v-if="showCheatInput"
+        class="absolute bottom-8 left-0 rounded-xl border border-white/20 bg-gradient-to-br from-black/95 to-gray-900/95 p-3 shadow-2xl backdrop-blur-md"
+      >
+        <form @submit.prevent="applyCheatCode" class="flex items-center gap-2">
+          <input
+            v-model="cheatCode"
+            type="text"
+            placeholder="输入代码"
+            class="focus:border-secondary focus:ring-secondary/50 w-28 rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-sm text-white placeholder-gray-400 transition-all focus:bg-white/15 focus:outline-none focus:ring-2"
+            @keydown.enter="applyCheatCode"
+            @keyup.enter="applyCheatCode"
+          />
+          <button
+            type="submit"
+            class="from-secondary to-primary whitespace-nowrap rounded-lg bg-gradient-to-r px-4 py-2 text-sm font-medium text-white shadow-lg shadow-indigo-500/30 transition-all hover:scale-105 hover:shadow-indigo-500/50 active:scale-95"
+          >
+            确认
+          </button>
+        </form>
       </div>
     </div>
   </div>
