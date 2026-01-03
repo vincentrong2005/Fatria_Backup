@@ -653,6 +653,9 @@ async function loadEnemyFromMvuData(data: any, maxClimaxCount: number) {
         if (typeof Mvu !== 'undefined') {
           const mvuData = Mvu.getMvuData({ type: 'message', message_id: 'latest' });
           if (mvuData?.stat_data) {
+            // 确保对手名称被写入
+            _.set(mvuData.stat_data, '性斗系统.对手名称', enemyName);
+            // 写入所有对手基础属性
             _.set(mvuData.stat_data, '性斗系统.对手魅力', presetData.对手魅力);
             _.set(mvuData.stat_data, '性斗系统.对手幸运', presetData.对手幸运);
             _.set(mvuData.stat_data, '性斗系统.对手闪避率', presetData.对手闪避率);
@@ -665,9 +668,29 @@ async function loadEnemyFromMvuData(data: any, maxClimaxCount: number) {
             _.set(mvuData.stat_data, '性斗系统.对手高潮次数', presetData.对手高潮次数);
             _.set(mvuData.stat_data, '性斗系统.对手性斗力', presetData.对手性斗力);
             _.set(mvuData.stat_data, '性斗系统.对手忍耐力', presetData.对手忍耐力);
-            // 注意：不再写入对手临时状态，因为效果直接应用到enemy.value属性
-            _.set(mvuData.stat_data, '性斗系统.对手技能冷却', presetData.对手技能冷却);
+            // 初始化对手临时状态（即使为空对象也要确保存在）
+            if (!_.get(mvuData.stat_data, '性斗系统.对手临时状态')) {
+              _.set(mvuData.stat_data, '性斗系统.对手临时状态', {
+                状态列表: {},
+                加成统计: {},
+              });
+            } else {
+              // 确保结构完整
+              if (!_.get(mvuData.stat_data, '性斗系统.对手临时状态.状态列表')) {
+                _.set(mvuData.stat_data, '性斗系统.对手临时状态.状态列表', {});
+              }
+              if (!_.get(mvuData.stat_data, '性斗系统.对手临时状态.加成统计')) {
+                _.set(mvuData.stat_data, '性斗系统.对手临时状态.加成统计', {});
+              }
+            }
+            // 写入对手技能冷却（如果为空则初始化为空对象）
+            _.set(mvuData.stat_data, '性斗系统.对手技能冷却', presetData.对手技能冷却 || {});
+            // 如果MVU中没有对手可用技能，初始化为空对象（技能可能需要从其他地方加载）
+            if (!_.get(mvuData.stat_data, '性斗系统.对手可用技能')) {
+              _.set(mvuData.stat_data, '性斗系统.对手可用技能', {});
+            }
             await Mvu.replaceMvuData(mvuData, { type: 'message', message_id: 'latest' });
+            console.info(`[战斗界面] 已将对手数据写入MVU: ${enemyName}`);
             // 重新读取数据
             const updatedMvuData = Mvu.getMvuData({ type: 'message', message_id: 'latest' });
             if (updatedMvuData?.stat_data) {
@@ -677,6 +700,29 @@ async function loadEnemyFromMvuData(data: any, maxClimaxCount: number) {
         }
       } else {
         console.info(`[战斗界面] 数据库中未找到对手数据: ${enemyName}，使用MVU中的现有数据`);
+        // 即使数据库中没有，也要确保MVU中有对手名称
+        if (typeof Mvu !== 'undefined') {
+          const mvuData = Mvu.getMvuData({ type: 'message', message_id: 'latest' });
+          if (mvuData?.stat_data) {
+            _.set(mvuData.stat_data, '性斗系统.对手名称', enemyName);
+            // 确保对手临时状态结构存在
+            if (!_.get(mvuData.stat_data, '性斗系统.对手临时状态')) {
+              _.set(mvuData.stat_data, '性斗系统.对手临时状态', {
+                状态列表: {},
+                加成统计: {},
+              });
+            }
+            // 确保对手技能冷却存在
+            if (!_.get(mvuData.stat_data, '性斗系统.对手技能冷却')) {
+              _.set(mvuData.stat_data, '性斗系统.对手技能冷却', {});
+            }
+            // 确保对手可用技能存在
+            if (!_.get(mvuData.stat_data, '性斗系统.对手可用技能')) {
+              _.set(mvuData.stat_data, '性斗系统.对手可用技能', {});
+            }
+            await Mvu.replaceMvuData(mvuData, { type: 'message', message_id: 'latest' });
+          }
+        }
       }
     } catch (e) {
       console.warn('[战斗界面] 加载对手数据库失败', e);
