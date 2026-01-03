@@ -1096,6 +1096,15 @@ const handleStartGame = async () => {
     // 发送角色基础数据到酒馆
     sendCharacterDataToTavern();
 
+    // 处理"抖M"特性的世界书条目
+    if (characterData.value.difficulty === Difficulty.MASOCHIST) {
+      // 如果难度为"抖M"，写入特性到世界书
+      await writeMasochistTraitToWorldbook();
+    } else {
+      // 如果没有选择"抖M"难度，清空世界书 uid=2 的条目
+      await clearMasochistTraitFromWorldbook();
+    }
+
     // 完成创建
     setTimeout(() => {
       loading.value = false;
@@ -1357,6 +1366,229 @@ const openModal = (title: string, content?: string) => {
 
 const closeModal = () => {
   showModal.value = false;
+};
+
+// 清空"抖M"特性世界书条目
+const clearMasochistTraitFromWorldbook = async () => {
+  try {
+    let worldbookUpdated = false;
+
+    // 方法1: 尝试直接访问世界书数据
+    try {
+      // @ts-ignore - getWorldbook 为全局注入
+      if (typeof getWorldbook === 'function') {
+        // @ts-ignore
+        const worldbook = await getWorldbook('性斗学园');
+        const entry = worldbook.find((e: any) => e.uid === '2' || e.uid === 2);
+        if (entry) {
+          entry.content = '';
+          // @ts-ignore - replaceWorldbook 为全局注入
+          if (typeof replaceWorldbook === 'function') {
+            // @ts-ignore
+            await replaceWorldbook('性斗学园', worldbook);
+            worldbookUpdated = true;
+            console.info('[开局] 抖M特性已从世界书清空');
+          }
+        }
+      }
+    } catch (e) {
+      console.warn('[开局] 直接访问世界书失败:', e);
+    }
+
+    // 方法2: 如果无法直接访问，尝试通过slash命令执行器
+    if (!worldbookUpdated) {
+      const command = `/setentryfield file=性斗学园 uid=2 field=content `;
+
+      // 尝试通过triggerSlash执行命令（如果可用）
+      try {
+        // @ts-ignore - triggerSlash 为全局注入
+        if (typeof triggerSlash === 'function') {
+          // @ts-ignore
+          await triggerSlash(command);
+          worldbookUpdated = true;
+          console.info('[开局] 已通过triggerSlash清空抖M特性');
+        }
+      } catch (e) {
+        console.warn('[开局] triggerSlash执行失败:', e);
+      }
+
+      // 如果triggerSlash不可用，尝试其他执行方式
+      if (!worldbookUpdated) {
+        const globalAny = window as any;
+        const executors = [
+          () => globalAny.SillyTavern?.executeSlashCommand?.(command),
+          () => globalAny.executeSlashCommand?.(command),
+          () => globalAny.SillyTavern?.processSlashCommand?.(command),
+          () => globalAny.parent?.SillyTavern?.executeSlashCommand?.(command),
+          () => globalAny.parent?.executeSlashCommand?.(command),
+          // 尝试通过消息输入框模拟输入
+          () => {
+            const inputElement = document.querySelector(
+              '#send_textarea, textarea[placeholder*="Message"], .chat-input textarea',
+            ) as HTMLTextAreaElement;
+            if (inputElement) {
+              inputElement.value = command;
+              inputElement.dispatchEvent(new Event('input', { bubbles: true }));
+              const form = inputElement.closest('form');
+              if (form) {
+                form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+              }
+              return true;
+            }
+            return false;
+          },
+        ];
+
+        for (const executor of executors) {
+          try {
+            const result = await executor();
+            if (result !== undefined && result !== false) {
+              worldbookUpdated = true;
+              console.info('[开局] 已通过slash命令执行器清空抖M特性');
+              break;
+            }
+          } catch (e) {
+            continue;
+          }
+        }
+      }
+    }
+
+    if (!worldbookUpdated) {
+      console.warn('[开局] 无法自动清空抖M特性，请手动执行以下命令:');
+      console.warn(`/setentryfield file=性斗学园 uid=2 field=content `);
+    }
+  } catch (error) {
+    console.warn('[开局] 清空抖M特性失败:', error);
+  }
+};
+
+// 写入"抖M"特性到世界书
+const writeMasochistTraitToWorldbook = async () => {
+  const traitContent = `<trait_败北宿命>
+特性名称: 绝对受难体质 · 败北的宿命
+作用对象: <user>
+规则层级:
+  优先级: 绝对最高 (Priority: Absolute)
+  判定逻辑:
+    - 当本特性与任何技能、装备、Buff或剧情保护发生冲突时，强制以本特性为准。
+    - 无法被净化、驱散、封印或通过任何手段移除。
+    - 即使拥有"必胜"或"无敌"类状态，在结算时也会被强制判定为"败北"或"被支配"。
+核心机制:
+  描述: 因果律级别的被动诅咒，将所有涉及"性斗"或"支配"的结局强制收束为"败北与被支配"。
+  生效范围: 全局永久生效，无视任何豁免条件。
+日常表现:
+  状态: 隐性发作
+  现象:
+    - 平地摔倒: 移动时有极高概率发生姿势羞耻的摔倒（如暴露贴身衣物、私密部位着地）。
+    - 衣物意外: 穿着的衣物（贴身织物、纽扣、拉链、腰带）会发生不明原因的破损、滑落或溶解。
+    - 公共尴尬: 在公共场合必然遭遇尴尬意外（被水淋湿透视、被误触敏感带、衣摆或裤脚被夹住）。
+    - 视线过敏: 对视线异常敏感，常产生被多人淫靡注视的错觉而导致面红耳赤、行动僵硬。
+性斗败北后 (顺从的终局):
+  触发条件: 系统判定为失败。
+  强制反应:
+    - 机能瘫软: 身体瞬间失去所有反抗力，呈现完全开放的受虐姿态。
+    - 连锁高潮: 强制触发不可控的连续高潮（失禁/绝顶/喷射），直至意识断片。
+    - 感官改写: 将痛觉、羞耻感转化为极致快感，身体自动配合后续的一切调教行为。
+性斗胜利后 (因果的逆转):
+  触发条件: 系统判定为胜利或成功压制对手。
+  强制修正:
+    - 绝对意外: 必然发生极低概率的意外（道具故障反噬、脚滑摔入对手怀中、误食媚药）。
+    - 攻守异形: 原本的胜利姿态被瞬间转化为更羞耻的受虐姿态（如压制位变为被榨取位）。
+    - 结局收束: 无论过程优势多大，最终结局强制修正为"被玩弄的一方"，且因之前的反抗而遭受更严厉的惩罚。
+</trait_败北宿命>`;
+
+  try {
+    let worldbookUpdated = false;
+
+    // 方法1: 尝试直接访问世界书数据
+    try {
+      // @ts-ignore - getWorldbook 为全局注入
+      if (typeof getWorldbook === 'function') {
+        // @ts-ignore
+        const worldbook = await getWorldbook('性斗学园');
+        const entry = worldbook.find((e: any) => e.uid === '2' || e.uid === 2);
+        if (entry) {
+          entry.content = traitContent;
+          // @ts-ignore - replaceWorldbook 为全局注入
+          if (typeof replaceWorldbook === 'function') {
+            // @ts-ignore
+            await replaceWorldbook('性斗学园', worldbook);
+            worldbookUpdated = true;
+            console.info('[开局] 抖M特性已直接写入世界书');
+          }
+        }
+      }
+    } catch (e) {
+      console.warn('[开局] 直接访问世界书失败:', e);
+    }
+
+    // 方法2: 如果无法直接访问，尝试通过slash命令执行器
+    if (!worldbookUpdated) {
+      const command = `/setentryfield file=性斗学园 uid=2 field=content ${traitContent}`;
+
+      // 尝试通过triggerSlash执行命令（如果可用）
+      try {
+        // @ts-ignore - triggerSlash 为全局注入
+        if (typeof triggerSlash === 'function') {
+          // @ts-ignore
+          await triggerSlash(command);
+          worldbookUpdated = true;
+          console.info('[开局] 已通过triggerSlash写入抖M特性');
+        }
+      } catch (e) {
+        console.warn('[开局] triggerSlash执行失败:', e);
+      }
+
+      // 如果triggerSlash不可用，尝试其他执行方式
+      if (!worldbookUpdated) {
+        const globalAny = window as any;
+        const executors = [
+          () => globalAny.SillyTavern?.executeSlashCommand?.(command),
+          () => globalAny.executeSlashCommand?.(command),
+          () => globalAny.SillyTavern?.processSlashCommand?.(command),
+          () => globalAny.parent?.SillyTavern?.executeSlashCommand?.(command),
+          () => globalAny.parent?.executeSlashCommand?.(command),
+          // 尝试通过消息输入框模拟输入
+          () => {
+            const inputElement = document.querySelector(
+              '#send_textarea, textarea[placeholder*="Message"], .chat-input textarea',
+            ) as HTMLTextAreaElement;
+            if (inputElement) {
+              inputElement.value = command;
+              inputElement.dispatchEvent(new Event('input', { bubbles: true }));
+              const form = inputElement.closest('form');
+              if (form) {
+                form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+              }
+              return true;
+            }
+            return false;
+          },
+        ];
+
+        for (const executor of executors) {
+          try {
+            const result = await executor();
+            if (result !== undefined && result !== false) {
+              worldbookUpdated = true;
+              console.info('[开局] 已通过slash命令执行器写入抖M特性');
+              break;
+            }
+          } catch (e) {
+            continue;
+          }
+        }
+      }
+    }
+
+    if (!worldbookUpdated) {
+      console.warn('[开局] 无法自动写入抖M特性到世界书，请手动执行以下命令:');
+      console.warn(`/setentryfield file=性斗学园 uid=2 field=content ${traitContent}`);
+    }
+  } catch (error) {
+    console.warn('[开局] 写入抖M特性失败:', error);
+  }
 };
 </script>
 

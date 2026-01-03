@@ -8,7 +8,8 @@ export enum Difficulty {
   STORY = '剧情模式 (简单)',
   NORMAL = '学园生活 (普通)',
   HARDCORE = '地狱开局 (困难)',
-  CHEATER = '作弊者'
+  CHEATER = '作弊者',
+  MASOCHIST = '抖M'
 }
 
 // 根据 [initvar].yaml 的 MVU 变量结构定义

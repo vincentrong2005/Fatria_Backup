@@ -72,11 +72,19 @@
             v-for="d in availableDifficulties"
             :key="d"
             :value="d"
-            class="bg-slate-900 text-white"
+            :class="[
+              'bg-slate-900',
+              d === Difficulty.MASOCHIST && data.difficulty !== Difficulty.MASOCHIST
+                ? 'text-gray-500 opacity-40'
+                : 'text-white'
+            ]"
           >
-            {{ d }}
+            {{ getDifficultyDisplayName(d) }}
           </option>
         </select>
+        <div v-if="data.difficulty === Difficulty.MASOCHIST" class="mt-2 text-xs text-pink-400 flex items-center gap-1">
+          <i class="fas fa-lock"></i> 已选择抖M特化难度
+        </div>
         <p v-if="data.difficulty === Difficulty.CHEATER" class="mt-2 text-xs text-yellow-400 flex items-center gap-1">
           <i class="fas fa-lock"></i> 作弊模式已激活，难度已锁定
         </p>
@@ -136,6 +144,19 @@ const availableDifficulties = computed(() => {
   return allDifficulties.filter(d => d !== Difficulty.CHEATER);
 });
 
+// 获取难度的显示名称
+const getDifficultyDisplayName = (difficulty: Difficulty): string => {
+  if (difficulty === Difficulty.MASOCHIST) {
+    // 如果当前已选中"抖M"，显示"抖M特化"
+    if (props.data.difficulty === Difficulty.MASOCHIST) {
+      return '抖M特化';
+    }
+    // 否则显示"（隐藏条目）"
+    return '（隐藏条目）';
+  }
+  return difficulty;
+};
+
 const updateData = (fields: Partial<CharacterData>) => {
   emit('update-data', fields);
 };
@@ -176,5 +197,11 @@ const handleGenderChange = (gender: Gender) => {
 </script>
 
 <style lang="scss" scoped>
+// 让隐藏条目更不起眼
+select option.text-gray-500 {
+  color: rgba(156, 163, 175, 0.3) !important;
+  font-size: 0.85em;
+  font-style: italic;
+}
 </style>
 
