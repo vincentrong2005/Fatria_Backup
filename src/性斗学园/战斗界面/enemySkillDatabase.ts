@@ -11426,11 +11426,33 @@ export const ENEMY_SKILLS: Record<string, SkillData> = {
 };
 
 /**
- * 根据角色名称获取技能列表
+ * 根据角色名称获取技能列表（支持模糊匹配）
+ * @param enemyName 角色名称（可以是全名或部分名称）
+ * @param resolvedName 可选的已解析完整名称（从enemyDatabase获取）
  */
-export function getEnemySkills(enemyName: string): SkillData[] {
-  const skillIds = ENEMY_SKILL_MAP[enemyName] || [];
-  return skillIds.map(id => ENEMY_SKILLS[id]).filter(Boolean);
+export function getEnemySkills(enemyName: string, resolvedName?: string): SkillData[] {
+  // 如果提供了已解析的名称，优先使用
+  if (resolvedName && resolvedName in ENEMY_SKILL_MAP) {
+    const skillIds = ENEMY_SKILL_MAP[resolvedName];
+    return skillIds.map(id => ENEMY_SKILLS[id]).filter(Boolean);
+  }
+  
+  // 先尝试精确匹配
+  if (enemyName in ENEMY_SKILL_MAP) {
+    const skillIds = ENEMY_SKILL_MAP[enemyName];
+    return skillIds.map(id => ENEMY_SKILLS[id]).filter(Boolean);
+  }
+  
+  // 尝试部分匹配
+  for (const name of Object.keys(ENEMY_SKILL_MAP)) {
+    if (name.includes(enemyName)) {
+      console.info(`[技能数据库] 通过部分匹配 "${enemyName}" 找到角色: ${name}`);
+      const skillIds = ENEMY_SKILL_MAP[name];
+      return skillIds.map(id => ENEMY_SKILLS[id]).filter(Boolean);
+    }
+  }
+  
+  return [];
 }
 
 /**

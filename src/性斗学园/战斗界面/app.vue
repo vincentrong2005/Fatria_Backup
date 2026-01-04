@@ -646,17 +646,21 @@ async function loadEnemyFromMvuData(data: any, maxClimaxCount: number) {
   // 优先从数据库查找对手数据，如果存在则覆盖MVU变量
   if (enemyName) {
     try {
-      const { getEnemyMvuData } = await import('./enemyDatabase');
+      const { getEnemyMvuData, resolveEnemyName } = await import('./enemyDatabase');
       const { getEnemySkills, convertToMvuSkillFormat } = await import('./enemySkillDatabase');
+      
+      // 解析完整名称（支持模糊匹配）
+      const fullEnemyName = resolveEnemyName(enemyName);
       const presetData = getEnemyMvuData(enemyName);
+      
       if (presetData) {
-        console.info(`[战斗界面] 从数据库加载对手数据并覆盖MVU: ${enemyName}`);
+        console.info(`[战斗界面] 从数据库加载对手数据并覆盖MVU: ${enemyName} -> ${fullEnemyName}`);
         // 将预设数据写入MVU（覆盖原有数据）
         if (typeof Mvu !== 'undefined') {
           const mvuData = Mvu.getMvuData({ type: 'message', message_id: 'latest' });
           if (mvuData?.stat_data) {
-            // 确保对手名称被写入
-            _.set(mvuData.stat_data, '性斗系统.对手名称', enemyName);
+            // 确保对手名称被写入（使用完整名称）
+            _.set(mvuData.stat_data, '性斗系统.对手名称', fullEnemyName);
             // 写入所有对手基础属性
             _.set(mvuData.stat_data, '性斗系统.对手魅力', presetData.对手魅力);
             _.set(mvuData.stat_data, '性斗系统.对手幸运', presetData.对手幸运);
@@ -688,10 +692,10 @@ async function loadEnemyFromMvuData(data: any, maxClimaxCount: number) {
             // 写入对手技能冷却（如果为空则初始化为空对象）
             _.set(mvuData.stat_data, '性斗系统.对手技能冷却', presetData.对手技能冷却 || {});
             
-            // 自动加载对手技能
-            const enemySkills = getEnemySkills(enemyName);
+            // 自动加载对手技能（使用解析后的完整名称）
+            const enemySkills = getEnemySkills(enemyName, fullEnemyName);
             if (enemySkills && enemySkills.length > 0) {
-              console.info(`[战斗界面] 为对手 ${enemyName} 加载技能:`, enemySkills.map(s => s.name));
+              console.info(`[战斗界面] 为对手 ${fullEnemyName} 加载技能:`, enemySkills.map(s => s.name));
               const mvuSkills: Record<string, any> = {};
               enemySkills.forEach(skill => {
                 mvuSkills[skill.id] = convertToMvuSkillFormat(skill);
@@ -705,7 +709,7 @@ async function loadEnemyFromMvuData(data: any, maxClimaxCount: number) {
             }
             
             await Mvu.replaceMvuData(mvuData, { type: 'message', message_id: 'latest' });
-            console.info(`[战斗界面] 已将对手数据和技能写入MVU: ${enemyName}`);
+            console.info(`[战斗界面] 已将对手数据和技能写入MVU: ${fullEnemyName}`);
             // 重新读取数据
             const updatedMvuData = Mvu.getMvuData({ type: 'message', message_id: 'latest' });
             if (updatedMvuData?.stat_data) {
@@ -719,7 +723,8 @@ async function loadEnemyFromMvuData(data: any, maxClimaxCount: number) {
         if (typeof Mvu !== 'undefined') {
           const mvuData = Mvu.getMvuData({ type: 'message', message_id: 'latest' });
           if (mvuData?.stat_data) {
-            _.set(mvuData.stat_data, '性斗系统.对手名称', enemyName);
+            // 使用解析后的完整名称
+            _.set(mvuData.stat_data, '性斗系统.对手名称', fullEnemyName);
             // 确保对手临时状态结构存在
             if (!_.get(mvuData.stat_data, '性斗系统.对手临时状态')) {
               _.set(mvuData.stat_data, '性斗系统.对手临时状态', {
@@ -732,10 +737,10 @@ async function loadEnemyFromMvuData(data: any, maxClimaxCount: number) {
               _.set(mvuData.stat_data, '性斗系统.对手技能冷却', {});
             }
             
-            // 尝试加载对手技能
-            const enemySkills = getEnemySkills(enemyName);
+            // 尝试加载对手技能（使用解析后的完整名称）
+            const enemySkills = getEnemySkills(enemyName, fullEnemyName);
             if (enemySkills && enemySkills.length > 0) {
-              console.info(`[战斗界面] 为对手 ${enemyName} 加载技能:`, enemySkills.map(s => s.name));
+              console.info(`[战斗界面] 为对手 ${fullEnemyName} 加载技能:`, enemySkills.map(s => s.name));
               const mvuSkills: Record<string, any> = {};
               enemySkills.forEach(skill => {
                 mvuSkills[skill.id] = convertToMvuSkillFormat(skill);

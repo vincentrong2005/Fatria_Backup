@@ -941,19 +941,182 @@ export const ENEMY_DATABASE: Record<string, EnemyMvuData> = {
 };
 
 /**
- * 根据对手名称获取MVU变量数据
- * @param enemyName 对手名称
+ * 角色名称别名映射
+ * 用于支持模糊匹配，长名字拆分成多个部分
+ */
+const NAME_ALIASES: Record<string, string> = {
+  // 4字及以上名字拆分
+  '雪莉': '雪莉克里姆希尔德',
+  '克里姆': '雪莉克里姆希尔德',
+  '希尔德': '雪莉克里姆希尔德',
+  '爱丽丝': '爱丽丝温特',
+  '温特': '爱丽丝温特',
+  '伊丽莎白': '伊丽莎白夜羽',
+  '夜羽': '伊丽莎白夜羽',
+  '克劳迪娅': '克劳迪娅威斯特',
+  '威斯特': '克劳迪娅威斯特',
+  '克里奥': '克里奥佩特拉七世',
+  '佩特拉': '克里奥佩特拉七世',
+  '七世': '克里奥佩特拉七世',
+  '娜塔莎': '娜塔莎斯迈尔',
+  '斯迈尔': '娜塔莎斯迈尔',
+  '安娜': '安娜科兹洛娃',
+  '科兹洛娃': '安娜科兹洛娃',
+  '弗洛拉': '弗洛拉梅斯梅尔',
+  '梅斯梅尔': '弗洛拉梅斯梅尔',
+  '布伦': '布伦希尔德',
+  '布伦希尔德': '布伦希尔德',
+  '中岛': '中岛诗织',
+  '诗织': '中岛诗织',
+  '九条': '九条凛音',
+  '凛音': '九条凛音',
+  '伊尼亚': '伊尼亚德瓦卢瓦',
+  '德瓦卢瓦': '伊尼亚德瓦卢瓦',
+  '伊甸': '伊甸阿斯莫德',
+  '阿斯莫德': '伊甸阿斯莫德',
+  '佐藤健': '佐藤健',
+  '佐藤幸子': '佐藤幸子',
+  '凰天羽': '凰天羽',
+  '天羽': '凰天羽',
+  '加藤': '加藤鹰',
+  '加藤鹰': '加藤鹰',
+  '天宫院': '天宫院抚子',
+  '抚子': '天宫院抚子',
+  '小鸟游': '小鸟游雏子',
+  '雏子': '小鸟游雏子',
+  '早坂': '早坂蕾娜',
+  '蕾娜': '早坂蕾娜',
+  '星野': '星野光',
+  '星野光': '星野光',
+  '月下': '月下香',
+  '月下香': '月下香',
+  '月城': '月城遥',
+  '月城遥': '月城遥',
+  '望月': '望月静',
+  '望月静': '望月静',
+  '李小云': '李小云',
+  '李强': '李强',
+  '桃乃': '桃乃 爱',
+  '桃乃爱': '桃乃 爱',
+  '樱井': '樱井结衣',
+  '结衣': '樱井结衣',
+  '樱岛': '樱岛麻衣',
+  '麻衣': '樱岛麻衣',
+  '橘美玲': '橘美玲',
+  '潘多拉': '潘多拉小姐',
+  '犬饲': '犬饲真子',
+  '真子': '犬饲真子',
+  '猫宫': '猫宫宁宁',
+  '宁宁': '猫宫宁宁',
+  '白川': '白川千夏',
+  '千夏': '白川千夏',
+  '白石': '白石响子',
+  '响子': '白石响子',
+  '神崎': '神崎凛',
+  '神崎凛': '神崎凛',
+  '索亚': '索亚伊万诺娃',
+  '伊万诺娃': '索亚伊万诺娃',
+  '索菲亚': '索菲亚',
+  '绫濑川': '绫濑川',
+  '维多利亚': '维多利亚戈德温',
+  '戈德温': '维多利亚戈德温',
+  '维纳斯': '维纳斯',
+  '美咲': '美咲绫',
+  '美咲绫': '美咲绫',
+  '艾丽卡': '艾丽卡施耐德',
+  '施耐德': '艾丽卡施耐德',
+  '艾米丽': '艾米丽威廉姆斯',
+  '威廉姆斯': '艾米丽威廉姆斯',
+  '莉莉安': '莉莉安',
+  '莎拉': '莎拉斯通',
+  '斯通': '莎拉斯通',
+  '蓝原': '蓝原结衣',
+  '蝶': '蝶',
+  '角楯': '角楯花凛',
+  '花凛': '角楯花凛',
+  '赤城': '赤城 朱音',
+  '朱音': '赤城 朱音',
+  '赵婷婷': '赵婷婷',
+  '辣妹子': '辣妹子阳菜',
+  '阳菜': '辣妹子阳菜',
+  '铃木': '铃木惠美',
+  '惠美': '铃木惠美',
+  '铃音': '铃音',
+  '阿米莉亚': '阿米莉亚安斯华斯',
+  '安斯华斯': '阿米莉亚安斯华斯',
+  '雪': '雪',
+  '零': '零',
+  '露娜': '露娜拉克缇丝',
+  '拉克缇丝': '露娜拉克缇丝',
+  '风': '风',
+  '风音': '风音',
+  '黑塔': '黑塔小姐',
+  '上杉': '上杉亚衣',
+  '亚衣': '上杉亚衣',
+  '安琪': '安琪',
+};
+
+/**
+ * 根据对手名称获取MVU变量数据（支持模糊匹配）
+ * @param enemyName 对手名称（可以是全名或部分名称）
  * @returns MVU变量数据，如果不存在则返回null
  */
 export function getEnemyMvuData(enemyName: string): EnemyMvuData | null {
-  return ENEMY_DATABASE[enemyName] || null;
+  // 先尝试精确匹配
+  if (enemyName in ENEMY_DATABASE) {
+    return ENEMY_DATABASE[enemyName];
+  }
+  
+  // 尝试别名匹配
+  const fullName = NAME_ALIASES[enemyName];
+  if (fullName && fullName in ENEMY_DATABASE) {
+    console.info(`[战斗界面] 通过别名 "${enemyName}" 匹配到角色: ${fullName}`);
+    return ENEMY_DATABASE[fullName];
+  }
+  
+  // 尝试部分匹配（名字中包含输入的字符串）
+  for (const name of Object.keys(ENEMY_DATABASE)) {
+    if (name.includes(enemyName)) {
+      console.info(`[战斗界面] 通过部分匹配 "${enemyName}" 找到角色: ${name}`);
+      return ENEMY_DATABASE[name];
+    }
+  }
+  
+  return null;
 }
 
 /**
- * 检查是否存在指定名称的敌人数据
+ * 根据对手名称获取完整名称（支持模糊匹配）
+ * @param enemyName 对手名称（可以是全名或部分名称）
+ * @returns 完整名称，如果不存在则返回原名称
+ */
+export function resolveEnemyName(enemyName: string): string {
+  // 先尝试精确匹配
+  if (enemyName in ENEMY_DATABASE) {
+    return enemyName;
+  }
+  
+  // 尝试别名匹配
+  const fullName = NAME_ALIASES[enemyName];
+  if (fullName && fullName in ENEMY_DATABASE) {
+    return fullName;
+  }
+  
+  // 尝试部分匹配
+  for (const name of Object.keys(ENEMY_DATABASE)) {
+    if (name.includes(enemyName)) {
+      return name;
+    }
+  }
+  
+  return enemyName;
+}
+
+/**
+ * 检查是否存在指定名称的敌人数据（支持模糊匹配）
  * @param enemyName 对手名称
  * @returns 是否存在
  */
 export function hasEnemyData(enemyName: string): boolean {
-  return enemyName in ENEMY_DATABASE;
+  return getEnemyMvuData(enemyName) !== null;
 }
