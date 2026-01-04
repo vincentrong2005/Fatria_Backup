@@ -84,7 +84,7 @@
               <span class="text-gray-500">伤害:</span>
               <span v-for="(dmg, idx) in skill.damageFormula" :key="idx" class="text-orange-400">
                 {{ idx > 0 ? ' + ' : '' }}{{ Math.round(dmg.coefficient * 100) }}%{{ getDamageSourceName(dmg.source) }}
-                <span v-if="dmg.baseValue > 0">+{{ dmg.baseValue }}</span>
+                <span v-if="(dmg.baseValue ?? 0) > 0">+{{ dmg.baseValue ?? 0 }}</span>
               </span>
             </div>
 
@@ -201,10 +201,10 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
-import { CharacterData, Gender } from '../types';
-import { STARTER_SKILLS, DamageSource, SkillRarity } from '../data/skills';
-import { getConstitutionsForGender, ConstitutionRarity, type ConstitutionData } from '../data/constitutions';
+import { ConstitutionRarity, getConstitutionsForGender } from '../data/constitutions';
+import { DamageSource, SkillRarity, STARTER_SKILLS } from '../data/skills';
 import { getIconClass } from '../icon-helper';
+import { CharacterData, Gender } from '../types';
 
 const props = defineProps<{
   data: CharacterData;
@@ -214,7 +214,7 @@ const emit = defineEmits<{
   (e: 'update-data', fields: Partial<CharacterData>): void;
 }>();
 
-const MAX_ACTIVE_SKILLS = 3;
+const MAX_ACTIVE_SKILLS = 5;
 const MAX_PASSIVE_SKILLS = 2;
 
 // 使用新的数据结构

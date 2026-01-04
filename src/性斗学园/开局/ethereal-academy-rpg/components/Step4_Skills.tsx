@@ -1,8 +1,8 @@
-import React from 'react';
-import { CharacterData, Skill } from '../types';
-import { ACTIVE_SKILLS, PASSIVE_SKILLS } from '../constants';
 import * as Icons from 'lucide-react';
-import { Sword, Check, Shield } from 'lucide-react';
+import { Check, Shield, Sword } from 'lucide-react';
+import React from 'react';
+import { ACTIVE_SKILLS, PASSIVE_SKILLS } from '../constants';
+import { CharacterData, Skill } from '../types';
 
 interface Props {
   data: CharacterData;
@@ -34,26 +34,24 @@ const SkillCard: React.FC<SkillCardProps> = ({ skill, isSelected, isDisabled, on
   <button
     onClick={onToggle}
     disabled={isDisabled}
-    className={`relative group p-3 rounded-xl border transition-all duration-300 text-left flex items-start gap-3 h-full ${
-      isSelected
+    className={`relative group p-3 rounded-xl border transition-all duration-300 text-left flex items-start gap-3 h-full ${isSelected
         ? 'bg-secondary/20 border-secondary ring-1 ring-secondary'
-        : isDisabled 
+        : isDisabled
           ? 'bg-white/5 border-white/5 opacity-50 cursor-not-allowed'
           : 'bg-white/5 border-white/10 hover:bg-white/10 hover:border-white/30'
-    }`}
+      }`}
   >
-    <div className={`p-2.5 rounded-lg transition-colors shrink-0 ${
-      isSelected ? 'bg-secondary text-white' : 'bg-black/30 text-gray-400 group-hover:text-gray-200'
-    }`}>
+    <div className={`p-2.5 rounded-lg transition-colors shrink-0 ${isSelected ? 'bg-secondary text-white' : 'bg-black/30 text-gray-400 group-hover:text-gray-200'
+      }`}>
       {getIcon(skill.icon)}
     </div>
-    
+
     <div className="flex-1 min-w-0">
       <div className="flex justify-between items-start">
-         <h4 className={`font-bold text-sm truncate pr-2 transition-colors ${isSelected ? 'text-white' : 'text-gray-200'}`}>
-           {skill.name}
-         </h4>
-         {isSelected && <Check size={14} className="text-secondary shrink-0" />}
+        <h4 className={`font-bold text-sm truncate pr-2 transition-colors ${isSelected ? 'text-white' : 'text-gray-200'}`}>
+          {skill.name}
+        </h4>
+        {isSelected && <Check size={14} className="text-secondary shrink-0" />}
       </div>
       <p className="text-xs text-gray-500 mt-1 mb-1 font-medium">
         {skill.effectDescription}
@@ -66,7 +64,7 @@ const SkillCard: React.FC<SkillCardProps> = ({ skill, isSelected, isDisabled, on
 );
 
 const Step4_Skills: React.FC<Props> = ({ data, updateData }) => {
-  const MAX_ACTIVE_SKILLS = 3;
+  const MAX_ACTIVE_SKILLS = 5;
   const MAX_PASSIVE_SKILLS = 2;
 
   // Select passive skills based on gender
@@ -90,23 +88,23 @@ const Step4_Skills: React.FC<Props> = ({ data, updateData }) => {
 
   return (
     <div className="animate-slide-up space-y-8 pb-4">
-      
+
       {/* Active Skills Section */}
       <div className="bg-black/20 border border-white/5 rounded-2xl overflow-hidden">
         {/* Header - No sticky to prevent clipping issues, just a solid header block */}
         <div className="bg-white/5 border-b border-white/5 p-4 flex justify-between items-center backdrop-blur-md">
           <div className="flex items-center gap-2">
-             <div className="p-1.5 bg-red-500/20 rounded text-red-400"><Sword size={18}/></div>
-             <div>
-               <h3 className="text-lg font-bold text-white">主动技能</h3>
-               <p className="text-xs text-gray-400">选择 {MAX_ACTIVE_SKILLS} 个性斗手段</p>
-             </div>
+            <div className="p-1.5 bg-red-500/20 rounded text-red-400"><Sword size={18} /></div>
+            <div>
+              <h3 className="text-lg font-bold text-white">主动技能</h3>
+              <p className="text-xs text-gray-400">选择 {MAX_ACTIVE_SKILLS} 个性斗手段</p>
+            </div>
           </div>
           <div className="text-right bg-white/5 px-3 py-1 rounded-full border border-white/5">
-             <span className={`font-bold ${data.initialActiveSkills.length === MAX_ACTIVE_SKILLS ? 'text-secondary' : 'text-white'}`}>
-               {data.initialActiveSkills.length}
-             </span>
-             <span className="text-gray-500 text-sm">/{MAX_ACTIVE_SKILLS}</span>
+            <span className={`font-bold ${data.initialActiveSkills.length === MAX_ACTIVE_SKILLS ? 'text-secondary' : 'text-white'}`}>
+              {data.initialActiveSkills.length}
+            </span>
+            <span className="text-gray-500 text-sm">/{MAX_ACTIVE_SKILLS}</span>
           </div>
         </div>
 
@@ -126,17 +124,17 @@ const Step4_Skills: React.FC<Props> = ({ data, updateData }) => {
       <div className="bg-black/20 border border-white/5 rounded-2xl overflow-hidden">
         <div className="bg-white/5 border-b border-white/5 p-4 flex justify-between items-center backdrop-blur-md">
           <div className="flex items-center gap-2">
-             <div className="p-1.5 bg-blue-500/20 rounded text-blue-400"><Shield size={18}/></div>
-             <div>
-               <h3 className="text-lg font-bold text-white">特殊体质</h3>
-               <p className="text-xs text-gray-400">选择 {MAX_PASSIVE_SKILLS} 个被动特性</p>
-             </div>
+            <div className="p-1.5 bg-blue-500/20 rounded text-blue-400"><Shield size={18} /></div>
+            <div>
+              <h3 className="text-lg font-bold text-white">特殊体质</h3>
+              <p className="text-xs text-gray-400">选择 {MAX_PASSIVE_SKILLS} 个被动特性</p>
+            </div>
           </div>
           <div className="text-right bg-white/5 px-3 py-1 rounded-full border border-white/5">
-             <span className={`font-bold ${data.initialPassiveSkills.length === MAX_PASSIVE_SKILLS ? 'text-secondary' : 'text-white'}`}>
-               {data.initialPassiveSkills.length}
-             </span>
-             <span className="text-gray-500 text-sm">/{MAX_PASSIVE_SKILLS}</span>
+            <span className={`font-bold ${data.initialPassiveSkills.length === MAX_PASSIVE_SKILLS ? 'text-secondary' : 'text-white'}`}>
+              {data.initialPassiveSkills.length}
+            </span>
+            <span className="text-gray-500 text-sm">/{MAX_PASSIVE_SKILLS}</span>
           </div>
         </div>
 

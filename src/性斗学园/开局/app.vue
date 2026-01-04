@@ -430,8 +430,6 @@
             type="text"
             placeholder="输入代码"
             class="focus:border-secondary focus:ring-secondary/50 w-28 rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-sm text-white placeholder-gray-400 transition-all focus:bg-white/15 focus:outline-none focus:ring-2"
-            @keydown.enter="applyCheatCode"
-            @keyup.enter="applyCheatCode"
           />
           <button
             type="submit"
@@ -471,6 +469,7 @@ const showCheatInput = ref(false);
 const cheatCode = ref('');
 const isCheatActive = ref(false);
 const activatedCheatCodes = ref<Set<string>>(new Set());
+const isApplyingCheatCode = ref(false);
 
 // 从 MVU 变量同步初始数据
 onMounted(async () => {
@@ -503,6 +502,10 @@ const recordActivatedCheatCode = async (code: string) => {
 
 // 作弊码验证
 const applyCheatCode = async () => {
+  if (isApplyingCheatCode.value) return;
+  isApplyingCheatCode.value = true;
+
+  try {
   let code = cheatCode.value.trim().toUpperCase();
 
   // 处理 1011 的别名
@@ -951,9 +954,408 @@ const applyCheatCode = async () => {
       console.error('[开局] 添加装备失败:', error);
       openModal('错误', '添加装备失败');
     }
+  } else if (code === 'NERD') {
+    // NERD：厚重黑框眼镜
+    showCheatInput.value = false;
+    cheatCode.value = '';
+
+    try {
+      const equipment = {
+        类型: '装备',
+        等级: 'A',
+        描述: '知识就是力量！虽然看起来很弱，但总能因为各种奇怪的冷知识而化险为夷。',
+        加成属性: {
+          魅力加成: -8,
+          幸运加成: 15,
+          基础性斗力加成: 0,
+          基础性斗力成算: 0,
+          基础忍耐力加成: 0,
+          基础忍耐力成算: 0,
+          闪避率加成: 0,
+          暴击率加成: 8,
+          意志力加成: 5,
+        },
+        部位: '饰品',
+        数量: 1,
+      };
+
+      await updateMvuVariables({
+        '物品系统.背包.厚重黑框眼镜': equipment,
+      });
+      await recordActivatedCheatCode('NERD');
+
+      console.info('[开局] NERD 作弊码已激活');
+      openModal('作弊码激活', '已获得：厚重黑框眼镜');
+    } catch (error) {
+      console.error('[开局] 添加装备失败:', error);
+      openModal('错误', '添加装备失败');
+    }
+  } else if (code === 'DEVIL') {
+    // DEVIL：小恶魔翅膀发夹
+    showCheatInput.value = false;
+    cheatCode.value = '';
+
+    try {
+      const equipment = {
+        类型: '装备',
+        等级: 'S',
+        描述: '小小的恶魔，大大的坏心思。总喜欢捉弄别人，但往往会被反捉弄。',
+        加成属性: {
+          魅力加成: 12,
+          幸运加成: -5,
+          基础性斗力加成: 0,
+          基础性斗力成算: 8,
+          基础忍耐力加成: 0,
+          基础忍耐力成算: 0,
+          闪避率加成: 0,
+          暴击率加成: 0,
+          意志力加成: -5,
+        },
+        部位: '饰品',
+        数量: 1,
+      };
+
+      await updateMvuVariables({
+        '物品系统.背包.小恶魔翅膀发夹': equipment,
+      });
+      await recordActivatedCheatCode('DEVIL');
+
+      console.info('[开局] DEVIL 作弊码已激活');
+      openModal('作弊码激活', '已获得：小恶魔翅膀发夹');
+    } catch (error) {
+      console.error('[开局] 添加装备失败:', error);
+      openModal('错误', '添加装备失败');
+    }
+  } else if (code === 'AIRHEAD') {
+    // AIRHEAD：草莓味棒棒糖
+    showCheatInput.value = false;
+    cheatCode.value = '';
+
+    try {
+      const equipment = {
+        类型: '装备',
+        等级: 'B',
+        描述: '甜甜的糖果让人放松警惕，虽然脑子不太好使，但身材确实一级棒。',
+        加成属性: {
+          魅力加成: 15,
+          幸运加成: 5,
+          基础性斗力加成: 0,
+          基础性斗力成算: -10,
+          基础忍耐力加成: 0,
+          基础忍耐力成算: 0,
+          闪避率加成: 0,
+          暴击率加成: 0,
+          意志力加成: -10,
+        },
+        部位: '饰品',
+        数量: 1,
+      };
+
+      await updateMvuVariables({
+        '物品系统.背包.草莓味棒棒糖': equipment,
+      });
+      await recordActivatedCheatCode('AIRHEAD');
+
+      console.info('[开局] AIRHEAD 作弊码已激活');
+      openModal('作弊码激活', '已获得：草莓味棒棒糖');
+    } catch (error) {
+      console.error('[开局] 添加装备失败:', error);
+      openModal('错误', '添加装备失败');
+    }
+  } else if (code === 'SUCCUBUS') {
+    // SUCCUBUS：魅魔之尾
+    showCheatInput.value = false;
+    cheatCode.value = '';
+
+    try {
+      const equipment = {
+        类型: '装备',
+        等级: 'SS',
+        描述: '魅魔的象征，能够吸取他人的精力转化为自己的力量。但也会让周围的人产生奇怪的欲望。',
+        加成属性: {
+          魅力加成: 20,
+          幸运加成: -10,
+          基础性斗力加成: 0,
+          基础性斗力成算: 10,
+          基础忍耐力加成: 0,
+          基础忍耐力成算: -15,
+          闪避率加成: 0,
+          暴击率加成: 5,
+          意志力加成: -10,
+        },
+        部位: '特殊装备',
+        数量: 1,
+      };
+
+      await updateMvuVariables({
+        '物品系统.背包.魅魔之尾': equipment,
+      });
+      await recordActivatedCheatCode('SUCCUBUS');
+
+      console.info('[开局] SUCCUBUS 作弊码已激活');
+      openModal('作弊码激活', '已获得：魅魔之尾');
+    } catch (error) {
+      console.error('[开局] 添加装备失败:', error);
+      openModal('错误', '添加装备失败');
+    }
+  } else if (code === 'CHAOS') {
+    // CHAOS：不可名状触手
+    showCheatInput.value = false;
+    cheatCode.value = '';
+
+    try {
+      const equipment = {
+        类型: '装备',
+        等级: 'SS',
+        描述: '来自深渊的触手，完全不可预测。有时候会帮你，有时候会害你，全看心情。',
+        加成属性: {
+          魅力加成: -20,
+          幸运加成: 0,
+          基础性斗力加成: 0,
+          基础性斗力成算: 15,
+          基础忍耐力加成: 0,
+          基础忍耐力成算: 15,
+          闪避率加成: 0,
+          暴击率加成: 0,
+          意志力加成: 10,
+        },
+        部位: '特殊装备',
+        数量: 1,
+      };
+
+      await updateMvuVariables({
+        '物品系统.背包.不可名状触手': equipment,
+      });
+      await recordActivatedCheatCode('CHAOS');
+
+      console.info('[开局] CHAOS 作弊码已激活');
+      openModal('作弊码激活', '已获得：不可名状触手');
+    } catch (error) {
+      console.error('[开局] 添加装备失败:', error);
+      openModal('错误', '添加装备失败');
+    }
+  } else if (code === 'DOLL') {
+    // DOLL：人偶专用保养油
+    showCheatInput.value = false;
+    cheatCode.value = '';
+
+    try {
+      const equipment = {
+        类型: '装备',
+        等级: 'A',
+        描述: '让人偶的皮肤更加光滑细腻，痛觉进一步迟钝。但也会让感情变得更加淡漠。',
+        加成属性: {
+          魅力加成: 10,
+          幸运加成: 0,
+          基础性斗力加成: 0,
+          基础性斗力成算: -15,
+          基础忍耐力加成: 0,
+          基础忍耐力成算: 20,
+          闪避率加成: 0,
+          暴击率加成: 0,
+          意志力加成: -15,
+        },
+        部位: '副装备',
+        数量: 1,
+      };
+
+      await updateMvuVariables({
+        '物品系统.背包.人偶专用保养油': equipment,
+      });
+      await recordActivatedCheatCode('DOLL');
+
+      console.info('[开局] DOLL 作弊码已激活');
+      openModal('作弊码激活', '已获得：人偶专用保养油');
+    } catch (error) {
+      console.error('[开局] 添加装备失败:', error);
+      openModal('错误', '添加装备失败');
+    }
+  } else if (code === 'BEAST') {
+    // BEAST：兽耳发箍
+    showCheatInput.value = false;
+    cheatCode.value = '';
+
+    try {
+      const equipment = {
+        类型: '装备',
+        等级: 'A',
+        描述: '让兽化人的感官更加敏锐，反应速度更快。但也会让本能变得更难控制。',
+        加成属性: {
+          魅力加成: 5,
+          幸运加成: 8,
+          基础性斗力加成: 0,
+          基础性斗力成算: 10,
+          基础忍耐力加成: 0,
+          基础忍耐力成算: 5,
+          闪避率加成: 15,
+          暴击率加成: 0,
+          意志力加成: -8,
+        },
+        部位: '饰品',
+        数量: 1,
+      };
+
+      await updateMvuVariables({
+        '物品系统.背包.兽耳发箍': equipment,
+      });
+      await recordActivatedCheatCode('BEAST');
+
+      console.info('[开局] BEAST 作弊码已激活');
+      openModal('作弊码激活', '已获得：兽耳发箍');
+    } catch (error) {
+      console.error('[开局] 添加装备失败:', error);
+      openModal('错误', '添加装备失败');
+    }
+  } else if (code === 'CYBER') {
+    // CYBER：机械手臂
+    showCheatInput.value = false;
+    cheatCode.value = '';
+
+    try {
+      const equipment = {
+        类型: '装备',
+        等级: 'S',
+        描述: '高度精密的机械义肢，内置多种功能。但会让身体的一部分变得更加冰冷。',
+        加成属性: {
+          魅力加成: -10,
+          幸运加成: -5,
+          基础性斗力加成: 0,
+          基础性斗力成算: 15,
+          基础忍耐力加成: 0,
+          基础忍耐力成算: 20,
+          闪避率加成: 0,
+          暴击率加成: 10,
+          意志力加成: 10,
+        },
+        部位: '主装备',
+        数量: 1,
+      };
+
+      await updateMvuVariables({
+        '物品系统.背包.机械手臂': equipment,
+      });
+      await recordActivatedCheatCode('CYBER');
+
+      console.info('[开局] CYBER 作弊码已激活');
+      openModal('作弊码激活', '已获得：机械手臂');
+    } catch (error) {
+      console.error('[开局] 添加装备失败:', error);
+      openModal('错误', '添加装备失败');
+    }
+  } else if (code === 'PRINCESS') {
+    // PRINCESS：蕾丝阳伞
+    showCheatInput.value = false;
+    cheatCode.value = '';
+
+    try {
+      const equipment = {
+        类型: '装备',
+        等级: 'A',
+        描述: '公主的象征，优雅而高贵。虽然看起来很脆弱，但总有人会保护她。',
+        加成属性: {
+          魅力加成: 8,
+          幸运加成: 12,
+          基础性斗力加成: 0,
+          基础性斗力成算: -10,
+          基础忍耐力加成: 0,
+          基础忍耐力成算: 0,
+          闪避率加成: 0,
+          暴击率加成: 0,
+          意志力加成: 0,
+        },
+        部位: '副装备',
+        数量: 1,
+      };
+
+      await updateMvuVariables({
+        '物品系统.背包.蕾丝阳伞': equipment,
+      });
+      await recordActivatedCheatCode('PRINCESS');
+
+      console.info('[开局] PRINCESS 作弊码已激活');
+      openModal('作弊码激活', '已获得：蕾丝阳伞');
+    } catch (error) {
+      console.error('[开局] 添加装备失败:', error);
+      openModal('错误', '添加装备失败');
+    }
+  } else if (code === 'DELINQUENT') {
+    // DELINQUENT：不良少年头巾
+    showCheatInput.value = false;
+    cheatCode.value = '';
+
+    try {
+      const equipment = {
+        类型: '装备',
+        等级: 'B',
+        描述: '看起来很不好惹，但其实内心很善良。总在关键时刻保护弱小。',
+        加成属性: {
+          魅力加成: -5,
+          幸运加成: 5,
+          基础性斗力加成: 0,
+          基础性斗力成算: 10,
+          基础忍耐力加成: 0,
+          基础忍耐力成算: 5,
+          闪避率加成: 0,
+          暴击率加成: 0,
+          意志力加成: 5,
+        },
+        部位: '饰品',
+        数量: 1,
+      };
+
+      await updateMvuVariables({
+        '物品系统.背包.不良少年头巾': equipment,
+      });
+      await recordActivatedCheatCode('DELINQUENT');
+
+      console.info('[开局] DELINQUENT 作弊码已激活');
+      openModal('作弊码激活', '已获得：不良少年头巾');
+    } catch (error) {
+      console.error('[开局] 添加装备失败:', error);
+      openModal('错误', '添加装备失败');
+    }
+  } else if (code === 'SHY') {
+    // SHY：遮脸刘海
+    showCheatInput.value = false;
+    cheatCode.value = '';
+
+    try {
+      const equipment = {
+        类型: '装备',
+        等级: 'C',
+        描述: '因为害羞而遮住脸，但这样反而让人更加在意。意外地很会躲藏。',
+        加成属性: {
+          魅力加成: 3,
+          幸运加成: 0,
+          基础性斗力加成: 0,
+          基础性斗力成算: 0,
+          基础忍耐力加成: 0,
+          基础忍耐力成算: 0,
+          闪避率加成: 10,
+          暴击率加成: 0,
+          意志力加成: -3,
+        },
+        部位: '饰品',
+        数量: 1,
+      };
+
+      await updateMvuVariables({
+        '物品系统.背包.遮脸刘海': equipment,
+      });
+      await recordActivatedCheatCode('SHY');
+
+      console.info('[开局] SHY 作弊码已激活');
+      openModal('作弊码激活', '已获得：遮脸刘海');
+    } catch (error) {
+      console.error('[开局] 添加装备失败:', error);
+      openModal('错误', '添加装备失败');
+    }
   } else {
     openModal('错误', '无效的代码');
     cheatCode.value = '';
+  }
+  } finally {
+    isApplyingCheatCode.value = false;
   }
 };
 
@@ -1258,10 +1660,10 @@ const sendCharacterDataToTavern = async () => {
             const entries = book.entries || book.getEntries?.() || book.getAllEntries?.();
             if (!entries) continue;
 
-            // 查找uid为107583的条目
+            // 查找uid为0的条目
             const entry = Array.isArray(entries)
-              ? entries.find((e: any) => String(e.uid) === '107583' || e.uid === 107583)
-              : entries['107583'];
+              ? entries.find((e: any) => String(e.uid) === '0' || e.uid === 0)
+              : entries['0'];
 
             if (entry) {
               entry.content = characterDescription;
@@ -1288,7 +1690,7 @@ const sendCharacterDataToTavern = async () => {
           // 这样世界书中会保留真实的换行格式（与你手动输入的效果一致）
           const escapedContent = characterDescription;
 
-          const command = `/setentryfield file=性斗学园 uid=107583 field=content ${escapedContent}`;
+          const command = `/setentryfield file=性斗学园 uid=0 field=content ${escapedContent}`;
 
           // 尝试通过triggerSlash执行命令（如果可用）
           try {
@@ -1346,7 +1748,7 @@ const sendCharacterDataToTavern = async () => {
 
         if (!worldbookUpdated) {
           console.warn('[开局] 无法自动更新世界书，请手动执行以下命令:');
-          console.warn(`/setentryfield file=性斗学园 uid=107583 field=content ${characterDescription}`);
+          console.warn(`/setentryfield file=性斗学园 uid=0 field=content ${characterDescription}`);
         }
       } catch (worldbookError) {
         console.warn('[开局] 更新世界书失败:', worldbookError);
@@ -1391,7 +1793,7 @@ const clearMasochistTraitFromWorldbook = async () => {
       if (typeof getWorldbook === 'function') {
         // @ts-ignore
         const worldbook = await getWorldbook('性斗学园');
-        const entry = worldbook.find((e: any) => e.uid === '2' || e.uid === 2);
+        const entry = worldbook.find((e: any) => e.uid === '1' || e.uid === 1);
         if (entry) {
           entry.content = '';
           // @ts-ignore - replaceWorldbook 为全局注入
@@ -1409,7 +1811,7 @@ const clearMasochistTraitFromWorldbook = async () => {
 
     // 方法2: 如果无法直接访问，尝试通过slash命令执行器
     if (!worldbookUpdated) {
-      const command = `/setentryfield file=性斗学园 uid=2 field=content `;
+      const command = `/setentryfield file=性斗学园 uid=1 field=content `;
 
       // 尝试通过triggerSlash执行命令（如果可用）
       try {
@@ -1468,7 +1870,7 @@ const clearMasochistTraitFromWorldbook = async () => {
 
     if (!worldbookUpdated) {
       console.warn('[开局] 无法自动清空抖M特性，请手动执行以下命令:');
-      console.warn(`/setentryfield file=性斗学园 uid=2 field=content `);
+      console.warn(`/setentryfield file=性斗学园 uid=1 field=content `);
     }
   } catch (error) {
     console.warn('[开局] 清空抖M特性失败:', error);
@@ -1519,7 +1921,7 @@ const writeMasochistTraitToWorldbook = async () => {
       if (typeof getWorldbook === 'function') {
         // @ts-ignore
         const worldbook = await getWorldbook('性斗学园');
-        const entry = worldbook.find((e: any) => e.uid === '2' || e.uid === 2);
+        const entry = worldbook.find((e: any) => e.uid === '1' || e.uid === 1);
         if (entry) {
           entry.content = traitContent;
           // @ts-ignore - replaceWorldbook 为全局注入
@@ -1537,7 +1939,7 @@ const writeMasochistTraitToWorldbook = async () => {
 
     // 方法2: 如果无法直接访问，尝试通过slash命令执行器
     if (!worldbookUpdated) {
-      const command = `/setentryfield file=性斗学园 uid=2 field=content ${traitContent}`;
+      const command = `/setentryfield file=性斗学园 uid=1 field=content ${traitContent}`;
 
       // 尝试通过triggerSlash执行命令（如果可用）
       try {
@@ -1596,7 +1998,7 @@ const writeMasochistTraitToWorldbook = async () => {
 
     if (!worldbookUpdated) {
       console.warn('[开局] 无法自动写入抖M特性到世界书，请手动执行以下命令:');
-      console.warn(`/setentryfield file=性斗学园 uid=2 field=content ${traitContent}`);
+      console.warn(`/setentryfield file=性斗学园 uid=1 field=content ${traitContent}`);
     }
   } catch (error) {
     console.warn('[开局] 写入抖M特性失败:', error);

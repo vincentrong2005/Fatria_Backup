@@ -199,7 +199,7 @@ export interface DamageComponent {
   /** 系数（百分比） */
   coefficient: number;
   /** 基础固定值 */
-  baseValue: number;
+  baseValue?: number;
 }
 
 /** 技能解锁条件 */
