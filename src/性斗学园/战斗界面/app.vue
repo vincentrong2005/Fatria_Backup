@@ -324,6 +324,8 @@ const activeMenu = ref<'main' | 'skills' | 'items'>('main');
 const allowSurrender = ref<boolean>(true); // 允许认输：true时不可认输，false时允许认输
 const playerBoundTurns = ref<number>(0); // 玩家被束缚的回合数
 const enemyBoundTurns = ref<number>(0); // 敌人被束缚的回合数
+const playerBindSource = ref<'player' | 'enemy' | null>(null); // 玩家束缚的施加者
+const enemyBindSource = ref<'player' | 'enemy' | null>(null); // 敌人束缚的施加者
 
 // 特效状态
 const effectType = ref<'critical' | 'dodge' | 'climax' | 'victory' | 'defeat' | null>(null);
@@ -1009,17 +1011,21 @@ async function applySkillEffectsFromMvu(skillId: string, isPlayerSkill: boolean)
         if (isPlayerSkill) {
           if (isPositive) {
             enemyBoundTurns.value = duration;
+            enemyBindSource.value = 'player'; // 记录施加者
             logs.push(`${enemy.value.name} 被束缚了 ${duration} 回合，无法行动！`);
           } else {
             playerBoundTurns.value = duration;
+            playerBindSource.value = 'player'; // 记录施加者
             logs.push(`${player.value.name} 被束缚了 ${duration} 回合，无法行动！`);
           }
         } else {
           if (isPositive) {
             playerBoundTurns.value = duration;
+            playerBindSource.value = 'enemy'; // 记录施加者
             logs.push(`${player.value.name} 被束缚了 ${duration} 回合，无法行动！`);
           } else {
             enemyBoundTurns.value = duration;
+            enemyBindSource.value = 'enemy'; // 记录施加者
             logs.push(`${enemy.value.name} 被束缚了 ${duration} 回合，无法行动！`);
           }
         }
@@ -1268,19 +1274,7 @@ async function updateStatusEffectsFromMvu(): Promise<string[]> {
       }
     }
 
-    // 更新束缚回合数
-    if (playerBoundTurns.value > 0) {
-      playerBoundTurns.value--;
-      if (playerBoundTurns.value === 0) {
-        logs.push(`${player.value.name} 的束缚效果消失了`);
-      }
-    }
-    if (enemyBoundTurns.value > 0) {
-      enemyBoundTurns.value--;
-      if (enemyBoundTurns.value === 0) {
-        logs.push(`${enemy.value.name} 的束缚效果消失了`);
-      }
-    }
+    // 束缚回合数现在在回合结束时递减，不在这里处理
   } catch (e) {
     console.error('[战斗界面] 更新状态效果失败', e);
   }
@@ -1540,6 +1534,8 @@ async function clearTemporaryStatus() {
     // 清空束缚状态
     playerBoundTurns.value = 0;
     enemyBoundTurns.value = 0;
+    playerBindSource.value = null;
+    enemyBindSource.value = null;
 
     // 保存到MVU
     await Mvu.replaceMvuData(mvuData, { type: 'message', message_id: 'latest' });
@@ -1655,9 +1651,20 @@ function determineEnemyIntention() {
 function handlePlayerSkill(skill: Skill) {
   if (turnState.phase !== 'playerInput') return;
 
+  // 玩家行动开始时，递减玩家施加的束缚效果
+  if (enemyBoundTurns.value > 0 && enemyBindSource.value === 'player') {
+    enemyBoundTurns.value--;
+    if (enemyBoundTurns.value === 0) {
+      addLog(`${enemy.value.name} 的束缚效果消失了`, 'system', 'info');
+      enemyBindSource.value = null;
+    } else {
+      addLog(`${enemy.value.name} 的束缚剩余 ${enemyBoundTurns.value} 回合`, 'system', 'info');
+    }
+  }
+
   // 检查是否被束缚
   if (playerBoundTurns.value > 0) {
-    addLog(`${player.value.name} 被束缚了，无法使用技能！`, 'system', 'warn');
+    addLog(`${player.value.name} 被束缚了，无法使用技能！剩余 ${playerBoundTurns.value} 回合`, 'system', 'warn');
     return;
   }
 
@@ -1837,9 +1844,21 @@ async function handlePlayerItem(item: Item) {
 function handleEnemyTurn() {
   turnState.phase = 'enemyAction';
 
+  // 敌人行动开始时，递减敌人施加的束缚效果
+  if (playerBoundTurns.value > 0 && playerBindSource.value === 'enemy') {
+    playerBoundTurns.value--;
+    if (playerBoundTurns.value === 0) {
+      addLog(`${player.value.name} 的束缚效果消失了`, 'system', 'info');
+      playerBindSource.value = null;
+    } else {
+      addLog(`${player.value.name} 的束缚剩余 ${playerBoundTurns.value} 回合`, 'system', 'info');
+    }
+  }
+
   // 检查是否被束缚
   if (enemyBoundTurns.value > 0) {
-    addLog(`${enemy.value.name} 被束缚了，无法行动！`, 'system', 'warn');
+    addLog(`${enemy.value.name} 被束缚了，无法行动！剩余 ${enemyBoundTurns.value} 回合`, 'system', 'warn');
+    endTurn();
     setTimeout(startNewTurn, 1000);
     return;
   }
@@ -1875,6 +1894,7 @@ function handleEnemyTurn() {
 
     if (!skill) {
       addLog(`${nextEnemy.name} 没有可用技能`, 'system', 'info');
+      endTurn();
       setTimeout(startNewTurn, 1000);
       return;
     }
@@ -1883,6 +1903,7 @@ function handleEnemyTurn() {
     const skillCost = skill.data?.staminaCost || skill.cost || 0;
     if (nextEnemy.stats.currentEndurance < skillCost) {
       addLog(`${nextEnemy.name} 体力不足，无法使用 ${skill.name}！`, 'system', 'warn');
+      endTurn();
       setTimeout(startNewTurn, 1000);
       return;
     }
@@ -1979,6 +2000,7 @@ function handleEnemyTurn() {
         // 检查技能数据是否存在
         if (!skill.data) {
           addLog(`技能 ${skill.name} 的数据不存在，无法使用`, 'system', 'error');
+          endTurn();
           setTimeout(startNewTurn, 1000);
           return;
         }
@@ -2049,12 +2071,14 @@ function handleEnemyTurn() {
           // 没有高潮时，才重新读取状态加成
           await reloadStatusFromMvu();
           
-          // 对方执行完技能后，回合+1，进入下一回合
+          // 对方执行完技能后，处理回合结束事务，然后进入下一回合
+          endTurn();
           setTimeout(startNewTurn, 1000);
         }
       } catch (e) {
         console.error('[战斗界面] 敌人使用技能时出错', e);
         addLog('敌人使用技能时出错', 'system', 'error');
+        endTurn();
         setTimeout(startNewTurn, 1000);
       }
     });
@@ -2075,11 +2099,12 @@ function startNewTurn() {
     addLog(`预告：${enemy.value.name} 准备使用 ${turnState.enemyIntention.name}`, 'system', 'info');
   }
 
-  // 回合开始回复（双方各回复10点体力）
+  // 回合开始回复（双方各回复 3+最大耐力*0.03 点体力，向上取整）
+  const playerRecovery = Math.ceil(3 + player.value.stats.maxEndurance * 0.03);
   const oldPlayerEndurance = player.value.stats.currentEndurance;
   player.value.stats.currentEndurance = Math.min(
     player.value.stats.maxEndurance,
-    player.value.stats.currentEndurance + 10,
+    player.value.stats.currentEndurance + playerRecovery,
   );
   if (player.value.stats.currentEndurance > oldPlayerEndurance) {
     addLog(
@@ -2089,10 +2114,11 @@ function startNewTurn() {
     );
   }
 
+  const enemyRecovery = Math.ceil(3 + enemy.value.stats.maxEndurance * 0.03);
   const oldEnemyEndurance = enemy.value.stats.currentEndurance;
   enemy.value.stats.currentEndurance = Math.min(
     enemy.value.stats.maxEndurance,
-    enemy.value.stats.currentEndurance + 10,
+    enemy.value.stats.currentEndurance + enemyRecovery,
   );
   if (enemy.value.stats.currentEndurance > oldEnemyEndurance) {
     addLog(
@@ -2124,8 +2150,15 @@ function startNewTurn() {
     await reloadStatusFromMvu();
   });
 
+  // 束缚回合数现在在专门的endTurn函数中处理
+
   addLog(`--- ${player.value.name} 的回合 ---`, 'system', 'info');
   saveToMvu();
+}
+
+// 处理回合结束时的事务
+function endTurn() {
+  // 束缚回合数在尝试行动时递减，不在这里处理
 }
 
 // 收集战斗日志文本（过滤掉冗余信息）
@@ -2334,6 +2367,7 @@ async function processClimaxAfterLLM(targetIsEnemy: boolean) {
   addLog(`高潮结束，战斗继续...`, 'system', 'info');
   setTimeout(() => {
     turnState.climaxTarget = null;
+    endTurn();
     startNewTurn();
   }, 1500);
 }
