@@ -110,11 +110,11 @@
 import { onMounted, onUnmounted, ref } from 'vue';
 import DashboardPage from './pages/DashboardPage.vue';
 import InventoryPage from './pages/InventoryPage.vue';
+import MapPage from './pages/MapPage.vue';
 import ProfilePage from './pages/ProfilePage.vue';
 import QuestPage from './pages/QuestPage.vue';
 import RelationshipPage from './pages/RelationshipPage.vue';
 import SkillPage from './pages/SkillPage.vue';
-import MapPage from './pages/MapPage.vue';
 
 const props = defineProps<{
   isVisible: boolean;

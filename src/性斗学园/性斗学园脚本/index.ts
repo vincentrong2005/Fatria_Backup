@@ -10,17 +10,12 @@
  * 计算顺序：先计算意志力等基础属性 → 再计算性斗力和忍耐力
  */
 
-import { 
-  calculateSexualCombatPower, 
-  calculateEndurance,
-  extractCombatData,
-  shouldTriggerOrgasm,
-  handleOrgasm,
+import { createScriptIdDiv, destroyScriptIdDiv, deteleportStyle, teleportStyle } from '@/util/script';
+import {
   canLevelUp,
-  handleLevelUp,
-  EXP_PER_LEVEL
+  EXP_PER_LEVEL,
+  shouldTriggerOrgasm
 } from '../开局/utils/combat-calculator';
-import { createScriptIdDiv, destroyScriptIdDiv, teleportStyle, deteleportStyle } from '@/util/script';
 import StatusBarWrapper from './components/StatusBarWrapper.vue';
 
 // 等待 MVU 初始化
@@ -301,12 +296,19 @@ async function updateDependentVariables() {
       const newLevel = currentLevel + 1;
       const expNeeded = currentLevel * EXP_PER_LEVEL;
       
+      // 计算升级奖励：根据潜力计算，每级获得 floor(潜力/2) 点（属性点和技能点相同）
+      const pointsPerLevel = Math.floor(potential / 2);
+      const currentAttributePoints = getValue(mvuData, '核心状态.$属性点', 0);
+      const currentSkillPoints = getValue(mvuData, '核心状态.$技能点', 0);
+      
       updates['角色基础._等级'] = newLevel;
       updates['角色基础.经验值'] = currentExp - expNeeded;
+      updates['核心状态.$属性点'] = currentAttributePoints + pointsPerLevel;
+      updates['核心状态.$技能点'] = currentSkillPoints + pointsPerLevel;
       hasUpdates = true;
       
       finalLevel = newLevel; // 更新最终等级
-      console.info(`[性斗学园脚本] 升级！${currentLevel} → ${newLevel}`);
+      console.info(`[性斗学园脚本] 升级！${currentLevel} → ${newLevel}，获得 ${pointsPerLevel} 属性点和 ${pointsPerLevel} 技能点`);
     }
 
     // ==================== 步骤6.5: 根据等级自动更新段位 ====================
