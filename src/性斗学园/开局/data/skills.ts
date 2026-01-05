@@ -4,13 +4,13 @@
  */
 
 import {
-  BuffType,
-  DamageSource,
-  SkillData,
-  SkillRarity,
-  SkillTarget,
-  SkillType,
-  UnlockConditionType,
+    BuffType,
+    DamageSource,
+    SkillData,
+    SkillRarity,
+    SkillTarget,
+    SkillType,
+    UnlockConditionType,
 } from './skill-types';
 
 // 重新导出类型和枚举供其他组件使用
@@ -699,7 +699,7 @@ export const STARTER_SKILLS: SkillData[] = [
     id: 's_lucky_strike',
     name: '幸运一击',
     description: '【攻击】依靠运气发动的强力攻击',
-    effectDescription: '造成30%性斗力+20%幸运伤害',
+    effectDescription: '造成400%幸运伤害',
     icon: 'Clover',
     type: SkillType.PHYSICAL,
     rarity: SkillRarity.RARE,
@@ -707,8 +707,7 @@ export const STARTER_SKILLS: SkillData[] = [
     cooldown: 5,
     castTime: 0,
     damageFormula: [
-      { source: DamageSource.SEX_POWER, coefficient: 0.3 },
-      { source: DamageSource.LUCK, coefficient: 0.2 },
+      { source: DamageSource.LUCK, coefficient: 4.0 },
     ],
     target: SkillTarget.SINGLE_ENEMY,
     accuracy: 75,

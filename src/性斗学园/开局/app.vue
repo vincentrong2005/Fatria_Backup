@@ -1510,12 +1510,16 @@ const handleStartGame = async () => {
     // 发送角色基础数据到酒馆
     sendCharacterDataToTavern();
 
-    // 处理"抖M"特性的世界书条目
+    // 处理世界书条目
+    // 1. 无论难度如何都写入反同性规则
+    await writeNoGayRuleToWorldbook();
+    
+    // 2. 根据"抖M"难度决定是否写入抖M特性
     if (characterData.value.difficulty === Difficulty.MASOCHIST) {
       // 如果难度为"抖M"，写入特性到世界书
       await writeMasochistTraitToWorldbook();
     } else {
-      // 如果没有选择"抖M"难度，清空世界书 uid=2 的条目
+      // 如果没有选择"抖M"难度，只保留反同性规则，移除抖M特性
       await clearMasochistTraitFromWorldbook();
     }
 
@@ -1782,7 +1786,7 @@ const closeModal = () => {
   showModal.value = false;
 };
 
-// 清空"抖M"特性世界书条目
+// 清空"抖M"特性世界书条目（保留反同性规则）
 const clearMasochistTraitFromWorldbook = async () => {
   try {
     let worldbookUpdated = false;
@@ -1795,13 +1799,21 @@ const clearMasochistTraitFromWorldbook = async () => {
         const worldbook = await getWorldbook('性斗学园');
         const entry = worldbook.find((e: any) => e.uid === '1' || e.uid === 1);
         if (entry) {
-          entry.content = '';
+          // 只移除抖M特性，保留反同性规则
+          if (entry.content && entry.content.includes('<trait_败北宿命>')) {
+            // 提取反同性规则部分
+            const noGayRuleMatch = entry.content.match(/<rule_no_gay>[\s\S]*?<\/rule_no_gay>/);
+            const noGayRule = noGayRuleMatch ? noGayRuleMatch[0] : '';
+            
+            // 如果存在反同性规则，只保留它；否则清空
+            entry.content = noGayRule || '';
+          }
           // @ts-ignore - replaceWorldbook 为全局注入
           if (typeof replaceWorldbook === 'function') {
             // @ts-ignore
             await replaceWorldbook('性斗学园', worldbook);
             worldbookUpdated = true;
-            console.info('[开局] 抖M特性已从世界书清空');
+            console.info('[开局] 抖M特性已从世界书清空（保留反同性规则）');
           }
         }
       }
@@ -1811,7 +1823,30 @@ const clearMasochistTraitFromWorldbook = async () => {
 
     // 方法2: 如果无法直接访问，尝试通过slash命令执行器
     if (!worldbookUpdated) {
-      const command = `/setentryfield file=性斗学园 uid=1 field=content `;
+      // 先获取现有内容
+      let existingContent = '';
+      try {
+        // @ts-ignore - getWorldbook 为全局注入
+        if (typeof getWorldbook === 'function') {
+          // @ts-ignore
+          const worldbook = await getWorldbook('性斗学园');
+          const entry = worldbook.find((e: any) => e.uid === '1' || e.uid === 1);
+          if (entry && entry.content) {
+            existingContent = entry.content;
+          }
+        }
+      } catch (e) {
+        // 忽略获取现有内容的错误
+      }
+
+      // 只保留反同性规则
+      let finalContent = '';
+      if (existingContent.includes('<rule_no_gay>')) {
+        const noGayRuleMatch = existingContent.match(/<rule_no_gay>[\s\S]*?<\/rule_no_gay>/);
+        finalContent = noGayRuleMatch ? noGayRuleMatch[0] : '';
+      }
+
+      const command = `/setentryfield file=性斗学园 uid=1 field=content ${finalContent}`;
 
       // 尝试通过triggerSlash执行命令（如果可用）
       try {
@@ -1820,7 +1855,7 @@ const clearMasochistTraitFromWorldbook = async () => {
           // @ts-ignore
           await triggerSlash(command);
           worldbookUpdated = true;
-          console.info('[开局] 已通过triggerSlash清空抖M特性');
+          console.info('[开局] 已通过triggerSlash清空抖M特性（保留反同性规则）');
         }
       } catch (e) {
         console.warn('[开局] triggerSlash执行失败:', e);
@@ -1858,7 +1893,7 @@ const clearMasochistTraitFromWorldbook = async () => {
             const result = await executor();
             if (result !== undefined && result !== false) {
               worldbookUpdated = true;
-              console.info('[开局] 已通过slash命令执行器清空抖M特性');
+              console.info('[开局] 已通过slash命令执行器清空抖M特性（保留反同性规则）');
               break;
             }
           } catch (e) {
@@ -1874,6 +1909,127 @@ const clearMasochistTraitFromWorldbook = async () => {
     }
   } catch (error) {
     console.warn('[开局] 清空抖M特性失败:', error);
+  }
+};
+
+// 写入反同性规则到世界书（无论难度如何都会写入）
+const writeNoGayRuleToWorldbook = async () => {
+  const ruleContent = `<rule_no_gay>
+核心规则: 当玩家性别为"男"（男娘、伪娘等特殊身份除外）时，所有男性NPC均不会对其主动发起任何情爱或性斗互动。
+</rule_no_gay>`;
+
+  try {
+    let worldbookUpdated = false;
+
+    // 方法1: 尝试直接访问世界书数据
+    try {
+      // @ts-ignore - getWorldbook 为全局注入
+      if (typeof getWorldbook === 'function') {
+        // @ts-ignore
+        const worldbook = await getWorldbook('性斗学园');
+        const entry = worldbook.find((e: any) => e.uid === '1' || e.uid === 1);
+        if (entry) {
+          // 如果条目已存在内容，在开头添加反同性规则
+          if (entry.content && !entry.content.includes('<rule_no_gay>')) {
+            entry.content = ruleContent + '\n\n' + entry.content;
+          } else if (!entry.content.includes('<rule_no_gay>')) {
+            entry.content = ruleContent;
+          }
+          // @ts-ignore - replaceWorldbook 为全局注入
+          if (typeof replaceWorldbook === 'function') {
+            // @ts-ignore
+            await replaceWorldbook('性斗学园', worldbook);
+            worldbookUpdated = true;
+            console.info('[开局] 反同性规则已直接写入世界书');
+          }
+        }
+      }
+    } catch (e) {
+      console.warn('[开局] 直接访问世界书失败:', e);
+    }
+
+    // 方法2: 如果无法直接访问，尝试通过slash命令执行器
+    if (!worldbookUpdated) {
+      // 先获取现有内容
+      let existingContent = '';
+      try {
+        // @ts-ignore - getWorldbook 为全局注入
+        if (typeof getWorldbook === 'function') {
+          // @ts-ignore
+          const worldbook = await getWorldbook('性斗学园');
+          const entry = worldbook.find((e: any) => e.uid === '1' || e.uid === 1);
+          if (entry && entry.content && !entry.content.includes('<rule_no_gay>')) {
+            existingContent = entry.content;
+          }
+        }
+      } catch (e) {
+        // 忽略获取现有内容的错误
+      }
+
+      const finalContent = existingContent ? ruleContent + '\n\n' + existingContent : ruleContent;
+      const command = `/setentryfield file=性斗学园 uid=1 field=content ${finalContent}`;
+
+      // 尝试通过triggerSlash执行命令（如果可用）
+      try {
+        // @ts-ignore - triggerSlash 为全局注入
+        if (typeof triggerSlash === 'function') {
+          // @ts-ignore
+          await triggerSlash(command);
+          worldbookUpdated = true;
+          console.info('[开局] 已通过triggerSlash写入反同性规则');
+        }
+      } catch (e) {
+        console.warn('[开局] triggerSlash执行失败:', e);
+      }
+
+      // 如果triggerSlash不可用，尝试其他执行方式
+      if (!worldbookUpdated) {
+        const globalAny = window as any;
+        const executors = [
+          () => globalAny.SillyTavern?.executeSlashCommand?.(command),
+          () => globalAny.executeSlashCommand?.(command),
+          () => globalAny.SillyTavern?.processSlashCommand?.(command),
+          () => globalAny.parent?.SillyTavern?.executeSlashCommand?.(command),
+          () => globalAny.parent?.executeSlashCommand?.(command),
+          // 尝试通过消息输入框模拟输入
+          () => {
+            const inputElement = document.querySelector(
+              '#send_textarea, textarea[placeholder*="Message"], .chat-input textarea',
+            ) as HTMLTextAreaElement;
+            if (inputElement) {
+              inputElement.value = command;
+              inputElement.dispatchEvent(new Event('input', { bubbles: true }));
+              const form = inputElement.closest('form');
+              if (form) {
+                form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+              }
+              return true;
+            }
+            return false;
+          },
+        ];
+
+        for (const executor of executors) {
+          try {
+            const result = await executor();
+            if (result !== undefined && result !== false) {
+              worldbookUpdated = true;
+              console.info('[开局] 已通过slash命令执行器写入反同性规则');
+              break;
+            }
+          } catch (e) {
+            continue;
+          }
+        }
+      }
+    }
+
+    if (!worldbookUpdated) {
+      console.warn('[开局] 无法自动写入反同性规则到世界书，请手动执行以下命令:');
+      console.warn(`/setentryfield file=性斗学园 uid=1 field=content ${ruleContent}`);
+    }
+  } catch (error) {
+    console.warn('[开局] 写入反同性规则失败:', error);
   }
 };
 
@@ -1923,7 +2079,16 @@ const writeMasochistTraitToWorldbook = async () => {
         const worldbook = await getWorldbook('性斗学园');
         const entry = worldbook.find((e: any) => e.uid === '1' || e.uid === 1);
         if (entry) {
-          entry.content = traitContent;
+          // 确保反同性规则存在，然后添加抖M特性
+          if (!entry.content.includes('<rule_no_gay>')) {
+            entry.content = `<rule_no_gay>
+核心规则: 当玩家性别为"男"（男娘、伪娘等特殊身份除外）时，所有男性NPC均不会对其主动发起任何情爱或性斗互动。
+</rule_no_gay>
+
+` + traitContent;
+          } else if (!entry.content.includes('<trait_败北宿命>')) {
+            entry.content = entry.content + '\n\n' + traitContent;
+          }
           // @ts-ignore - replaceWorldbook 为全局注入
           if (typeof replaceWorldbook === 'function') {
             // @ts-ignore
@@ -1939,7 +2104,36 @@ const writeMasochistTraitToWorldbook = async () => {
 
     // 方法2: 如果无法直接访问，尝试通过slash命令执行器
     if (!worldbookUpdated) {
-      const command = `/setentryfield file=性斗学园 uid=1 field=content ${traitContent}`;
+      // 先获取现有内容
+      let existingContent = '';
+      try {
+        // @ts-ignore - getWorldbook 为全局注入
+        if (typeof getWorldbook === 'function') {
+          // @ts-ignore
+          const worldbook = await getWorldbook('性斗学园');
+          const entry = worldbook.find((e: any) => e.uid === '1' || e.uid === 1);
+          if (entry && entry.content) {
+            existingContent = entry.content;
+          }
+        }
+      } catch (e) {
+        // 忽略获取现有内容的错误
+      }
+
+      // 确保反同性规则存在
+      let finalContent = existingContent;
+      if (!existingContent.includes('<rule_no_gay>')) {
+        const ruleContent = `<rule_no_gay>
+核心规则: 当玩家性别为"男"（男娘、伪娘等特殊身份除外）时，所有男性NPC均不会对其主动发起任何情爱或性斗互动。
+</rule_no_gay>
+
+`;
+        finalContent = ruleContent + (existingContent.includes('<trait_败北宿命>') ? existingContent : existingContent + '\n\n' + traitContent);
+      } else if (!existingContent.includes('<trait_败北宿命>')) {
+        finalContent = existingContent + '\n\n' + traitContent;
+      }
+
+      const command = `/setentryfield file=性斗学园 uid=1 field=content ${finalContent}`;
 
       // 尝试通过triggerSlash执行命令（如果可用）
       try {

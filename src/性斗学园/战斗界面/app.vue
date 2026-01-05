@@ -1442,6 +1442,15 @@ async function reloadStatusFromMvu() {
     enemy.value.stats.luck = _.get(data, '性斗系统.对手幸运', 0);
     enemy.value.stats.evasion = _.get(data, '性斗系统.对手闪避率', 0);
     enemy.value.stats.crit = Math.min(100, Math.max(0, _.get(data, '性斗系统.对手暴击率', 0)));
+
+    // 重要：同时更新快感和高潮次数（从MVU读取最新值）
+    player.value.stats.currentPleasure = _.get(data, '核心状态.$快感', 0);
+    player.value.stats.maxPleasure = _.get(data, '核心状态.$最大快感', 100);
+    player.value.stats.climaxCount = _.get(data, '性斗系统.高潮次数', 0);
+    
+    enemy.value.stats.currentPleasure = _.get(data, '性斗系统.对手快感', 0);
+    enemy.value.stats.maxPleasure = _.get(data, '性斗系统.对手最大快感', 100);
+    enemy.value.stats.climaxCount = _.get(data, '性斗系统.对手高潮次数', 0);
   } catch (e) {
     console.error('[战斗界面] 重新读取状态失败', e);
   }
@@ -1738,13 +1747,10 @@ function handlePlayerSkill(skill: Skill) {
       player.value = nextPlayer;
       enemy.value = nextEnemy;
 
-      // 重新读取MVU中的临时状态加成，更新UI显示
-      await reloadStatusFromMvu();
-
-      // 保存状态
+      // 保存状态（先保存，确保高潮状态写入MVU）
       saveToMvu();
 
-      // 检查是否高潮
+      // 检查是否高潮（在reloadStatusFromMvu之前检查，避免覆盖）
       if (nextEnemy.stats.currentPleasure >= nextEnemy.stats.maxPleasure && turnState.climaxTarget === null) {
         addLog(`${nextEnemy.name} 达到了快感上限！`, 'system', 'critical');
         // 自动继续，不显示按钮
@@ -1752,6 +1758,9 @@ function handlePlayerSkill(skill: Skill) {
         triggerEffect('climax');
         await processClimaxAfterLLM(true);
       } else {
+        // 没有高潮时，才重新读取状态加成
+        await reloadStatusFromMvu();
+        
         // 使用技能后，轮到对方结算快感
         addLog(`--- 轮到 ${nextEnemy.name} 行动 ---`, 'system', 'info');
         setTimeout(handleEnemyTurn, 1000);
@@ -2026,13 +2035,10 @@ function handleEnemyTurn() {
         player.value = nextPlayer;
         enemy.value = nextEnemy;
 
-        // 重新读取MVU中的临时状态加成，更新UI显示
-        await reloadStatusFromMvu();
-
-        // 保存状态
+        // 保存状态（先保存，确保高潮状态写入MVU）
         saveToMvu();
 
-        // 检查是否高潮
+        // 检查是否高潮（在reloadStatusFromMvu之前检查，避免覆盖）
         if (nextPlayer.stats.currentPleasure >= nextPlayer.stats.maxPleasure && turnState.climaxTarget === null) {
           addLog(`${nextPlayer.name} 达到了快感上限！`, 'system', 'critical');
           // 自动继续，不显示按钮
@@ -2040,6 +2046,9 @@ function handleEnemyTurn() {
           triggerEffect('climax');
           await processClimaxAfterLLM(false);
         } else {
+          // 没有高潮时，才重新读取状态加成
+          await reloadStatusFromMvu();
+          
           // 对方执行完技能后，回合+1，进入下一回合
           setTimeout(startNewTurn, 1000);
         }
@@ -2056,6 +2065,8 @@ function startNewTurn() {
   turnState.currentTurn++;
   addLog(`--- 第 ${turnState.currentTurn} 回合开始 ---`, 'system', 'info');
 
+  // 重置高潮目标标记
+  turnState.climaxTarget = null;
   turnState.phase = 'playerInput';
 
   // 随机选择对方技能，进行预告
@@ -2284,16 +2295,47 @@ async function processClimaxAfterLLM(targetIsEnemy: boolean) {
   // 立即设置climaxTarget，防止重复调用
   turnState.climaxTarget = targetIsEnemy ? 'enemy' : 'player';
 
-  const newChar = cloneCharacter(char);
-  newChar.stats.currentPleasure = 0;
-  newChar.stats.climaxCount += 1;
-
+  // 直接修改stats对象，不使用cloneCharacter（确保Vue响应式更新）
   if (targetIsEnemy) {
-    enemy.value = newChar;
+    enemy.value.stats.currentPleasure = 0;
+    enemy.value.stats.climaxCount += 1;
+    addLog(`${enemy.value.name} 的高潮次数：${enemy.value.stats.climaxCount}/${enemy.value.stats.maxClimaxCount}`, 'system', 'info');
   } else {
-    player.value = newChar;
+    player.value.stats.currentPleasure = 0;
+    player.value.stats.climaxCount += 1;
+    addLog(`${player.value.name} 的高潮次数：${player.value.stats.climaxCount}/${player.value.stats.maxClimaxCount}`, 'system', 'info');
   }
 
+  // 保存状态到MVU
+  saveToMvu();
+
+  // 检查是否达到最大高潮次数（胜负判定）
+  if (targetIsEnemy && enemy.value.stats.climaxCount >= enemy.value.stats.maxClimaxCount) {
+    turnState.phase = 'victory';
+    addLog(`${enemy.value.name} 达到了最大高潮次数！战斗胜利！共${turnState.currentTurn}回合。`, 'system', 'critical');
+    triggerEffect('victory');
+    await clearTemporaryStatus();
+    await initializeCombatSystem();
+    saveToMvu();
+    return;
+  }
+  
+  if (!targetIsEnemy && player.value.stats.climaxCount >= player.value.stats.maxClimaxCount) {
+    turnState.phase = 'defeat';
+    addLog(`${player.value.name} 达到了最大高潮次数... 败北，共${turnState.currentTurn}回合。`, 'system', 'damage');
+    triggerEffect('defeat');
+    await clearTemporaryStatus();
+    await initializeCombatSystem();
+    saveToMvu();
+    return;
+  }
+
+  // 高潮后继续战斗，进入下一回合
+  addLog(`高潮结束，战斗继续...`, 'system', 'info');
+  setTimeout(() => {
+    turnState.climaxTarget = null;
+    startNewTurn();
+  }, 1500);
 }
 
 function handleSkipTurn() {
@@ -2301,13 +2343,12 @@ function handleSkipTurn() {
     return;
   }
 
-  // 检查是否被束缚
+  // 被束缚时也可以跳过回合
   if (playerBoundTurns.value > 0) {
-    addLog(`${player.value.name} 被束缚了，无法跳过回合！`, 'system', 'warn');
-    return;
+    addLog(`${player.value.name} 被束缚了，跳过回合`, 'system', 'warn');
+  } else {
+    addLog(`${player.value.name} 选择了跳过回合`, 'system', 'info');
   }
-
-  addLog(`${player.value.name} 选择了跳过回合`, 'system', 'info');
 
   // 跳过回合，直接轮到对方行动
   turnState.phase = 'processing';
