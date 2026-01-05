@@ -1,5 +1,10 @@
 <template>
   <div class="profile-page">
+    <!-- 问号按钮 -->
+    <div class="help-button" @click="showFormulaModal = true">
+      <i class="fas fa-question"></i>
+    </div>
+
     <!-- 角色头像 -->
     <div class="profile-header">
       <div class="profile-avatar" @click="handleAvatarClick">
@@ -252,11 +257,180 @@
         </div>
       </div>
     </div>
+
+    <!-- 公式弹窗 -->
+    <div v-if="showFormulaModal" class="formula-modal" @click.self="showFormulaModal = false">
+      <div class="formula-content">
+        <div class="formula-header">
+          <h3><i class="fas fa-calculator"></i> 伤害计算公式</h3>
+          <button class="close-btn" @click="showFormulaModal = false">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        
+        <div class="formula-body">
+          <div class="formula-section">
+            <h4><i class="fas fa-level-up-alt"></i> 升级与点数获取</h4>
+            <div class="formula-item">
+              <div class="formula-title">升级所需经验</div>
+              <div class="formula-text">
+                所需经验 = 当前等级 × 100<br>
+                例如: 5级升6级需要 5 × 100 = 500 经验
+              </div>
+            </div>
+            <div class="formula-item">
+              <div class="formula-title">升级点数获取</div>
+              <div class="formula-text">
+                每级获得点数 = floor(潜力 ÷ 2)<br>
+                属性点 = 每级获得点数<br>
+                技能点 = 每级获得点数<br><br>
+                示例:<br>
+                • 潜力6.0: 每级获得3点属性点和3点技能点<br>
+                • 潜力7.5: 每级获得3点属性点和3点技能点<br>
+                • 潜力10.0: 每级获得5点属性点和5点技能点
+              </div>
+            </div>
+          </div>
+
+          <div class="formula-section">
+            <h4><i class="fas fa-calculator"></i> 核心属性计算</h4>
+            <div class="formula-item">
+              <div class="formula-title">性斗力计算</div>
+              <div class="formula-text">
+                基础性斗力 = 等级 × 潜力<br>
+                最终性斗力 = (基础性斗力 + 所有加成) × (1 + 总成算 ÷ 100)<br><br>
+                加成来源:<br>
+                • 永久状态加成<br>
+                • 装备加成<br>
+                • 临时状态加成<br><br>
+                特殊状态:<br>
+                • 贤者时间: 性斗力 × 0.8 (减少20%)
+              </div>
+            </div>
+            <div class="formula-item">
+              <div class="formula-title">忍耐力计算</div>
+              <div class="formula-text">
+                基础忍耐力 = 等级 × (最终意志力 ÷ 10)<br>
+                最终忍耐力 = (基础忍耐力 + 所有加成) × (1 + 总成算 ÷ 100)<br><br>
+                特殊状态:<br>
+                • 贤者时间: 忍耐力 × 1.1 (增加10%)<br>
+                • 虚脱状态: 忍耐力 × 0.7 (减少30%)
+              </div>
+            </div>
+            <div class="formula-item">
+              <div class="formula-title">最终属性计算</div>
+              <div class="formula-text">
+                最终值 = 基础值 + 永久状态加成 + 装备加成 + 临时状态加成<br><br>
+                适用于:<br>
+                • 魅力 = 基础魅力 + 所有魅力加成<br>
+                • 幸运 = 基础幸运 + 所有幸运加成<br>
+                • 闪避率 = 基础闪避率 + 所有闪避加成 (上限60%)<br>
+                • 暴击率 = 基础暴击率 + 所有暴击加成 (上限100%)<br>
+                • 意志力 = 基础意志力 + 所有意志加成 (上限100%)
+              </div>
+            </div>
+          </div>
+
+          <div class="formula-section">
+            <h4><i class="fas fa-sword"></i> 伤害计算流程</h4>
+            <div class="formula-item">
+              <div class="formula-title">步骤1: 基础伤害</div>
+              <div class="formula-text">
+                组件伤害 = 来源值 × 系数 + 基础值<br>
+                总基础伤害 = Σ(所有组件伤害)<br><br>
+                伤害来源映射:<br>
+                • 性斗力 → attacker.stats.sexPower<br>
+                • 魅力 → attacker.stats.charm<br>
+                • 幸运 → attacker.stats.luck<br>
+                • 意志力 → attacker.stats.willpower
+              </div>
+            </div>
+            <div class="formula-item">
+              <div class="formula-title">步骤2: 命中与暴击判定</div>
+              <div class="formula-text">
+                闪避判定:<br>
+                最终命中率 = 技能命中率 - 闪避率 + (幸运 ÷ 10)<br>
+                命中率限制 = clamp(10%, 95%)<br>
+                闪避成功 = 随机数(0-100) ≥ 命中率<br><br>
+                暴击判定:<br>
+                最终暴击率 = 暴击率 + (幸运 ÷ 10) + 技能修正<br>
+                暴击伤害 = 基础伤害 × 1.5
+              </div>
+            </div>
+            <div class="formula-item">
+              <div class="formula-title">步骤3: 防御减伤</div>
+              <div class="formula-text">
+                非线性减伤公式:<br>
+                最终伤害 = 基础伤害 × 40 ÷ (忍耐力 + 100)<br><br>
+                减伤效果示例:<br>
+                • 忍耐力0: 减伤60% (伤害×0.4)<br>
+                • 忍耐力50: 减伤73% (伤害×0.267)<br>
+                • 忍耐力100: 减伤80% (伤害×0.2)<br>
+                • 忍耐力200: 减伤87% (伤害×0.133)<br>
+                • 忍耐力越高，减伤越多，但永远不会为0
+              </div>
+            </div>
+            <div class="formula-item">
+              <div class="formula-title">步骤4: Buff修正</div>
+              <div class="formula-text">
+                伤害修正 = 1.0<br><br>
+                攻击方Buff:<br>
+                • 攻击提升: 修正 += buff值 ÷ 100<br>
+                • 攻击下降: 修正 -= buff值 ÷ 100<br><br>
+                防御方Buff:<br>
+                • 防御提升: 修正 -= buff值 ÷ 100<br>
+                • 防御下降: 修正 += buff值 ÷ 100<br>
+                • 敏感: 修正 += buff值 ÷ 100<br><br>
+                最终伤害 = max(1, floor(伤害 × 修正))
+              </div>
+            </div>
+          </div>
+
+          <div class="formula-section">
+            <h4><i class="fas fa-star"></i> 属性作用总览</h4>
+            <div class="attribute-summary">
+              <div class="attr-item">
+                <span class="attr-name">性斗力</span>
+                <span class="attr-desc">主要伤害来源</span>
+              </div>
+              <div class="attr-item">
+                <span class="attr-name">忍耐力</span>
+                <span class="attr-desc">防御减伤核心</span>
+              </div>
+              <div class="attr-item">
+                <span class="attr-name">魅力</span>
+                <span class="attr-desc">某些技能伤害来源</span>
+              </div>
+              <div class="attr-item">
+                <span class="attr-name">幸运</span>
+                <span class="attr-desc">命中+暴击 (÷10)</span>
+              </div>
+              <div class="attr-item">
+                <span class="attr-name">闪避率</span>
+                <span class="attr-desc">减少被命中率</span>
+              </div>
+              <div class="attr-item">
+                <span class="attr-name">暴击率</span>
+                <span class="attr-desc">增加暴击概率</span>
+              </div>
+              <div class="attr-item">
+                <span class="attr-name">意志力</span>
+                <span class="attr-desc">影响忍耐力计算</span>
+              </div>
+              <div class="attr-item">
+                <span class="attr-name">潜力</span>
+                <span class="attr-desc">影响升级点数获取</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 
 const props = defineProps<{
   characterData: any;
@@ -265,6 +439,7 @@ const props = defineProps<{
 
 const fileInputRef = ref<HTMLInputElement | null>(null);
 const avatarUrl = ref<string>('');
+const showFormulaModal = ref<boolean>(false);
 
 // 可用属性点
 const availablePoints = computed(() => {
@@ -448,7 +623,8 @@ function handleImageError() {
 }
 
 // 格式化加成标签
-function formatBonusLabel(key: string): string {
+function formatBonusLabel(key: string | number): string {
+  const keyStr = String(key);
   const labelMap: Record<string, string> = {
     '魅力加成': '魅力',
     '幸运加成': '幸运',
@@ -460,7 +636,7 @@ function formatBonusLabel(key: string): string {
     '暴击率加成': '暴击率',
     '意志力加成': '意志力',
   };
-  return labelMap[key] || key;
+  return labelMap[keyStr] || keyStr;
 }
 
 // 格式化加成值
@@ -1026,6 +1202,261 @@ onMounted(() => {
   
   &.neutral {
     color: rgba(255, 255, 255, 0.4);
+  }
+}
+
+// 问号按钮样式
+.help-button {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.8), rgba(118, 75, 162, 0.8));
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  z-index: 10;
+  
+  &:hover {
+    transform: scale(1.1);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.9), rgba(118, 75, 162, 0.9));
+  }
+  
+  &:active {
+    transform: scale(0.95);
+  }
+  
+  i {
+    font-size: 16px;
+    color: white;
+    font-weight: 600;
+  }
+}
+
+// 公式弹窗样式
+.formula-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(5px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.formula-content {
+  background: linear-gradient(135deg, #1a1f35, #2d1b69);
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+  max-width: 400px;
+  width: 100%;
+  height: 70vh;
+  max-height: 70vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.formula-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  
+  h3 {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: white;
+    
+    i {
+      color: #667eea;
+    }
+  }
+  
+  .close-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    color: rgba(255, 255, 255, 0.6);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    
+    &:hover {
+      background: rgba(255, 255, 255, 0.2);
+      color: white;
+    }
+    
+    i {
+      font-size: 14px;
+    }
+  }
+}
+
+.formula-body {
+  padding: 20px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.formula-section {
+  margin-bottom: 24px;
+  
+  &:last-child {
+    margin-bottom: 0;
+  }
+  
+  h4 {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0 0 12px 0;
+    font-size: 14px;
+    font-weight: 600;
+    color: #667eea;
+    
+    i {
+      font-size: 12px;
+    }
+  }
+}
+
+.formula-item {
+  margin-bottom: 12px;
+  
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.formula-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.8);
+  margin-bottom: 8px;
+}
+
+.formula-text {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.7);
+  line-height: 1.6;
+  background: rgba(255, 255, 255, 0.03);
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  
+  br {
+    line-height: 1.6;
+  }
+}
+
+.attribute-summary {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+}
+
+.attr-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 10px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  font-size: 11px;
+}
+
+.attr-name {
+  font-weight: 600;
+  color: #667eea;
+}
+
+.attr-desc {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+// 移动端适配
+@media (max-width: 480px) {
+  .formula-modal {
+    padding: 0 20px; /* 左右各20px边距，总共40px */
+    align-items: center;
+  }
+  
+  .formula-content {
+    max-width: calc(100vw - 40px); /* 屏幕宽度减去左右边距 */
+    width: calc(100vw - 40px);
+    height: 75vh;
+    margin: 0;
+    border-radius: 16px;
+  }
+  
+  .formula-header {
+    padding: 16px;
+    
+    h3 {
+      font-size: 14px;
+    }
+  }
+  
+  .formula-body {
+    padding: 16px;
+  }
+  
+  .formula-section h4 {
+    font-size: 13px;
+  }
+  
+  .formula-title {
+    font-size: 13px;
+  }
+  
+  .formula-text {
+    font-size: 12px;
+    padding: 8px 10px;
+  }
+  
+  .attribute-summary {
+    grid-template-columns: 1fr;
+    gap: 6px;
+  }
+  
+  .attr-item {
+    padding: 6px 8px;
+    font-size: 10px;
+  }
+  
+  .help-button {
+    width: 32px;
+    height: 32px;
+    top: 12px;
+    right: 12px;
+    
+    i {
+      font-size: 14px;
+    }
   }
 }
 </style>
