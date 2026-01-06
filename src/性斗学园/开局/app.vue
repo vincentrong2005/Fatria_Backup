@@ -506,91 +506,173 @@ const applyCheatCode = async () => {
   isApplyingCheatCode.value = true;
 
   try {
-  let code = cheatCode.value.trim().toUpperCase();
+    let code = cheatCode.value.trim().toUpperCase();
 
-  // 处理 1011 的别名
-  if (code === 'LOLI' || code === 'LOLICON') {
-    code = '1011';
-  }
-
-  // 检查是否已激活
-  if (activatedCheatCodes.value.has(code)) {
-    openModal('警告', `作弊码 ${code} 已经激活过了，无法重复使用！`);
-    cheatCode.value = '';
-    return;
-  }
-
-  if (code === '0210') {
-    // 天赋作弊码
-    isCheatActive.value = true;
-    showCheatInput.value = false;
-    cheatCode.value = '';
-
-    // 设置难度为作弊者
-    updateCharacterData({ difficulty: Difficulty.CHEATER });
-
-    // 添加全属性+999的特殊装备到MVU背包
-    try {
-      const specialEquipment = {
-        类型: '装备',
-        等级: 'SS',
-        描述: '作弊模式专属装备，全属性大幅提升',
-        加成属性: {
-          魅力加成: 999,
-          幸运加成: 999,
-          基础性斗力加成: 999,
-          基础性斗力成算: 0,
-          基础忍耐力加成: 999,
-          基础忍耐力成算: 0,
-          闪避率加成: 999,
-          暴击率加成: 999,
-          意志力加成: 999,
-        },
-        部位: '特殊装备',
-        数量: 1,
-      };
-
-      await updateMvuVariables({
-        '物品系统.背包.作弊者之证': specialEquipment,
-      });
-      await recordActivatedCheatCode('0210');
-
-      console.info('[开局] 作弊装备已添加到背包');
-      openModal('CHEAT MODE ACTIVATE', '');
-    } catch (error) {
-      console.error('[开局] 添加作弊装备失败:', error);
-      openModal('CHEAT MODE ACTIVATE', '');
+    // 处理 1011 的别名
+    if (code === 'LOLI' || code === 'LOLICON') {
+      code = '1011';
     }
-  } else if (code === '1011') {
-    // 装备作弊码 - 自动装备草莓套装
-    showCheatInput.value = false;
-    cheatCode.value = '';
 
-    try {
-      // 定义装备数据
-      const equipmentSet = {
-        '物品系统._装备栏.主装备': {
-          名称: '草莓奶油洋伞',
-          等级: 'S',
-          描述: '蕾丝花边的遮阳伞，伞尖是草莓形状，伞骨轻盈',
+    // 检查是否已激活
+    if (activatedCheatCodes.value.has(code)) {
+      openModal('警告', `作弊码 ${code} 已经激活过了，无法重复使用！`);
+      cheatCode.value = '';
+      return;
+    }
+
+    if (code === '0210') {
+      // 天赋作弊码
+      isCheatActive.value = true;
+      showCheatInput.value = false;
+      cheatCode.value = '';
+
+      // 设置难度为作弊者
+      updateCharacterData({ difficulty: Difficulty.CHEATER });
+
+      // 添加全属性+999的特殊装备到MVU背包
+      try {
+        const specialEquipment = {
+          类型: '装备',
+          等级: 'SS',
+          描述: '作弊模式专属装备，全属性大幅提升',
           加成属性: {
-            魅力加成: 0,
-            幸运加成: 0,
-            基础性斗力加成: 0,
+            魅力加成: 999,
+            幸运加成: 999,
+            基础性斗力加成: 999,
             基础性斗力成算: 0,
-            基础忍耐力加成: 0,
+            基础忍耐力加成: 999,
             基础忍耐力成算: 0,
-            闪避率加成: 0,
-            暴击率加成: 10,
-            意志力加成: 0,
+            闪避率加成: 999,
+            暴击率加成: 999,
+            意志力加成: 999,
           },
-        },
-        '物品系统._装备栏.副装备': {
-          名称: '「草莓奶芙」层叠蕾丝蓬蓬裙',
-          等级: 'S',
-          描述: '采用大量轻盈的多层欧根纱和丝缎编织而成的裙子，裙摆像盛开的花朵一样蓬起。腰间系有一个巨大的蝴蝶结，背后有类似小翅膀的装饰',
+          部位: '特殊装备',
+          数量: 1,
+        };
+
+        await updateMvuVariables({
+          '物品系统.背包.作弊者之证': specialEquipment,
+        });
+        await recordActivatedCheatCode('0210');
+
+        console.info('[开局] 作弊装备已添加到背包');
+        openModal('CHEAT MODE ACTIVATE', '');
+      } catch (error) {
+        console.error('[开局] 添加作弊装备失败:', error);
+        openModal('CHEAT MODE ACTIVATE', '');
+      }
+    } else if (code === '1011') {
+      // 装备作弊码 - 自动装备草莓套装
+      showCheatInput.value = false;
+      cheatCode.value = '';
+
+      try {
+        // 定义装备数据
+        const equipmentSet = {
+          '物品系统._装备栏.主装备': {
+            名称: '草莓奶油洋伞',
+            等级: 'S',
+            描述: '蕾丝花边的遮阳伞，伞尖是草莓形状，伞骨轻盈',
+            加成属性: {
+              魅力加成: 0,
+              幸运加成: 0,
+              基础性斗力加成: 0,
+              基础性斗力成算: 0,
+              基础忍耐力加成: 0,
+              基础忍耐力成算: 0,
+              闪避率加成: 0,
+              暴击率加成: 10,
+              意志力加成: 0,
+            },
+          },
+          '物品系统._装备栏.副装备': {
+            名称: '「草莓奶芙」层叠蕾丝蓬蓬裙',
+            等级: 'S',
+            描述: '采用大量轻盈的多层欧根纱和丝缎编织而成的裙子，裙摆像盛开的花朵一样蓬起。腰间系有一个巨大的蝴蝶结，背后有类似小翅膀的装饰',
+            加成属性: {
+              魅力加成: 0,
+              幸运加成: 0,
+              基础性斗力加成: 0,
+              基础性斗力成算: 0,
+              基础忍耐力加成: 0,
+              基础忍耐力成算: 0,
+              闪避率加成: 10,
+              暴击率加成: 0,
+              意志力加成: 0,
+            },
+          },
+          '物品系统._装备栏.饰品1': {
+            名称: '摇晃的猫耳发箍',
+            等级: 'A',
+            描述: '发箍上的猫耳朵会随着角色移动而摆动，增加动态的萌点',
+            加成属性: {
+              魅力加成: 10,
+              幸运加成: 0,
+              基础性斗力加成: 0,
+              基础性斗力成算: 0,
+              基础忍耐力加成: 0,
+              基础忍耐力成算: 0,
+              闪避率加成: 0,
+              暴击率加成: 0,
+              意志力加成: 0,
+            },
+          },
+          '物品系统._装备栏.饰品2': {
+            名称: '铃铛丝绒项圈',
+            等级: 'A',
+            描述: '极细的丝绒带中心悬挂一颗镂空的银铃铛，走起路来有清脆的响声',
+            加成属性: {
+              魅力加成: 0,
+              幸运加成: 10,
+              基础性斗力加成: 0,
+              基础性斗力成算: 0,
+              基础忍耐力加成: 0,
+              基础忍耐力成算: 0,
+              闪避率加成: 0,
+              暴击率加成: 0,
+              意志力加成: 0,
+            },
+          },
+          '物品系统._装备栏.特殊装备': {
+            名称: '灵魂伴侣·懒洋洋猫',
+            等级: 'SS',
+            描述: '一只趴在角色肩膀上的肥猫公仔，软塌塌地垂着四肢',
+            加成属性: {
+              魅力加成: 0,
+              幸运加成: 0,
+              基础性斗力加成: 0,
+              基础性斗力成算: 0,
+              基础忍耐力加成: 0,
+              基础忍耐力成算: 0,
+              闪避率加成: 0,
+              暴击率加成: 0,
+              意志力加成: 0,
+              最大快感加成: 50,
+            },
+          },
+        };
+
+        await updateMvuVariables(equipmentSet);
+        await recordActivatedCheatCode('1011');
+
+        console.info('[开局] 草莓套装已自动装备');
+        openModal('草莓套装激活', '草莓套装已自动装备到身上！');
+      } catch (error) {
+        console.error('[开局] 装备失败:', error);
+        openModal('错误', '装备失败，请检查MVU变量');
+      }
+    } else if (code === 'SNOW') {
+      // SNOW：纯黑丝绒长围巾
+      showCheatInput.value = false;
+      cheatCode.value = '';
+
+      try {
+        const equipment = {
+          类型: '装备',
+          等级: 'A',
+          描述: '那种"可远观而不可亵玩"的气质。因为太高冷，敌人的攻击似乎都因为自惭形秽而无法命中，同时也散发着致命的成熟魅力',
           加成属性: {
-            魅力加成: 0,
+            魅力加成: 10,
             幸运加成: 0,
             基础性斗力加成: 0,
             基础性斗力成算: 0,
@@ -600,27 +682,31 @@ const applyCheatCode = async () => {
             暴击率加成: 0,
             意志力加成: 0,
           },
-        },
-        '物品系统._装备栏.饰品1': {
-          名称: '摇晃的猫耳发箍',
-          等级: 'A',
-          描述: '发箍上的猫耳朵会随着角色移动而摆动，增加动态的萌点',
-          加成属性: {
-            魅力加成: 10,
-            幸运加成: 0,
-            基础性斗力加成: 0,
-            基础性斗力成算: 0,
-            基础忍耐力加成: 0,
-            基础忍耐力成算: 0,
-            闪避率加成: 0,
-            暴击率加成: 0,
-            意志力加成: 0,
-          },
-        },
-        '物品系统._装备栏.饰品2': {
-          名称: '铃铛丝绒项圈',
-          等级: 'A',
-          描述: '极细的丝绒带中心悬挂一颗镂空的银铃铛，走起路来有清脆的响声',
+          部位: '饰品',
+          数量: 1,
+        };
+
+        await updateMvuVariables({
+          '物品系统.背包.纯黑丝绒长围巾': equipment,
+        });
+        await recordActivatedCheatCode('SNOW');
+
+        console.info('[开局] SNOW 作弊码已激活');
+        openModal('作弊码激活', '已获得：纯黑丝绒长围巾');
+      } catch (error) {
+        console.error('[开局] 添加装备失败:', error);
+        openModal('错误', '添加装备失败');
+      }
+    } else if (code === 'PROTECT') {
+      // PROTECT：袖子过长的宽大卫衣
+      showCheatInput.value = false;
+      cheatCode.value = '';
+
+      try {
+        const equipment = {
+          类型: '装备',
+          等级: 'B',
+          描述: '激发所有人的保护欲。虽然本体很脆弱，但总能因为奇迹般的运气（幸运）躲过灾难，或者让敌人不忍心下重手。',
           加成属性: {
             魅力加成: 0,
             幸运加成: 10,
@@ -632,11 +718,31 @@ const applyCheatCode = async () => {
             暴击率加成: 0,
             意志力加成: 0,
           },
-        },
-        '物品系统._装备栏.特殊装备': {
-          名称: '灵魂伴侣·懒洋洋猫',
-          等级: 'SS',
-          描述: '一只趴在角色肩膀上的肥猫公仔，软塌塌地垂着四肢',
+          部位: '副装备',
+          数量: 1,
+        };
+
+        await updateMvuVariables({
+          '物品系统.背包.袖子过长的宽大卫衣': equipment,
+        });
+        await recordActivatedCheatCode('PROTECT');
+
+        console.info('[开局] PROTECT 作弊码已激活');
+        openModal('作弊码激活', '已获得：袖子过长的宽大卫衣');
+      } catch (error) {
+        console.error('[开局] 添加装备失败:', error);
+        openModal('错误', '添加装备失败');
+      }
+    } else if (code === 'ENERGY') {
+      // ENERGY：荧光色运动护腕
+      showCheatInput.value = false;
+      cheatCode.value = '';
+
+      try {
+        const equipment = {
+          类型: '装备',
+          等级: 'A',
+          描述: '永远停不下来，充满朝气。比起防御，更相信速度和汗水。',
           加成属性: {
             魅力加成: 0,
             幸运加成: 0,
@@ -645,715 +751,609 @@ const applyCheatCode = async () => {
             基础忍耐力加成: 0,
             基础忍耐力成算: 0,
             闪避率加成: 0,
+            暴击率加成: 10,
+            意志力加成: 0,
+          },
+          部位: '饰品',
+          数量: 1,
+        };
+
+        await updateMvuVariables({
+          '物品系统.背包.荧光色运动护腕': equipment,
+        });
+        await recordActivatedCheatCode('ENERGY');
+
+        console.info('[开局] ENERGY 作弊码已激活');
+        openModal('作弊码激活', '已获得：荧光色运动护腕');
+      } catch (error) {
+        console.error('[开局] 添加装备失败:', error);
+        openModal('错误', '添加装备失败');
+      }
+    } else if (code === 'SILENCE') {
+      // SILENCE：挂颈式头戴耳机
+      showCheatInput.value = false;
+      cheatCode.value = '';
+
+      try {
+        const equipment = {
+          类型: '装备',
+          等级: 'B',
+          描述: '只要戴上耳机，世界就与我无关。极低的存在感让他很容易躲开麻烦（闪避），但也因此变得很难交到朋友。',
+          加成属性: {
+            魅力加成: -5,
+            幸运加成: 0,
+            基础性斗力加成: 0,
+            基础性斗力成算: 0,
+            基础忍耐力加成: 0,
+            基础忍耐力成算: 0,
+            闪避率加成: 15,
             暴击率加成: 0,
             意志力加成: 0,
-            最大快感加成: 50,
           },
-        },
-      };
+          部位: '饰品',
+          数量: 1,
+        };
 
-      await updateMvuVariables(equipmentSet);
-      await recordActivatedCheatCode('1011');
+        await updateMvuVariables({
+          '物品系统.背包.挂颈式头戴耳机': equipment,
+        });
+        await recordActivatedCheatCode('SILENCE');
 
-      console.info('[开局] 草莓套装已自动装备');
-      openModal('草莓套装激活', '草莓套装已自动装备到身上！');
-    } catch (error) {
-      console.error('[开局] 装备失败:', error);
-      openModal('错误', '装备失败，请检查MVU变量');
+        console.info('[开局] SILENCE 作弊码已激活');
+        openModal('作弊码激活', '已获得：挂颈式头戴耳机');
+      } catch (error) {
+        console.error('[开局] 添加装备失败:', error);
+        openModal('错误', '添加装备失败');
+      }
+    } else if (code === 'QUEEN') {
+      // QUEEN：精致的手工缎带
+      showCheatInput.value = false;
+      cheatCode.value = '';
+
+      try {
+        const equipment = {
+          类型: '装备',
+          等级: 'S',
+          描述: '举手投足间都是金钱的味道。在校园里，魅力就是她的通行证，没人能拒绝她的请求。',
+          加成属性: {
+            魅力加成: 10,
+            幸运加成: 0,
+            基础性斗力加成: 0,
+            基础性斗力成算: 0,
+            基础忍耐力加成: 0,
+            基础忍耐力成算: 0,
+            闪避率加成: 0,
+            暴击率加成: 0,
+            意志力加成: 0,
+          },
+          部位: '饰品',
+          数量: 1,
+        };
+
+        // 获取当前金币，如果没有则默认为0
+        const mvuData = await getMvuData();
+        const currentGold = mvuData?.stat_data?.物品系统?.学园金币 || 0;
+
+        await updateMvuVariables({
+          '物品系统.背包.精致的手工缎带': equipment,
+          '物品系统.学园金币': currentGold + 2000,
+        });
+        await recordActivatedCheatCode('QUEEN');
+
+        console.info('[开局] QUEEN 作弊码已激活');
+        openModal('作弊码激活', '已获得：精致的手工缎带\n校园金币 +2000');
+      } catch (error) {
+        console.error('[开局] 添加装备失败:', error);
+        openModal('错误', '添加装备失败');
+      }
+    } else if (code === 'UNKNOWN') {
+      // UNKNOWN：黑猫造型的小挎包
+      showCheatInput.value = false;
+      cheatCode.value = '';
+
+      try {
+        const equipment = {
+          类型: '装备',
+          等级: 'A',
+          描述: '充满不确定性。没人知道他到底擅长什么，但也可能在关键时刻爆发出惊人的力量。',
+          加成属性: {
+            魅力加成: 1,
+            幸运加成: 1,
+            基础性斗力加成: 1,
+            基础性斗力成算: 0,
+            基础忍耐力加成: 1,
+            基础忍耐力成算: 0,
+            闪避率加成: 1,
+            暴击率加成: 1,
+            意志力加成: 1,
+          },
+          部位: '特殊装备',
+          数量: 1,
+        };
+
+        await updateMvuVariables({
+          '物品系统.背包.黑猫造型的小挎包': equipment,
+        });
+        await recordActivatedCheatCode('UNKNOWN');
+
+        console.info('[开局] UNKNOWN 作弊码已激活');
+        openModal('作弊码激活', '已获得：黑猫造型的小挎包');
+      } catch (error) {
+        console.error('[开局] 添加装备失败:', error);
+        openModal('错误', '添加装备失败');
+      }
+    } else if (code === 'HOT') {
+      // HOT：五彩渐变美甲
+      showCheatInput.value = false;
+      cheatCode.value = '';
+
+      try {
+        const equipment = {
+          类型: '装备',
+          等级: 'B',
+          描述: '虽然看起来爱玩，但吐槽和扇巴掌的力度绝对是校园顶级的。',
+          加成属性: {
+            魅力加成: 5,
+            幸运加成: 0,
+            基础性斗力加成: 0,
+            基础性斗力成算: 0,
+            基础忍耐力加成: 0,
+            基础忍耐力成算: 0,
+            闪避率加成: 0,
+            暴击率加成: 5,
+            意志力加成: 0,
+          },
+          部位: '饰品',
+          数量: 1,
+        };
+
+        await updateMvuVariables({
+          '物品系统.背包.五彩渐变美甲': equipment,
+        });
+        await recordActivatedCheatCode('HOT');
+
+        console.info('[开局] HOT 作弊码已激活');
+        openModal('作弊码激活', '已获得：五彩渐变美甲');
+      } catch (error) {
+        console.error('[开局] 添加装备失败:', error);
+        openModal('错误', '添加装备失败');
+      }
+    } else if (code === 'LOVESICK') {
+      // LOVESICK：藏在袖子里的美工刀
+      showCheatInput.value = false;
+      cheatCode.value = '';
+
+      try {
+        const equipment = {
+          类型: '装备',
+          等级: 'S',
+          描述: '只要是为了心中所爱（或者执念），可以不计代价毁灭一切。',
+          加成属性: {
+            魅力加成: 0,
+            幸运加成: 0,
+            基础性斗力加成: 0,
+            基础性斗力成算: 20,
+            基础忍耐力加成: 0,
+            基础忍耐力成算: -20,
+            闪避率加成: 0,
+            暴击率加成: 0,
+            意志力加成: 0,
+          },
+          部位: '主装备',
+          数量: 1,
+        };
+
+        await updateMvuVariables({
+          '物品系统.背包.藏在袖子里的美工刀': equipment,
+        });
+        await recordActivatedCheatCode('LOVESICK');
+
+        console.info('[开局] LOVESICK 作弊码已激活');
+        openModal('作弊码激活', '已获得：藏在袖子里的美工刀');
+      } catch (error) {
+        console.error('[开局] 添加装备失败:', error);
+        openModal('错误', '添加装备失败');
+      }
+    } else if (code === 'NERD') {
+      // NERD：厚重黑框眼镜
+      showCheatInput.value = false;
+      cheatCode.value = '';
+
+      try {
+        const equipment = {
+          类型: '装备',
+          等级: 'A',
+          描述: '知识就是力量！虽然看起来很弱，但总能因为各种奇怪的冷知识而化险为夷。',
+          加成属性: {
+            魅力加成: -8,
+            幸运加成: 15,
+            基础性斗力加成: 0,
+            基础性斗力成算: 0,
+            基础忍耐力加成: 0,
+            基础忍耐力成算: 0,
+            闪避率加成: 0,
+            暴击率加成: 8,
+            意志力加成: 5,
+          },
+          部位: '饰品',
+          数量: 1,
+        };
+
+        await updateMvuVariables({
+          '物品系统.背包.厚重黑框眼镜': equipment,
+        });
+        await recordActivatedCheatCode('NERD');
+
+        console.info('[开局] NERD 作弊码已激活');
+        openModal('作弊码激活', '已获得：厚重黑框眼镜');
+      } catch (error) {
+        console.error('[开局] 添加装备失败:', error);
+        openModal('错误', '添加装备失败');
+      }
+    } else if (code === 'DEVIL') {
+      // DEVIL：小恶魔翅膀发夹
+      showCheatInput.value = false;
+      cheatCode.value = '';
+
+      try {
+        const equipment = {
+          类型: '装备',
+          等级: 'S',
+          描述: '小小的恶魔，大大的坏心思。总喜欢捉弄别人，但往往会被反捉弄。',
+          加成属性: {
+            魅力加成: 12,
+            幸运加成: -5,
+            基础性斗力加成: 0,
+            基础性斗力成算: 8,
+            基础忍耐力加成: 0,
+            基础忍耐力成算: 0,
+            闪避率加成: 0,
+            暴击率加成: 0,
+            意志力加成: -5,
+          },
+          部位: '饰品',
+          数量: 1,
+        };
+
+        await updateMvuVariables({
+          '物品系统.背包.小恶魔翅膀发夹': equipment,
+        });
+        await recordActivatedCheatCode('DEVIL');
+
+        console.info('[开局] DEVIL 作弊码已激活');
+        openModal('作弊码激活', '已获得：小恶魔翅膀发夹');
+      } catch (error) {
+        console.error('[开局] 添加装备失败:', error);
+        openModal('错误', '添加装备失败');
+      }
+    } else if (code === 'AIRHEAD') {
+      // AIRHEAD：草莓味棒棒糖
+      showCheatInput.value = false;
+      cheatCode.value = '';
+
+      try {
+        const equipment = {
+          类型: '装备',
+          等级: 'B',
+          描述: '甜甜的糖果让人放松警惕，虽然脑子不太好使，但身材确实一级棒。',
+          加成属性: {
+            魅力加成: 15,
+            幸运加成: 5,
+            基础性斗力加成: 0,
+            基础性斗力成算: -10,
+            基础忍耐力加成: 0,
+            基础忍耐力成算: 0,
+            闪避率加成: 0,
+            暴击率加成: 0,
+            意志力加成: -10,
+          },
+          部位: '饰品',
+          数量: 1,
+        };
+
+        await updateMvuVariables({
+          '物品系统.背包.草莓味棒棒糖': equipment,
+        });
+        await recordActivatedCheatCode('AIRHEAD');
+
+        console.info('[开局] AIRHEAD 作弊码已激活');
+        openModal('作弊码激活', '已获得：草莓味棒棒糖');
+      } catch (error) {
+        console.error('[开局] 添加装备失败:', error);
+        openModal('错误', '添加装备失败');
+      }
+    } else if (code === 'SUCCUBUS') {
+      // SUCCUBUS：魅魔之尾
+      showCheatInput.value = false;
+      cheatCode.value = '';
+
+      try {
+        const equipment = {
+          类型: '装备',
+          等级: 'SS',
+          描述: '魅魔的象征，能够吸取他人的精力转化为自己的力量。但也会让周围的人产生奇怪的欲望。',
+          加成属性: {
+            魅力加成: 20,
+            幸运加成: -10,
+            基础性斗力加成: 0,
+            基础性斗力成算: 10,
+            基础忍耐力加成: 0,
+            基础忍耐力成算: -15,
+            闪避率加成: 0,
+            暴击率加成: 5,
+            意志力加成: -10,
+          },
+          部位: '特殊装备',
+          数量: 1,
+        };
+
+        await updateMvuVariables({
+          '物品系统.背包.魅魔之尾': equipment,
+        });
+        await recordActivatedCheatCode('SUCCUBUS');
+
+        console.info('[开局] SUCCUBUS 作弊码已激活');
+        openModal('作弊码激活', '已获得：魅魔之尾');
+      } catch (error) {
+        console.error('[开局] 添加装备失败:', error);
+        openModal('错误', '添加装备失败');
+      }
+    } else if (code === 'CHAOS') {
+      // CHAOS：不可名状触手
+      showCheatInput.value = false;
+      cheatCode.value = '';
+
+      try {
+        const equipment = {
+          类型: '装备',
+          等级: 'SS',
+          描述: '来自深渊的触手，完全不可预测。有时候会帮你，有时候会害你，全看心情。',
+          加成属性: {
+            魅力加成: -20,
+            幸运加成: 0,
+            基础性斗力加成: 0,
+            基础性斗力成算: 15,
+            基础忍耐力加成: 0,
+            基础忍耐力成算: 15,
+            闪避率加成: 0,
+            暴击率加成: 0,
+            意志力加成: 10,
+          },
+          部位: '特殊装备',
+          数量: 1,
+        };
+
+        await updateMvuVariables({
+          '物品系统.背包.不可名状触手': equipment,
+        });
+        await recordActivatedCheatCode('CHAOS');
+
+        console.info('[开局] CHAOS 作弊码已激活');
+        openModal('作弊码激活', '已获得：不可名状触手');
+      } catch (error) {
+        console.error('[开局] 添加装备失败:', error);
+        openModal('错误', '添加装备失败');
+      }
+    } else if (code === 'DOLL') {
+      // DOLL：人偶专用保养油
+      showCheatInput.value = false;
+      cheatCode.value = '';
+
+      try {
+        const equipment = {
+          类型: '装备',
+          等级: 'A',
+          描述: '让人偶的皮肤更加光滑细腻，痛觉进一步迟钝。但也会让感情变得更加淡漠。',
+          加成属性: {
+            魅力加成: 10,
+            幸运加成: 0,
+            基础性斗力加成: 0,
+            基础性斗力成算: -15,
+            基础忍耐力加成: 0,
+            基础忍耐力成算: 20,
+            闪避率加成: 0,
+            暴击率加成: 0,
+            意志力加成: -15,
+          },
+          部位: '副装备',
+          数量: 1,
+        };
+
+        await updateMvuVariables({
+          '物品系统.背包.人偶专用保养油': equipment,
+        });
+        await recordActivatedCheatCode('DOLL');
+
+        console.info('[开局] DOLL 作弊码已激活');
+        openModal('作弊码激活', '已获得：人偶专用保养油');
+      } catch (error) {
+        console.error('[开局] 添加装备失败:', error);
+        openModal('错误', '添加装备失败');
+      }
+    } else if (code === 'BEAST') {
+      // BEAST：兽耳发箍
+      showCheatInput.value = false;
+      cheatCode.value = '';
+
+      try {
+        const equipment = {
+          类型: '装备',
+          等级: 'A',
+          描述: '让兽化人的感官更加敏锐，反应速度更快。但也会让本能变得更难控制。',
+          加成属性: {
+            魅力加成: 5,
+            幸运加成: 8,
+            基础性斗力加成: 0,
+            基础性斗力成算: 10,
+            基础忍耐力加成: 0,
+            基础忍耐力成算: 5,
+            闪避率加成: 15,
+            暴击率加成: 0,
+            意志力加成: -8,
+          },
+          部位: '饰品',
+          数量: 1,
+        };
+
+        await updateMvuVariables({
+          '物品系统.背包.兽耳发箍': equipment,
+        });
+        await recordActivatedCheatCode('BEAST');
+
+        console.info('[开局] BEAST 作弊码已激活');
+        openModal('作弊码激活', '已获得：兽耳发箍');
+      } catch (error) {
+        console.error('[开局] 添加装备失败:', error);
+        openModal('错误', '添加装备失败');
+      }
+    } else if (code === 'CYBER') {
+      // CYBER：机械手臂
+      showCheatInput.value = false;
+      cheatCode.value = '';
+
+      try {
+        const equipment = {
+          类型: '装备',
+          等级: 'S',
+          描述: '高度精密的机械义肢，内置多种功能。但会让身体的一部分变得更加冰冷。',
+          加成属性: {
+            魅力加成: -10,
+            幸运加成: -5,
+            基础性斗力加成: 0,
+            基础性斗力成算: 15,
+            基础忍耐力加成: 0,
+            基础忍耐力成算: 20,
+            闪避率加成: 0,
+            暴击率加成: 10,
+            意志力加成: 10,
+          },
+          部位: '主装备',
+          数量: 1,
+        };
+
+        await updateMvuVariables({
+          '物品系统.背包.机械手臂': equipment,
+        });
+        await recordActivatedCheatCode('CYBER');
+
+        console.info('[开局] CYBER 作弊码已激活');
+        openModal('作弊码激活', '已获得：机械手臂');
+      } catch (error) {
+        console.error('[开局] 添加装备失败:', error);
+        openModal('错误', '添加装备失败');
+      }
+    } else if (code === 'PRINCESS') {
+      // PRINCESS：蕾丝阳伞
+      showCheatInput.value = false;
+      cheatCode.value = '';
+
+      try {
+        const equipment = {
+          类型: '装备',
+          等级: 'A',
+          描述: '公主的象征，优雅而高贵。虽然看起来很脆弱，但总有人会保护她。',
+          加成属性: {
+            魅力加成: 8,
+            幸运加成: 12,
+            基础性斗力加成: 0,
+            基础性斗力成算: -10,
+            基础忍耐力加成: 0,
+            基础忍耐力成算: 0,
+            闪避率加成: 0,
+            暴击率加成: 0,
+            意志力加成: 0,
+          },
+          部位: '副装备',
+          数量: 1,
+        };
+
+        await updateMvuVariables({
+          '物品系统.背包.蕾丝阳伞': equipment,
+        });
+        await recordActivatedCheatCode('PRINCESS');
+
+        console.info('[开局] PRINCESS 作弊码已激活');
+        openModal('作弊码激活', '已获得：蕾丝阳伞');
+      } catch (error) {
+        console.error('[开局] 添加装备失败:', error);
+        openModal('错误', '添加装备失败');
+      }
+    } else if (code === 'DELINQUENT') {
+      // DELINQUENT：不良少年头巾
+      showCheatInput.value = false;
+      cheatCode.value = '';
+
+      try {
+        const equipment = {
+          类型: '装备',
+          等级: 'B',
+          描述: '看起来很不好惹，但其实内心很善良。总在关键时刻保护弱小。',
+          加成属性: {
+            魅力加成: -5,
+            幸运加成: 5,
+            基础性斗力加成: 0,
+            基础性斗力成算: 10,
+            基础忍耐力加成: 0,
+            基础忍耐力成算: 5,
+            闪避率加成: 0,
+            暴击率加成: 0,
+            意志力加成: 5,
+          },
+          部位: '饰品',
+          数量: 1,
+        };
+
+        await updateMvuVariables({
+          '物品系统.背包.不良少年头巾': equipment,
+        });
+        await recordActivatedCheatCode('DELINQUENT');
+
+        console.info('[开局] DELINQUENT 作弊码已激活');
+        openModal('作弊码激活', '已获得：不良少年头巾');
+      } catch (error) {
+        console.error('[开局] 添加装备失败:', error);
+        openModal('错误', '添加装备失败');
+      }
+    } else if (code === 'SHY') {
+      // SHY：遮脸刘海
+      showCheatInput.value = false;
+      cheatCode.value = '';
+
+      try {
+        const equipment = {
+          类型: '装备',
+          等级: 'C',
+          描述: '因为害羞而遮住脸，但这样反而让人更加在意。意外地很会躲藏。',
+          加成属性: {
+            魅力加成: 3,
+            幸运加成: 0,
+            基础性斗力加成: 0,
+            基础性斗力成算: 0,
+            基础忍耐力加成: 0,
+            基础忍耐力成算: 0,
+            闪避率加成: 10,
+            暴击率加成: 0,
+            意志力加成: -3,
+          },
+          部位: '饰品',
+          数量: 1,
+        };
+
+        await updateMvuVariables({
+          '物品系统.背包.遮脸刘海': equipment,
+        });
+        await recordActivatedCheatCode('SHY');
+
+        console.info('[开局] SHY 作弊码已激活');
+        openModal('作弊码激活', '已获得：遮脸刘海');
+      } catch (error) {
+        console.error('[开局] 添加装备失败:', error);
+        openModal('错误', '添加装备失败');
+      }
+    } else {
+      openModal('错误', '无效的代码');
+      cheatCode.value = '';
     }
-  } else if (code === 'SNOW') {
-    // SNOW：纯黑丝绒长围巾
-    showCheatInput.value = false;
-    cheatCode.value = '';
-
-    try {
-      const equipment = {
-        类型: '装备',
-        等级: 'A',
-        描述: '那种"可远观而不可亵玩"的气质。因为太高冷，敌人的攻击似乎都因为自惭形秽而无法命中，同时也散发着致命的成熟魅力',
-        加成属性: {
-          魅力加成: 10,
-          幸运加成: 0,
-          基础性斗力加成: 0,
-          基础性斗力成算: 0,
-          基础忍耐力加成: 0,
-          基础忍耐力成算: 0,
-          闪避率加成: 10,
-          暴击率加成: 0,
-          意志力加成: 0,
-        },
-        部位: '饰品',
-        数量: 1,
-      };
-
-      await updateMvuVariables({
-        '物品系统.背包.纯黑丝绒长围巾': equipment,
-      });
-      await recordActivatedCheatCode('SNOW');
-
-      console.info('[开局] SNOW 作弊码已激活');
-      openModal('作弊码激活', '已获得：纯黑丝绒长围巾');
-    } catch (error) {
-      console.error('[开局] 添加装备失败:', error);
-      openModal('错误', '添加装备失败');
-    }
-  } else if (code === 'PROTECT') {
-    // PROTECT：袖子过长的宽大卫衣
-    showCheatInput.value = false;
-    cheatCode.value = '';
-
-    try {
-      const equipment = {
-        类型: '装备',
-        等级: 'B',
-        描述: '激发所有人的保护欲。虽然本体很脆弱，但总能因为奇迹般的运气（幸运）躲过灾难，或者让敌人不忍心下重手。',
-        加成属性: {
-          魅力加成: 0,
-          幸运加成: 10,
-          基础性斗力加成: 0,
-          基础性斗力成算: 0,
-          基础忍耐力加成: 0,
-          基础忍耐力成算: 0,
-          闪避率加成: 0,
-          暴击率加成: 0,
-          意志力加成: 0,
-        },
-        部位: '副装备',
-        数量: 1,
-      };
-
-      await updateMvuVariables({
-        '物品系统.背包.袖子过长的宽大卫衣': equipment,
-      });
-      await recordActivatedCheatCode('PROTECT');
-
-      console.info('[开局] PROTECT 作弊码已激活');
-      openModal('作弊码激活', '已获得：袖子过长的宽大卫衣');
-    } catch (error) {
-      console.error('[开局] 添加装备失败:', error);
-      openModal('错误', '添加装备失败');
-    }
-  } else if (code === 'ENERGY') {
-    // ENERGY：荧光色运动护腕
-    showCheatInput.value = false;
-    cheatCode.value = '';
-
-    try {
-      const equipment = {
-        类型: '装备',
-        等级: 'A',
-        描述: '永远停不下来，充满朝气。比起防御，更相信速度和汗水。',
-        加成属性: {
-          魅力加成: 0,
-          幸运加成: 0,
-          基础性斗力加成: 0,
-          基础性斗力成算: 0,
-          基础忍耐力加成: 0,
-          基础忍耐力成算: 0,
-          闪避率加成: 0,
-          暴击率加成: 10,
-          意志力加成: 0,
-        },
-        部位: '饰品',
-        数量: 1,
-      };
-
-      await updateMvuVariables({
-        '物品系统.背包.荧光色运动护腕': equipment,
-      });
-      await recordActivatedCheatCode('ENERGY');
-
-      console.info('[开局] ENERGY 作弊码已激活');
-      openModal('作弊码激活', '已获得：荧光色运动护腕');
-    } catch (error) {
-      console.error('[开局] 添加装备失败:', error);
-      openModal('错误', '添加装备失败');
-    }
-  } else if (code === 'SILENCE') {
-    // SILENCE：挂颈式头戴耳机
-    showCheatInput.value = false;
-    cheatCode.value = '';
-
-    try {
-      const equipment = {
-        类型: '装备',
-        等级: 'B',
-        描述: '只要戴上耳机，世界就与我无关。极低的存在感让他很容易躲开麻烦（闪避），但也因此变得很难交到朋友。',
-        加成属性: {
-          魅力加成: -5,
-          幸运加成: 0,
-          基础性斗力加成: 0,
-          基础性斗力成算: 0,
-          基础忍耐力加成: 0,
-          基础忍耐力成算: 0,
-          闪避率加成: 15,
-          暴击率加成: 0,
-          意志力加成: 0,
-        },
-        部位: '饰品',
-        数量: 1,
-      };
-
-      await updateMvuVariables({
-        '物品系统.背包.挂颈式头戴耳机': equipment,
-      });
-      await recordActivatedCheatCode('SILENCE');
-
-      console.info('[开局] SILENCE 作弊码已激活');
-      openModal('作弊码激活', '已获得：挂颈式头戴耳机');
-    } catch (error) {
-      console.error('[开局] 添加装备失败:', error);
-      openModal('错误', '添加装备失败');
-    }
-  } else if (code === 'QUEEN') {
-    // QUEEN：精致的手工缎带
-    showCheatInput.value = false;
-    cheatCode.value = '';
-
-    try {
-      const equipment = {
-        类型: '装备',
-        等级: 'S',
-        描述: '举手投足间都是金钱的味道。在校园里，魅力就是她的通行证，没人能拒绝她的请求。',
-        加成属性: {
-          魅力加成: 10,
-          幸运加成: 0,
-          基础性斗力加成: 0,
-          基础性斗力成算: 0,
-          基础忍耐力加成: 0,
-          基础忍耐力成算: 0,
-          闪避率加成: 0,
-          暴击率加成: 0,
-          意志力加成: 0,
-        },
-        部位: '饰品',
-        数量: 1,
-      };
-
-      // 获取当前金币，如果没有则默认为0
-      const mvuData = await getMvuData();
-      const currentGold = mvuData?.stat_data?.物品系统?.学园金币 || 0;
-
-      await updateMvuVariables({
-        '物品系统.背包.精致的手工缎带': equipment,
-        '物品系统.学园金币': currentGold + 2000,
-      });
-      await recordActivatedCheatCode('QUEEN');
-
-      console.info('[开局] QUEEN 作弊码已激活');
-      openModal('作弊码激活', '已获得：精致的手工缎带\n校园金币 +2000');
-    } catch (error) {
-      console.error('[开局] 添加装备失败:', error);
-      openModal('错误', '添加装备失败');
-    }
-  } else if (code === 'UNKNOWN') {
-    // UNKNOWN：黑猫造型的小挎包
-    showCheatInput.value = false;
-    cheatCode.value = '';
-
-    try {
-      const equipment = {
-        类型: '装备',
-        等级: 'A',
-        描述: '充满不确定性。没人知道他到底擅长什么，但也可能在关键时刻爆发出惊人的力量。',
-        加成属性: {
-          魅力加成: 1,
-          幸运加成: 1,
-          基础性斗力加成: 1,
-          基础性斗力成算: 0,
-          基础忍耐力加成: 1,
-          基础忍耐力成算: 0,
-          闪避率加成: 1,
-          暴击率加成: 1,
-          意志力加成: 1,
-        },
-        部位: '特殊装备',
-        数量: 1,
-      };
-
-      await updateMvuVariables({
-        '物品系统.背包.黑猫造型的小挎包': equipment,
-      });
-      await recordActivatedCheatCode('UNKNOWN');
-
-      console.info('[开局] UNKNOWN 作弊码已激活');
-      openModal('作弊码激活', '已获得：黑猫造型的小挎包');
-    } catch (error) {
-      console.error('[开局] 添加装备失败:', error);
-      openModal('错误', '添加装备失败');
-    }
-  } else if (code === 'HOT') {
-    // HOT：五彩渐变美甲
-    showCheatInput.value = false;
-    cheatCode.value = '';
-
-    try {
-      const equipment = {
-        类型: '装备',
-        等级: 'B',
-        描述: '虽然看起来爱玩，但吐槽和扇巴掌的力度绝对是校园顶级的。',
-        加成属性: {
-          魅力加成: 5,
-          幸运加成: 0,
-          基础性斗力加成: 0,
-          基础性斗力成算: 0,
-          基础忍耐力加成: 0,
-          基础忍耐力成算: 0,
-          闪避率加成: 0,
-          暴击率加成: 5,
-          意志力加成: 0,
-        },
-        部位: '饰品',
-        数量: 1,
-      };
-
-      await updateMvuVariables({
-        '物品系统.背包.五彩渐变美甲': equipment,
-      });
-      await recordActivatedCheatCode('HOT');
-
-      console.info('[开局] HOT 作弊码已激活');
-      openModal('作弊码激活', '已获得：五彩渐变美甲');
-    } catch (error) {
-      console.error('[开局] 添加装备失败:', error);
-      openModal('错误', '添加装备失败');
-    }
-  } else if (code === 'LOVESICK') {
-    // LOVESICK：藏在袖子里的美工刀
-    showCheatInput.value = false;
-    cheatCode.value = '';
-
-    try {
-      const equipment = {
-        类型: '装备',
-        等级: 'S',
-        描述: '只要是为了心中所爱（或者执念），可以不计代价毁灭一切。',
-        加成属性: {
-          魅力加成: 0,
-          幸运加成: 0,
-          基础性斗力加成: 0,
-          基础性斗力成算: 20,
-          基础忍耐力加成: 0,
-          基础忍耐力成算: -20,
-          闪避率加成: 0,
-          暴击率加成: 0,
-          意志力加成: 0,
-        },
-        部位: '主装备',
-        数量: 1,
-      };
-
-      await updateMvuVariables({
-        '物品系统.背包.藏在袖子里的美工刀': equipment,
-      });
-      await recordActivatedCheatCode('LOVESICK');
-
-      console.info('[开局] LOVESICK 作弊码已激活');
-      openModal('作弊码激活', '已获得：藏在袖子里的美工刀');
-    } catch (error) {
-      console.error('[开局] 添加装备失败:', error);
-      openModal('错误', '添加装备失败');
-    }
-  } else if (code === 'NERD') {
-    // NERD：厚重黑框眼镜
-    showCheatInput.value = false;
-    cheatCode.value = '';
-
-    try {
-      const equipment = {
-        类型: '装备',
-        等级: 'A',
-        描述: '知识就是力量！虽然看起来很弱，但总能因为各种奇怪的冷知识而化险为夷。',
-        加成属性: {
-          魅力加成: -8,
-          幸运加成: 15,
-          基础性斗力加成: 0,
-          基础性斗力成算: 0,
-          基础忍耐力加成: 0,
-          基础忍耐力成算: 0,
-          闪避率加成: 0,
-          暴击率加成: 8,
-          意志力加成: 5,
-        },
-        部位: '饰品',
-        数量: 1,
-      };
-
-      await updateMvuVariables({
-        '物品系统.背包.厚重黑框眼镜': equipment,
-      });
-      await recordActivatedCheatCode('NERD');
-
-      console.info('[开局] NERD 作弊码已激活');
-      openModal('作弊码激活', '已获得：厚重黑框眼镜');
-    } catch (error) {
-      console.error('[开局] 添加装备失败:', error);
-      openModal('错误', '添加装备失败');
-    }
-  } else if (code === 'DEVIL') {
-    // DEVIL：小恶魔翅膀发夹
-    showCheatInput.value = false;
-    cheatCode.value = '';
-
-    try {
-      const equipment = {
-        类型: '装备',
-        等级: 'S',
-        描述: '小小的恶魔，大大的坏心思。总喜欢捉弄别人，但往往会被反捉弄。',
-        加成属性: {
-          魅力加成: 12,
-          幸运加成: -5,
-          基础性斗力加成: 0,
-          基础性斗力成算: 8,
-          基础忍耐力加成: 0,
-          基础忍耐力成算: 0,
-          闪避率加成: 0,
-          暴击率加成: 0,
-          意志力加成: -5,
-        },
-        部位: '饰品',
-        数量: 1,
-      };
-
-      await updateMvuVariables({
-        '物品系统.背包.小恶魔翅膀发夹': equipment,
-      });
-      await recordActivatedCheatCode('DEVIL');
-
-      console.info('[开局] DEVIL 作弊码已激活');
-      openModal('作弊码激活', '已获得：小恶魔翅膀发夹');
-    } catch (error) {
-      console.error('[开局] 添加装备失败:', error);
-      openModal('错误', '添加装备失败');
-    }
-  } else if (code === 'AIRHEAD') {
-    // AIRHEAD：草莓味棒棒糖
-    showCheatInput.value = false;
-    cheatCode.value = '';
-
-    try {
-      const equipment = {
-        类型: '装备',
-        等级: 'B',
-        描述: '甜甜的糖果让人放松警惕，虽然脑子不太好使，但身材确实一级棒。',
-        加成属性: {
-          魅力加成: 15,
-          幸运加成: 5,
-          基础性斗力加成: 0,
-          基础性斗力成算: -10,
-          基础忍耐力加成: 0,
-          基础忍耐力成算: 0,
-          闪避率加成: 0,
-          暴击率加成: 0,
-          意志力加成: -10,
-        },
-        部位: '饰品',
-        数量: 1,
-      };
-
-      await updateMvuVariables({
-        '物品系统.背包.草莓味棒棒糖': equipment,
-      });
-      await recordActivatedCheatCode('AIRHEAD');
-
-      console.info('[开局] AIRHEAD 作弊码已激活');
-      openModal('作弊码激活', '已获得：草莓味棒棒糖');
-    } catch (error) {
-      console.error('[开局] 添加装备失败:', error);
-      openModal('错误', '添加装备失败');
-    }
-  } else if (code === 'SUCCUBUS') {
-    // SUCCUBUS：魅魔之尾
-    showCheatInput.value = false;
-    cheatCode.value = '';
-
-    try {
-      const equipment = {
-        类型: '装备',
-        等级: 'SS',
-        描述: '魅魔的象征，能够吸取他人的精力转化为自己的力量。但也会让周围的人产生奇怪的欲望。',
-        加成属性: {
-          魅力加成: 20,
-          幸运加成: -10,
-          基础性斗力加成: 0,
-          基础性斗力成算: 10,
-          基础忍耐力加成: 0,
-          基础忍耐力成算: -15,
-          闪避率加成: 0,
-          暴击率加成: 5,
-          意志力加成: -10,
-        },
-        部位: '特殊装备',
-        数量: 1,
-      };
-
-      await updateMvuVariables({
-        '物品系统.背包.魅魔之尾': equipment,
-      });
-      await recordActivatedCheatCode('SUCCUBUS');
-
-      console.info('[开局] SUCCUBUS 作弊码已激活');
-      openModal('作弊码激活', '已获得：魅魔之尾');
-    } catch (error) {
-      console.error('[开局] 添加装备失败:', error);
-      openModal('错误', '添加装备失败');
-    }
-  } else if (code === 'CHAOS') {
-    // CHAOS：不可名状触手
-    showCheatInput.value = false;
-    cheatCode.value = '';
-
-    try {
-      const equipment = {
-        类型: '装备',
-        等级: 'SS',
-        描述: '来自深渊的触手，完全不可预测。有时候会帮你，有时候会害你，全看心情。',
-        加成属性: {
-          魅力加成: -20,
-          幸运加成: 0,
-          基础性斗力加成: 0,
-          基础性斗力成算: 15,
-          基础忍耐力加成: 0,
-          基础忍耐力成算: 15,
-          闪避率加成: 0,
-          暴击率加成: 0,
-          意志力加成: 10,
-        },
-        部位: '特殊装备',
-        数量: 1,
-      };
-
-      await updateMvuVariables({
-        '物品系统.背包.不可名状触手': equipment,
-      });
-      await recordActivatedCheatCode('CHAOS');
-
-      console.info('[开局] CHAOS 作弊码已激活');
-      openModal('作弊码激活', '已获得：不可名状触手');
-    } catch (error) {
-      console.error('[开局] 添加装备失败:', error);
-      openModal('错误', '添加装备失败');
-    }
-  } else if (code === 'DOLL') {
-    // DOLL：人偶专用保养油
-    showCheatInput.value = false;
-    cheatCode.value = '';
-
-    try {
-      const equipment = {
-        类型: '装备',
-        等级: 'A',
-        描述: '让人偶的皮肤更加光滑细腻，痛觉进一步迟钝。但也会让感情变得更加淡漠。',
-        加成属性: {
-          魅力加成: 10,
-          幸运加成: 0,
-          基础性斗力加成: 0,
-          基础性斗力成算: -15,
-          基础忍耐力加成: 0,
-          基础忍耐力成算: 20,
-          闪避率加成: 0,
-          暴击率加成: 0,
-          意志力加成: -15,
-        },
-        部位: '副装备',
-        数量: 1,
-      };
-
-      await updateMvuVariables({
-        '物品系统.背包.人偶专用保养油': equipment,
-      });
-      await recordActivatedCheatCode('DOLL');
-
-      console.info('[开局] DOLL 作弊码已激活');
-      openModal('作弊码激活', '已获得：人偶专用保养油');
-    } catch (error) {
-      console.error('[开局] 添加装备失败:', error);
-      openModal('错误', '添加装备失败');
-    }
-  } else if (code === 'BEAST') {
-    // BEAST：兽耳发箍
-    showCheatInput.value = false;
-    cheatCode.value = '';
-
-    try {
-      const equipment = {
-        类型: '装备',
-        等级: 'A',
-        描述: '让兽化人的感官更加敏锐，反应速度更快。但也会让本能变得更难控制。',
-        加成属性: {
-          魅力加成: 5,
-          幸运加成: 8,
-          基础性斗力加成: 0,
-          基础性斗力成算: 10,
-          基础忍耐力加成: 0,
-          基础忍耐力成算: 5,
-          闪避率加成: 15,
-          暴击率加成: 0,
-          意志力加成: -8,
-        },
-        部位: '饰品',
-        数量: 1,
-      };
-
-      await updateMvuVariables({
-        '物品系统.背包.兽耳发箍': equipment,
-      });
-      await recordActivatedCheatCode('BEAST');
-
-      console.info('[开局] BEAST 作弊码已激活');
-      openModal('作弊码激活', '已获得：兽耳发箍');
-    } catch (error) {
-      console.error('[开局] 添加装备失败:', error);
-      openModal('错误', '添加装备失败');
-    }
-  } else if (code === 'CYBER') {
-    // CYBER：机械手臂
-    showCheatInput.value = false;
-    cheatCode.value = '';
-
-    try {
-      const equipment = {
-        类型: '装备',
-        等级: 'S',
-        描述: '高度精密的机械义肢，内置多种功能。但会让身体的一部分变得更加冰冷。',
-        加成属性: {
-          魅力加成: -10,
-          幸运加成: -5,
-          基础性斗力加成: 0,
-          基础性斗力成算: 15,
-          基础忍耐力加成: 0,
-          基础忍耐力成算: 20,
-          闪避率加成: 0,
-          暴击率加成: 10,
-          意志力加成: 10,
-        },
-        部位: '主装备',
-        数量: 1,
-      };
-
-      await updateMvuVariables({
-        '物品系统.背包.机械手臂': equipment,
-      });
-      await recordActivatedCheatCode('CYBER');
-
-      console.info('[开局] CYBER 作弊码已激活');
-      openModal('作弊码激活', '已获得：机械手臂');
-    } catch (error) {
-      console.error('[开局] 添加装备失败:', error);
-      openModal('错误', '添加装备失败');
-    }
-  } else if (code === 'PRINCESS') {
-    // PRINCESS：蕾丝阳伞
-    showCheatInput.value = false;
-    cheatCode.value = '';
-
-    try {
-      const equipment = {
-        类型: '装备',
-        等级: 'A',
-        描述: '公主的象征，优雅而高贵。虽然看起来很脆弱，但总有人会保护她。',
-        加成属性: {
-          魅力加成: 8,
-          幸运加成: 12,
-          基础性斗力加成: 0,
-          基础性斗力成算: -10,
-          基础忍耐力加成: 0,
-          基础忍耐力成算: 0,
-          闪避率加成: 0,
-          暴击率加成: 0,
-          意志力加成: 0,
-        },
-        部位: '副装备',
-        数量: 1,
-      };
-
-      await updateMvuVariables({
-        '物品系统.背包.蕾丝阳伞': equipment,
-      });
-      await recordActivatedCheatCode('PRINCESS');
-
-      console.info('[开局] PRINCESS 作弊码已激活');
-      openModal('作弊码激活', '已获得：蕾丝阳伞');
-    } catch (error) {
-      console.error('[开局] 添加装备失败:', error);
-      openModal('错误', '添加装备失败');
-    }
-  } else if (code === 'DELINQUENT') {
-    // DELINQUENT：不良少年头巾
-    showCheatInput.value = false;
-    cheatCode.value = '';
-
-    try {
-      const equipment = {
-        类型: '装备',
-        等级: 'B',
-        描述: '看起来很不好惹，但其实内心很善良。总在关键时刻保护弱小。',
-        加成属性: {
-          魅力加成: -5,
-          幸运加成: 5,
-          基础性斗力加成: 0,
-          基础性斗力成算: 10,
-          基础忍耐力加成: 0,
-          基础忍耐力成算: 5,
-          闪避率加成: 0,
-          暴击率加成: 0,
-          意志力加成: 5,
-        },
-        部位: '饰品',
-        数量: 1,
-      };
-
-      await updateMvuVariables({
-        '物品系统.背包.不良少年头巾': equipment,
-      });
-      await recordActivatedCheatCode('DELINQUENT');
-
-      console.info('[开局] DELINQUENT 作弊码已激活');
-      openModal('作弊码激活', '已获得：不良少年头巾');
-    } catch (error) {
-      console.error('[开局] 添加装备失败:', error);
-      openModal('错误', '添加装备失败');
-    }
-  } else if (code === 'SHY') {
-    // SHY：遮脸刘海
-    showCheatInput.value = false;
-    cheatCode.value = '';
-
-    try {
-      const equipment = {
-        类型: '装备',
-        等级: 'C',
-        描述: '因为害羞而遮住脸，但这样反而让人更加在意。意外地很会躲藏。',
-        加成属性: {
-          魅力加成: 3,
-          幸运加成: 0,
-          基础性斗力加成: 0,
-          基础性斗力成算: 0,
-          基础忍耐力加成: 0,
-          基础忍耐力成算: 0,
-          闪避率加成: 10,
-          暴击率加成: 0,
-          意志力加成: -3,
-        },
-        部位: '饰品',
-        数量: 1,
-      };
-
-      await updateMvuVariables({
-        '物品系统.背包.遮脸刘海': equipment,
-      });
-      await recordActivatedCheatCode('SHY');
-
-      console.info('[开局] SHY 作弊码已激活');
-      openModal('作弊码激活', '已获得：遮脸刘海');
-    } catch (error) {
-      console.error('[开局] 添加装备失败:', error);
-      openModal('错误', '添加装备失败');
-    }
-  } else {
-    openModal('错误', '无效的代码');
-    cheatCode.value = '';
-  }
   } finally {
     isApplyingCheatCode.value = false;
   }
@@ -1513,7 +1513,7 @@ const handleStartGame = async () => {
     // 处理世界书条目
     // 1. 无论难度如何都写入反同性规则
     await writeNoGayRuleToWorldbook();
-    
+
     // 2. 根据"抖M"难度决定是否写入抖M特性
     if (characterData.value.difficulty === Difficulty.MASOCHIST) {
       // 如果难度为"抖M"，写入特性到世界书
@@ -1770,7 +1770,7 @@ const clearMasochistTraitFromWorldbook = async () => {
             // 提取反同性规则部分
             const noGayRuleMatch = entry.content.match(/<rule_no_gay>[\s\S]*?<\/rule_no_gay>/);
             const noGayRule = noGayRuleMatch ? noGayRuleMatch[0] : '';
-            
+
             // 如果存在反同性规则，只保留它；否则清空
             entry.content = noGayRule || '';
           }
@@ -2047,7 +2047,8 @@ const writeMasochistTraitToWorldbook = async () => {
         if (entry) {
           // 确保反同性规则存在，然后添加抖M特性
           if (!entry.content.includes('<rule_no_gay>')) {
-            entry.content = `<rule_no_gay>
+            entry.content =
+              `<rule_no_gay>
 核心规则: 当玩家性别为"男"（男娘、伪娘等特殊身份除外）时，所有男性NPC均不会对其主动发起任何情爱或性斗互动。
 </rule_no_gay>
 
@@ -2094,7 +2095,9 @@ const writeMasochistTraitToWorldbook = async () => {
 </rule_no_gay>
 
 `;
-        finalContent = ruleContent + (existingContent.includes('<trait_败北宿命>') ? existingContent : existingContent + '\n\n' + traitContent);
+        finalContent =
+          ruleContent +
+          (existingContent.includes('<trait_败北宿命>') ? existingContent : existingContent + '\n\n' + traitContent);
       } else if (!existingContent.includes('<trait_败北宿命>')) {
         finalContent = existingContent + '\n\n' + traitContent;
       }

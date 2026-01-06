@@ -706,9 +706,7 @@ export const STARTER_SKILLS: SkillData[] = [
     staminaCost: 0,
     cooldown: 8,
     castTime: 0,
-    damageFormula: [
-      { source: DamageSource.LUCK, coefficient: 4.0 },
-    ],
+    damageFormula: [{ source: DamageSource.LUCK, coefficient: 4.0 }],
     target: SkillTarget.SINGLE_ENEMY,
     accuracy: 100,
     critModifier: 10,
