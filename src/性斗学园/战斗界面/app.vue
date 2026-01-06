@@ -2563,28 +2563,6 @@ watch(
   () => {
     if (turnState.phase === 'climaxResolution' || turnState.phase === 'victory' || turnState.phase === 'defeat') return;
 
-    // 检查体力耗尽
-    if (enemy.value.stats.currentEndurance <= 0) {
-      turnState.phase = 'victory';
-      addLog(`对手体力耗尽！战斗胜利！共${turnState.currentTurn}回合。`, 'system', 'critical');
-      triggerEffect('victory');
-      clearTemporaryStatus().then(async () => {
-        await initializeCombatSystem();
-        saveToMvu();
-      });
-      return;
-    }
-    if (player.value.stats.currentEndurance <= 0) {
-      turnState.phase = 'defeat';
-      addLog(`你体力耗尽... 败北，共${turnState.currentTurn}回合。`, 'system', 'damage');
-      triggerEffect('defeat');
-      clearTemporaryStatus().then(async () => {
-        await initializeCombatSystem();
-        saveToMvu();
-      });
-      return;
-    }
-
     // 检查高潮（自动处理，不显示按钮）
     // 注意：如果climaxTarget已经设置，说明正在处理高潮，跳过检查
     if (turnState.climaxTarget === null) {
