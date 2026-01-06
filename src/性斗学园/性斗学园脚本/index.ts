@@ -186,11 +186,34 @@ async function updateDependentVariables() {
       _.set(mvuData.stat_data, '核心状态.意志力', finalWillpower);
     }
 
-    // ==================== 步骤3: 计算性斗力 ====================
-    // 公式: ((等级 x 潜力) + 装备加成 + 状态加成) x (1 + 成算/100)
+    // ==================== 步骤3.5: 更新基础性斗力和基础忍耐力 ====================
+    // 基础性斗力 = 等级 × 潜力
+    // 基础忍耐力 = 等级 × 意志力/10
     
+    // 提前获取等级和潜力（用于基础值计算）
     const level = getValue(mvuData, '角色基础._等级', 1);
     const potential = getValue(mvuData, '核心状态._潜力', 5.0);
+    
+    const baseSexPowerValue = level * potential;
+    const baseEnduranceValue = level * (finalWillpower / 10);
+    
+    const currentBaseSexPower = getValue(mvuData, '核心状态.$基础性斗力', 10);
+    const currentBaseEndurance = getValue(mvuData, '核心状态.$基础忍耐力', 10);
+    
+    if (baseSexPowerValue !== currentBaseSexPower) {
+      updates['核心状态.$基础性斗力'] = baseSexPowerValue;
+      hasUpdates = true;
+      console.info(`[性斗学园脚本] 基础性斗力: ${level} × ${potential} = ${baseSexPowerValue}`);
+    }
+    
+    if (baseEnduranceValue !== currentBaseEndurance) {
+      updates['核心状态.$基础忍耐力'] = baseEnduranceValue;
+      hasUpdates = true;
+      console.info(`[性斗学园脚本] 基础忍耐力: ${level} × ${finalWillpower}/10 = ${baseEnduranceValue}`);
+    }
+
+    // ==================== 步骤3: 计算性斗力 ====================
+    // 公式: ((等级 x 潜力) + 装备加成 + 状态加成) x (1 + 成算/100)
     
     // 检查是否处于贤者时间
     const tempStates = statData.临时状态?.状态列表 || {};
