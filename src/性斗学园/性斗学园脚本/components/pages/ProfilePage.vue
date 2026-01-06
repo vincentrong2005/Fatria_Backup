@@ -1,5 +1,85 @@
 <template>
   <div class="profile-page">
+    <button class="help-btn" @click="showHelp = true" title="玩法说明">
+      <i class="fas fa-question"></i>
+    </button>
+
+    <div v-if="showHelp" class="help-overlay" @click.self="showHelp = false">
+      <div class="help-modal" @click.stop>
+        <div class="help-header">
+          <div class="help-title">玩法说明</div>
+          <button class="help-close" @click="showHelp = false" title="关闭">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        <div class="help-body">
+          <div class="help-section">
+            <div class="help-section-title">核心资源</div>
+            <div class="help-text">
+              <div>属性点：用于在“属性加点”中提升基础属性与上限。</div>
+              <div>技能点：用于学习/升级技能（在技能页消耗）。</div>
+              <div>经验值：用于提升等级（界面中显示为 当前经验 / 100）。</div>
+              <div>潜力：角色成长强度的综合指标（数值越高成长越强）。</div>
+            </div>
+          </div>
+
+          <div class="help-section">
+            <div class="help-section-title">基础属性</div>
+            <div class="help-text">
+              <div>加点修改的是基础值；最终显示值 = 基础值 + 永久加成 + 临时加成 + 装备加成（以脚本结算为准）。</div>
+              <div>魅力 = 基础魅力 + (临时状态.魅力加成) + (永久状态.魅力加成) + (装备总加成.魅力加成)。</div>
+              <div>幸运 = 基础幸运 + (临时状态.幸运加成) + (永久状态.幸运加成) + (装备总加成.幸运加成)。</div>
+            </div>
+          </div>
+
+          <div class="help-section">
+            <div class="help-section-title">战斗相关</div>
+            <div class="help-text">
+              <div>性斗力（实时性斗力）= round( (基础性斗力 + 加成和) × (1 + 成算和/100) )。</div>
+              <div>其中：加成和 = 临时.基础性斗力加成 + 永久.基础性斗力加成 + 装备.基础性斗力加成；成算和 = 临时.基础性斗力成算 + 永久.基础性斗力成算 + 装备.基础性斗力成算。</div>
+              <div>忍耐力（实时忍耐力）= round( (基础忍耐力 + 加成和) × (1 + 成算和/100) )。</div>
+              <div>其中：加成和 = 临时.基础忍耐力加成 + 永久.基础忍耐力加成 + 装备.基础忍耐力加成；成算和 = 临时.基础忍耐力成算 + 永久.基础忍耐力成算 + 装备.基础忍耐力成算。</div>
+              <div>闪避率 = 基础闪避率 + (临时.闪避率加成) + (永久.闪避率加成) + (装备.闪避率加成)。</div>
+              <div>暴击率 = clamp( 基础暴击率 + (临时.暴击率加成) + (永久.暴击率加成) + (装备.暴击率加成), 0..100 )。</div>
+              <div>段位：你当前的竞技/评价等级；段位积分会影响升段流程。</div>
+              <div>战斗判定（来自战斗计算）：</div>
+              <div>- 闪避判定：最终命中率 = 技能命中率 - 目标闪避率 + (攻击者幸运/10)，并 clamp 到 10%..95%；随机 roll∈[0,100)，若 roll ≥ 最终命中率 则视为闪避成功。</div>
+              <div>- 暴击判定：最终暴击率 = 攻击者暴击率 + (攻击者幸运/10) + 技能暴击修正，并 clamp 到 0%..100%；随机 roll∈[0,100)，若 roll &lt; 最终暴击率 则暴击。</div>
+              <div>- 忍耐减伤：减伤后伤害 = floor( 基础伤害 × 40 / (目标忍耐力 + 100) )，最低为 1。</div>
+            </div>
+          </div>
+
+          <div class="help-section">
+            <div class="help-section-title">核心状态条</div>
+            <div class="help-text">
+              <div>耐力：行动与持续对抗的资源。显示为 当前耐力 / 最大耐力。</div>
+              <div>快感：累积到上限会导致失败/高潮等结果（依战斗规则）。显示为 当前快感 / 最大快感。</div>
+              <div>意志力：用于抵抗负面影响与维持状态（以百分比显示）。</div>
+              <div>堕落度：代表角色当前倾向/状态变化（以百分比显示）。</div>
+            </div>
+          </div>
+
+          <div class="help-section">
+            <div class="help-section-title">状态与加成</div>
+            <div class="help-text">
+              <div>永久状态：长期生效的标签/效果，会产生加成统计。</div>
+              <div>临时状态：按“回合数”持续，结束后失效，同样可能产生临时加成。</div>
+              <div>加成统计：展示对核心属性/战斗属性的增减（正数为绿色，负数为红色）。</div>
+            </div>
+          </div>
+
+          <div class="help-section">
+            <div class="help-section-title">装备与最终数值</div>
+            <div class="help-text">
+              <div>装备会提供加成属性，系统会汇总为“装备总加成”。</div>
+              <div>常见口径：最终属性 ≈ 基础属性（$基础xxx / 上限） + 永久加成 + 临时加成 + 装备加成。</div>
+              <div>提示：具体公式以脚本结算为准；界面显示的是结算后的最终/实时结果。</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- 角色头像 -->
     <div class="profile-header">
       <div class="profile-avatar" @click="handleAvatarClick">
@@ -212,9 +292,9 @@
             class="bonus-item"
             v-show="value !== 0"
           >
-            <span class="bonus-label">{{ formatBonusLabel(key) }}</span>
-            <span class="bonus-value" :class="getBonusClass(value)">
-              {{ formatBonusValue(value) }}
+            <span class="bonus-label">{{ formatBonusLabel(String(key)) }}</span>
+            <span class="bonus-value" :class="getBonusClass(Number(value))">
+              {{ formatBonusValue(Number(value)) }}
             </span>
           </div>
         </div>
@@ -244,9 +324,9 @@
             class="bonus-item"
             v-show="value !== 0"
           >
-            <span class="bonus-label">{{ formatBonusLabel(key) }}</span>
-            <span class="bonus-value" :class="getBonusClass(value)">
-              {{ formatBonusValue(value) }}
+            <span class="bonus-label">{{ formatBonusLabel(String(key)) }}</span>
+            <span class="bonus-value" :class="getBonusClass(Number(value))">
+              {{ formatBonusValue(Number(value)) }}
             </span>
           </div>
         </div>
@@ -265,6 +345,7 @@ const props = defineProps<{
 
 const fileInputRef = ref<HTMLInputElement | null>(null);
 const avatarUrl = ref<string>('');
+const showHelp = ref(false);
 
 // 可用属性点
 const availablePoints = computed(() => {
@@ -502,7 +583,132 @@ onMounted(() => {
 
 <style scoped lang="scss">
 .profile-page {
-  padding: 16px 20px;
+  position: relative;
+}
+
+.help-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  color: rgba(255, 255, 255, 0.85);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 30;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.18);
+    transform: scale(1.05);
+  }
+
+  &:active {
+    transform: scale(1);
+  }
+
+  i {
+    font-size: 13px;
+    line-height: 1;
+  }
+}
+
+.help-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(6px);
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 18px;
+}
+
+.help-modal {
+  width: 100%;
+  max-width: min(390px, calc(100vw - 36px), calc(100dvw - 36px));
+  max-height: min(80vh, calc(100dvh - 36px));
+  background: rgba(20, 20, 30, 0.92);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 16px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.45);
+  overflow: hidden;
+}
+
+.help-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 14px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.help-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.9);
+  letter-spacing: 0.5px;
+}
+
+.help-close {
+  width: 28px;
+  height: 28px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.75);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.1);
+  }
+
+  i {
+    font-size: 12px;
+  }
+}
+
+.help-body {
+  padding: 14px 14px calc(14px + env(safe-area-inset-bottom));
+  overflow: auto;
+  max-height: calc(80vh - 52px);
+}
+
+.help-section {
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 14px;
+  margin-bottom: 10px;
+}
+
+.help-section-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.82);
+  margin-bottom: 8px;
+}
+
+.help-text {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.6);
+  line-height: 1.6;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.profile-page {
+  padding: 16px 20px calc(16px + 84px + env(safe-area-inset-bottom));
   overflow-y: auto;
   flex: 1;
 }
