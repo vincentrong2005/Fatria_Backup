@@ -33,6 +33,13 @@
           v-for="(rel, name) in relationships" 
           :key="name"
         >
+          <button 
+            class="discard-btn"
+            @click.stop="forgetRelationship(String(name))"
+            title="遗忘"
+          >
+            <i class="fas fa-times"></i>
+          </button>
           <div class="rel-header">
             <div class="rel-avatar">
               <i class="fas fa-user"></i>
@@ -129,20 +136,20 @@
         >
           <div class="rep-header">
             <div class="rep-icon">
-              <i :class="getReputationIcon(name)"></i>
+              <i :class="getReputationIcon(String(name))"></i>
             </div>
             <div class="rep-info">
               <div class="rep-name">{{ name }}</div>
-              <div class="rep-value" :class="getReputationClass(value)">
-                {{ value > 0 ? '+' : '' }}{{ value }}
+              <div class="rep-value" :class="getReputationClass(Number(value))">
+                {{ Number(value) > 0 ? '+' : '' }}{{ Number(value) }}
               </div>
             </div>
           </div>
           <div class="rep-bar">
             <div 
               class="rep-fill" 
-              :class="getReputationClass(value)"
-              :style="{ width: `${getReputationPercentage(value)}%` }"
+              :class="getReputationClass(Number(value))"
+              :style="{ width: `${getReputationPercentage(Number(value))}%` }"
             ></div>
           </div>
         </div>
@@ -187,6 +194,45 @@ const relationships = computed(() => {
 const reputations = computed(() => {
   return props.characterData.势力声望 || {};
 });
+
+async function forgetRelationship(name: string) {
+  const ok = confirm(`确认遗忘与「${name}」的关系吗？`);
+  if (!ok) return;
+
+  const globalAny = window as any;
+  if (!globalAny.Mvu) {
+    console.error('[关系界面] MVU 未初始化');
+    return;
+  }
+
+  try {
+    const mvuData = globalAny.Mvu.getMvuData({ type: 'message', message_id: 'latest' });
+    if (!mvuData || !mvuData.stat_data) {
+      console.error('[关系界面] 无法获取 MVU 数据');
+      return;
+    }
+
+    const statData = mvuData.stat_data;
+    if (!statData.关系系统 || !statData.关系系统[name]) {
+      return;
+    }
+
+    delete statData.关系系统[name];
+
+    await globalAny.Mvu.replaceMvuData(mvuData, { type: 'message', message_id: 'latest' });
+
+    if (typeof toastr !== 'undefined') {
+      toastr.success(`已遗忘与 ${name} 的关系`);
+    }
+
+    window.dispatchEvent(new CustomEvent('mvu-data-updated'));
+  } catch (error) {
+    console.error('[关系界面] 遗忘失败:', error);
+    if (typeof toastr !== 'undefined') {
+      toastr.error('遗忘失败，请重试');
+    }
+  }
+}
 
 function getRelationTypeClass(type: string | undefined): string {
   if (!type) return 'type-unknown';
@@ -343,6 +389,39 @@ function getReputationPercentage(value: number): number {
   background: rgba(255, 255, 255, 0.03);
   border-radius: 16px;
   border: 1px solid rgba(255, 255, 255, 0.08);
+  position: relative;
+}
+
+.discard-btn {
+  width: 18px;
+  height: 18px;
+  border-radius: 999px;
+  background: rgba(248, 113, 113, 0.9);
+  border: 1px solid rgba(248, 113, 113, 0.9);
+  color: white;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 2;
+
+  &:hover {
+    transform: scale(1.08);
+    background: rgba(248, 113, 113, 1);
+  }
+
+  &:active {
+    transform: scale(1);
+  }
+
+  i {
+    font-size: 10px;
+    line-height: 1;
+  }
 }
 
 .rel-header {

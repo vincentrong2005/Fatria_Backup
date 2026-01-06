@@ -2230,6 +2230,16 @@ function collectCombatLogs(): string {
       return true;
     }
 
+    // 保留闪避动作
+    if (message.includes('闪避了攻击')) {
+      return true;
+    }
+
+    // 保留暴击动作
+    if (message.includes('暴击！')) {
+      return true;
+    }
+
     // 保留造成的伤害（包括暴击）
     if (message.includes('造成') && (message.includes('伤害') || message.includes('暴击'))) {
       return true;
@@ -2240,13 +2250,18 @@ function collectCombatLogs(): string {
       return true;
     }
 
-    // 保留预告
-    if (message.includes('预告')) {
+    // 保留"轮到XX行动"
+    if (message.includes('轮到') && message.includes('行动')) {
       return true;
     }
 
-    // 保留"轮到XX行动"
-    if (message.includes('轮到') && message.includes('行动')) {
+    // 保留束缚效果
+    if (message.includes('被束缚了') && message.includes('无法行动')) {
+      return true;
+    }
+
+    // 保留投降动作
+    if (message.includes('选择了投降') || message.includes('不能逃跑')) {
       return true;
     }
 
@@ -2268,6 +2283,19 @@ function collectCombatLogs(): string {
     // 保留败北/胜利消息
     if (message.includes('败北') || message.includes('胜利') || message.includes('崩溃')) {
       return true;
+    }
+
+    // 过滤掉预告技能
+    if (message.includes('预告')) {
+      return false;
+    }
+
+    // 过滤掉状态变化
+    if (message.includes('进入了贤者时间状态') || message.includes('进入虚脱状态') ||
+        message.includes('性斗力降低') || message.includes('性斗力提升') || 
+        message.includes('忍耐力降低') || message.includes('忍耐力提升') ||
+        message.includes('耐力降低') || message.includes('耐力提升')) {
+      return false;
     }
 
     // 过滤掉其他系统消息
@@ -2435,6 +2463,30 @@ async function processClimaxAfterLLM(targetIsEnemy: boolean) {
 
   // 保存状态到MVU
   saveToMvu();
+
+  // 检查并记录贤者时间状态
+  try {
+    if (typeof Mvu !== 'undefined') {
+      const mvuData = Mvu.getMvuData({ type: 'message', message_id: 'latest' });
+      if (mvuData?.stat_data) {
+        const tempStates = mvuData.stat_data.临时状态?.状态列表 || {};
+        if ('贤者时间' in tempStates) {
+          addLog(`${char.name} 进入了贤者时间状态（持续${tempStates.贤者时间}回合）`, 'system', 'info');
+          addLog(`${char.name} 的性斗力降低20%，忍耐力提升10%`, 'system', 'info');
+        }
+        
+        // 检查虚脱状态
+        const orgasmCount = _.get(mvuData.stat_data, '性斗系统.高潮次数', 0);
+        const maxOrgasmCount = _.get(mvuData.stat_data, '性斗系统.胜负规则.高潮次数上限', 0);
+        if (maxOrgasmCount > 0 && orgasmCount >= maxOrgasmCount) {
+          addLog(`${char.name} 达到了高潮次数上限，进入虚脱状态！`, 'system', 'critical');
+          addLog(`${char.name} 的耐力降低30%`, 'system', 'critical');
+        }
+      }
+    }
+  } catch (e) {
+    console.warn('[战斗界面] 检查状态变化失败', e);
+  }
 
   // 检查是否达到最大高潮次数（胜负判定）
   if (targetIsEnemy && enemy.value.stats.climaxCount >= enemy.value.stats.maxClimaxCount) {

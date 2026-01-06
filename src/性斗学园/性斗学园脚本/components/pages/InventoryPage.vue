@@ -57,9 +57,9 @@
           class="bonus-item"
           v-show="value !== 0"
         >
-          <span class="bonus-label">{{ formatBonusLabel(key) }}</span>
-          <span class="bonus-value" :class="getBonusClass(value)">
-            {{ formatBonusValue(value) }}{{ isPercentBonus(key) ? '%' : '' }}
+          <span class="bonus-label">{{ formatBonusLabel(String(key)) }}</span>
+          <span class="bonus-value" :class="getBonusClass(Number(value))">
+            {{ formatBonusValue(Number(value)) }}{{ isPercentBonus(String(key)) ? '%' : '' }}
           </span>
         </div>
       </div>
@@ -116,6 +116,13 @@
           @touchstart="showTooltipMobile(itemKey, item, $event)"
           @touchend="hideTooltip"
         >
+          <button 
+            class="discard-btn"
+            @click.stop="discardItem(itemKey)"
+            title="丢弃"
+          >
+            <i class="fas fa-times"></i>
+          </button>
           <div class="item-header">
             <div class="item-name">{{ itemKey }}</div>
             <div class="item-badges">
@@ -166,9 +173,9 @@
           class="tooltip-bonus-item"
           v-show="value !== 0"
         >
-          <span>{{ formatBonusLabel(key) }}</span>
-          <span :class="getBonusClass(value)">
-            {{ formatBonusValue(value) }}{{ isPercentBonus(key) ? '%' : '' }}
+          <span>{{ formatBonusLabel(String(key)) }}</span>
+          <span :class="getBonusClass(Number(value))">
+            {{ formatBonusValue(Number(value)) }}{{ isPercentBonus(String(key)) ? '%' : '' }}
           </span>
         </div>
       </div>
@@ -563,6 +570,45 @@ async function equipItem(itemKey: string, item: any) {
     console.error('[背包界面] 装备失败:', error);
     if (typeof toastr !== 'undefined') {
       toastr.error('装备失败，请重试');
+    }
+  }
+}
+
+async function discardItem(itemKey: string) {
+  const ok = confirm(`确认丢弃「${itemKey}」吗？`);
+  if (!ok) return;
+
+  const globalAny = window as any;
+  if (!globalAny.Mvu) {
+    console.error('[背包界面] MVU 未初始化');
+    return;
+  }
+
+  try {
+    const mvuData = globalAny.Mvu.getMvuData({ type: 'message', message_id: 'latest' });
+    if (!mvuData || !mvuData.stat_data) {
+      console.error('[背包界面] 无法获取 MVU 数据');
+      return;
+    }
+
+    const statData = mvuData.stat_data;
+    if (!statData.物品系统?.背包 || !statData.物品系统.背包[itemKey]) {
+      return;
+    }
+
+    delete statData.物品系统.背包[itemKey];
+
+    await globalAny.Mvu.replaceMvuData(mvuData, { type: 'message', message_id: 'latest' });
+
+    if (typeof toastr !== 'undefined') {
+      toastr.success(`已丢弃 ${itemKey}`);
+    }
+
+    window.dispatchEvent(new CustomEvent('mvu-data-updated'));
+  } catch (error) {
+    console.error('[背包界面] 丢弃失败:', error);
+    if (typeof toastr !== 'undefined') {
+      toastr.error('丢弃失败，请重试');
     }
   }
 }
@@ -1051,6 +1097,39 @@ function calculateEquipmentBonuses(statData: any) {
     gap: 6px;
     align-items: center;
     flex-shrink: 0;
+    margin-right: 22px;
+  }
+
+  .discard-btn {
+    width: 18px;
+    height: 18px;
+    border-radius: 999px;
+    background: rgba(248, 113, 113, 0.9);
+    border: 1px solid rgba(248, 113, 113, 0.9);
+    color: white;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    z-index: 2;
+
+    &:hover {
+      transform: scale(1.08);
+      background: rgba(248, 113, 113, 1);
+    }
+
+    &:active {
+      transform: scale(1);
+    }
+
+    i {
+      font-size: 10px;
+      line-height: 1;
+    }
   }
   
   .item-level {
