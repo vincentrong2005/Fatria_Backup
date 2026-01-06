@@ -2351,6 +2351,41 @@ async function handleSendCombatLogToLLM() {
   const context = turnState.phase === 'victory' ? '获得胜利' : turnState.phase === 'defeat' ? '败北' : '战斗结束';
   await sendCombatLogToLLM(context);
 
+  // 战斗结算机制：玩家当前快感减半，耐力增加最大耐力的20%
+  try {
+    if (typeof Mvu !== 'undefined') {
+      const mvuData = Mvu.getMvuData({ type: 'message', message_id: 'latest' });
+      if (mvuData && mvuData.stat_data) {
+        // 获取当前数值
+        const currentPleasure = _.get(mvuData.stat_data, '核心状态.$快感', 0);
+        const maxStamina = _.get(mvuData.stat_data, '核心状态.$最大耐力', 100);
+        const currentStamina = _.get(mvuData.stat_data, '核心状态.$耐力', 0);
+        
+        // 计算新数值
+        const newPleasure = Math.floor(currentPleasure / 2); // 快感减半
+        const staminaIncrease = Math.floor(maxStamina * 0.2); // 耐力增加最大耐力的20%
+        const newStamina = Math.min(maxStamina, currentStamina + staminaIncrease); // 不超过最大耐力
+        
+        // 更新MVU变量
+        _.set(mvuData.stat_data, '核心状态.$快感', newPleasure);
+        _.set(mvuData.stat_data, '核心状态.$耐力', newStamina);
+        
+        // 保存到MVU
+        await Mvu.replaceMvuData(mvuData, { type: 'message', message_id: 'latest' });
+        
+        // 添加结算日志
+        addLog(`战斗结算：快感 ${currentPleasure} → ${newPleasure} (减半)`, 'system', 'info');
+        addLog(`战斗结算：耐力 ${currentStamina} → ${newStamina} (+${staminaIncrease})`, 'system', 'info');
+        addLog('战斗结算完成', 'system', 'info');
+        
+        console.info(`[战斗结算] 快感: ${currentPleasure} → ${newPleasure}, 耐力: ${currentStamina} → ${newStamina} (+${staminaIncrease})`);
+      }
+    }
+  } catch (e) {
+    console.error('[战斗界面] 战斗结算失败', e);
+    addLog('战斗结算时出错，但战斗记录已发送', 'system', 'error');
+  }
+
   // 清空战斗日志
   logs.value = [];
 

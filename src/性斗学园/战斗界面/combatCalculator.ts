@@ -229,6 +229,18 @@ export function executeAttack(attacker: Character, target: Character, skill: Ski
   finalDamage = applyBuffModifiers(finalDamage, attacker, target);
   logs.push(`最终伤害: ${finalDamage}`);
 
+  // 6. 应用快感上限限制（单次攻击最多造成目标最大快感的40%）
+  const maxPleasureCap = Math.floor(target.stats.maxPleasure * 0.4);
+  const damageBeforeCap = finalDamage;
+  
+  if (finalDamage > maxPleasureCap) {
+    finalDamage = maxPleasureCap;
+    logs.push(`快感上限限制: 原始伤害 ${damageBeforeCap} > 最大快感的40% (${maxPleasureCap})`);
+    logs.push(`伤害调整为: ${finalDamage}`);
+  } else {
+    logs.push(`快感上限检查: ${finalDamage} <= 最大快感的40% (${maxPleasureCap})，无需调整`);
+  }
+
   result.damage = baseDamage;
   result.actualDamage = finalDamage;
   result.logs = logs;
