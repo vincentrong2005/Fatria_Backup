@@ -70,11 +70,11 @@ const BUFF_TYPE_MAP: Partial<Record<BuffType, MvuSkillEffect['效果类型']>> =
 
 // 稀有度映射
 const RARITY_MAP: Record<string, 'C' | 'B' | 'A' | 'S' | 'SS'> = {
-  'C': 'C',
-  'B': 'B',
-  'A': 'A',
-  'S': 'S',
-  'SS': 'SS',
+  C: 'C',
+  B: 'B',
+  A: 'A',
+  S: 'S',
+  SS: 'SS',
 };
 
 /**
@@ -84,7 +84,7 @@ export function convertSkillToMvu(skill: SkillData, level: number = 1): MvuActiv
   // 确定主要伤害来源和系数
   let mainDamageSource: MvuActiveSkill['伤害与效果']['伤害来源'] = '性斗力';
   let mainCoefficient = 100; // 默认100%
-  
+
   if (skill.damageFormula && skill.damageFormula.length > 0) {
     // 取第一个伤害公式作为主要伤害来源
     const mainFormula = skill.damageFormula[0];
@@ -92,12 +92,12 @@ export function convertSkillToMvu(skill: SkillData, level: number = 1): MvuActiv
     // 将系数转换为百分比（原始值是小数）
     mainCoefficient = Math.round(mainFormula.coefficient * 100);
   }
-  
+
   // 根据等级计算升级加成
   let damageBonus = 0;
   let costReduction = 0;
   let cooldownReduction = 0;
-  
+
   if (skill.upgrades && level > 1) {
     for (let i = 0; i < Math.min(level - 1, skill.upgrades.length); i++) {
       damageBonus += skill.upgrades[i].damageIncrease || 0;
@@ -105,10 +105,10 @@ export function convertSkillToMvu(skill: SkillData, level: number = 1): MvuActiv
       cooldownReduction += skill.upgrades[i].cooldownReduction || 0;
     }
   }
-  
+
   // 构建效果列表
   const effectList: Record<string, MvuSkillEffect> = {};
-  
+
   if (skill.buffs && skill.buffs.length > 0) {
     skill.buffs.forEach((buff, index) => {
       const effectType = BUFF_TYPE_MAP[buff.type];
@@ -123,7 +123,7 @@ export function convertSkillToMvu(skill: SkillData, level: number = 1): MvuActiv
       }
     });
   }
-  
+
   return {
     基本信息: {
       技能名称: skill.name,
@@ -151,12 +151,9 @@ export function convertSkillToMvu(skill: SkillData, level: number = 1): MvuActiv
 /**
  * 批量转换技能
  */
-export function convertSkillsToMvu(
-  skills: SkillData[], 
-  selectedIds: string[]
-): Record<string, MvuActiveSkill> {
+export function convertSkillsToMvu(skills: SkillData[], selectedIds: string[]): Record<string, MvuActiveSkill> {
   const result: Record<string, MvuActiveSkill> = {};
-  
+
   for (const skillId of selectedIds) {
     const skill = skills.find(s => s.id === skillId);
     if (skill) {
@@ -164,7 +161,7 @@ export function convertSkillsToMvu(
       result[skill.id] = convertSkillToMvu(skill, 1);
     }
   }
-  
+
   return result;
 }
 
@@ -181,7 +178,10 @@ export function getSkillUpgradeCost(skill: SkillData, currentLevel: number): num
 /**
  * 获取技能等级提升后的属性变化预览
  */
-export function getSkillUpgradePreview(skill: SkillData, currentLevel: number): {
+export function getSkillUpgradePreview(
+  skill: SkillData,
+  currentLevel: number,
+): {
   damageIncrease: number;
   costReduction: number;
   cooldownReduction: number;
@@ -190,10 +190,10 @@ export function getSkillUpgradePreview(skill: SkillData, currentLevel: number): 
   if (!skill.upgrades || currentLevel >= 5 || currentLevel < 1) {
     return null;
   }
-  
+
   const upgrade = skill.upgrades[currentLevel - 1];
   if (!upgrade) return null;
-  
+
   return {
     damageIncrease: upgrade.damageIncrease,
     costReduction: upgrade.costReduction,
@@ -201,4 +201,3 @@ export function getSkillUpgradePreview(skill: SkillData, currentLevel: number): 
     specialEffect: upgrade.specialEffect,
   };
 }
-

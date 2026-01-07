@@ -1,13 +1,16 @@
 <template>
   <div class="animate-slide-up space-y-6">
-    <div :class="[
-      'flex justify-between items-center p-4 rounded-xl border',
-      cheatMode 
-        ? 'bg-gradient-to-r from-yellow-900/50 to-orange-900/50 border-yellow-500/30' 
-        : 'bg-gradient-to-r from-indigo-900/50 to-purple-900/50 border-white/10'
-    ]">
+    <div
+      :class="[
+        'flex justify-between items-center p-4 rounded-xl border',
+        cheatMode
+          ? 'bg-gradient-to-r from-yellow-900/50 to-orange-900/50 border-yellow-500/30'
+          : 'bg-gradient-to-r from-indigo-900/50 to-purple-900/50 border-white/10',
+      ]"
+    >
       <div class="text-sm text-gray-300">
-        <p>当前难度: <span class="text-white font-bold">{{ data.difficulty }}</span>
+        <p>
+          当前难度: <span class="text-white font-bold">{{ data.difficulty }}</span>
           <span v-if="cheatMode" class="ml-2 text-xs text-yellow-400">[作弊模式]</span>
         </p>
         <p class="text-xs text-gray-500 mt-1">初始点数: {{ totalPointsAvailable }}</p>
@@ -20,7 +23,7 @@
             'px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-300 border-2',
             x10Mode
               ? 'bg-secondary/20 border-secondary text-secondary shadow-lg shadow-pink-500/30'
-              : 'bg-white/5 border-white/10 text-gray-400 hover:text-white hover:border-white/20'
+              : 'bg-white/5 border-white/10 text-gray-400 hover:text-white hover:border-white/20',
           ]"
           title="点击切换x10模式"
         >
@@ -29,10 +32,7 @@
         </button>
         <div class="text-right">
           <span class="block text-xs text-gray-400 uppercase tracking-wider">剩余点数</span>
-          <span :class="[
-            'text-3xl font-bold',
-            remaining === 0 ? 'text-gray-500' : 'text-secondary animate-pulse'
-          ]">
+          <span :class="['text-3xl font-bold', remaining === 0 ? 'text-gray-500' : 'text-secondary animate-pulse']">
             {{ remaining }}
           </span>
         </div>
@@ -54,35 +54,33 @@
             <span class="text-xs text-gray-500">{{ stat.costText }}</span>
           </div>
         </div>
-        
+
         <div class="flex items-center gap-3">
           <button
             @click="handleStatChange(stat.path, -1)"
             :disabled="getCurrentValue(stat.path) <= getInitialValue(stat.path) || isUpdating"
             :class="[
               'w-8 h-8 flex items-center justify-center rounded-full text-gray-400 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-all',
-              x10Mode 
-                ? 'bg-white/10 hover:bg-white/20 border border-orange-500/30' 
-                : 'bg-white/5 hover:bg-white/10'
+              x10Mode ? 'bg-white/10 hover:bg-white/20 border border-orange-500/30' : 'bg-white/5 hover:bg-white/10',
             ]"
             :title="x10Mode ? 'x10模式：点击一次减少10点' : '点击减少1点'"
           >
             <span v-if="x10Mode" class="text-xs font-bold">-10</span>
             <i v-else class="fas fa-minus text-sm"></i>
           </button>
-          
+
           <span class="w-12 text-center font-mono font-bold text-lg text-white">
             {{ getCurrentValue(stat.path) }}
           </span>
-          
+
           <button
             @click="handleStatChange(stat.path, 1)"
             :disabled="remaining <= 0 || isUpdating"
             :class="[
               'w-8 h-8 flex items-center justify-center rounded-full text-white shadow-lg hover:scale-110 active:scale-95 disabled:opacity-30 disabled:cursor-not-allowed disabled:transform-none transition-all',
-              x10Mode 
-                ? 'bg-gradient-to-br from-orange-500 to-red-500 shadow-orange-500/30' 
-                : 'bg-secondary shadow-pink-500/20'
+              x10Mode
+                ? 'bg-gradient-to-br from-orange-500 to-red-500 shadow-orange-500/30'
+                : 'bg-secondary shadow-pink-500/20',
             ]"
             :title="x10Mode ? 'x10模式：点击一次增加10点' : '点击增加1点'"
           >
@@ -136,7 +134,7 @@ const pointsUsed = computed(() => {
   let used = 0;
   const attrs = props.data.attributes;
   const init = INITIAL_ATTRIBUTES;
-  
+
   // 确保所有值都存在，否则使用0
   const getVal = (obj: any, path: string[], fallback: number) => {
     let val = obj;
@@ -146,7 +144,7 @@ const pointsUsed = computed(() => {
     }
     return val ?? fallback;
   };
-  
+
   // 角色基础 - 等级
   used += (getVal(attrs, ['角色基础', '_等级'], 1) - getVal(init, ['角色基础', '_等级'], 1)) * 1;
   // 核心状态 - 潜力
@@ -158,7 +156,7 @@ const pointsUsed = computed(() => {
   // 核心状态 - 最大耐力和最大快感
   used += (getVal(attrs, ['核心状态', '$最大耐力'], 100) - getVal(init, ['核心状态', '$最大耐力'], 100)) / 5;
   used += (getVal(attrs, ['核心状态', '$最大快感'], 100) - getVal(init, ['核心状态', '$最大快感'], 100)) / 5;
-  
+
   return Math.max(0, Math.ceil(used));
 });
 
@@ -166,11 +164,29 @@ const remaining = computed(() => totalPointsAvailable.value - pointsUsed.value);
 
 // 可分配的属性列表（只有6个可分配属性）
 const stats = [
-  { path: '角色基础._等级', label: '初始等级', icon: 'fa-arrow-trend-up', color: 'text-yellow-400', costText: '1点 = 1级' },
+  {
+    path: '角色基础._等级',
+    label: '初始等级',
+    icon: 'fa-arrow-trend-up',
+    color: 'text-yellow-400',
+    costText: '1点 = 1级',
+  },
   { path: '核心状态._潜力', label: '潜力资质', icon: 'fa-star', color: 'text-purple-400', costText: '2点 = 0.1潜力' },
-  { path: '核心状态.$最大耐力', label: '最大耐力', icon: 'fa-shield-halved', color: 'text-green-400', costText: '1点 = 5耐力' },
+  {
+    path: '核心状态.$最大耐力',
+    label: '最大耐力',
+    icon: 'fa-shield-halved',
+    color: 'text-green-400',
+    costText: '1点 = 5耐力',
+  },
   { path: '核心状态.$最大快感', label: '最大快感', icon: 'fa-heart', color: 'text-pink-400', costText: '1点 = 5快感' },
-  { path: '核心状态.$基础魅力', label: '基础魅力', icon: 'fa-face-grin-hearts', color: 'text-rose-400', costText: '1点 = 1魅力' },
+  {
+    path: '核心状态.$基础魅力',
+    label: '基础魅力',
+    icon: 'fa-face-grin-hearts',
+    color: 'text-rose-400',
+    costText: '1点 = 1魅力',
+  },
   { path: '核心状态.$基础幸运', label: '基础幸运', icon: 'fa-clover', color: 'text-cyan-400', costText: '1点 = 1幸运' },
 ];
 
@@ -178,11 +194,11 @@ const handleStatChange = async (path: string, delta: number) => {
   if (isUpdating.value) return;
 
   const [category, key] = path.split('.');
-  
+
   // 计算实际的变化倍数
   const multiplier = x10Mode.value ? 10 : 1;
   const actualDelta = delta * multiplier;
-  
+
   let cost = 1;
   let valueChange = actualDelta;
 
@@ -197,7 +213,7 @@ const handleStatChange = async (path: string, delta: number) => {
 
   // 计算总成本
   const totalCost = cost * multiplier;
-  
+
   // 检查剩余点数是否足够
   if (delta > 0 && remaining.value < totalCost) return;
 
@@ -207,7 +223,7 @@ const handleStatChange = async (path: string, delta: number) => {
 
   // 计算新值
   let newVal = currentVal + valueChange;
-  
+
   // 如果超过上限，调整到上限
   if (newVal > maxVal) {
     newVal = maxVal;
@@ -221,28 +237,28 @@ const handleStatChange = async (path: string, delta: number) => {
       valueChange = actualValueChange;
     }
   }
-  
+
   // 如果低于下限，调整到下限
   if (newVal < minVal) {
     newVal = minVal;
     valueChange = newVal - currentVal;
   }
-  
+
   if (path === '核心状态._潜力') newVal = parseFloat(newVal.toFixed(1));
 
   if (newVal <= maxVal && newVal >= minVal) {
     isUpdating.value = true;
-    
+
     try {
       // 更新本地状态
       const newAttributes = { ...props.data.attributes };
       const categoryObj = { ...newAttributes[category as keyof CharacterAttributes] } as any;
       categoryObj[key] = newVal;
       newAttributes[category as keyof CharacterAttributes] = categoryObj as any;
-      
+
       // 先更新本地状态（立即反馈）
       emit('update-data', {
-        attributes: newAttributes
+        attributes: newAttributes,
       });
 
       // 然后实时更新 MVU 变量
@@ -256,5 +272,4 @@ const handleStatChange = async (path: string, delta: number) => {
 };
 </script>
 
-<style lang="scss" scoped>
-</style>
+<style lang="scss" scoped></style>
