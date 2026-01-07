@@ -695,21 +695,16 @@ async function loadEnemyFromMvuData(data: any, maxClimaxCount: number) {
             _.set(mvuData.stat_data, '性斗系统.对手技能冷却', presetData.对手技能冷却 || {});
             
             // 自动加载对手技能（使用解析后的完整名称）
-            // 重要：合并技能而不是覆盖，保留AI写入的技能
+            // 重要：如果数据库中存在该对手技能，则直接覆盖MVU中的技能
             const enemySkills = getEnemySkills(enemyName, fullEnemyName);
             if (enemySkills && enemySkills.length > 0) {
               console.info(`[战斗界面] 为对手 ${fullEnemyName} 加载技能:`, enemySkills.map(s => s.name));
-              // 获取现有技能（可能由AI写入）
-              const existingSkills = _.get(mvuData.stat_data, '性斗系统.对手可用技能', {});
-              const mvuSkills: Record<string, any> = { ...existingSkills };
-              // 只添加不存在的技能，不覆盖已有技能
+              const mvuSkills: Record<string, any> = {};
               enemySkills.forEach(skill => {
-                if (!mvuSkills[skill.id]) {
-                  mvuSkills[skill.id] = convertToMvuSkillFormat(skill);
-                }
+                mvuSkills[skill.id] = convertToMvuSkillFormat(skill);
               });
               _.set(mvuData.stat_data, '性斗系统.对手可用技能', mvuSkills);
-              console.info(`[战斗界面] 技能合并完成，现有技能数: ${Object.keys(mvuSkills).length}`);
+              console.info(`[战斗界面] 技能覆盖完成，现有技能数: ${Object.keys(mvuSkills).length}`);
             } else {
               // 如果MVU中没有对手可用技能，初始化为空对象
               if (!_.get(mvuData.stat_data, '性斗系统.对手可用技能')) {
@@ -747,21 +742,16 @@ async function loadEnemyFromMvuData(data: any, maxClimaxCount: number) {
             }
             
             // 尝试加载对手技能（使用解析后的完整名称）
-            // 重要：合并技能而不是覆盖，保留AI写入的技能
+            // 重要：如果数据库中存在该对手技能，则直接覆盖MVU中的技能
             const enemySkills = getEnemySkills(enemyName, fullEnemyName);
             if (enemySkills && enemySkills.length > 0) {
               console.info(`[战斗界面] 为对手 ${fullEnemyName} 加载技能:`, enemySkills.map(s => s.name));
-              // 获取现有技能（可能由AI写入）
-              const existingSkills = _.get(mvuData.stat_data, '性斗系统.对手可用技能', {});
-              const mvuSkills: Record<string, any> = { ...existingSkills };
-              // 只添加不存在的技能，不覆盖已有技能
+              const mvuSkills: Record<string, any> = {};
               enemySkills.forEach(skill => {
-                if (!mvuSkills[skill.id]) {
-                  mvuSkills[skill.id] = convertToMvuSkillFormat(skill);
-                }
+                mvuSkills[skill.id] = convertToMvuSkillFormat(skill);
               });
               _.set(mvuData.stat_data, '性斗系统.对手可用技能', mvuSkills);
-              console.info(`[战斗界面] 技能合并完成，现有技能数: ${Object.keys(mvuSkills).length}`);
+              console.info(`[战斗界面] 技能覆盖完成，现有技能数: ${Object.keys(mvuSkills).length}`);
             } else {
               // 确保对手可用技能存在
               if (!_.get(mvuData.stat_data, '性斗系统.对手可用技能')) {
