@@ -12460,7 +12460,7 @@ export const ENEMY_SKILLS: Record<string, SkillData> = {
     accuracy: 82,
     critModifier: 20,
     buffs: [{ type: BuffType.ENDURANCE_UP, value: 25, isPercent: true, duration: 3, stackable: false }],
-    canBeReflected: false,
+    j: false,
     hitCount: 1,
   },
   '田中勇_4': {

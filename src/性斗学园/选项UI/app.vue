@@ -43,7 +43,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { onMounted, ref } from 'vue';
 
 // 正则表达式：匹配 <option> 标签包裹的内容
 const OPTION_REGEX = /<option>([\s\S]*?)<\/option>/g;
@@ -55,6 +55,26 @@ interface OptionItem {
 }
 
 const options = ref<OptionItem[]>([]);
+const enemyName = ref('');
+
+const loadEnemyNameFromMvu = async () => {
+  try {
+    const globalAny = window as any;
+    if (globalAny.waitGlobalInitialized) {
+      await globalAny.waitGlobalInitialized('Mvu');
+    }
+    if (!globalAny.Mvu) {
+      enemyName.value = '';
+      return;
+    }
+    const mvuData = globalAny.Mvu.getMvuData({ type: 'message', message_id: 'latest' });
+    const name = _.get(mvuData, 'stat_data.性斗系统.对手名称', '');
+    enemyName.value = typeof name === 'string' ? name.trim() : '';
+  } catch (error) {
+    console.error('[选项美化] 获取对手名称失败:', error);
+    enemyName.value = '';
+  }
+};
 
 // 解析选项文本
 const parseOptions = (text: string): OptionItem[] => {
@@ -179,6 +199,9 @@ const extractOptions = () => {
     if (match && match[1]) {
       const optionText = match[1].trim();
       options.value = parseOptions(optionText);
+      if (!enemyName.value) {
+        options.value = options.value.filter(o => !o.isFight);
+      }
       console.info('[选项美化] 已提取选项，数量:', options.value.length);
     } else {
       console.info('[选项美化] 未找到 <option> 标签');
@@ -400,9 +423,11 @@ const selectOption = (optionText: string) => {
   }
 };
 
-onMounted(() => {
+onMounted(async () => {
   console.info('[选项美化] 组件已加载');
-  
+
+  await loadEnemyNameFromMvu();
+
   // 延迟提取，确保消息已加载
   setTimeout(() => {
     extractOptions();
