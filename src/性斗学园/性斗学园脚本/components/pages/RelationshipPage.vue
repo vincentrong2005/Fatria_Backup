@@ -9,8 +9,13 @@
       </div>
       <div class="present-list">
         <div class="present-item" v-for="(name, index) in presentCharacters" :key="index">
-          <div class="present-avatar">
-            <i class="fas fa-user"></i>
+          <div class="present-avatar" @click="showAvatarModal(name)">
+            <img 
+              :src="getAvatarUrl(name)" 
+              :alt="name"
+              @error="handleImageError($event, name)"
+              class="avatar-img"
+            />
           </div>
           <span class="present-name">{{ name }}</span>
         </div>
@@ -41,8 +46,13 @@
             <i class="fas fa-times"></i>
           </button>
           <div class="rel-header">
-            <div class="rel-avatar">
-              <i class="fas fa-user"></i>
+            <div class="rel-avatar" @click="showAvatarModal(String(name))">
+              <img 
+                :src="getAvatarUrl(String(name))" 
+                :alt="String(name)"
+                @error="handleImageError($event, String(name))"
+                class="avatar-img"
+              />
             </div>
             <div class="rel-info">
               <div class="rel-name">{{ name }}</div>
@@ -165,10 +175,31 @@
       </div>
     </div>
   </div>
+
+  <!-- 头像放大模态框 -->
+  <div v-if="showModal" class="avatar-modal" @click="closeModal">
+    <div class="modal-backdrop"></div>
+    <div class="modal-content" @click.stop>
+      <button class="modal-close" @click="closeModal">
+        <i class="fas fa-times"></i>
+      </button>
+      <div class="modal-header">
+        <h3>{{ modalCharacterName }}</h3>
+      </div>
+      <div class="modal-body">
+        <img 
+          :src="modalAvatarUrl" 
+          :alt="modalCharacterName"
+          @error="handleModalImageError"
+          class="modal-avatar-img"
+        />
+      </div>
+    </div>
+  </div>
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 
 const props = defineProps<{
   characterData: any;
@@ -194,6 +225,41 @@ const relationships = computed(() => {
 const reputations = computed(() => {
   return props.characterData.势力声望 || {};
 });
+
+// 头像放大模态框
+const showModal = ref(false);
+const modalAvatarUrl = ref('');
+const modalCharacterName = ref('');
+
+// 生成头像 URL
+function getAvatarUrl(name: string): string {
+  return `https://raw.githubusercontent.com/vincentrong2005/Fatria/main/图片素材/性斗学园/头像/${encodeURIComponent(name)}.png`;
+}
+
+// 处理图片加载失败
+function handleImageError(event: Event, name: string) {
+  const img = event.target as HTMLImageElement;
+  // 降级为默认头像（使用 icon）
+  img.style.display = 'none';
+  const parent = img.parentElement;
+  if (parent && !parent.querySelector('.fallback-icon')) {
+    const icon = document.createElement('i');
+    icon.className = 'fas fa-user fallback-icon';
+    parent.appendChild(icon);
+  }
+}
+
+// 显示头像放大模态框
+function showAvatarModal(name: string) {
+  modalCharacterName.value = name;
+  modalAvatarUrl.value = getAvatarUrl(name);
+  showModal.value = true;
+}
+
+// 关闭模态框
+function closeModal() {
+  showModal.value = false;
+}
 
 async function forgetRelationship(name: string) {
   const ok = confirm(`确认遗忘与「${name}」的关系吗？`);
@@ -304,6 +370,19 @@ function getReputationPercentage(value: number): number {
   // 将 -100 到 100 的范围映射到 0 到 100
   return Math.max(0, Math.min(100, ((value + 100) / 2)));
 }
+
+// 处理模态框图片加载失败
+function handleModalImageError(event: Event) {
+  const img = event.target as HTMLImageElement;
+  img.style.display = 'none';
+  const parent = img.parentElement;
+  if (parent && !parent.querySelector('.modal-fallback')) {
+    const fallback = document.createElement('div');
+    fallback.className = 'modal-fallback';
+    fallback.innerHTML = '<i class="fas fa-user"></i><p>图片加载失败</p>';
+    parent.appendChild(fallback);
+  }
+}
 </script>
 
 <style scoped lang="scss">
@@ -364,8 +443,21 @@ function getReputationPercentage(value: number): number {
     display: flex;
     align-items: center;
     justify-content: center;
+    overflow: hidden;
+    cursor: pointer;
+    transition: transform 0.2s ease;
     
-    i {
+    &:hover {
+      transform: scale(1.1);
+    }
+    
+    .avatar-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    
+    i, .fallback-icon {
       font-size: 14px;
       color: #a5b4fc;
     }
@@ -439,8 +531,21 @@ function getReputationPercentage(value: number): number {
   display: flex;
   align-items: center;
   justify-content: center;
+  overflow: hidden;
+  cursor: pointer;
+  transition: transform 0.2s ease;
   
-  i {
+  &:hover {
+    transform: scale(1.1);
+  }
+  
+  .avatar-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  
+  i, .fallback-icon {
     font-size: 20px;
     color: rgba(255, 255, 255, 0.6);
   }
@@ -694,5 +799,111 @@ function getReputationPercentage(value: number): number {
   &.medium { background: rgba(255, 255, 255, 0.3); }
   &.low { background: linear-gradient(90deg, #f59e0b, #fbbf24); }
   &.very-low { background: linear-gradient(90deg, #ef4444, #f87171); }
+}
+
+// 头像放大模态框样式
+.avatar-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 99999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.modal-backdrop {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(8px);
+}
+
+.modal-content {
+  position: relative;
+  background: linear-gradient(135deg, rgba(30, 30, 50, 0.98), rgba(20, 20, 40, 0.98));
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  width: 390px;
+  max-width: 95vw;
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+}
+
+.modal-close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(248, 113, 113, 0.9);
+  border: none;
+  color: white;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  transition: all 0.2s ease;
+  
+  &:hover {
+    transform: scale(1.1);
+    background: rgba(248, 113, 113, 1);
+  }
+  
+  i {
+    font-size: 14px;
+  }
+}
+
+.modal-header {
+  padding: 20px 24px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  
+  h3 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: white;
+  }
+}
+
+.modal-body {
+  padding: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
+}
+
+.modal-avatar-img {
+  width: 100%;
+  max-height: 60vh;
+  border-radius: 12px;
+  object-fit: contain;
+}
+
+.modal-fallback {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  color: rgba(255, 255, 255, 0.4);
+  
+  i {
+    font-size: 48px;
+  }
+  
+  p {
+    margin: 0;
+    font-size: 14px;
+  }
 }
 </style>

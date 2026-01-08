@@ -2734,12 +2734,16 @@ onMounted(async () => {
   max-width: 72rem;
   margin: 0 auto;
   padding: 2rem 1rem;
-  padding-bottom: 24rem;
+  padding-bottom: 20rem;
   display: flex;
   flex-direction: row;
   align-items: flex-start;
   justify-content: center;
   gap: 1rem;
+  
+  @media (max-width: 640px) {
+    padding-bottom: 22rem;
+  }
 }
 
 .vs-divider {
