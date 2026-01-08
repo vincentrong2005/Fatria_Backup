@@ -2786,6 +2786,10 @@ onMounted(async () => {
   box-shadow:
     0 -20px 60px rgba(0, 0, 0, 0.7),
     0 0 0 1px rgba(255, 255, 255, 0.05) inset;
+
+  @media (max-width: 640px) {
+    padding: 0.75rem 0.9rem 1rem;
+  }
 }
 
 .footer-content {
@@ -2835,6 +2839,12 @@ onMounted(async () => {
   border: 1px solid rgba(255, 255, 255, 0.1);
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+  @media (max-width: 640px) {
+    padding: 0.35rem 0.9rem;
+    font-size: 0.7rem;
+    letter-spacing: 0.06em;
+  }
 
   &.active {
     background: linear-gradient(135deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.1));
@@ -2965,7 +2975,25 @@ onMounted(async () => {
   border: 1px solid rgba(255, 255, 255, 0.1);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   cursor: pointer;
+  user-select: none;
   position: relative;
+
+  @media (max-width: 640px) {
+    gap: 0.5rem;
+    padding: 1rem 0.65rem;
+    border-radius: 0.9rem;
+    font-size: 0.85rem;
+
+    svg {
+      width: 26px;
+      height: 26px;
+    }
+
+    span {
+      font-size: 0.8rem;
+      line-height: 1.1;
+    }
+  }
   overflow: hidden;
 
   &::before {
