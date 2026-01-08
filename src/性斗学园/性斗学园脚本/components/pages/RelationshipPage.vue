@@ -200,6 +200,7 @@
 
 <script setup lang="ts">
 import { computed, ref } from 'vue';
+import { ENEMY_DATABASE, NAME_ALIASES } from '../../../战斗界面/enemyDatabase';
 
 const props = defineProps<{
   characterData: any;
@@ -231,9 +232,36 @@ const showModal = ref(false);
 const modalAvatarUrl = ref('');
 const modalCharacterName = ref('');
 
+/**
+ * 解析头像全名（支持包含匹配）
+ * @param rawName 关系系统中的名字（可能是全名、别名或包含别名的字符串）
+ * @returns 匹配到的全名，用于拼接图片 URL
+ */
+function resolveAvatarFullName(rawName: string): string {
+  if (!rawName) return rawName;
+
+  // 1. 先尝试精确匹配（关系名刚好是某个敌人库全名）
+  if (rawName in ENEMY_DATABASE) {
+    return rawName;
+  }
+
+  // 2. 包含匹配：遍历别名表，只要关系名包含某个别名 key，就映射到对应全名
+  //    如果包含多个别名（如"雪莉与爱丽丝"），优先返回第一个匹配到的
+  for (const [alias, fullName] of Object.entries(NAME_ALIASES)) {
+    if (rawName.includes(alias)) {
+      console.info(`[关系页] 通过包含匹配 "${rawName}" 包含 "${alias}"，映射到角色: ${fullName}`);
+      return fullName;
+    }
+  }
+
+  // 3. 都没匹配到，返回原名（会尝试用原名拼接 URL，失败后降级为 icon）
+  return rawName;
+}
+
 // 生成头像 URL
 function getAvatarUrl(name: string): string {
-  return `https://raw.githubusercontent.com/vincentrong2005/Fatria/main/图片素材/性斗学园/头像/${encodeURIComponent(name)}.png`;
+  const fullName = resolveAvatarFullName(name);
+  return `https://raw.githubusercontent.com/vincentrong2005/Fatria/main/图片素材/性斗学园/头像/${encodeURIComponent(fullName)}.png`;
 }
 
 // 处理图片加载失败

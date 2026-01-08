@@ -1168,7 +1168,7 @@ export const ENEMY_DATABASE: Record<string, EnemyMvuData> = {
  * 角色名称别名映射
  * 用于支持模糊匹配，长名字拆分成多个部分
  */
-const NAME_ALIASES: Record<string, string> = {
+export const NAME_ALIASES: Record<string, string> = {
   // 4字及以上名字拆分
   '雪莉': '雪莉克里姆希尔德',
   '克里姆': '雪莉克里姆希尔德',
