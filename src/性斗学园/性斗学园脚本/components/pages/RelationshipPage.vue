@@ -13,7 +13,7 @@
             <img 
               :src="getAvatarUrl(name)" 
               :alt="name"
-              @error="handleImageError($event, name)"
+              @error="handleImageError($event)"
               class="avatar-img"
             />
           </div>
@@ -50,7 +50,7 @@
               <img 
                 :src="getAvatarUrl(String(name))" 
                 :alt="String(name)"
-                @error="handleImageError($event, String(name))"
+                @error="handleImageError($event)"
                 class="avatar-img"
               />
             </div>
@@ -237,7 +237,7 @@ function getAvatarUrl(name: string): string {
 }
 
 // 处理图片加载失败
-function handleImageError(event: Event, name: string) {
+function handleImageError(event: Event) {
   const img = event.target as HTMLImageElement;
   // 降级为默认头像（使用 icon）
   img.style.display = 'none';
@@ -813,6 +813,7 @@ function handleModalImageError(event: Event) {
   align-items: center;
   justify-content: center;
   padding: 20px;
+  padding-bottom: calc(20px + env(safe-area-inset-bottom, 0px));
 }
 
 .modal-backdrop {
@@ -830,10 +831,11 @@ function handleModalImageError(event: Event) {
   background: linear-gradient(135deg, rgba(30, 30, 50, 0.98), rgba(20, 20, 40, 0.98));
   border-radius: 20px;
   border: 1px solid rgba(255, 255, 255, 0.15);
-  width: 390px;
+  width: 360px;
   max-width: 95vw;
   overflow: hidden;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+  transform: translateY(-14px);
 }
 
 .modal-close {
@@ -881,6 +883,7 @@ function handleModalImageError(event: Event) {
   align-items: center;
   justify-content: center;
   min-height: 200px;
+  padding-bottom: calc(24px + env(safe-area-inset-bottom, 0px));
 }
 
 .modal-avatar-img {
