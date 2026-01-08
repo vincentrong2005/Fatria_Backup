@@ -138,7 +138,7 @@ export interface EquipmentData {
   type: EquipmentType;
   /** 稀有度 */
   rarity: EquipmentRarity;
-
+  
   // === 属性加成 ===
   /** 基础属性加成 */
   baseBonus: EquipmentBonus;
@@ -148,15 +148,15 @@ export interface EquipmentData {
   currentLevel?: number;
   /** 最大强化等级 */
   maxLevel: number;
-
+  
   // === 特殊效果 ===
   /** 装备特效列表 */
   effects: EquipmentEffect[];
-
+  
   // === 套装信息 ===
   /** 套装信息（如果属于套装） */
   setInfo?: SetInfo;
-
+  
   // === 限制条件 ===
   /** 等级要求 */
   levelRequirement: number;
@@ -164,7 +164,7 @@ export interface EquipmentData {
   genderRestriction: string[];
   /** 体质要求 */
   constitutionRequirement?: string[];
-
+  
   // === 其他信息 ===
   /** 获取来源 */
   source: EquipmentSource;
@@ -250,12 +250,12 @@ export const EQUIPMENT_TYPE_NAMES: Record<EquipmentType, string> = {
 
 /** 装备稀有度颜色 */
 export const EQUIPMENT_RARITY_COLORS: Record<EquipmentRarity, string> = {
-  [EquipmentRarity.COMMON]: '#9ca3af', // 灰色
-  [EquipmentRarity.UNCOMMON]: '#22c55e', // 绿色
-  [EquipmentRarity.RARE]: '#3b82f6', // 蓝色
-  [EquipmentRarity.EPIC]: '#a855f7', // 紫色
-  [EquipmentRarity.LEGENDARY]: '#f97316', // 橙色
-  [EquipmentRarity.MYTHIC]: '#ec4899', // 粉色
+  [EquipmentRarity.COMMON]: '#9ca3af',     // 灰色
+  [EquipmentRarity.UNCOMMON]: '#22c55e',   // 绿色
+  [EquipmentRarity.RARE]: '#3b82f6',       // 蓝色
+  [EquipmentRarity.EPIC]: '#a855f7',       // 紫色
+  [EquipmentRarity.LEGENDARY]: '#f97316',  // 橙色
+  [EquipmentRarity.MYTHIC]: '#ec4899',     // 粉色
 };
 
 /** 装备稀有度中文名 */
@@ -287,7 +287,7 @@ export function calculateUpgradeCost(equipment: EquipmentData, currentLevel: num
 /** 计算总属性加成（含强化） */
 export function calculateTotalBonus(equipment: EquipmentData, level: number): EquipmentBonus {
   const total: EquipmentBonus = { ...equipment.baseBonus };
-
+  
   if (equipment.upgradeBonus && level > 0) {
     for (const [key, value] of Object.entries(equipment.upgradeBonus)) {
       const k = key as keyof EquipmentBonus;
@@ -296,6 +296,7 @@ export function calculateTotalBonus(equipment: EquipmentData, level: number): Eq
       }
     }
   }
-
+  
   return total;
 }
+

@@ -774,3 +774,4 @@ export function getEquipmentSetById(id: string): EquipmentSetData | undefined {
 export function getEquipmentSet(equipmentId: string): EquipmentSetData | undefined {
   return EQUIPMENT_SETS.find(set => set.pieces.includes(equipmentId));
 }
+

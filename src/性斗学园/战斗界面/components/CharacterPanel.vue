@@ -1,88 +1,100 @@
 <template>
-  <div class="character-panel">
-    <!-- 名称标签 -->
-    <div class="name-badge" :class="isEnemy ? 'badge-enemy' : 'badge-player'">
-      <span class="name-text">{{ character.name }}</span>
-      <!-- 敌人预告提示 -->
-      <div v-if="isEnemy && turnState.phase === 'playerInput' && enemyIntention" class="intention-hint">
-        <span class="intention-icon">⚠️</span>
-        预告: {{ enemyIntention.name }}
-      </div>
-    </div>
+  <div class="character-panel" :class="{ 'is-enemy': isEnemy }">
+    <div class="panel-inner">
+      <!-- 角色名 -->
+      <div class="character-name">{{ character.name }}</div>
 
-    <!-- 头像与悬停属性 -->
-    <div class="avatar-container">
-      <div class="avatar-glow" :class="isEnemy ? 'glow-enemy' : 'glow-player'"></div>
-
-      <img
-        :src="character.avatarUrl"
-        :alt="character.name"
-        class="avatar-image"
-        :class="{
-          'avatar-enemy': isEnemy,
-          'avatar-player': !isEnemy,
-          'avatar-pulse': turnState.phase === 'processing' && !isEnemy,
-          'avatar-scale': turnState.phase === 'enemyAction' && isEnemy,
-          'avatar-climax':
-            turnState.phase === 'climaxResolution' && turnState.climaxTarget === (isEnemy ? 'enemy' : 'player'),
-        }"
-      />
-
-      <!-- 移动端预告图标 -->
-      <div v-if="isEnemy && turnState.phase === 'playerInput' && enemyIntention" class="mobile-warning">
-        <span>!</span>
-      </div>
-
-      <!-- 属性悬停面板 -->
-      <div class="stats-overlay">
-        <div class="overlay-title">详细属性</div>
-        <StatsPanel :stats="character.stats" compact />
-      </div>
-    </div>
-
-    <!-- 状态条 -->
-    <div class="bars-container">
-      <ProgressBar
-        :value="character.stats.currentEndurance"
-        :max="character.stats.maxEndurance"
-        color="green"
-        label="体力"
-        :show-value="true"
-        :icon="activityIcon"
-      />
-      <ProgressBar
-        :value="character.stats.currentPleasure"
-        :max="character.stats.maxPleasure"
-        color="pink"
-        label="快感"
-        :show-value="true"
-        :icon="heartIcon"
-      />
-      <div class="climax-bar">
-        <ProgressBar
-          :value="character.stats.climaxCount"
-          :max="character.stats.maxClimaxCount"
-          color="purple"
-          label="高潮"
-          :show-value="true"
-          :icon="zapIcon"
+      <!-- 头像与悬停属性 -->
+      <div class="avatar-container">
+        <div class="avatar-glow" :class="isEnemy ? 'glow-enemy' : 'glow-player'"></div>
+        
+        <img 
+          :src="character.avatarUrl"
+          :alt="character.name"
+          class="avatar-image"
+          :class="{
+            'avatar-enemy': isEnemy,
+            'avatar-player': !isEnemy,
+            'avatar-pulse': turnState.phase === 'processing' && !isEnemy,
+            'avatar-scale': turnState.phase === 'enemyAction' && isEnemy,
+            'avatar-climax': turnState.phase === 'climaxResolution' && turnState.climaxTarget === (isEnemy ? 'enemy' : 'player')
+          }"
+          @error="handleImageError"
         />
+
+        <!-- 移动端预告图标 -->
+        <div v-if="isEnemy && turnState.phase === 'playerInput' && enemyIntention" class="mobile-warning">
+          <span>!</span>
+        </div>
+
+        <!-- 属性悬停面板 -->
+        <div class="stats-overlay">
+          <div class="overlay-title">详细属性</div>
+          <StatsPanel :stats="character.stats" compact />
+        </div>
+      </div>
+
+      <!-- 状态条 -->
+      <div class="bars-container">
+        <ProgressBar
+          :value="character.stats.currentEndurance"
+          :max="character.stats.maxEndurance"
+          color="green"
+          label="体力"
+          :show-value="true"
+          :icon="activityIcon"
+        />
+        <ProgressBar
+          :value="character.stats.currentPleasure"
+          :max="character.stats.maxPleasure"
+          color="pink"
+          label="快感"
+          :show-value="true"
+          :icon="heartIcon"
+        />
+        <div class="climax-bar">
+          <ProgressBar
+            :value="character.stats.climaxCount"
+            :max="character.stats.maxClimaxCount"
+            color="purple"
+            label="高潮"
+            :show-value="true"
+            :icon="zapIcon"
+          />
+        </div>
       </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
+import { ref } from 'vue';
+import { getRandomImageUrl } from '../constants';
 import type { Character, Skill, TurnState } from '../types';
 import ProgressBar from './ProgressBar.vue';
 import StatsPanel from './StatsPanel.vue';
 
-defineProps<{
+const props = defineProps<{
   character: Character;
   isEnemy: boolean;
   turnState: TurnState;
   enemyIntention: Skill | null;
 }>();
+
+// 图片加载失败标记
+const imageLoadError = ref(false);
+
+// 处理图片加载失败
+const handleImageError = (event: Event) => {
+  const img = event.target as HTMLImageElement;
+  if (imageLoadError.value) return; // 避免无限循环
+  
+  console.warn(`[战斗界面] 图片加载失败: ${img.src}`);
+  imageLoadError.value = true;
+  
+  // 降级使用随机图片
+  img.src = getRandomImageUrl();
+};
 
 // 图标SVG
 const activityIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>`;
@@ -105,6 +117,27 @@ const zapIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" 
 @media (min-width: 1024px) {
   .character-panel {
     max-width: 28rem;
+  }
+}
+
+.panel-inner {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+}
+
+.character-name {
+  font-size: 1rem;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.9);
+  margin-bottom: 0.75rem;
+  text-align: center;
+  
+  @media (min-width: 1024px) {
+    font-size: 1.25rem;
+    margin-bottom: 1rem;
   }
 }
 
@@ -179,13 +212,12 @@ const zapIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" 
 .avatar-container {
   position: relative;
   width: 100%;
-  aspect-ratio: 1;
-  max-width: 160px;
+  aspect-ratio: 2 / 3; // 匹配 832x1216 比例
+  max-width: 180px;
   margin-bottom: 0.5rem;
-  cursor: help;
 
   @media (min-width: 1024px) {
-    max-width: 280px;
+    max-width: 320px;
     margin-bottom: 1.5rem;
   }
 
@@ -342,12 +374,8 @@ const zapIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" 
 }
 
 @keyframes pulse {
-  0%,
-  100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.6;
-  }
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
 }
 </style>
+

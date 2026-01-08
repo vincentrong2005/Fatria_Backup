@@ -1,11 +1,14 @@
 <template>
   <div class="variable-update-beautifier">
     <div v-if="updateContent" class="update-container">
-      <div class="update-card" :class="{ 'is-expanded': isExpanded }">
+      <div
+        class="update-card"
+        :class="{ 'is-expanded': isExpanded }"
+      >
         <!-- 折叠栏头部 -->
         <div class="update-header" @click="toggleExpand">
           <div class="header-left">
-            <div class="expand-icon" :class="{ rotated: isExpanded }">
+            <div class="expand-icon" :class="{ 'rotated': isExpanded }">
               <i class="fas fa-chevron-down"></i>
             </div>
             <div class="header-title">
@@ -43,8 +46,10 @@ const formattedContent = computed(() => {
   let content = updateContent.value;
 
   // 处理 <Analysis> 标签
-  content = content.replace(/<Analysis>([\s\S]*?)<\/Analysis>/gi, (match, analysisContent) => {
-    return `
+  content = content.replace(
+    /<Analysis>([\s\S]*?)<\/Analysis>/gi,
+    (match, analysisContent) => {
+      return `
         <div class="analysis-section">
           <div class="section-header">
             <i class="fas fa-search"></i>
@@ -55,11 +60,14 @@ const formattedContent = computed(() => {
           </div>
         </div>
       `;
-  });
+    }
+  );
 
   // 处理 <JSONPatch> 标签
-  content = content.replace(/<JSONPatch>([\s\S]*?)<\/JSONPatch>/gi, (match, jsonContent) => {
-    return `
+  content = content.replace(
+    /<JSONPatch>([\s\S]*?)<\/JSONPatch>/gi,
+    (match, jsonContent) => {
+      return `
         <div class="jsonpatch-section">
           <div class="section-header">
             <i class="fas fa-code"></i>
@@ -70,7 +78,8 @@ const formattedContent = computed(() => {
           </div>
         </div>
       `;
-  });
+    }
+  );
 
   return content;
 });
@@ -78,7 +87,10 @@ const formattedContent = computed(() => {
 // 格式化分析内容
 const formatAnalysisContent = (content: string): string => {
   // 转义HTML
-  let formatted = content.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  let formatted = content
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
 
   // 处理列表项（以 - 开头）
   formatted = formatted.replace(/^- (.+)$/gm, '<div class="analysis-item">• $1</div>');
@@ -113,10 +125,7 @@ const highlightJSON = (json: string): string => {
   let highlighted = escapeHTML(json);
 
   // 先高亮操作类型（特殊处理）
-  highlighted = highlighted.replace(
-    /"op"\s*:\s*"([^"]+)"/g,
-    '<span class="json-key">"op"</span>: <span class="json-op">"$1"</span>',
-  );
+  highlighted = highlighted.replace(/"op"\s*:\s*"([^"]+)"/g, '<span class="json-key">"op"</span>: <span class="json-op">"$1"</span>');
 
   // 高亮键名（但不包括已经处理过的 "op"）
   highlighted = highlighted.replace(/"([^"]+)"\s*:/g, (match, key) => {
@@ -212,47 +221,47 @@ const extractUpdateContent = () => {
     // 匹配最后一个标签（跳过思维链中的标签）
     const regexUpdateVariable = /<UpdateVariable>([\s\S]*?)<\/UpdateVariable>/gi;
     const regexUpdate = /<update>([\s\S]*?)<\/update>/gi;
-
+    
     // 分别匹配两种标签
     const matchesUpdateVariable = Array.from(messageText.matchAll(regexUpdateVariable));
     const matchesUpdate = Array.from(messageText.matchAll(regexUpdate));
-
+    
     // 合并所有匹配，并记录每个匹配的位置
     const allMatches: Array<{ content: string; index: number }> = [];
-
+    
     matchesUpdateVariable.forEach(match => {
       if (match.index !== undefined) {
         allMatches.push({ content: match[1], index: match.index });
       }
     });
-
+    
     matchesUpdate.forEach(match => {
       if (match.index !== undefined) {
         allMatches.push({ content: match[1], index: match.index });
       }
     });
-
+    
     // 按位置排序，取最后一个匹配（最新的变量更新）
     if (allMatches.length > 0) {
       allMatches.sort((a, b) => a.index - b.index);
       const lastMatch = allMatches[allMatches.length - 1];
       const updateVariableContent = lastMatch.content.trim();
-
+      
       // 只提取 <Analysis> 和 <JSONPatch> 部分
       let extractedContent = '';
-
+      
       // 提取 Analysis 部分
       const analysisMatch = updateVariableContent.match(/<Analysis>([\s\S]*?)<\/Analysis>/i);
       if (analysisMatch && analysisMatch[1]) {
         extractedContent += `<Analysis>${analysisMatch[1].trim()}</Analysis>\n\n`;
       }
-
+      
       // 提取 JSONPatch 部分
       const jsonPatchMatch = updateVariableContent.match(/<JSONPatch>([\s\S]*?)<\/JSONPatch>/i);
       if (jsonPatchMatch && jsonPatchMatch[1]) {
         extractedContent += `<JSONPatch>${jsonPatchMatch[1].trim()}</JSONPatch>`;
       }
-
+      
       if (extractedContent.trim()) {
         updateContent.value = extractedContent.trim();
         console.info('[变量更新] 已提取更新内容，长度:', updateContent.value.length);
@@ -504,3 +513,4 @@ onMounted(() => {
   }
 }
 </style>
+

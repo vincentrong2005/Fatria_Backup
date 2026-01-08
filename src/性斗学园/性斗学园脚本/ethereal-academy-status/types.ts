@@ -8,7 +8,7 @@ export interface CharacterBase {
   _魅力: number;
   _幸运: number;
   _声望: number;
-  _段位: '无段位' | 'D' | 'C' | 'B' | 'A' | 'S' | 'SS' | 'SSS';
+  _段位: "无段位" | "D" | "C" | "B" | "A" | "S" | "SS" | "SSS";
   段位积分: number;
 }
 
@@ -39,21 +39,21 @@ export interface PermanentBonus {
 
 // 背包物品基础结构
 export interface BaseItem {
-  等级: 'C' | 'B' | 'A' | 'S' | 'SS';
+  等级: "C" | "B" | "A" | "S" | "SS";
   描述: string;
 }
 
 // 装备（背包中）
 export interface EquipmentInBag extends BaseItem {
-  类型: '装备';
+  类型: "装备";
   加成属性: PermanentBonus;
-  部位: '主装备' | '副装备' | '饰品' | '特殊装备';
+  部位: "主装备" | "副装备" | "饰品" | "特殊装备";
   数量: 1;
 }
 
 // 消耗品
 export interface ConsumableItem extends BaseItem {
-  类型: '消耗品';
+  类型: "消耗品";
   加成属性?: PermanentBonus;
   耐力增加?: number;
   快感降低?: number;
@@ -62,7 +62,7 @@ export interface ConsumableItem extends BaseItem {
 
 // 其他物品
 export interface OtherItem extends BaseItem {
-  类型: '其他';
+  类型: "其他";
   数量: number;
 }
 
@@ -71,7 +71,7 @@ export type InventoryItem = EquipmentInBag | ConsumableItem | OtherItem;
 // 已装备物品
 export interface EquippedItem {
   名称: string;
-  等级: 'C' | 'B' | 'A' | 'S' | 'SS';
+  等级: "C" | "B" | "A" | "S" | "SS";
   加成属性: PermanentBonus;
   描述: string;
 }
@@ -87,8 +87,8 @@ export interface Equipment {
 export interface Quest {
   名称?: string; // Optional because Main uses explicit name, Side uses index usually but we map it
   描述: string;
-  类型?: '日常' | '特殊' | '限时' | '隐藏';
-  状态: '进行中' | '已完成' | '已失败' | '已放弃';
+  类型?: "日常" | "特殊" | "限时" | "隐藏";
+  状态: "进行中" | "已完成" | "已失败" | "已放弃";
   目标: Record<string, any>;
   奖励: string;
   期限: string;
@@ -96,7 +96,7 @@ export interface Quest {
 
 export interface Relationship {
   好感度: number;
-  关系类型: '陌生人' | '同学' | '朋友' | '恋人' | '主仆' | '完全臣服' | '仇敌';
+  关系类型: "陌生人" | "同学" | "朋友" | "恋人" | "主仆" | "完全臣服" | "仇敌";
   调教进度: number;
   臣服度: number;
 }

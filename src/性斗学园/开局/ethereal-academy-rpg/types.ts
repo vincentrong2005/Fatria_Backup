@@ -1,14 +1,14 @@
 export enum Gender {
   MALE = '男',
   FEMALE = '女',
-  OTHER = '非二元',
+  OTHER = '非二元'
 }
 
 export enum Difficulty {
   STORY = '剧情模式 (简单)',
   NORMAL = '学园生活 (普通)',
   HARDCORE = '地狱开局 (困难)',
-  CHEATER = '作弊者',
+  CHEATER = '作弊者'
 }
 
 // Strictly matching the user's provided Zod schema keys for stats
@@ -19,7 +19,7 @@ export interface GameAttributes {
   _魅力: number;
   _幸运: number;
   _声望: number;
-
+  
   // 核心状态
   _最大耐力: number;
   _最大快感: number;
@@ -45,9 +45,9 @@ export interface Archetype {
   id: string;
   name: string;
   description: string;
-  icon: string;
+  icon: string; 
   baseBonus: Partial<GameAttributes> & { _全属性?: number }; // Modifies the specific variables
-  passiveSkill: Skill;
+  passiveSkill: Skill; 
 }
 
 export interface CharacterData {
@@ -59,17 +59,17 @@ export interface CharacterData {
   background: string;
   difficulty: Difficulty;
   archetypeId: string | null;
-
+  
   // The core stats
   attributes: GameAttributes;
-
+  
   // Body stats
-  height: number;
-  weight: number;
-  cupSize: string;
-  hips: number;
-  cockLength: number;
-  genitalType: string;
+  height: number; 
+  weight: number; 
+  cupSize: string; 
+  hips: number; 
+  cockLength: number; 
+  genitalType: string; 
 
   // Body Configuration (For Non-binary mostly)
   configFeatures: {
@@ -117,7 +117,7 @@ export const INITIAL_CHARACTER_DATA: CharacterData = {
   genitalType: '标准',
   configFeatures: {
     hasBreasts: true, // Defaults, will be updated by gender logic in UI
-    hasPenis: false,
+    hasPenis: false
   },
   initialActiveSkills: [],
   initialPassiveSkills: [],

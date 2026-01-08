@@ -9,16 +9,16 @@ interface ProgressBarProps {
   icon?: React.ReactNode;
 }
 
-export const ProgressBar: React.FC<ProgressBarProps> = ({
-  value,
-  max,
-  color = 'bg-brand-primary',
-  label,
+export const ProgressBar: React.FC<ProgressBarProps> = ({ 
+  value, 
+  max, 
+  color = "bg-brand-primary", 
+  label, 
   subLabel,
-  icon,
+  icon
 }) => {
   const percentage = Math.min(100, Math.max(0, (value / max) * 100));
-
+  
   return (
     <div className="w-full mb-3 group">
       <div className="flex justify-between items-end mb-1">
@@ -32,7 +32,7 @@ export const ProgressBar: React.FC<ProgressBarProps> = ({
         </div>
       </div>
       <div className="h-2.5 w-full bg-black/40 rounded-full overflow-hidden border border-white/5">
-        <div
+        <div 
           className={`h-full rounded-full ${color} shadow-[0_0_10px_rgba(255,255,255,0.3)] transition-all duration-1000 ease-out relative`}
           style={{ width: `${percentage}%` }}
         >

@@ -1,18 +1,19 @@
 <template>
-  <div class="card" :class="{ 'card-hover': hover }" @click="$emit('click')">
+  <div 
+    class="card"
+    :class="{ 'card-hover': hover }"
+    @click="$emit('click')"
+  >
     <slot></slot>
   </div>
 </template>
 
 <script setup lang="ts">
-withDefaults(
-  defineProps<{
-    hover?: boolean;
-  }>(),
-  {
-    hover: false,
-  },
-);
+withDefaults(defineProps<{
+  hover?: boolean;
+}>(), {
+  hover: false
+});
 
 defineEmits<{
   click: [];
@@ -40,3 +41,4 @@ defineEmits<{
   }
 }
 </style>
+

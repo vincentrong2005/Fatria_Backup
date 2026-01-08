@@ -1,4 +1,12 @@
-export type StatType = 'sexPower' | 'endurance' | 'evasion' | 'crit' | 'charm' | 'luck' | 'willpower';
+
+export type StatType = 
+  | 'sexPower' 
+  | 'endurance' 
+  | 'evasion' 
+  | 'crit' 
+  | 'charm' 
+  | 'luck' 
+  | 'willpower';
 
 export interface CombatStats {
   maxEndurance: number; // _最大耐力
@@ -8,7 +16,7 @@ export interface CombatStats {
   willpower: number; // _意志力
   climaxCount: number; // $高潮次数
   maxClimaxCount: number; // $高潮次数上限
-
+  
   // Seven Core Stats
   sexPower: number; // $性斗力
   baseEndurance: number; // $忍耐力 (Resistance/Defense)

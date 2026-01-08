@@ -1,9 +1,7 @@
 // 性斗学园战斗界面全局样式
 
 // 重置基础样式
-*,
-*::before,
-*::after {
+*, *::before, *::after {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
@@ -23,13 +21,8 @@
 }
 
 // 全局样式
-html,
-body {
-  font-family:
-    'Noto Sans SC',
-    system-ui,
-    -apple-system,
-    sans-serif;
+html, body {
+  font-family: 'Noto Sans SC', system-ui, -apple-system, sans-serif;
   background: var(--color-midnight);
   color: #e2e8f0;
   line-height: 1.5;
@@ -51,7 +44,7 @@ body {
 ::-webkit-scrollbar-thumb {
   background: rgba(255, 255, 255, 0.2);
   border-radius: 3px;
-
+  
   &:hover {
     background: rgba(255, 255, 255, 0.3);
   }
@@ -61,7 +54,7 @@ body {
 .no-scrollbar {
   -ms-overflow-style: none;
   scrollbar-width: none;
-
+  
   &::-webkit-scrollbar {
     display: none;
   }
@@ -96,7 +89,7 @@ a {
 }
 
 // 列表重置
-ul,
-ol {
+ul, ol {
   list-style: none;
 }
+

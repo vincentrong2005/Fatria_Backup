@@ -94,7 +94,7 @@ export enum BuffType {
   RAGE = 'rage',
   /** 集中 - 下次攻击必定暴击 */
   FOCUS = 'focus',
-
+  
   // === 减益 ===
   /** 攻击力下降 */
   ATK_DOWN = 'atk_down',
@@ -243,7 +243,7 @@ export interface SkillData {
   type: SkillType;
   /** 稀有度 */
   rarity: SkillRarity;
-
+  
   // === 消耗与冷却 ===
   /** 耐力消耗 */
   staminaCost: number;
@@ -255,7 +255,7 @@ export interface SkillData {
   cooldown: number;
   /** 施放时间（0=即时，>0需要蓄力回合） */
   castTime: number;
-
+  
   // === 伤害与效果 ===
   /** 伤害公式组件列表 */
   damageFormula: DamageComponent[];
@@ -267,7 +267,7 @@ export interface SkillData {
   critModifier: number;
   /** 施加的 Buff/Debuff */
   buffs: BuffEffect[];
-
+  
   // === 特殊机制 ===
   /** 是否忽视防御 */
   ignoreDefense: boolean;
@@ -284,7 +284,7 @@ export interface SkillData {
     condition: string;
     effect: BuffEffect;
   }[];
-
+  
   // === 解锁与升级 ===
   /** 解锁条件 */
   unlockConditions: UnlockCondition[];
@@ -292,7 +292,7 @@ export interface SkillData {
   upgrades: SkillUpgrade[];
   /** 当前等级（运行时） */
   currentLevel?: number;
-
+  
   // === 显示相关 ===
   /** 动画类型 */
   animationType?: string;
@@ -382,11 +382,11 @@ export const BUFF_TYPE_NAMES: Record<BuffType, string> = {
 
 /** 技能稀有度颜色 */
 export const SKILL_RARITY_COLORS: Record<SkillRarity, string> = {
-  [SkillRarity.COMMON]: '#9ca3af', // 灰色
-  [SkillRarity.RARE]: '#60a5fa', // 蓝色
-  [SkillRarity.EPIC]: '#a78bfa', // 紫色
+  [SkillRarity.COMMON]: '#9ca3af',    // 灰色
+  [SkillRarity.RARE]: '#60a5fa',      // 蓝色
+  [SkillRarity.EPIC]: '#a78bfa',      // 紫色
   [SkillRarity.LEGENDARY]: '#fbbf24', // 金色
-  [SkillRarity.MYTHIC]: '#f472b6', // 粉色
+  [SkillRarity.MYTHIC]: '#f472b6',    // 粉色
 };
 
 /** 最大技能等级 */
@@ -394,3 +394,4 @@ export const MAX_SKILL_LEVEL = 5;
 
 /** 默认技能栏数量 */
 export const DEFAULT_SKILL_SLOTS = 6;
+

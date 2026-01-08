@@ -10,7 +10,15 @@ interface ProgressBarProps {
   icon?: React.ReactNode;
 }
 
-const ProgressBar: React.FC<ProgressBarProps> = ({ value, max, color, label, showValue = true, size = 'md', icon }) => {
+const ProgressBar: React.FC<ProgressBarProps> = ({ 
+  value, 
+  max, 
+  color, 
+  label, 
+  showValue = true,
+  size = 'md',
+  icon
+}) => {
   const percentage = Math.min(Math.max((value / max) * 100, 0), 100);
 
   const colors = {
@@ -20,7 +28,7 @@ const ProgressBar: React.FC<ProgressBarProps> = ({ value, max, color, label, sho
     green: 'from-emerald-400 to-green-600 shadow-[0_0_10px_rgba(16,185,129,0.5)]',
     pink: 'from-pink-400 to-rose-400 shadow-[0_0_10px_rgba(244,114,182,0.5)]',
   };
-
+  
   const bgColors = {
     blue: 'bg-blue-900/40',
     red: 'bg-red-900/40',
@@ -32,24 +40,20 @@ const ProgressBar: React.FC<ProgressBarProps> = ({ value, max, color, label, sho
   const heights = {
     sm: 'h-2',
     md: 'h-4',
-    lg: 'h-6',
+    lg: 'h-6'
   };
 
   return (
     <div className="w-full mb-3 group">
       <div className="flex justify-between items-center mb-1 text-xs uppercase tracking-widest font-bold text-slate-300">
         <span className="flex items-center gap-2">
-          {icon && <span className="opacity-80">{icon}</span>}
-          {label}
+            {icon && <span className="opacity-80">{icon}</span>}
+            {label}
         </span>
-        {showValue && (
-          <span className="font-mono text-white/80">
-            {value} / {max}
-          </span>
-        )}
+        {showValue && <span className="font-mono text-white/80">{value} / {max}</span>}
       </div>
       <div className={`w-full ${bgColors[color]} rounded-full overflow-hidden backdrop-blur-sm border border-white/5`}>
-        <div
+        <div 
           className={`${heights[size]} bg-gradient-to-r ${colors[color]} transition-all duration-700 ease-out relative`}
           style={{ width: `${percentage}%` }}
         >

@@ -1,25 +1,8 @@
 import React from 'react';
-import {
-  User,
-  Map,
-  Backpack,
-  Swords,
-  HeartHandshake,
-  ScrollText,
-  Settings,
-  Sparkles,
-  Zap,
-  Shield,
-  Heart,
-  Activity,
-  Clock,
-  MapPin,
-  Coins,
-  Menu,
-  X,
-  Star,
-  Ghost,
-  Check,
+import { 
+  User, Map, Backpack, Swords, HeartHandshake, ScrollText, 
+  Settings, Sparkles, Zap, Shield, Heart, Activity, 
+  Clock, MapPin, Coins, Menu, X, Star, Ghost, Check
 } from 'lucide-react';
 
 export const Icons = {
@@ -42,7 +25,7 @@ export const Icons = {
   Close: X,
   Star,
   Ghost,
-  Check,
+  Check
 };
 
 interface IconProps {

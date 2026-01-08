@@ -7,9 +7,9 @@ interface GlassCardProps {
   interactive?: boolean;
 }
 
-export const GlassCard: React.FC<GlassCardProps> = ({ children, className = '', onClick, interactive = false }) => {
+export const GlassCard: React.FC<GlassCardProps> = ({ children, className = "", onClick, interactive = false }) => {
   return (
-    <div
+    <div 
       onClick={onClick}
       className={`
         relative overflow-hidden rounded-2xl

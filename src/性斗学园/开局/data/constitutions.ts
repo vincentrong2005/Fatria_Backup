@@ -3,10 +3,20 @@
  * 包含所有初始可选的特殊体质（被动）
  */
 
-import { ConstitutionData, ConstitutionCategory, ConstitutionRarity, TriggerTiming } from './constitution-types';
+import {
+  ConstitutionData,
+  ConstitutionCategory,
+  ConstitutionRarity,
+  TriggerTiming,
+} from './constitution-types';
 
 // 重新导出类型
-export { ConstitutionCategory, ConstitutionRarity, TriggerTiming, type ConstitutionData };
+export {
+  ConstitutionCategory,
+  ConstitutionRarity,
+  TriggerTiming,
+  type ConstitutionData,
+};
 
 // ==================== 通用体质（所有性别可选） ====================
 

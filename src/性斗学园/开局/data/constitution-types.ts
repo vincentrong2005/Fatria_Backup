@@ -128,17 +128,17 @@ export interface ConstitutionData {
   category: ConstitutionCategory;
   /** 稀有度 */
   rarity: ConstitutionRarity;
-
+  
   // === 属性效果 ===
   /** 永久属性修正（常驻） */
   permanentModifiers: StatModifier[];
   /** 敏感度修正 */
   sensitivityModifiers: SensitivityModifier[];
-
+  
   // === 触发效果 ===
   /** 触发效果列表 */
   triggerEffects: TriggerEffect[];
-
+  
   // === 限制条件 ===
   /** 性别限制（空为不限） */
   genderRestriction: string[];
@@ -148,7 +148,7 @@ export interface ConstitutionData {
   requireConstitutions: string[];
   /** 最大可拥有数量 */
   maxCount: number;
-
+  
   // === 显示相关 ===
   /** 正面/负面 */
   isPositive: boolean;
@@ -202,44 +202,45 @@ export const CONSTITUTION_RARITY_COLORS: Record<ConstitutionRarity, string> = {
 
 /** 身体部位列表 */
 export const BODY_PARTS = [
-  'lips', // 嘴唇
-  'neck', // 脖子
-  'ears', // 耳朵
-  'nipples', // 乳头
-  'breasts', // 胸部
-  'belly', // 腹部
-  'back', // 背部
-  'waist', // 腰部
-  'hips', // 臀部
-  'anus', // 后庭
-  'penis', // 阴茎
-  'vagina', // 阴道
-  'clitoris', // 阴蒂
-  'prostate', // 前列腺
-  'testicles', // 睾丸
-  'feet', // 足部
-  'hands', // 手部
+  'lips',       // 嘴唇
+  'neck',       // 脖子
+  'ears',       // 耳朵
+  'nipples',    // 乳头
+  'breasts',    // 胸部
+  'belly',      // 腹部
+  'back',       // 背部
+  'waist',      // 腰部
+  'hips',       // 臀部
+  'anus',       // 后庭
+  'penis',      // 阴茎
+  'vagina',     // 阴道
+  'clitoris',   // 阴蒂
+  'prostate',   // 前列腺
+  'testicles',  // 睾丸
+  'feet',       // 足部
+  'hands',      // 手部
   'inner_thigh', // 大腿内侧
 ] as const;
 
 /** 身体部位中文名 */
 export const BODY_PART_NAMES: Record<string, string> = {
-  lips: '嘴唇',
-  neck: '脖子',
-  ears: '耳朵',
-  nipples: '乳头',
-  breasts: '胸部',
-  belly: '腹部',
-  back: '背部',
-  waist: '腰部',
-  hips: '臀部',
-  anus: '后庭',
-  penis: '阴茎',
-  vagina: '阴道',
-  clitoris: '阴蒂',
-  prostate: '前列腺',
-  testicles: '睾丸',
-  feet: '足部',
-  hands: '手部',
-  inner_thigh: '大腿内侧',
+  'lips': '嘴唇',
+  'neck': '脖子',
+  'ears': '耳朵',
+  'nipples': '乳头',
+  'breasts': '胸部',
+  'belly': '腹部',
+  'back': '背部',
+  'waist': '腰部',
+  'hips': '臀部',
+  'anus': '后庭',
+  'penis': '阴茎',
+  'vagina': '阴道',
+  'clitoris': '阴蒂',
+  'prostate': '前列腺',
+  'testicles': '睾丸',
+  'feet': '足部',
+  'hands': '手部',
+  'inner_thigh': '大腿内侧',
 };
+

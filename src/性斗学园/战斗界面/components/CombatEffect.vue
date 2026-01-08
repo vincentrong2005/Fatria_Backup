@@ -39,14 +39,11 @@ const icon = ref(iconMap[props.type]);
 const text = ref(textMap[props.type]);
 const effectType = ref(props.type);
 
-watch(
-  () => props.type,
-  newType => {
-    icon.value = iconMap[newType];
-    text.value = textMap[newType];
-    effectType.value = newType;
-  },
-);
+watch(() => props.type, (newType) => {
+  icon.value = iconMap[newType];
+  text.value = textMap[newType];
+  effectType.value = newType;
+});
 </script>
 
 <style scoped lang="scss">
@@ -81,9 +78,7 @@ watch(
   letter-spacing: 0.1em;
   text-transform: uppercase;
   animation: effect-slide-up 0.6s ease-out;
-  text-shadow:
-    0 0 20px currentColor,
-    0 0 40px currentColor;
+  text-shadow: 0 0 20px currentColor, 0 0 40px currentColor;
 }
 
 // 特效类型样式
@@ -91,10 +86,7 @@ watch(
   .effect-icon,
   .effect-text {
     color: #fbbf24;
-    text-shadow:
-      0 0 20px #fbbf24,
-      0 0 40px #fbbf24,
-      0 0 60px #f59e0b;
+    text-shadow: 0 0 20px #fbbf24, 0 0 40px #fbbf24, 0 0 60px #f59e0b;
   }
 }
 
@@ -102,10 +94,7 @@ watch(
   .effect-icon,
   .effect-text {
     color: #60a5fa;
-    text-shadow:
-      0 0 20px #60a5fa,
-      0 0 40px #3b82f6,
-      0 0 60px #2563eb;
+    text-shadow: 0 0 20px #60a5fa, 0 0 40px #3b82f6, 0 0 60px #2563eb;
   }
 }
 
@@ -113,10 +102,7 @@ watch(
   .effect-icon,
   .effect-text {
     color: #f472b6;
-    text-shadow:
-      0 0 20px #f472b6,
-      0 0 40px #ec4899,
-      0 0 60px #db2777;
+    text-shadow: 0 0 20px #f472b6, 0 0 40px #ec4899, 0 0 60px #db2777;
     animation: effect-climax 1s ease-out;
   }
 }
@@ -125,10 +111,7 @@ watch(
   .effect-icon,
   .effect-text {
     color: #4ade80;
-    text-shadow:
-      0 0 20px #4ade80,
-      0 0 40px #22c55e,
-      0 0 60px #16a34a;
+    text-shadow: 0 0 20px #4ade80, 0 0 40px #22c55e, 0 0 60px #16a34a;
   }
 }
 
@@ -136,10 +119,7 @@ watch(
   .effect-icon,
   .effect-text {
     color: #94a3b8;
-    text-shadow:
-      0 0 20px #94a3b8,
-      0 0 40px #64748b,
-      0 0 60px #475569;
+    text-shadow: 0 0 20px #94a3b8, 0 0 40px #64748b, 0 0 60px #475569;
   }
 }
 
@@ -193,3 +173,4 @@ watch(
   opacity: 0;
 }
 </style>
+

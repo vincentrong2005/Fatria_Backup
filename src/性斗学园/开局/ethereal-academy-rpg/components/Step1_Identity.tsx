@@ -19,7 +19,7 @@ const Step1_Identity: React.FC<Props> = ({ data, updateData }) => {
           <input
             type="text"
             value={data.name}
-            onChange={e => updateData({ name: e.target.value })}
+            onChange={(e) => updateData({ name: e.target.value })}
             className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-secondary/50 focus:border-transparent transition-all duration-300 backdrop-blur-sm"
             placeholder="输入你的角色名..."
           />
@@ -35,7 +35,7 @@ const Step1_Identity: React.FC<Props> = ({ data, updateData }) => {
             min={15}
             max={25}
             value={data.age}
-            onChange={e => updateData({ age: parseInt(e.target.value) || 16 })}
+            onChange={(e) => updateData({ age: parseInt(e.target.value) || 16 })}
             className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-secondary/50 transition-all backdrop-blur-sm"
           />
         </div>
@@ -46,7 +46,7 @@ const Step1_Identity: React.FC<Props> = ({ data, updateData }) => {
         <div>
           <label className="block text-sm font-medium text-gray-300 mb-2">性别</label>
           <div className="flex bg-white/5 rounded-xl p-1 border border-white/10 backdrop-blur-sm">
-            {Object.values(Gender).map(g => (
+            {Object.values(Gender).map((g) => (
               <button
                 key={g}
                 onClick={() => updateData({ gender: g, archetypeId: null })} // Reset archetype on gender change
@@ -69,10 +69,10 @@ const Step1_Identity: React.FC<Props> = ({ data, updateData }) => {
           </label>
           <select
             value={data.difficulty}
-            onChange={e => updateData({ difficulty: e.target.value as Difficulty })}
+            onChange={(e) => updateData({ difficulty: e.target.value as Difficulty })}
             className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-red-500/50 appearance-none cursor-pointer backdrop-blur-sm"
           >
-            {Object.values(Difficulty).map(d => (
+            {Object.values(Difficulty).map((d) => (
               <option key={d} value={d} className="bg-slate-900 text-white">
                 {d}
               </option>
@@ -89,7 +89,7 @@ const Step1_Identity: React.FC<Props> = ({ data, updateData }) => {
         <textarea
           rows={2}
           value={data.appearance}
-          onChange={e => updateData({ appearance: e.target.value })}
+          onChange={(e) => updateData({ appearance: e.target.value })}
           className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-secondary/50 transition-all backdrop-blur-sm resize-none"
           placeholder="例如：银色长发，红瞳，身材娇小，常年围着一条红色围巾..."
         />
@@ -103,7 +103,7 @@ const Step1_Identity: React.FC<Props> = ({ data, updateData }) => {
         <textarea
           rows={3}
           value={data.personality}
-          onChange={e => updateData({ personality: e.target.value })}
+          onChange={(e) => updateData({ personality: e.target.value })}
           className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-secondary/50 transition-all backdrop-blur-sm resize-none"
           placeholder="你的性格特点，以及你是如何进入这所学院的..."
         />

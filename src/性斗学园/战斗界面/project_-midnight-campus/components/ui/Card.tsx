@@ -9,7 +9,7 @@ interface CardProps {
 
 const Card: React.FC<CardProps> = ({ children, className = '', onClick, hover = false }) => {
   return (
-    <div
+    <div 
       onClick={onClick}
       className={`
         bg-deepblue/60 

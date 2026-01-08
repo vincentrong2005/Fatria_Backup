@@ -89,7 +89,11 @@
             <i class="fas fa-heart"></i>
             <span>关系</span>
           </button>
-          <button class="nav-button" :class="{ active: currentPage === 'map' }" @click="currentPage = 'map'">
+          <button
+            class="nav-button"
+            :class="{ active: currentPage === 'map' }"
+            @click="currentPage = 'map'"
+          >
             <i class="fas fa-map"></i>
             <span>地图</span>
           </button>
@@ -123,9 +127,7 @@ const emit = defineEmits<{
 const characterData = ref<any>({});
 const combatData = ref<any>({});
 const currentTime = ref('12:00');
-const currentPage = ref<'dashboard' | 'profile' | 'skills' | 'inventory' | 'quest' | 'relationship' | 'map'>(
-  'dashboard',
-);
+const currentPage = ref<'dashboard' | 'profile' | 'skills' | 'inventory' | 'quest' | 'relationship' | 'map'>('dashboard');
 
 // 从 MVU 获取数据
 async function loadMvuData() {
@@ -143,7 +145,7 @@ async function loadMvuData() {
 
     characterData.value = mvuData.stat_data;
     combatData.value = mvuData.stat_data;
-
+    
     // 调试：检查背包数据
     console.log('[状态栏] 物品系统:', mvuData.stat_data?.物品系统);
     console.log('[状态栏] 背包数据:', mvuData.stat_data?.物品系统?.背包);
@@ -285,7 +287,7 @@ onMounted(() => {
       }
     });
   }
-
+  
   // 监听自定义数据更新事件（用于背包界面等）
   const dataUpdateHandler = () => {
     if (props.isVisible) {
@@ -293,7 +295,7 @@ onMounted(() => {
     }
   };
   window.addEventListener('mvu-data-updated', dataUpdateHandler);
-
+  
   // 保存处理器引用以便清理
   (window as any).__statusBarDataUpdateHandler = dataUpdateHandler;
 });
@@ -331,8 +333,7 @@ onUnmounted(() => {
   align-items: center !important;
   justify-content: center !important;
   padding: 10px;
-  padding: max(10px, env(safe-area-inset-top)) max(10px, env(safe-area-inset-right))
-    max(10px, env(safe-area-inset-bottom)) max(10px, env(safe-area-inset-left)); // 安全区域适配
+  padding: max(10px, env(safe-area-inset-top)) max(10px, env(safe-area-inset-right)) max(10px, env(safe-area-inset-bottom)) max(10px, env(safe-area-inset-left)); // 安全区域适配
   pointer-events: all !important; // 确保可以接收事件
   overflow-y: auto;
   box-sizing: border-box;
@@ -374,7 +375,7 @@ onUnmounted(() => {
   flex-direction: column;
   flex-shrink: 0;
   min-width: 0; // 防止 flex 子元素溢出
-
+  
   // 手机端响应式处理 - 保持固定高度
   @media (max-height: 900px) {
     max-height: calc(100vh - 20px);
@@ -382,14 +383,14 @@ onUnmounted(() => {
     height: 722px;
     min-height: 722px; // 保持固定高度
   }
-
+  
   @media (max-width: 420px) {
     max-width: calc(100vw - 20px);
     max-width: calc(100dvw - 20px);
     border-radius: 30px;
     border-width: 6px;
   }
-
+  
   // 超小屏幕处理 - 如果屏幕太小，允许缩小但保持最小高度
   @media (max-height: 700px) {
     max-height: calc(100vh - 10px);
@@ -399,7 +400,7 @@ onUnmounted(() => {
     border-radius: 20px;
     border-width: 4px;
   }
-
+  
   // 移动端特殊处理 - 保持固定高度
   @media (max-width: 768px) {
     border-radius: 20px;

@@ -25,14 +25,15 @@ export const BaseModal: React.FC<BaseModalProps> = ({ isOpen, onClose, title, ic
   if (!active) return null;
 
   return createPortal(
-    <div
-      className={`fixed inset-0 z-50 flex items-center justify-center p-4 transition-opacity duration-300 ${isOpen ? 'opacity-100' : 'opacity-0'}`}
-    >
+    <div className={`fixed inset-0 z-50 flex items-center justify-center p-4 transition-opacity duration-300 ${isOpen ? 'opacity-100' : 'opacity-0'}`}>
       {/* Backdrop */}
-      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
-
+      <div 
+        className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+        onClick={onClose}
+      />
+      
       {/* Content Container */}
-      <div
+      <div 
         className={`
           relative w-full max-w-4xl max-h-[85vh] 
           bg-[#1a1f35]/90 border border-white/10 shadow-2xl rounded-2xl 
@@ -47,7 +48,7 @@ export const BaseModal: React.FC<BaseModalProps> = ({ isOpen, onClose, title, ic
             {icon && <span className="text-brand-primary">{icon}</span>}
             {title}
           </div>
-          <button
+          <button 
             onClick={onClose}
             className="p-2 rounded-lg hover:bg-white/10 transition-colors text-white/60 hover:text-white"
           >
@@ -56,9 +57,11 @@ export const BaseModal: React.FC<BaseModalProps> = ({ isOpen, onClose, title, ic
         </div>
 
         {/* Scrollable Content */}
-        <div className="flex-1 overflow-y-auto p-6 custom-scrollbar">{children}</div>
+        <div className="flex-1 overflow-y-auto p-6 custom-scrollbar">
+          {children}
+        </div>
       </div>
     </div>,
-    document.body,
+    document.body
   );
 };
