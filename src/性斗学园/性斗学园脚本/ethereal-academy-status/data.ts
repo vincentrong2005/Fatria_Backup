@@ -22,7 +22,7 @@ export const initialGameState: GameState = {
     _闪避率: 15,
     _暴击率: 5,
     堕落度: 12,
-    意志力: 90,
+    // 已移除意志力字段
   },
   永久状态: {
     状态列表: ['天生媚骨', '学霸光环'],
@@ -35,7 +35,7 @@ export const initialGameState: GameState = {
       基础忍耐力成算: 0,
       闪避率加成: 0,
       暴击率加成: 0,
-      意志力加成: 0,
+      // 已移除意志力加成
     },
   },
   物品系统: {
@@ -56,7 +56,7 @@ export const initialGameState: GameState = {
           基础忍耐力成算: 0,
           闪避率加成: 0,
           暴击率加成: 0,
-          意志力加成: 0,
+          // 已移除意志力加成
         },
         部位: '主装备',
         数量: 1,
@@ -76,7 +76,7 @@ export const initialGameState: GameState = {
           基础忍耐力成算: 0,
           闪避率加成: 0,
           暴击率加成: 0,
-          意志力加成: 0,
+          // 已移除意志力加成
         },
         描述: '标准校服',
       },
@@ -92,7 +92,7 @@ export const initialGameState: GameState = {
           基础忍耐力成算: 0,
           闪避率加成: 0,
           暴击率加成: 0,
-          意志力加成: 0,
+          // 已移除意志力加成
         },
         描述: '运动腕带',
       },
@@ -108,7 +108,7 @@ export const initialGameState: GameState = {
           基础忍耐力成算: 0,
           闪避率加成: 0,
           暴击率加成: 0,
-          意志力加成: 0,
+          // 已移除意志力加成
         },
         描述: '带来好运',
       },
@@ -124,7 +124,7 @@ export const initialGameState: GameState = {
           基础忍耐力成算: 0,
           闪避率加成: 0,
           暴击率加成: 0,
-          意志力加成: 0,
+          // 已移除意志力加成
         },
         描述: '',
       },
@@ -140,7 +140,7 @@ export const initialGameState: GameState = {
           基础忍耐力成算: 0,
           闪避率加成: 0,
           暴击率加成: 0,
-          意志力加成: 0,
+          // 已移除意志力加成
         },
         描述: '学生会成员标识',
       },
@@ -154,7 +154,7 @@ export const initialGameState: GameState = {
       基础忍耐力成算: 0,
       闪避率加成: 0,
       暴击率加成: 0,
-      意志力加成: 0,
+      // 已移除意志力加成
     },
   },
   任务系统: {

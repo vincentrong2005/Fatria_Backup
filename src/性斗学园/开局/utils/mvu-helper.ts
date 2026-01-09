@@ -107,6 +107,8 @@ export function syncFromMvu(mvuData: any): any {
       声望: _.get(mvuData.stat_data, '角色基础.声望', 0),
       _段位: _.get(mvuData.stat_data, '角色基础._段位', '无段位'),
       段位积分: _.get(mvuData.stat_data, '角色基础.段位积分', 0),
+      难度: _.get(mvuData.stat_data, '角色基础.难度', '普通'), // 新增
+      性别: _.get(mvuData.stat_data, '角色基础.性别', '女'), // 新增
     },
     核心状态: {
       $属性点: _.get(mvuData.stat_data, '核心状态.$属性点', 0),
@@ -127,8 +129,6 @@ export function syncFromMvu(mvuData: any): any {
       $基础闪避率: _.get(mvuData.stat_data, '核心状态.$基础闪避率', 0),
       _暴击率: _.get(mvuData.stat_data, '核心状态._暴击率', 0),
       $基础暴击率: _.get(mvuData.stat_data, '核心状态.$基础暴击率', 0),
-      意志力: _.get(mvuData.stat_data, '核心状态.意志力', 100),
-      $基础意志力: _.get(mvuData.stat_data, '核心状态.$基础意志力', 100),
     },
   };
 }

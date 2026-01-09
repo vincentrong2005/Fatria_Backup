@@ -47,8 +47,6 @@ export interface CharacterAttributes {
     $基础闪避率: number; // 可修改
     _暴击率: number;     // 只读 - 最终暴击率 (0-100)
     $基础暴击率: number; // 可修改
-    意志力: number;      // 普通 (0-100)
-    $基础意志力: number; // 可修改
   };
 }
 
@@ -62,7 +60,6 @@ export interface PermanentBonus {
   基础忍耐力成算: number;
   闪避率加成: number;
   暴击率加成: number;
-  意志力加成: number;
 }
 
 export interface Skill {
@@ -150,8 +147,6 @@ export const INITIAL_ATTRIBUTES: CharacterAttributes = {
     $基础闪避率: 0,
     _暴击率: 0,
     $基础暴击率: 0,
-    意志力: 100,
-    $基础意志力: 100,
   },
 };
 

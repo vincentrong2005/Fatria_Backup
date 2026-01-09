@@ -14,6 +14,9 @@ export interface CombatResult {
   isDodged: boolean;
   actualDamage: number;
   logs: string[];
+  hitCount: number;        // 实际命中次数
+  totalDamage: number;     // 连击总伤害
+  hits: { damage: number; isCritical: boolean; isDodged: boolean }[]; // 每次攻击的详情
 }
 
 /**
@@ -45,9 +48,6 @@ export function calculateBaseDamage(attacker: Character, skill: SkillData): numb
         break;
       case DamageSource.LUCK:
         sourceValue = attacker.stats.luck;
-        break;
-      case DamageSource.WILLPOWER:
-        sourceValue = attacker.stats.willpower;
         break;
       case DamageSource.FIXED:
         sourceValue = 1;
@@ -177,73 +177,93 @@ export function applyBuffModifiers(damage: number, attacker: Character, target: 
  */
 export function executeAttack(attacker: Character, target: Character, skill: SkillData): CombatResult {
   const logs: string[] = [];
-  const result: CombatResult = {
-    damage: 0,
-    isCritical: false,
-    isDodged: false,
-    actualDamage: 0,
-    logs: [],
-  };
-
-  // 1. 计算基础伤害
+  const hits: { damage: number; isCritical: boolean; isDodged: boolean }[] = [];
+  
+  // 获取连击次数，默认为1
+  const hitCount = skill.hitCount || 1;
+  let totalActualDamage = 0;
+  let anyHit = false;
+  let anyCrit = false;
+  
+  // 1. 计算基础伤害（每次攻击相同）
   const baseDamage = calculateBaseDamage(attacker, skill);
-  logs.push(`基础伤害: ${baseDamage}`);
+  
+  if (hitCount > 1) {
+    logs.push(`【${hitCount}连击技能】`);
+  }
+  logs.push(`单次基础伤害: ${baseDamage}`);
 
-  // 2. 判定闪避
-  const dodged = checkDodge(attacker.stats.luck, target.stats.evasion, skill.accuracy);
-  if (dodged) {
-    result.isDodged = true;
-    result.logs = logs;
-    logs.push(`${target.name} 闪避了攻击!`);
-    return result;
+  // 对每次攻击进行独立判定
+  for (let i = 0; i < hitCount; i++) {
+    const hitLog: string[] = [];
+    if (hitCount > 1) {
+      hitLog.push(`--- 第${i + 1}击 ---`);
+    }
+
+    // 2. 判定闪避（每次攻击独立判定）
+    const dodged = checkDodge(attacker.stats.luck, target.stats.evasion, skill.accuracy);
+    if (dodged) {
+      hits.push({ damage: 0, isCritical: false, isDodged: true });
+      hitLog.push(`${target.name} 闪避了攻击!`);
+      logs.push(...hitLog);
+      continue;
+    }
+    
+    anyHit = true;
+
+    // 3. 判定暴击（每次攻击独立判定）
+    const critical = checkCritical(attacker.stats.crit, attacker.stats.luck, skill.critModifier);
+    if (critical) anyCrit = true;
+    
+    let finalDamage = baseDamage;
+    if (critical) {
+      finalDamage = Math.floor(baseDamage * 1.5);
+      hitLog.push(`暴击! 伤害提升50%: ${finalDamage}`);
+    }
+
+    // 4. 应用防御减伤
+    const targetEndurance = target.stats.baseEndurance;
+    const damageAfterDefense = applyDefenseReduction(finalDamage, targetEndurance);
+    finalDamage = damageAfterDefense;
+
+    // 5. 应用buff修正
+    finalDamage = applyBuffModifiers(finalDamage, attacker, target);
+
+    // 6. 应用快感上限限制（单次攻击最多造成目标最大快感的40%）
+    const maxPleasureCap = Math.floor(target.stats.maxPleasure * 0.4);
+    if (finalDamage > maxPleasureCap) {
+      finalDamage = maxPleasureCap;
+    }
+
+    hits.push({ damage: finalDamage, isCritical: critical, isDodged: false });
+    totalActualDamage += finalDamage;
+    
+    hitLog.push(`造成伤害: ${finalDamage}`);
+    logs.push(...hitLog);
   }
 
-  // 3. 判定暴击
-  const critical = checkCritical(attacker.stats.crit, attacker.stats.luck, skill.critModifier);
-  result.isCritical = critical;
-  let finalDamage = baseDamage;
-  if (critical) {
-    finalDamage = Math.floor(baseDamage * 1.5);
-    logs.push(`暴击! 伤害提升50%: ${finalDamage}`);
+  // 汇总日志
+  if (hitCount > 1) {
+    const hitSuccessCount = hits.filter(h => !h.isDodged).length;
+    const critCount = hits.filter(h => h.isCritical).length;
+    logs.push(`--- 连击汇总 ---`);
+    logs.push(`命中: ${hitSuccessCount}/${hitCount}次`);
+    if (critCount > 0) {
+      logs.push(`暴击: ${critCount}次`);
+    }
+    logs.push(`总伤害: ${totalActualDamage}`);
   }
 
-  // 4. 应用防御减伤
-  const damageBeforeDefense = finalDamage;
-  const targetEndurance = target.stats.baseEndurance;
-  console.info(`[executeAttack] 准备应用防御减伤: 原始伤害=${damageBeforeDefense}, 目标忍耐力=${targetEndurance}`);
-  
-  const damageAfterDefense = applyDefenseReduction(finalDamage, targetEndurance);
-  
-  const reductionPercent = ((targetEndurance / (targetEndurance + 100)) * 100).toFixed(1);
-  const actualReduction = damageBeforeDefense - damageAfterDefense;
-  logs.push(`原始伤害: ${damageBeforeDefense}`);
-  logs.push(`目标忍耐力: ${targetEndurance}`);
-  logs.push(`防御减伤公式: ${damageBeforeDefense} × 40 ÷ (${targetEndurance} + 100) = ${damageBeforeDefense} × 40 ÷ ${targetEndurance + 100}`);
-  logs.push(`计算过程: ${damageBeforeDefense} × 40 = ${damageBeforeDefense * 40}, ${damageBeforeDefense * 40} ÷ ${targetEndurance + 100} = ${Math.floor((damageBeforeDefense * 40) / (targetEndurance + 100))}`);
-  logs.push(`减伤比例: ${reductionPercent}% (减伤 ${actualReduction} 点)`);
-  logs.push(`减伤后伤害: ${damageAfterDefense}`);
-  finalDamage = damageAfterDefense;
-  console.info(`[executeAttack] 防御减伤完成: ${damageBeforeDefense} -> ${damageAfterDefense}, 日志数量=${logs.length}`);
-
-  // 5. 应用buff修正
-  finalDamage = applyBuffModifiers(finalDamage, attacker, target);
-  logs.push(`最终伤害: ${finalDamage}`);
-
-  // 6. 应用快感上限限制（单次攻击最多造成目标最大快感的40%）
-  const maxPleasureCap = Math.floor(target.stats.maxPleasure * 0.4);
-  const damageBeforeCap = finalDamage;
-  
-  if (finalDamage > maxPleasureCap) {
-    finalDamage = maxPleasureCap;
-    logs.push(`快感上限限制: 原始伤害 ${damageBeforeCap} > 最大快感的40% (${maxPleasureCap})`);
-    logs.push(`伤害调整为: ${finalDamage}`);
-  } else {
-    logs.push(`快感上限检查: ${finalDamage} <= 最大快感的40% (${maxPleasureCap})，无需调整`);
-  }
-
-  result.damage = baseDamage;
-  result.actualDamage = finalDamage;
-  result.logs = logs;
+  const result: CombatResult = {
+    damage: baseDamage,
+    isCritical: anyCrit,
+    isDodged: !anyHit,
+    actualDamage: totalActualDamage,
+    logs: logs,
+    hitCount: hits.filter(h => !h.isDodged).length,
+    totalDamage: totalActualDamage,
+    hits: hits,
+  };
 
   return result;
 }
@@ -352,7 +372,6 @@ function getBuffName(type: BuffType): string {
     [BuffType.ATK_DOWN]: '攻击下降',
     [BuffType.DEF_DOWN]: '防御下降',
     [BuffType.SENSITIVE]: '敏感',
-    [BuffType.WILLPOWER_DOWN]: '意志下降',
     [BuffType.SILENCE]: '沉默',
     [BuffType.BIND]: '束缚',
     [BuffType.DODGE_DOWN]: '闪避下降',
@@ -376,7 +395,6 @@ function isDebuff(type: BuffType): boolean {
     BuffType.ATK_DOWN,
     BuffType.DEF_DOWN,
     BuffType.SENSITIVE,
-    BuffType.WILLPOWER_DOWN,
     BuffType.SILENCE,
     BuffType.BIND,
     BuffType.DODGE_DOWN,

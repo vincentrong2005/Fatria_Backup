@@ -3,11 +3,11 @@
  * 实时更新所有依赖变量的计算值
  * 
  * 监听 MVU 变量变化，当基础变量改变时，自动更新依赖的变量：
- * - 魅力、幸运、闪避率、暴击率、意志力：基础值 + 永久状态加成 + 装备加成 + 临时状态加成
+ * - 魅力、幸运、闪避率、暴击率：基础值 + 永久状态加成 + 装备加成 + 临时状态加成
  * - 性斗力：((等级 x 潜力) + 装备加成 + 状态加成) x (1 + 成算/100)
- * - 忍耐力：((等级 x 意志力/10) + 装备加成 + 状态加成) x (1 + 成算/100)
+ * - 忍耐力：((等级 x 潜力) + 装备加成 + 状态加成) x (1 + 成算/100)
  * 
- * 计算顺序：先计算意志力等基础属性 → 再计算性斗力和忍耐力
+ * 计算顺序：先计算基础属性 → 再计算性斗力和忍耐力
  */
 
 import { createScriptIdDiv, destroyScriptIdDiv, deteleportStyle, teleportStyle } from '@/util/script';
@@ -87,9 +87,9 @@ async function updateRank() {
  * 计算并更新所有依赖变量
  * 
  * 计算顺序很重要：
- * 1. 先计算基础属性最终值（魅力、幸运、闪避、暴击、意志力）
+ * 1. 先计算基础属性最终值（魅力、幸运、闪避、暴击）
  * 2. 再计算性斗力（依赖等级和潜力）
- * 3. 最后计算忍耐力（依赖等级和最终意志力）
+ * 3. 最后计算忍耐力（依赖等级和潜力）
  */
 async function updateDependentVariables() {
   // 防止重复更新
@@ -132,28 +132,28 @@ async function updateDependentVariables() {
     const baseLuck = getValue(mvuData, '核心状态.$基础幸运', 10);
     const baseDodge = getValue(mvuData, '核心状态.$基础闪避率', 0);
     const baseCrit = getValue(mvuData, '核心状态.$基础暴击率', 0);
-    const baseWillpower = getValue(mvuData, '核心状态.$基础意志力', 100);
+    // 已移除意志力相关字段
     
     // 获取各项加成（根据 initvar.yaml，加成统计内的键名无前缀）
     const charmBonus = (permanentBonuses.魅力加成 || 0) + (equipmentBonuses.魅力加成 || 0) + (tempBonuses.魅力加成 || 0);
     const luckBonus = (permanentBonuses.幸运加成 || 0) + (equipmentBonuses.幸运加成 || 0) + (tempBonuses.幸运加成 || 0);
     const dodgeBonus = (permanentBonuses.闪避率加成 || 0) + (equipmentBonuses.闪避率加成 || 0) + (tempBonuses.闪避率加成 || 0);
     const critBonus = (permanentBonuses.暴击率加成 || 0) + (equipmentBonuses.暴击率加成 || 0) + (tempBonuses.暴击率加成 || 0);
-    const willpowerBonus = (permanentBonuses.意志力加成 || 0) + (equipmentBonuses.意志力加成 || 0) + (tempBonuses.意志力加成 || 0);
+    // 已移除意志力加成
     
     // 计算最终值（带上下限限制）
     const finalCharm = Math.max(0, baseCharm + charmBonus);
     const finalLuck = Math.max(0, baseLuck + luckBonus);
-    const finalDodge = Math.min(60, Math.max(0, baseDodge + dodgeBonus)); // 闪避率上限60%
+    const finalDodge = Math.min(60, Math.max(0, baseDodge + dodgeBonus)); // 闪避率上陘60%
     const finalCrit = Math.min(100, Math.max(0, baseCrit + critBonus)); // 暴击率上限100%
-    const finalWillpower = Math.min(100, Math.max(0, baseWillpower + willpowerBonus)); // 意志力上限100%
+    // 已移除意志力计算
     
     // 更新最终值到核心状态（如果发生变化）
     const currentFinalCharm = getValue(mvuData, '核心状态._魅力', 10);
     const currentFinalLuck = getValue(mvuData, '核心状态._幸运', 10);
     const currentFinalDodge = getValue(mvuData, '核心状态._闪避率', 0);
     const currentFinalCrit = getValue(mvuData, '核心状态._暴击率', 0);
-    const currentFinalWillpower = getValue(mvuData, '核心状态.意志力', 100);
+    // 已移除意志力相关字段
     
     if (finalCharm !== currentFinalCharm) {
       updates['核心状态._魅力'] = finalCharm;
@@ -175,27 +175,18 @@ async function updateDependentVariables() {
       hasUpdates = true;
       console.info(`[性斗学园脚本] 暴击率: ${baseCrit}(基础) + ${critBonus}(加成) = ${finalCrit}%`);
     }
-    if (finalWillpower !== currentFinalWillpower) {
-      updates['核心状态.意志力'] = finalWillpower;
-      hasUpdates = true;
-      console.info(`[性斗学园脚本] 意志力: ${baseWillpower}(基础) + ${willpowerBonus}(加成) = ${finalWillpower}`);
-    }
-    
-    // 先应用意志力更新（因为忍耐力依赖意志力）
-    if (updates['核心状态.意志力'] !== undefined) {
-      _.set(mvuData.stat_data, '核心状态.意志力', finalWillpower);
-    }
+    // 已移除意志力更新逻辑
 
     // ==================== 步骤3.5: 更新基础性斗力和基础忍耐力 ====================
     // 基础性斗力 = 等级 × 潜力
-    // 基础忍耐力 = 等级 × 意志力/10
+    // 基础忍耐力 = 等级 × 潜力（与性斗力公式一致）
     
     // 提前获取等级和潜力（用于基础值计算）
     const level = getValue(mvuData, '角色基础._等级', 1);
     const potential = getValue(mvuData, '核心状态._潜力', 5.0);
     
     const baseSexPowerValue = level * potential;
-    const baseEnduranceValue = level * (finalWillpower / 10);
+    const baseEnduranceValue = level * potential; // 更新：使用潜力而非意志力
     
     const currentBaseSexPower = getValue(mvuData, '核心状态.$基础性斗力', 10);
     const currentBaseEndurance = getValue(mvuData, '核心状态.$基础忍耐力', 10);
@@ -209,7 +200,7 @@ async function updateDependentVariables() {
     if (baseEnduranceValue !== currentBaseEndurance) {
       updates['核心状态.$基础忍耐力'] = baseEnduranceValue;
       hasUpdates = true;
-      console.info(`[性斗学园脚本] 基础忍耐力: ${level} × ${finalWillpower}/10 = ${baseEnduranceValue}`);
+      console.info(`[性斗学园脚本] 基础忍耐力: ${level} × ${potential} = ${baseEnduranceValue}`);
     }
 
     // ==================== 步骤3: 计算性斗力 ====================
@@ -243,8 +234,8 @@ async function updateDependentVariables() {
     }
 
     // ==================== 步骤4: 计算忍耐力 ====================
-    // 公式: ((等级 x 意志力/10) + 装备加成 + 状态加成) x (1 + 成算/100)
-    // 注意：这里使用已计算好的最终意志力
+    // 公式: ((等级 x 潜力) + 装备加成 + 状态加成) x (1 + 成算/100)
+    // 更新：使用潜力而非意志力，与性斗力公式一致
     
     // 忍耐力加成和成算
     const enduranceBonus = (permanentBonuses.基础忍耐力加成 || 0) + (equipmentBonuses.基础忍耐力加成 || 0) + (tempBonuses.基础忍耐力加成 || 0);
@@ -255,8 +246,8 @@ async function updateDependentVariables() {
     const maxOrgasmCount = getValue(mvuData, '性斗系统.胜负规则.高潮次数上限', 0);
     const isExhausted = maxOrgasmCount > 0 && orgasmCount >= maxOrgasmCount;
     
-    // 计算忍耐力（使用最终意志力）
-    const baseEndurance = level * (finalWillpower / 10);
+    // 计算忍耐力（使用潜力，与性斗力公式一致）
+    const baseEndurance = level * potential;
     let endurance = (baseEndurance + enduranceBonus) * (1 + enduranceMulti / 100);
     
     // 贤者时间增益 +10%
@@ -276,7 +267,7 @@ async function updateDependentVariables() {
     if (endurance !== currentEndurance) {
       updates['性斗系统.实时忍耐力'] = endurance;
       hasUpdates = true;
-      console.info(`[性斗学园脚本] 忍耐力: (${level}x${finalWillpower}/10 + ${enduranceBonus}) x (1 + ${enduranceMulti}/100) = ${endurance}`);
+      console.info(`[性斗学园脚本] 忍耐力: (${level}x${potential} + ${enduranceBonus}) x (1 + ${enduranceMulti}/100) = ${endurance}`);
     }
 
     // ==================== 步骤5: 检查快感是否达到上限（触发高潮）====================
@@ -397,7 +388,7 @@ eventOn(Mvu.events.VARIABLE_UPDATE_ENDED, async (variables, variables_before_upd
     '核心状态.$基础幸运',
     '核心状态.$基础闪避率',
     '核心状态.$基础暴击率',
-    '核心状态.$基础意志力',
+    // 已移除意志力相关路径
     // 核心状态资源
     '核心状态.$最大快感',
     '核心状态.$快感',

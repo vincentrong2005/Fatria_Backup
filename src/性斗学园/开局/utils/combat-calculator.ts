@@ -33,7 +33,6 @@ export interface BonusStats {
   基础忍耐力成算?: number;
   闪避率加成?: number;
   暴击率加成?: number;
-  意志力加成?: number;
 }
 
 /**
@@ -53,13 +52,11 @@ export interface MvuCombatData {
     $基础幸运: number;
     $基础闪避率: number;
     $基础暴击率: number;
-    $基础意志力: number;
     // 最终值
     _魅力: number;
     _幸运: number;
     _闪避率: number;
     _暴击率: number;
-    意志力: number;
     // 资源
     $最大耐力: number;
     $最大快感: number;
@@ -132,7 +129,7 @@ export function calculateSexualCombatPower(
 
 /**
  * 计算实时忍耐力
- * 公式: ((等级 x 意志力/10) + 装备基础忍耐力加成 + 永久状态加成 + 临时状态加成) x (1 + (装备成算 + 永久状态成算 + 临时状态成算)/100)
+ * 公式: ((等级 x 潜力) + 装备基础忍耐力加成 + 永久状态加成 + 临时状态加成) x (1 + (装备成算 + 永久状态成算 + 临时状态成算)/100)
  * 
  * @param data MVU 变量数据
  * @param isPostOrgasm 是否处于贤者时间（高潮后）
@@ -145,10 +142,10 @@ export function calculateEndurance(
   isExhausted: boolean = false
 ): number {
   const level = data.角色基础._等级;
-  const willpower = data.核心状态.意志力;
+  const potential = data.核心状态._潜力;
   
-  // 基础值：等级 x 意志力/10
-  const baseValue = level * (willpower / 10);
+  // 基础值：等级 x 潜力（与性斗力计算公式一致）
+  const baseValue = level * potential;
   
   // 装备加成
   const equipmentBonus = data.物品系统?.装备总加成?.基础忍耐力加成 || 0;
@@ -365,13 +362,11 @@ export function extractCombatData(mvuData: any): MvuCombatData {
       $基础幸运: statData.核心状态?.$基础幸运 || 10,
       $基础闪避率: statData.核心状态?.$基础闪避率 || 0,
       $基础暴击率: statData.核心状态?.$基础暴击率 || 0,
-      $基础意志力: statData.核心状态?.$基础意志力 || 100,
       // 最终值
       _魅力: statData.核心状态?._魅力 || 10,
       _幸运: statData.核心状态?._幸运 || 10,
       _闪避率: statData.核心状态?._闪避率 || 0,
       _暴击率: statData.核心状态?._暴击率 || 0,
-      意志力: statData.核心状态?.意志力 || 100,
       // 资源
       $最大耐力: statData.核心状态?.$最大耐力 || 100,
       $最大快感: statData.核心状态?.$最大快感 || 100,

@@ -3,7 +3,7 @@
  * 集中存储所有技能的完整数据
  */
 
-import { SkillData, SkillType, DamageSource, BuffType } from './types';
+import { BuffType, DamageSource, SkillData, SkillType } from './types';
 
 // ==================== 通用技能 ====================
 
@@ -96,7 +96,7 @@ export const COMMON_SKILLS: SkillData[] = [
     damageFormula: [{ source: DamageSource.CHARM, coefficient: 5.0, baseValue: 3 }],
     accuracy: 100,
     critModifier: 5,
-    buffs: [{ type: BuffType.WILLPOWER_DOWN, value: 5, isPercent: true, duration: 2, stackable: true, maxStacks: 4 }],
+    buffs: [{ type: BuffType.SENSITIVE, value: 5, isPercent: true, duration: 2, stackable: true, maxStacks: 4 }],
     canBeReflected: false,
     hitCount: 1,
     voiceLine: '你这个淫乱的家伙...',

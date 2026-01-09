@@ -57,6 +57,9 @@
 
           <!-- Map 地图页 -->
           <MapPage v-if="currentPage === 'map'" :character-data="characterData" />
+
+          <!-- Shop 商店页 -->
+          <ShopPage v-if="currentPage === 'shop'" :character-data="characterData" />
         </div>
 
         <!-- 底部导航栏 -->
@@ -91,6 +94,14 @@
           </button>
           <button
             class="nav-button"
+            :class="{ active: currentPage === 'shop' }"
+            @click="currentPage = 'shop'"
+          >
+            <i class="fas fa-store"></i>
+            <span>商店</span>
+          </button>
+          <button
+            class="nav-button"
             :class="{ active: currentPage === 'map' }"
             @click="currentPage = 'map'"
           >
@@ -114,6 +125,7 @@ import MapPage from './pages/MapPage.vue';
 import ProfilePage from './pages/ProfilePage.vue';
 import QuestPage from './pages/QuestPage.vue';
 import RelationshipPage from './pages/RelationshipPage.vue';
+import ShopPage from './pages/ShopPage.vue';
 import SkillPage from './pages/SkillPage.vue';
 
 const props = defineProps<{
@@ -127,7 +139,7 @@ const emit = defineEmits<{
 const characterData = ref<any>({});
 const combatData = ref<any>({});
 const currentTime = ref('12:00');
-const currentPage = ref<'dashboard' | 'profile' | 'skills' | 'inventory' | 'quest' | 'relationship' | 'map'>('dashboard');
+const currentPage = ref<'dashboard' | 'profile' | 'skills' | 'inventory' | 'quest' | 'relationship' | 'shop' | 'map'>('dashboard');
 
 // 从 MVU 获取数据
 async function loadMvuData() {
@@ -578,35 +590,51 @@ onUnmounted(() => {
 .bottom-nav {
   position: relative;
   display: flex;
-  justify-content: space-around;
   align-items: center;
-  padding: 12px 0;
-  background: rgba(15, 23, 42, 0.8);
+  padding: 10px 8px;
+  background: rgba(15, 23, 42, 0.9);
   backdrop-filter: blur(10px);
   border-top: 1px solid rgba(255, 255, 255, 0.1);
   z-index: 50;
-  flex-wrap: wrap;
-  gap: 4px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  gap: 6px;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+  
+  &::-webkit-scrollbar {
+    height: 3px;
+  }
+  
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  
+  &::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 2px;
+  }
 }
 
 .nav-button {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
-  padding: 6px 12px;
-  background: transparent;
-  border: none;
+  justify-content: center;
+  gap: 3px;
+  padding: 8px 14px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   color: rgba(255, 255, 255, 0.5);
   cursor: pointer;
   transition: all 0.2s;
-  border-radius: 12px;
+  border-radius: 10px;
   flex: 0 0 auto;
-  min-width: 50px;
+  min-width: 56px;
+  white-space: nowrap;
 
   i {
-    font-size: 18px;
-    margin-bottom: 2px;
+    font-size: 16px;
   }
 
   span {
@@ -616,14 +644,16 @@ onUnmounted(() => {
 
   &:hover {
     color: rgba(255, 255, 255, 0.8);
-    background: rgba(255, 255, 255, 0.05);
+    background: rgba(255, 255, 255, 0.08);
   }
 
   &.active {
     color: white;
+    background: linear-gradient(135deg, rgba(129, 140, 248, 0.3), rgba(139, 92, 246, 0.3));
+    border-color: rgba(129, 140, 248, 0.4);
 
     i {
-      color: #818cf8;
+      color: #a5b4fc;
     }
   }
 }

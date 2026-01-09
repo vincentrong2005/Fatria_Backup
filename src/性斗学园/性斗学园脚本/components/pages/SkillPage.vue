@@ -76,8 +76,11 @@
             <span v-if="skill.特殊机制?.是否忽视防御" class="mechanic-tag ignore-def">
               <i class="fas fa-shield-slash"></i> 无视防御
             </span>
-            <span v-if="!skill.特殊机制?.是否可被闪避" class="mechanic-tag no-dodge">
-              <i class="fas fa-bullseye"></i> 必中
+            <span v-if="(skill.伤害与效果?.连击数 || 1) > 1" class="mechanic-tag hit-count">
+              <i class="fas fa-burst"></i> {{ skill.伤害与效果?.连击数 }}连击
+            </span>
+            <span v-if="skill.伤害与效果?.暴击修正" class="mechanic-tag crit-mod">
+              <i class="fas fa-crosshairs"></i> 暴击+{{ skill.伤害与效果?.暴击修正 }}%
             </span>
           </div>
 
@@ -96,38 +99,6 @@
       </div>
     </div>
 
-    <!-- 效果说明 -->
-    <div class="skill-effects-section" v-if="hasAnyEffects">
-      <h3 class="section-title">
-        <i class="fas fa-sparkles"></i> 
-        技能效果汇总
-      </h3>
-      <div class="effects-grid">
-        <div 
-          v-for="(skill, skillId) in activeSkills" 
-          :key="skillId"
-          v-show="hasEffects(skill)"
-          class="effect-card"
-        >
-          <div class="effect-header">{{ skill.基本信息?.技能名称 }}</div>
-          <div class="effect-list">
-            <div 
-              v-for="(effect, effectName) in skill.伤害与效果?.效果列表" 
-              :key="effectName"
-              class="effect-item"
-            >
-              <span class="effect-type">{{ effect.效果类型 }}</span>
-              <span class="effect-value" :class="effect.效果值 > 0 ? 'positive' : 'negative'">
-                {{ effect.效果值 > 0 ? '+' : '' }}{{ effect.效果值 }}{{ effect.是否为百分比 ? '%' : '' }}
-              </span>
-              <span class="effect-duration" v-if="effect.持续回合数 > 0">
-                ({{ effect.持续回合数 }}回合)
-              </span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
   </div>
 </template>
 
@@ -152,20 +123,6 @@ const activeSkills = computed(() => {
 const skillCount = computed(() => {
   return Object.keys(activeSkills.value).length;
 });
-
-// 是否有任何效果
-const hasAnyEffects = computed(() => {
-  for (const skill of Object.values(activeSkills.value)) {
-    if (hasEffects(skill as any)) return true;
-  }
-  return false;
-});
-
-// 检查技能是否有效果
-function hasEffects(skill: any): boolean {
-  const effects = skill?.伤害与效果?.效果列表;
-  return effects && Object.keys(effects).length > 0;
-}
 
 // 获取稀有度样式类
 function getRarityClass(rarity: string): string {
@@ -537,7 +494,13 @@ async function upgradeSkill(skillId: string, skill: any) {
     border: 1px solid rgba(239, 68, 68, 0.3);
   }
   
-  &.no-dodge {
+  &.hit-count {
+    background: rgba(251, 146, 60, 0.2);
+    color: #fdba74;
+    border: 1px solid rgba(251, 146, 60, 0.3);
+  }
+  
+  &.crit-mod {
     background: rgba(167, 139, 250, 0.2);
     color: #c4b5fd;
     border: 1px solid rgba(167, 139, 250, 0.3);
@@ -576,59 +539,5 @@ async function upgradeSkill(skillId: string, skill: any) {
   }
 }
 
-.skill-effects-section {
-  margin-top: 20px;
-}
-
-.effects-grid {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.effect-card {
-  padding: 12px;
-  background: rgba(255, 255, 255, 0.02);
-  border-radius: 10px;
-  border: 1px solid rgba(255, 255, 255, 0.05);
-}
-
-.effect-header {
-  font-size: 12px;
-  font-weight: 600;
-  color: #667eea;
-  margin-bottom: 8px;
-}
-
-.effect-list {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-.effect-item {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  font-size: 11px;
-  padding: 4px 8px;
-  background: rgba(255, 255, 255, 0.03);
-  border-radius: 6px;
-  
-  .effect-type {
-    color: rgba(255, 255, 255, 0.6);
-  }
-  
-  .effect-value {
-    font-weight: 600;
-    
-    &.positive { color: #34d399; }
-    &.negative { color: #f87171; }
-  }
-  
-  .effect-duration {
-    color: rgba(255, 255, 255, 0.4);
-  }
-}
 </style>
 

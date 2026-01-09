@@ -1,10 +1,4 @@
 import { Archetype, Gender, Skill } from './types';
-import { 
-  Glasses, Sword, Brain, Crown, Cat, Sparkles, User, Dumbbell, BookOpen, 
-  Heart, Ghost, Zap, Flame, Shield, Target, RefreshCcw, Eye, Dna, Music, 
-  Camera, Scissors, Hand, Wind, Anchor, Feather, Smile, Skull, Mirror, Gem,
-  Droplets, Mountain, Footprints, FlaskConical, Users, Disc, HelpCircle, Cpu, Wifi, Star
-} from 'lucide-react';
 
 // --- Archetypes (10M, 10F, 6O) ---
 
@@ -15,7 +9,7 @@ export const ARCHETYPES: Record<Gender, Archetype[]> = {
       name: '冷酷学霸',
       description: '眼神锐利，智商超群，对恋爱毫无兴趣的禁欲系。',
       icon: 'Glasses',
-      baseBonus: { $潜力: 1.0, _意志力: 20, $基础忍耐力: 5 },
+      baseBonus: { $潜力: 1.0, $基础忍耐力: 5 },
       passiveSkill: { id: 'p_analysis', name: '真理之眼', description: '看穿对方敏感点', type: 'constitution', icon: 'Eye' }
     },
     {
@@ -63,7 +57,7 @@ export const ARCHETYPES: Record<Gender, Archetype[]> = {
       name: '体育特长生',
       description: '阳光开朗大男孩，体力无限，但心思比较单纯。',
       icon: 'Dumbbell',
-      baseBonus: { _最大耐力: 40, $基础性斗力: 3, _意志力: -10 },
+      baseBonus: { _最大耐力: 40, $基础性斗力: 3 },
       passiveSkill: { id: 'p_stamina', name: '无限体能', description: '耐力恢复速度翻倍', type: 'constitution', icon: 'Zap' }
     },
     {
@@ -79,7 +73,7 @@ export const ARCHETYPES: Record<Gender, Archetype[]> = {
       name: '自恋狂',
       description: '沉醉于自己的美貌，随身携带镜子，认为全世界都爱自己。',
       icon: 'Mirror',
-      baseBonus: { _魅力: 25, _意志力: 10, _声望: -10 },
+      baseBonus: { _魅力: 25, _声望: -10 },
       passiveSkill: { id: 'p_mirror', name: '自我陶醉', description: '免疫降低魅力的效果', type: 'constitution', icon: 'Sparkles' }
     },
     {
@@ -129,7 +123,7 @@ export const ARCHETYPES: Record<Gender, Archetype[]> = {
       name: '冰山美人',
       description: '拒人于千里之外的冷漠，只为特定的人融化。',
       icon: 'Glasses',
-      baseBonus: { _意志力: 40, $基础忍耐力: 10, _魅力: 5 },
+      baseBonus: { $基础忍耐力: 10, _魅力: 5 },
       passiveSkill: { id: 'p_cold', name: '绝对零度', description: '极难进入兴奋状态', type: 'constitution', icon: 'Shield' }
     },
     {
@@ -145,7 +139,7 @@ export const ARCHETYPES: Record<Gender, Archetype[]> = {
       name: '大和抚子',
       description: '传统的大家闺秀，温婉贤淑，拥有极强的忍耐力。',
       icon: 'Flower',
-      baseBonus: { _意志力: 30, _声望: 50, _最大快感: -10 },
+      baseBonus: { _声望: 50, _最大快感: -10 },
       passiveSkill: { id: 'p_patience', name: '隐忍不发', description: '受到攻击时忍耐力消耗减半', type: 'constitution', icon: 'Feather' }
     },
     {
@@ -153,7 +147,7 @@ export const ARCHETYPES: Record<Gender, Archetype[]> = {
       name: '病娇',
       description: '爱意沉重到令人窒息，为了爱可以摧毁一切。',
       icon: 'Scissors',
-      baseBonus: { $基础性斗力: 15, _意志力: -20, $暴击率: 20 },
+      baseBonus: { $基础性斗力: 15, $暴击率: 20 },
       passiveSkill: { id: 'p_obsession', name: '爱之深', description: '对手快感越高，自身攻击越高', type: 'constitution', icon: 'Skull' }
     },
     {
@@ -169,7 +163,7 @@ export const ARCHETYPES: Record<Gender, Archetype[]> = {
       name: '笨蛋美人',
       description: '拥有顶级的身材与美貌，但脑袋空空，极易被诱骗。',
       icon: 'Gem',
-      baseBonus: { _魅力: 30, _意志力: -30, _最大快感: 30 },
+      baseBonus: { _魅力: 30, _最大快感: 30 },
       passiveSkill: { id: 'p_airhead', name: '无防备', description: '所有控制类技能必定命中', type: 'constitution', icon: 'HelpCircle' }
     }
   ],
@@ -187,7 +181,7 @@ export const ARCHETYPES: Record<Gender, Archetype[]> = {
       name: '克苏鲁',
       description: '无法被定义的某种存在，充满未知的诱惑与恐惧。',
       icon: 'Ghost',
-      baseBonus: { $潜力: 3.0, _意志力: 50 },
+      baseBonus: { $潜力: 3.0 },
       passiveSkill: { id: 'p_chaos', name: '不可名状', description: '身体构造可随心改变', type: 'constitution', icon: 'Ghost' }
     },
     {
@@ -203,7 +197,7 @@ export const ARCHETYPES: Record<Gender, Archetype[]> = {
       name: '活体人偶',
       description: '精致如人偶般的存在，痛觉迟钝，唯命是从。',
       icon: 'User',
-      baseBonus: { $基础忍耐力: 20, _意志力: -50, _魅力: 25 },
+      baseBonus: { $基础忍耐力: 20, _魅力: 25 },
       passiveSkill: { id: 'p_doll', name: '无心之躯', description: '大幅降低受到的精神伤害', type: 'constitution', icon: 'Shield' }
     },
     {
@@ -233,9 +227,9 @@ export const ACTIVE_SKILLS: Skill[] = [
   { id: 's_observe', name: '弱点洞察', description: '【辅助】观察对方身体', effectDescription: '下回合暴击率提升', type: 'active', icon: 'Eye' },
   { id: 's_kiss', name: '深吻', description: '【攻击】交换唾液的深吻', effectDescription: '造成快感并封锁语言', type: 'active', icon: 'Heart' },
   { id: 's_spank', name: '羞耻拍打', description: '【攻击】拍打臀部', effectDescription: '增加对方羞耻与快感', type: 'active', icon: 'Hand' },
-  { id: 's_dirtytalk', name: '污言秽语', description: '【精神】用言语侮辱对方', effectDescription: '降低对方意志力', type: 'active', icon: 'Music' },
+  { id: 's_dirtytalk', name: '污言秽语', description: '【精神】用言语侮辱对方', effectDescription: '降低对方忍耐力', type: 'active', icon: 'Music' },
   { id: 's_pheromone', name: '费洛蒙', description: '【领域】散发催情气味', effectDescription: '每回合持续增加快感', type: 'active', icon: 'Wind' },
-  { id: 's_camera', name: '偷拍视角', description: '【精神】记录羞耻画面', effectDescription: '大幅降低对方意志', type: 'active', icon: 'Camera' },
+  { id: 's_camera', name: '偷拍视角', description: '【精神】记录羞耻画面', effectDescription: '大幅降低对方忍耐力', type: 'active', icon: 'Camera' },
   { id: 's_toy', name: '道具使用', description: '【特殊】使用随身玩具', effectDescription: '效果取决于道具', type: 'active', icon: 'Zap' },
   { id: 's_foot', name: '足技', description: '【攻击】用脚挑逗', effectDescription: '带有羞辱性质的快感', type: 'active', icon: 'Footprints' },
   { id: 's_bind', name: '束缚', description: '【控制】限制对方行动', effectDescription: '降低对方闪避率', type: 'active', icon: 'Anchor' },
@@ -245,9 +239,9 @@ export const ACTIVE_SKILLS: Skill[] = [
   { id: 's_taunt', name: '挑衅', description: '【精神】嘲讽对方的技术', effectDescription: '增加对方怒气但降低防御', type: 'active', icon: 'Ghost' },
   { id: 's_force', name: '强行压制', description: '【控制】利用体格压制', effectDescription: '封锁对方物理行动', type: 'active', icon: 'Dumbbell' },
   { id: 's_deny', name: '寸止', description: '【特殊】在关键时刻停手', effectDescription: '积累大量压力值', type: 'active', icon: 'Hand' },
-  { id: 's_worship', name: '崇拜', description: '【精神】奉对方为主人', effectDescription: '回复对方意志，降低自身意志', type: 'active', icon: 'Crown' },
+  { id: 's_worship', name: '崇拜', description: '【精神】奉对方为主人', effectDescription: '回复对方耐力，降低自身耐力', type: 'active', icon: 'Crown' },
   { id: 's_aphrodisiac', name: '媚药投毒', description: '【道具】悄悄下药', effectDescription: '赋予持续发情状态', type: 'active', icon: 'FlaskConical' },
-  { id: 's_charm_kiss', name: '魅惑之吻', description: '【攻击】用魅惑的吻技攻击', effectDescription: '造成50%魅力伤害，降低目标意志力', type: 'active', icon: 'Heart' },
+  { id: 's_charm_kiss', name: '魅惑之吻', description: '【攻击】用魅惑的吻技攻击', effectDescription: '造成50%魅力伤害，降低目标忍耐力', type: 'active', icon: 'Heart' },
   { id: 's_counter', name: '快速反击', description: '【攻击】在闪避后立即反击', effectDescription: '造成80%性斗力伤害，无视防御', type: 'active', icon: 'Shield' },
   { id: 's_lucky_strike', name: '幸运一击', description: '【攻击】依靠运气发动的强力攻击', effectDescription: '造成60%性斗力+40%幸运伤害', type: 'active', icon: 'Clover' }
 ];
@@ -277,14 +271,14 @@ export const PASSIVE_SKILLS: Record<Gender, Skill[]> = {
     { id: 'c_dry', name: '石女/白虎', description: '难以动情', effectDescription: '快感积累速度-20%', type: 'constitution', icon: 'Mountain' },
     { id: 'c_tongue', name: '名器之舌', description: '舌头灵活', effectDescription: '口技效果+50%', type: 'constitution', icon: 'Flame' },
     { id: 'c_voice', name: '娇喘', description: '声音好听', effectDescription: '受击时的叫声会对周围造成精神伤害', type: 'constitution', icon: 'Music' },
-    { id: 'c_scent', name: '体香', description: '天生自带香气', effectDescription: '对手每回合意志力-2', type: 'constitution', icon: 'Flower' },
+    { id: 'c_scent', name: '体香', description: '天生自带香气', effectDescription: '对手每回合忍耐力-2', type: 'constitution', icon: 'Flower' },
   ],
   [Gender.OTHER]: [
     ...COMMON_PASSIVES,
     { id: 'c_sensitive_nips', name: '乳首开发', description: '胸部极为敏感', effectDescription: '胸部受到攻击快感x2', type: 'constitution', icon: 'Target' },
     { id: 'c_wet', name: '淫乱体质', description: '极易动情', effectDescription: '初始快感+20，爱液分泌增加', type: 'constitution', icon: 'Droplets' },
     { id: 'c_voice', name: '娇喘', description: '声音好听', effectDescription: '受击时的叫声会对周围造成精神伤害', type: 'constitution', icon: 'Music' },
-    { id: 'c_scent', name: '体香', description: '天生自带香气', effectDescription: '对手每回合意志力-2', type: 'constitution', icon: 'Flower' },
+    { id: 'c_scent', name: '体香', description: '天生自带香气', effectDescription: '对手每回合忍耐力-2', type: 'constitution', icon: 'Flower' },
     { id: 'c_mutable', name: '不定形', description: '身体结构不稳定', effectDescription: '免疫暴击', type: 'constitution', icon: 'Ghost' },
   ]
 };

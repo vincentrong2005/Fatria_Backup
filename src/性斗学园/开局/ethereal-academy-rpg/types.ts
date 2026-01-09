@@ -28,7 +28,6 @@ export interface GameAttributes {
   $闪避率: number;
   $暴击率: number;
   _堕落度: number;
-  _意志力: number;
 }
 
 export interface Skill {
@@ -96,7 +95,6 @@ export const INITIAL_ATTRIBUTES: GameAttributes = {
   $闪避率: 0,
   $暴击率: 0,
   _堕落度: 0,
-  _意志力: 100,
 };
 
 export const INITIAL_CHARACTER_DATA: CharacterData = {

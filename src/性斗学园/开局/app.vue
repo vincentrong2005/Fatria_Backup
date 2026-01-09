@@ -1442,8 +1442,7 @@ const resetAttributes = () => {
       $基础闪避率: INITIAL_ATTRIBUTES.核心状态.$基础闪避率,
       _暴击率: INITIAL_ATTRIBUTES.核心状态._暴击率,
       $基础暴击率: INITIAL_ATTRIBUTES.核心状态.$基础暴击率,
-      意志力: INITIAL_ATTRIBUTES.核心状态.意志力,
-      $基础意志力: INITIAL_ATTRIBUTES.核心状态.$基础意志力,
+      // 已移除意志力相关字段
     },
   };
 };
@@ -1497,13 +1496,34 @@ const handleStartGame = async () => {
       }
     }
 
+    // 将难度转换为 MVU 使用的格式
+    const difficultyToMvu: Record<string, string> = {
+      [Difficulty.STORY]: '简单',
+      [Difficulty.NORMAL]: '普通',
+      [Difficulty.HARDCORE]: '困难',
+      [Difficulty.MASOCHIST]: '抖M',
+      [Difficulty.CHEATER]: '作弊',
+    };
+    const mvuDifficulty = difficultyToMvu[characterData.value.difficulty] || '普通';
+
+    // 将性别转换为 MVU 使用的格式
+    const genderToMvu: Record<string, string> = {
+      [Gender.MALE]: '男',
+      [Gender.FEMALE]: '女',
+      [Gender.OTHER]: '非二元',
+    };
+    const mvuGender = genderToMvu[characterData.value.gender] || '女';
+
     await updateMvuVariables({
       '技能系统.主动技能': activeSkillsRecord,
       '永久状态.状态列表': permanentStateList,
       '永久状态.加成统计': permanentBonusStats,
+      '角色基础.难度': mvuDifficulty, // 新增：写入难度
+      '角色基础.性别': mvuGender, // 新增：写入性别
     });
 
     console.info('[开局] 数据已保存到 MVU');
+    console.info('[开局] 难度:', mvuDifficulty, '性别:', mvuGender);
     console.info('[开局] 永久状态:', permanentStateList);
     console.info('[开局] 永久加成:', permanentBonusStats);
 

@@ -5,11 +5,11 @@
 
 import {
   EquipmentData,
+  EquipmentRarity,
   EquipmentSetData,
   EquipmentSlot,
-  EquipmentType,
-  EquipmentRarity,
   EquipmentSource,
+  EquipmentType,
 } from './equipment-types';
 
 // ==================== 主装备 ====================
@@ -197,13 +197,11 @@ export const MAIN_EQUIPMENTS: EquipmentData[] = [
     baseBonus: {
       基础性斗力加成: 10,
       魅力加成: 15,
-      意志力加成: 10,
     },
     maxLevel: 10,
     upgradeBonus: {
       基础性斗力加成: 3,
       魅力加成: 4,
-      意志力加成: 3,
     },
     effects: [
       {
@@ -366,7 +364,7 @@ export const SUB_EQUIPMENTS: EquipmentData[] = [
       {
         id: 'eff_bell_sound',
         name: '铃声响起',
-        description: '移动时铃铛作响，使敌人意志力-3',
+        description: '移动时铃铛作响',
         trigger: 'on_move',
         chance: 100,
         cooldown: 1,
@@ -501,13 +499,11 @@ export const ACCESSORIES: EquipmentData[] = [
     type: EquipmentType.DEFENSIVE,
     rarity: EquipmentRarity.EPIC,
     baseBonus: {
-      意志力加成: 15,
       基础忍耐力加成: 10,
       基础忍耐力成算: 10,
     },
     maxLevel: 10,
     upgradeBonus: {
-      意志力加成: 4,
       基础忍耐力加成: 3,
       基础忍耐力成算: 2,
     },
@@ -617,7 +613,6 @@ export const SPECIAL_EQUIPMENTS: EquipmentData[] = [
     baseBonus: {
       魅力加成: 10,
       幸运加成: 10,
-      意志力加成: 10,
       基础性斗力加成: 10,
       基础忍耐力加成: 10,
     },
@@ -625,7 +620,6 @@ export const SPECIAL_EQUIPMENTS: EquipmentData[] = [
     upgradeBonus: {
       魅力加成: 3,
       幸运加成: 3,
-      意志力加成: 3,
       基础性斗力加成: 3,
       基础忍耐力加成: 3,
     },

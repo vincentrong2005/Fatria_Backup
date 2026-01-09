@@ -4,8 +4,8 @@
  */
 
 import {
-  ConstitutionData,
   ConstitutionCategory,
+  ConstitutionData,
   ConstitutionRarity,
   TriggerTiming,
 } from './constitution-types';
@@ -15,7 +15,7 @@ export {
   ConstitutionCategory,
   ConstitutionRarity,
   TriggerTiming,
-  type ConstitutionData,
+  type ConstitutionData
 };
 
 // ==================== 通用体质（所有性别可选） ====================
@@ -47,12 +47,11 @@ export const COMMON_CONSTITUTIONS: ConstitutionData[] = [
     id: 'c_numb',
     name: '迟钝体质',
     description: '对快感的感知较为迟钝',
-    effectDescription: '受到快感攻击时伤害-25%，但意志力-10',
+    effectDescription: '受到快感攻击时伤害-25%',
     icon: 'Snowflake',
     category: ConstitutionCategory.SENSITIVITY,
     rarity: ConstitutionRarity.COMMON,
     permanentModifiers: [
-      { stat: '意志力加成', value: -10, isPercent: false },
       { stat: '基础忍耐力成算', value: 25, isPercent: true },
     ],
     sensitivityModifiers: [],
@@ -179,12 +178,12 @@ export const COMMON_CONSTITUTIONS: ConstitutionData[] = [
     id: 'c_iron_will',
     name: '钢铁意志',
     description: '坚不可摧的精神力量',
-    effectDescription: '意志力+40，忍耐力成算+15%',
+    effectDescription: '基础忍耐力+8，忍耐力成算+15%',
     icon: 'Brain',
     category: ConstitutionCategory.MENTAL,
     rarity: ConstitutionRarity.RARE,
     permanentModifiers: [
-      { stat: '意志力加成', value: 40, isPercent: false },
+      { stat: '基础忍耐力加成', value: 8, isPercent: false },
       { stat: '基础忍耐力成算', value: 15, isPercent: true },
     ],
     sensitivityModifiers: [],
@@ -201,12 +200,12 @@ export const COMMON_CONSTITUTIONS: ConstitutionData[] = [
     id: 'c_weak_mind',
     name: '意志薄弱',
     description: '精神容易被击溃',
-    effectDescription: '意志力-20，但闪避率+15%',
+    effectDescription: '最大快感+15，闪避率+15%',
     icon: 'Ghost',
     category: ConstitutionCategory.MENTAL,
     rarity: ConstitutionRarity.COMMON,
     permanentModifiers: [
-      { stat: '意志力加成', value: -20, isPercent: false },
+      { stat: '最大快感加成', value: 15, isPercent: false },
       { stat: '闪避率加成', value: 15, isPercent: true },
     ],
     sensitivityModifiers: [],
@@ -289,14 +288,14 @@ export const COMMON_CONSTITUTIONS: ConstitutionData[] = [
     id: 'c_energy_overflow',
     name: '能量溢出',
     description: '体内能量异常充沛',
-    effectDescription: '性斗力加成+15，忍耐力加成+10，但意志力-15',
+    effectDescription: '性斗力加成+15，忍耐力加成+10，但最大快感+10',
     icon: 'Zap',
     category: ConstitutionCategory.SPECIAL,
     rarity: ConstitutionRarity.RARE,
     permanentModifiers: [
       { stat: '基础性斗力加成', value: 15, isPercent: false },
       { stat: '基础忍耐力加成', value: 10, isPercent: false },
-      { stat: '意志力加成', value: -15, isPercent: false },
+      { stat: '最大快感加成', value: 10, isPercent: false },
     ],
     sensitivityModifiers: [],
     triggerEffects: [],
@@ -479,13 +478,13 @@ export const FEMALE_CONSTITUTIONS: ConstitutionData[] = [
     id: 'c_wet',
     name: '淫乱体质',
     description: '极易动情的身体',
-    effectDescription: '魅力+20，忍耐力成算-20%',
+    effectDescription: '魅力+20，最大快感+10',
     icon: 'Droplets',
     category: ConstitutionCategory.SENSITIVITY,
     rarity: ConstitutionRarity.COMMON,
     permanentModifiers: [
       { stat: '魅力加成', value: 20, isPercent: false },
-      { stat: '基础忍耐力成算', value: -20, isPercent: true },
+      { stat: '最大快感加成', value: 10, isPercent: false },
     ],
     sensitivityModifiers: [],
     triggerEffects: [],
@@ -501,12 +500,12 @@ export const FEMALE_CONSTITUTIONS: ConstitutionData[] = [
     id: 'c_dry',
     name: '冰山美人',
     description: '难以动情的体质',
-    effectDescription: '快感积累-25%，意志力+25',
+    effectDescription: '快感积累-25%，忍耐力成算+25%，最大耐力+30',
     icon: 'Snowflake',
     category: ConstitutionCategory.SENSITIVITY,
     rarity: ConstitutionRarity.RARE,
     permanentModifiers: [
-      { stat: '意志力加成', value: 25, isPercent: false },
+      { stat: '最大耐力加成', value: 30, isPercent: false },
       { stat: '基础忍耐力成算', value: 25, isPercent: true },
     ],
     sensitivityModifiers: [],

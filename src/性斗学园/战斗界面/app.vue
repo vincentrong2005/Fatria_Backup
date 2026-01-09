@@ -318,7 +318,26 @@ import CharacterPanel from './components/CharacterPanel.vue';
 import CombatEffect from './components/CombatEffect.vue';
 import CombatLog from './components/CombatLog.vue';
 import { createDefaultEnemy, createDefaultPlayer, getEnemyPortraitUrl, savePlayerCustomAvatar } from './constants';
+import { resolveEnemyName } from './enemyDatabase';
 import type { Character, CombatLogEntry, Item, Skill, TurnState } from './types';
+
+// 延迟加载数据库模块的辅助函数
+let enemyDbModule: any = null;
+let skillDbModule: any = null;
+let enemySkillDbModule: any = null;
+
+async function loadDatabaseModules() {
+  if (!enemyDbModule) {
+    enemyDbModule = await import('./enemyDatabase');
+  }
+  if (!skillDbModule) {
+    skillDbModule = await import('./skillDatabase');
+  }
+  if (!enemySkillDbModule) {
+    enemySkillDbModule = await import('./enemySkillDatabase');
+  }
+  return { enemyDbModule, skillDbModule, enemySkillDbModule };
+}
 
 // ================= 状态 =================
 const player = ref<Character>(createDefaultPlayer());
@@ -404,8 +423,8 @@ async function loadFromMvu() {
     player.value.stats.currentEndurance = _.get(data, '核心状态.$耐力', 100);
     player.value.stats.maxPleasure = _.get(data, '核心状态.$最大快感', 100);
     player.value.stats.currentPleasure = _.get(data, '核心状态.$快感', 0);
-    player.value.stats.willpower = _.get(data, '核心状态.意志力', 100);
-    player.value.stats.baseWillpower = _.get(data, '核心状态.$基础意志力', 100);
+    // 已移除意志力相关字段
+    player.value.stats.level = _.get(data, '角色基础._等级', 1);
     player.value.stats.charm = _.get(data, '核心状态._魅力', 10);
     player.value.stats.luck = _.get(data, '核心状态._幸运', 10);
     player.value.stats.evasion = _.get(data, '核心状态._闪避率', 0);
@@ -484,7 +503,7 @@ async function loadFromMvu() {
                 },
               ];
 
-              // 创建基本的SkillData对象
+              // 创建基本的SkillData对象（读取连击数、准确率、暴击修正）
               const basicSkillData = {
                 id: skillId,
                 name: mvuSkill.基本信息.技能名称 || skillId,
@@ -496,10 +515,11 @@ async function loadFromMvu() {
                 castTime: 0,
                 damageFormula: damageFormula,
                 accuracy: mvuSkill.伤害与效果?.基础命中率 || 100,
-                critModifier: 0,
+                critModifier: mvuSkill.伤害与效果?.暴击修正 || 0,
                 buffs: [],
                 canBeReflected: false,
-                hitCount: 1,
+                hitCount: mvuSkill.伤害与效果?.连击数 || 1,
+                accuracyModifier: mvuSkill.伤害与效果?.准确率 || 100,
               };
 
               return {
@@ -570,15 +590,22 @@ async function loadFromMvu() {
             }
           }
 
+          // 调试日志
+          if (itemData?.加成属性) {
+            console.info(`[战斗界面] 加载临时buff物品: ${itemId}`, itemData.加成属性);
+          }
+          
           // 创建Item对象
+          // 使用itemId作为名称（因为背包的key就是物品名称）
           const item: Item = {
             id: itemId,
-            name: itemName,
+            name: itemId, // 直接使用itemId作为名称
             description: itemData?.描述 || '战斗用品',
             quantity: quantity,
             staminaRestore: itemData?.耐力增加,
             pleasureReduce: itemData?.快感降低,
-            effect: (user, target) => {
+            bonuses: itemData?.加成属性, // 添加加成属性
+            effect: (user, _target) => {
               // 根据物品属性应用效果
               let message = `${user.name} 使用了 ${item.name}`;
 
@@ -603,6 +630,14 @@ async function loadFromMvu() {
                 if (actualReduce > 0) {
                   message += `，快感降低了 ${actualReduce} 点`;
                 }
+              }
+
+              // 临时buff：写入MVU的临时状态
+              if (itemData?.加成属性 && Object.keys(itemData.加成属性).length > 0) {
+                // 这里只记录消息，实际写入MVU在handlePlayerItem中处理
+                const buffDesc = itemData.描述?.match(/持续(\d+)回合/);
+                const duration = buffDesc ? parseInt(buffDesc[1]) : 3;
+                message += `，获得临时增益（持续${duration}回合）`;
               }
 
               return {
@@ -661,12 +696,16 @@ async function loadEnemyFromMvuData(data: any, maxClimaxCount: number) {
   // 优先从数据库查找对手数据，如果存在则覆盖MVU变量
   if (enemyName) {
     try {
-      const { getEnemyMvuData, resolveEnemyName } = await import('./enemyDatabase');
-      const { getEnemySkills, convertToMvuSkillFormat } = await import('./enemySkillDatabase');
+      console.info('[战斗界面] 开始加载对手数据...');
+      
+      // 加载数据库模块
+      const { enemyDbModule, enemySkillDbModule } = await loadDatabaseModules();
       
       // 解析完整名称（支持模糊匹配）
-      const fullEnemyName = resolveEnemyName(enemyName);
-      const presetData = getEnemyMvuData(enemyName);
+      const fullEnemyName = enemyDbModule.resolveEnemyName(enemyName);
+      const presetData = enemyDbModule.getEnemyMvuData(enemyName);
+      
+      console.info(`[战斗界面] 名称解析: ${enemyName} -> ${fullEnemyName}`);
       
       // 设置敌人立绘 URL（使用完整名称生成 GitHub 路径）
       enemy.value.avatarUrl = getEnemyPortraitUrl(fullEnemyName);
@@ -678,21 +717,33 @@ async function loadEnemyFromMvuData(data: any, maxClimaxCount: number) {
         if (typeof Mvu !== 'undefined') {
           const mvuData = Mvu.getMvuData({ type: 'message', message_id: 'latest' });
           if (mvuData?.stat_data) {
+            // 获取当前难度并应用难度系数
+            const difficulty = _.get(mvuData.stat_data, '角色基础.难度', '普通');
+            const adjustedData = enemyDbModule.applyDifficultyCoefficient(presetData, difficulty);
+            console.info(`[战斗界面] 应用难度系数: ${difficulty}, 原始性斗力=${presetData.对手性斗力}, 调整后=${adjustedData.对手性斗力}`);
+            
             // 确保对手名称被写入（使用完整名称）
             _.set(mvuData.stat_data, '性斗系统.对手名称', fullEnemyName);
-            // 写入所有对手基础属性
-            _.set(mvuData.stat_data, '性斗系统.对手魅力', presetData.对手魅力);
-            _.set(mvuData.stat_data, '性斗系统.对手幸运', presetData.对手幸运);
-            _.set(mvuData.stat_data, '性斗系统.对手闪避率', presetData.对手闪避率);
-            _.set(mvuData.stat_data, '性斗系统.对手暴击率', presetData.对手暴击率);
-            _.set(mvuData.stat_data, '性斗系统.对手意志力', presetData.对手意志力);
-            _.set(mvuData.stat_data, '性斗系统.对手耐力', presetData.对手耐力);
-            _.set(mvuData.stat_data, '性斗系统.对手最大耐力', presetData.对手最大耐力);
-            _.set(mvuData.stat_data, '性斗系统.对手快感', presetData.对手快感);
-            _.set(mvuData.stat_data, '性斗系统.对手最大快感', presetData.对手最大快感);
-            _.set(mvuData.stat_data, '性斗系统.对手高潮次数', presetData.对手高潮次数);
-            _.set(mvuData.stat_data, '性斗系统.对手性斗力', presetData.对手性斗力);
-            _.set(mvuData.stat_data, '性斗系统.对手忍耐力', presetData.对手忍耐力);
+            // 写入所有对手基础属性（已应用难度系数）
+            _.set(mvuData.stat_data, '性斗系统.对手魅力', adjustedData.对手魅力);
+            _.set(mvuData.stat_data, '性斗系统.对手幸运', adjustedData.对手幸运);
+            _.set(mvuData.stat_data, '性斗系统.对手闪避率', adjustedData.对手闪避率);
+            _.set(mvuData.stat_data, '性斗系统.对手暴击率', adjustedData.对手暴击率);
+            _.set(mvuData.stat_data, '性斗系统.对手等级', adjustedData.对手等级);
+            _.set(mvuData.stat_data, '性斗系统.对手耐力', adjustedData.对手耐力);
+            _.set(mvuData.stat_data, '性斗系统.对手最大耐力', adjustedData.对手最大耐力);
+            _.set(mvuData.stat_data, '性斗系统.对手快感', adjustedData.对手快感);
+            _.set(mvuData.stat_data, '性斗系统.对手最大快感', adjustedData.对手最大快感);
+            _.set(mvuData.stat_data, '性斗系统.对手高潮次数', adjustedData.对手高潮次数);
+            _.set(mvuData.stat_data, '性斗系统.对手性斗力', adjustedData.对手性斗力);
+            _.set(mvuData.stat_data, '性斗系统.对手忍耐力', adjustedData.对手忍耐力);
+            // 初始化对手实时属性（初始时等于基础属性）
+            _.set(mvuData.stat_data, '性斗系统.对手实时魅力', adjustedData.对手魅力);
+            _.set(mvuData.stat_data, '性斗系统.对手实时幸运', adjustedData.对手幸运);
+            _.set(mvuData.stat_data, '性斗系统.对手实时闪避率', adjustedData.对手闪避率);
+            _.set(mvuData.stat_data, '性斗系统.对手实时暴击率', adjustedData.对手暴击率);
+            _.set(mvuData.stat_data, '性斗系统.对手实时性斗力', adjustedData.对手性斗力);
+            _.set(mvuData.stat_data, '性斗系统.对手实时忍耐力', adjustedData.对手忍耐力);
             // 初始化对手临时状态（即使为空对象也要确保存在）
             if (!_.get(mvuData.stat_data, '性斗系统.对手临时状态')) {
               _.set(mvuData.stat_data, '性斗系统.对手临时状态', {
@@ -713,12 +764,12 @@ async function loadEnemyFromMvuData(data: any, maxClimaxCount: number) {
             
             // 自动加载对手技能（使用解析后的完整名称）
             // 重要：如果数据库中存在该对手技能，则直接覆盖MVU中的技能
-            const enemySkills = getEnemySkills(enemyName, fullEnemyName);
+            const enemySkills = enemySkillDbModule.getEnemySkills(enemyName, fullEnemyName);
             if (enemySkills && enemySkills.length > 0) {
-              console.info(`[战斗界面] 为对手 ${fullEnemyName} 加载技能:`, enemySkills.map(s => s.name));
+              console.info(`[战斗界面] 为对手 ${fullEnemyName} 加载技能:`, enemySkills.map((s: any) => s.name));
               const mvuSkills: Record<string, any> = {};
-              enemySkills.forEach(skill => {
-                mvuSkills[skill.id] = convertToMvuSkillFormat(skill);
+              enemySkills.forEach((skill: any) => {
+                mvuSkills[skill.id] = enemySkillDbModule.convertToMvuSkillFormat(skill);
               });
               _.set(mvuData.stat_data, '性斗系统.对手可用技能', mvuSkills);
               console.info(`[战斗界面] 技能覆盖完成，现有技能数: ${Object.keys(mvuSkills).length}`);
@@ -764,12 +815,12 @@ async function loadEnemyFromMvuData(data: any, maxClimaxCount: number) {
             
             // 尝试加载对手技能（使用解析后的完整名称）
             // 重要：如果数据库中存在该对手技能，则直接覆盖MVU中的技能
-            const enemySkills = getEnemySkills(enemyName, fullEnemyName);
+            const enemySkills = enemySkillDbModule.getEnemySkills(enemyName, fullEnemyName);
             if (enemySkills && enemySkills.length > 0) {
-              console.info(`[战斗界面] 为对手 ${fullEnemyName} 加载技能:`, enemySkills.map(s => s.name));
+              console.info(`[战斗界面] 为对手 ${fullEnemyName} 加载技能:`, enemySkills.map((s: any) => s.name));
               const mvuSkills: Record<string, any> = {};
-              enemySkills.forEach(skill => {
-                mvuSkills[skill.id] = convertToMvuSkillFormat(skill);
+              enemySkills.forEach((skill: any) => {
+                mvuSkills[skill.id] = enemySkillDbModule.convertToMvuSkillFormat(skill);
               });
               _.set(mvuData.stat_data, '性斗系统.对手可用技能', mvuSkills);
               console.info(`[战斗界面] 技能覆盖完成，现有技能数: ${Object.keys(mvuSkills).length}`);
@@ -785,7 +836,9 @@ async function loadEnemyFromMvuData(data: any, maxClimaxCount: number) {
         }
       }
     } catch (e) {
-      console.warn('[战斗界面] 加载对手数据库失败', e);
+      console.error('[战斗界面] 加载对手数据库失败', e);
+      console.error('[战斗界面] 错误详情:', e instanceof Error ? e.message : String(e));
+      console.error('[战斗界面] 错误堆栈:', e instanceof Error ? e.stack : '无堆栈信息');
     }
   }
 
@@ -795,14 +848,14 @@ async function loadEnemyFromMvuData(data: any, maxClimaxCount: number) {
   enemy.value.stats.currentPleasure = _.get(data, '性斗系统.对手快感', 0);
   enemy.value.stats.climaxCount = _.get(data, '性斗系统.对手高潮次数', 0);
   enemy.value.stats.maxClimaxCount = maxClimaxCount; // 使用统一的高潮次数上限
-  enemy.value.stats.sexPower = _.get(data, '性斗系统.对手性斗力', 20);
-  enemy.value.stats.baseEndurance = _.get(data, '性斗系统.对手忍耐力', 20);
-  enemy.value.stats.charm = _.get(data, '性斗系统.对手魅力', 10);
-  enemy.value.stats.luck = _.get(data, '性斗系统.对手幸运', 5);
-  enemy.value.stats.evasion = _.get(data, '性斗系统.对手闪避率', 5);
-  enemy.value.stats.crit = _.get(data, '性斗系统.对手暴击率', 10);
-  enemy.value.stats.willpower = _.get(data, '性斗系统.对手意志力', 100);
-  enemy.value.stats.baseWillpower = _.get(data, '性斗系统.对手意志力', 100);
+  // UI 读取对手实时属性（已包含临时状态加成）
+  enemy.value.stats.sexPower = _.get(data, '性斗系统.对手实时性斗力', _.get(data, '性斗系统.对手性斗力', 20));
+  enemy.value.stats.baseEndurance = _.get(data, '性斗系统.对手实时忍耐力', _.get(data, '性斗系统.对手忍耐力', 20));
+  enemy.value.stats.charm = _.get(data, '性斗系统.对手实时魅力', _.get(data, '性斗系统.对手魅力', 10));
+  enemy.value.stats.luck = _.get(data, '性斗系统.对手实时幸运', _.get(data, '性斗系统.对手幸运', 5));
+  enemy.value.stats.evasion = _.get(data, '性斗系统.对手实时闪避率', _.get(data, '性斗系统.对手闪避率', 5));
+  enemy.value.stats.crit = _.get(data, '性斗系统.对手实时暴击率', _.get(data, '性斗系统.对手暴击率', 10));
+  enemy.value.stats.level = _.get(data, '性斗系统.对手等级', 1);
 
   // 加载对手技能 - 从性斗系统.对手可用技能读取
   const enemySkills = _.get(data, '性斗系统.对手可用技能', {});
@@ -810,10 +863,10 @@ async function loadEnemyFromMvuData(data: any, maxClimaxCount: number) {
   console.info('[战斗界面] 从MVU加载敌人技能，技能ID列表:', enemySkillIds);
 
   if (enemySkillIds.length > 0) {
-    const { getSkillById } = require('./skillDatabase');
+    const { skillDbModule } = await loadDatabaseModules();
     enemy.value.skills = enemySkillIds
       .map((skillId: string) => {
-        const skillData = getSkillById(skillId);
+        const skillData = skillDbModule.getSkillById(skillId);
         const mvuSkill = enemySkills[skillId];
 
         if (!skillData && mvuSkill) {
@@ -864,20 +917,22 @@ async function saveMvuEnemyData() {
     const mvuData = Mvu.getMvuData({ type: 'message', message_id: 'latest' });
     if (!mvuData) return;
 
-    // 更新敌人的完整数据
+    // 更新敌人的动态数据（耐力、快感等会变化的值）
+    // 注意：基础属性不在这里修改，实时属性由 updateEnemyRealtimeStats 统一管理
     _.set(mvuData.stat_data, '性斗系统.对手名称', enemy.value.name);
     _.set(mvuData.stat_data, '性斗系统.对手最大耐力', enemy.value.stats.maxEndurance);
     _.set(mvuData.stat_data, '性斗系统.对手耐力', enemy.value.stats.currentEndurance);
     _.set(mvuData.stat_data, '性斗系统.对手最大快感', enemy.value.stats.maxPleasure);
     _.set(mvuData.stat_data, '性斗系统.对手快感', enemy.value.stats.currentPleasure);
     _.set(mvuData.stat_data, '性斗系统.对手高潮次数', enemy.value.stats.climaxCount);
-    _.set(mvuData.stat_data, '性斗系统.对手性斗力', enemy.value.stats.sexPower);
-    _.set(mvuData.stat_data, '性斗系统.对手忍耐力', enemy.value.stats.baseEndurance);
-    _.set(mvuData.stat_data, '性斗系统.对手魅力', enemy.value.stats.charm);
-    _.set(mvuData.stat_data, '性斗系统.对手幸运', enemy.value.stats.luck);
-    _.set(mvuData.stat_data, '性斗系统.对手闪避率', enemy.value.stats.evasion);
-    _.set(mvuData.stat_data, '性斗系统.对手暴击率', enemy.value.stats.crit);
-    _.set(mvuData.stat_data, '性斗系统.对手意志力', enemy.value.stats.willpower);
+    // 写入实时属性（UI 中显示的值）
+    _.set(mvuData.stat_data, '性斗系统.对手实时性斗力', enemy.value.stats.sexPower);
+    _.set(mvuData.stat_data, '性斗系统.对手实时忍耐力', enemy.value.stats.baseEndurance);
+    _.set(mvuData.stat_data, '性斗系统.对手实时魅力', enemy.value.stats.charm);
+    _.set(mvuData.stat_data, '性斗系统.对手实时幸运', enemy.value.stats.luck);
+    _.set(mvuData.stat_data, '性斗系统.对手实时闪避率', enemy.value.stats.evasion);
+    _.set(mvuData.stat_data, '性斗系统.对手实时暴击率', enemy.value.stats.crit);
+    _.set(mvuData.stat_data, '性斗系统.对手等级', enemy.value.stats.level);
 
     await Mvu.replaceMvuData(mvuData, { type: 'message', message_id: 'latest' });
     console.info('[战斗界面] 已保存敌人完整数据到MVU');
@@ -925,10 +980,9 @@ async function saveToMvu() {
     });
 
     const updates: Record<string, any> = {
-      // 玩家数据 - 核心状态
+      // 玩家数据 - 核心状态（已移除意志力）
       '核心状态.$耐力': player.value.stats.currentEndurance,
       '核心状态.$快感': player.value.stats.currentPleasure,
-      '核心状态.意志力': player.value.stats.willpower,
       '核心状态._魅力': player.value.stats.charm,
       '核心状态._幸运': player.value.stats.luck,
       '核心状态._闪避率': player.value.stats.evasion,
@@ -942,20 +996,21 @@ async function saveToMvu() {
       '性斗系统.行动日志': actionLogs, // 保存所有战斗日志
       // 注意：玩家技能冷却在Schema中没有明确字段，技能冷却在战斗中临时管理，不持久化
 
-      // 敌人数据
+      // 敌人数据 - 动态变化的值
       '性斗系统.对手名称': enemy.value.name,
       '性斗系统.对手耐力': enemy.value.stats.currentEndurance,
       '性斗系统.对手最大耐力': enemy.value.stats.maxEndurance,
       '性斗系统.对手快感': enemy.value.stats.currentPleasure,
       '性斗系统.对手最大快感': enemy.value.stats.maxPleasure,
       '性斗系统.对手高潮次数': enemy.value.stats.climaxCount,
-      '性斗系统.对手性斗力': enemy.value.stats.sexPower,
-      '性斗系统.对手忍耐力': enemy.value.stats.baseEndurance,
-      '性斗系统.对手魅力': enemy.value.stats.charm,
-      '性斗系统.对手幸运': enemy.value.stats.luck,
-      '性斗系统.对手闪避率': enemy.value.stats.evasion,
-      '性斗系统.对手暴击率': enemy.value.stats.crit,
-      '性斗系统.对手意志力': enemy.value.stats.willpower,
+      '性斗系统.对手等级': enemy.value.stats.level,
+      // 敌人实时属性（UI 中的值，已包含 debuff 加成）
+      '性斗系统.对手实时性斗力': enemy.value.stats.sexPower,
+      '性斗系统.对手实时忍耐力': enemy.value.stats.baseEndurance,
+      '性斗系统.对手实时魅力': enemy.value.stats.charm,
+      '性斗系统.对手实时幸运': enemy.value.stats.luck,
+      '性斗系统.对手实时闪避率': enemy.value.stats.evasion,
+      '性斗系统.对手实时暴击率': enemy.value.stats.crit,
       '性斗系统.对手技能冷却': enemySkillCooldowns,
       '性斗系统.战斗物品': combatItems,
     };
@@ -971,410 +1026,199 @@ async function saveToMvu() {
 }
 
 // ================= 辅助函数 =================
-// 本地状态管理：跟踪已应用的效果（避免重复应用）
-// 存储格式：effectKey -> { duration: number, applied: boolean, changeValue: number, effectType: string, isPercentage: boolean }
-const appliedEffects = ref<Map<string, { duration: number; applied: boolean; changeValue: number; effectType: string; isPercentage: boolean }>>(new Map());
+// ================= 完全重写的 Debuff 运算逻辑 =================
+// 设计原则：
+// 1. 技能命中时：只写入 MVU 状态列表，不修改任何属性值
+// 2. 属性计算时：从状态列表动态计算总加成（在 reloadStatusFromMvu 中）
+// 3. 回合结束时：只减少剩余回合数，移除过期状态
+// 这样确保 debuff 效果只"生效"一次（通过动态计算），而不是重复叠加
 
-// 直接应用技能效果到角色属性（不读写MVU的对手临时状态）
+/**
+ * 将技能的 debuff/buff 效果写入 MVU 状态列表
+ * 只负责写入，不修改任何属性值
+ * 属性值的变化通过 reloadStatusFromMvu 中的动态计算实现
+ */
 async function applySkillEffectsFromMvu(skillId: string, isPlayerSkill: boolean): Promise<string[]> {
   const logs: string[] = [];
 
   try {
     if (typeof Mvu === 'undefined') {
-      console.warn('[战斗界面] Mvu不可用，无法应用技能效果');
+      console.warn('[战斗界面] Mvu不可用');
       return logs;
     }
 
     const mvuData = Mvu.getMvuData({ type: 'message', message_id: 'latest' });
-    if (!mvuData) {
+    if (!mvuData?.stat_data) {
       console.warn('[战斗界面] 无法获取MVU数据');
       return logs;
     }
 
-    // 从MVU读取技能效果列表（根据是否为玩家技能选择不同路径）
+    // 从MVU读取技能效果列表
     const skillPath = isPlayerSkill 
       ? `技能系统.主动技能.${skillId}.伤害与效果.效果列表`
       : `性斗系统.对手可用技能.${skillId}.伤害与效果.效果列表`;
     const effectList = _.get(mvuData.stat_data, skillPath, {});
 
     if (!effectList || Object.keys(effectList).length === 0) {
-      console.warn(`[战斗界面] 未找到技能效果列表: ${skillPath}`);
       return logs;
     }
     
-    console.info(`[战斗界面] 读取技能效果列表: ${skillPath}`, effectList);
+    console.info(`[Debuff系统] 处理技能效果: ${skillId}`, effectList);
 
-    // 遍历所有效果
     for (const [effectName, effectData] of Object.entries(effectList)) {
       if (!effectData || typeof effectData !== 'object') continue;
 
-      const effectType = _.get(effectData, '效果类型', '');
-      const effectValue = _.get(effectData, '效果值', 0);
-      const isPercentage = _.get(effectData, '是否为百分比', false);
-      const duration = _.get(effectData, '持续回合数', 0);
+      const effectType = _.get(effectData, '效果类型', '') as string;
+      const effectValue = _.get(effectData, '效果值', 0) as number;
+      const isPercentage = _.get(effectData, '是否为百分比', false) as boolean;
+      const duration = _.get(effectData, '持续回合数', 0) as number;
+      const targetEnemy = _.get(effectData, '是否作用敌人', true) as boolean;
 
       if (effectValue === 0 || duration === 0) continue;
 
-      // 根据效果值的正负决定作用对象
-      // 正数作用自身（攻击者），负数作用对方（目标）
-      const isPositive = effectValue > 0;
-      const isSelf = isPositive;
-      const actualValue = Math.abs(effectValue);
-
-      // 确定目标角色
-      const target = isPlayerSkill
-        ? isSelf
-          ? player.value
-          : enemy.value
-        : isSelf
-          ? enemy.value
-          : player.value;
-      const targetName = target.name;
-
-      // 特殊处理：束缚效果
+      // 特殊处理：束缚效果（不写入状态列表，直接设置束缚回合数）
       if (effectType === '束缚') {
-        if (isPlayerSkill) {
-          if (isPositive) {
-            enemyBoundTurns.value = duration;
-            enemyBindSource.value = 'player'; // 记录施加者
-            logs.push(`${enemy.value.name} 被束缚了 ${duration} 回合，无法行动！`);
-          } else {
-            playerBoundTurns.value = duration;
-            playerBindSource.value = 'player'; // 记录施加者
-            logs.push(`${player.value.name} 被束缚了 ${duration} 回合，无法行动！`);
-          }
+        const targetIsPlayer = isPlayerSkill ? !targetEnemy : targetEnemy;
+        if (targetIsPlayer) {
+          playerBoundTurns.value = duration;
+          playerBindSource.value = isPlayerSkill ? 'player' : 'enemy';
+          logs.push(`${player.value.name} 被束缚了 ${duration} 回合，无法行动！`);
         } else {
-          if (isPositive) {
-            playerBoundTurns.value = duration;
-            playerBindSource.value = 'enemy'; // 记录施加者
-            logs.push(`${player.value.name} 被束缚了 ${duration} 回合，无法行动！`);
-          } else {
-            enemyBoundTurns.value = duration;
-            enemyBindSource.value = 'enemy'; // 记录施加者
-            logs.push(`${enemy.value.name} 被束缚了 ${duration} 回合，无法行动！`);
-          }
+          enemyBoundTurns.value = duration;
+          enemyBindSource.value = isPlayerSkill ? 'player' : 'enemy';
+          logs.push(`${enemy.value.name} 被束缚了 ${duration} 回合，无法行动！`);
         }
         continue;
       }
 
-      // 创建效果key（用于检查是否已应用）
-      const effectKey = `${effectType}_${skillId}_${isPlayerSkill ? 'player' : 'enemy'}_${isSelf ? 'self' : 'target'}`;
+      // 确定目标和状态路径
+      const targetIsPlayer = isPlayerSkill ? !targetEnemy : targetEnemy;
+      const targetName = targetIsPlayer ? player.value.name : enemy.value.name;
+      const statusListPath = targetIsPlayer ? '临时状态.状态列表' : '性斗系统.对手临时状态.状态列表';
 
-      // 检查效果是否已应用（使用本地状态管理）
-      const existingEffect = appliedEffects.value.get(effectKey);
-      if (existingEffect && existingEffect.applied) {
-        // 效果已应用，只更新持续时间，不重新应用效果值
-        existingEffect.duration = duration;
-        logs.push(`${targetName} 的 ${effectType} 效果持续时间已刷新 (剩余 ${duration} 回合)`);
-        continue; // 跳过应用效果值，避免重复叠加
-      }
-
-      // 写入MVU的临时状态.状态列表和临时状态.加成统计
-      const updateMvuData = Mvu.getMvuData({ type: 'message', message_id: 'latest' });
-      if (!updateMvuData?.stat_data) {
-        console.warn('[战斗界面] 无法获取MVU数据以写入临时状态');
-        continue;
-      }
-
-      // 确定是玩家还是对手的临时状态
-      const statusBasePath = target === player.value ? '临时状态' : '性斗系统.对手临时状态';
-      const statusListPath = `${statusBasePath}.状态列表`;
-      const bonusPath = `${statusBasePath}.加成统计`;
-
-      // 生成状态key（用于状态列表）
-      const timestamp = Date.now();
-      const statusKey = `${effectType}_${skillId}_${effectName}_${actualValue}_${isPositive ? 'pos' : 'neg'}_${isPercentage ? 'pct' : 'abs'}_${timestamp}`;
-
-      // 写入状态列表
-      const currentStatusList = _.get(updateMvuData.stat_data, statusListPath, {});
-      currentStatusList[statusKey] = duration;
-      _.set(updateMvuData.stat_data, statusListPath, currentStatusList);
-
-      // 写入加成统计
-      const currentBonus = _.get(updateMvuData.stat_data, bonusPath, {});
-      const effectDelta = isPositive ? actualValue : -actualValue;
+      // 生成唯一的状态key（同一技能同一效果只存在一个条目）
+      const statusKey = `${effectType}_${skillId}_${effectName}`;
       
-      // 根据效果类型更新对应的加成字段
-      if (effectType === '性斗力') {
-        if (isPercentage) {
-          currentBonus.基础性斗力成算 = (currentBonus.基础性斗力成算 || 0) + effectDelta;
-        } else {
-          currentBonus.基础性斗力加成 = (currentBonus.基础性斗力加成 || 0) + effectDelta;
-        }
-        logs.push(`${targetName} ${effectDelta > 0 ? '+' : ''}${effectDelta}${isPercentage ? '%' : ''} 性斗力 (持续 ${duration} 回合)`);
-      } else if (effectType === '忍耐力') {
-        if (isPercentage) {
-          currentBonus.基础忍耐力成算 = (currentBonus.基础忍耐力成算 || 0) + effectDelta;
-        } else {
-          currentBonus.基础忍耐力加成 = (currentBonus.基础忍耐力加成 || 0) + effectDelta;
-        }
-        logs.push(`${targetName} ${effectDelta > 0 ? '+' : ''}${effectDelta}${isPercentage ? '%' : ''} 忍耐力 (持续 ${duration} 回合)`);
-      } else if (effectType === '魅力') {
-        currentBonus.魅力加成 = (currentBonus.魅力加成 || 0) + effectDelta;
-        logs.push(`${targetName} ${effectDelta > 0 ? '+' : ''}${effectDelta} 魅力 (持续 ${duration} 回合)`);
-      } else if (effectType === '幸运') {
-        currentBonus.幸运加成 = (currentBonus.幸运加成 || 0) + effectDelta;
-        logs.push(`${targetName} ${effectDelta > 0 ? '+' : ''}${effectDelta} 幸运 (持续 ${duration} 回合)`);
-      } else if (effectType === '闪避率') {
-        currentBonus.闪避率加成 = (currentBonus.闪避率加成 || 0) + effectDelta;
-        logs.push(`${targetName} ${effectDelta > 0 ? '+' : ''}${effectDelta} 闪避率 (持续 ${duration} 回合)`);
-      } else if (effectType === '暴击率') {
-        currentBonus.暴击率加成 = (currentBonus.暴击率加成 || 0) + effectDelta;
-        logs.push(`${targetName} ${effectDelta > 0 ? '+' : ''}${effectDelta} 暴击率 (持续 ${duration} 回合)`);
-      } else if (effectType === '意志力') {
-        currentBonus.意志力加成 = (currentBonus.意志力加成 || 0) + effectDelta;
-        logs.push(`${targetName} ${effectDelta > 0 ? '+' : ''}${effectDelta} 意志力 (持续 ${duration} 回合)`);
-      } else {
-        console.warn(`[战斗界面] 未知的效果类型: ${effectType}`);
+      // 构建加成对象
+      const bonusObj: Record<string, number> = {};
+      const bonusFieldMap: Record<string, string> = {
+        '性斗力': isPercentage ? '基础性斗力成算' : '基础性斗力加成',
+        '忍耐力': isPercentage ? '基础忍耐力成算' : '基础忍耐力加成',
+        '魅力': '魅力加成',
+        '幸运': '幸运加成',
+        '闪避率': '闪避率加成',
+        '暴击率': '暴击率加成',
+      };
+      
+      const bonusField = bonusFieldMap[effectType];
+      if (!bonusField) {
+        console.warn(`[Debuff系统] 未知效果类型: ${effectType}`);
         continue;
       }
+      
+      bonusObj[bonusField] = effectValue; // 直接使用原始值（可正可负）
 
-      _.set(updateMvuData.stat_data, bonusPath, currentBonus);
-      await Mvu.replaceMvuData(updateMvuData, { type: 'message', message_id: 'latest' });
-
-      // 标记效果已应用
-      appliedEffects.value.set(effectKey, { duration, applied: true, changeValue: effectDelta, effectType, isPercentage });
+      // 读取当前状态列表
+      const currentStatusList = _.get(mvuData.stat_data, statusListPath, {}) as Record<string, any>;
+      
+      // 检查是否已存在该状态
+      if (currentStatusList[statusKey]) {
+        // 已存在：只刷新回合数，不重复添加
+        currentStatusList[statusKey].剩余回合 = duration;
+        logs.push(`${targetName} 的 ${effectType} 效果已刷新 (${duration} 回合)`);
+        console.info(`[Debuff系统] 刷新已有状态: ${statusKey}`);
+      } else {
+        // 不存在：添加新状态
+        currentStatusList[statusKey] = {
+          加成: bonusObj,
+          剩余回合: duration,
+        };
+        const sign = effectValue > 0 ? '+' : '';
+        logs.push(`${targetName} ${sign}${effectValue}${isPercentage ? '%' : ''} ${effectType} (${duration} 回合)`);
+        console.info(`[Debuff系统] 添加新状态: ${statusKey}`, currentStatusList[statusKey]);
+      }
+      
+      _.set(mvuData.stat_data, statusListPath, currentStatusList);
     }
+
+    // 一次性保存所有更改
+    await Mvu.replaceMvuData(mvuData, { type: 'message', message_id: 'latest' });
+    
+    // 更新对手实时属性（状态列表 -> 加成统计 -> 实时属性 -> UI）
+    await updateEnemyRealtimeStats();
+    
   } catch (e) {
-    console.error('[战斗界面] 应用技能效果失败', e);
+    console.error('[Debuff系统] 应用效果失败', e);
     logs.push('应用技能效果失败');
   }
 
   return logs;
 }
 
-// 更新状态效果的持续时间（从MVU临时状态中读取并更新）
+/**
+ * 回合结束时更新状态效果
+ * 只负责减少剩余回合数，移除过期状态
+ * 不修改任何属性值
+ */
 async function updateStatusEffectsFromMvu(): Promise<string[]> {
   const logs: string[] = [];
 
   try {
-    if (typeof Mvu === 'undefined') {
-      return logs;
-    }
+    if (typeof Mvu === 'undefined') return logs;
 
     const mvuData = Mvu.getMvuData({ type: 'message', message_id: 'latest' });
-    if (!mvuData?.stat_data) {
-      return logs;
-    }
+    if (!mvuData?.stat_data) return logs;
 
-    // 更新玩家的临时状态
-    const playerStatusList = _.get(mvuData.stat_data, '临时状态.状态列表', {});
-    const updatedPlayerStatus: Record<string, number> = {};
+    // 处理玩家状态
+    const playerStatusList = _.get(mvuData.stat_data, '临时状态.状态列表', {}) as Record<string, any>;
+    const updatedPlayerStatus: Record<string, any> = {};
     
-    for (const [statusKey, duration] of Object.entries(playerStatusList)) {
-      const newDuration = (duration as number) - 1;
+    for (const [statusKey, statusData] of Object.entries(playerStatusList)) {
+      if (typeof statusData !== 'object' || statusData === null) continue;
+      
+      const currentDuration = statusData.剩余回合 || 0;
+      const newDuration = currentDuration - 1;
+      
       if (newDuration > 0) {
-        updatedPlayerStatus[statusKey] = newDuration;
+        updatedPlayerStatus[statusKey] = { ...statusData, 剩余回合: newDuration };
       } else {
-        // 状态结束，从加成统计中移除
-        const parts = statusKey.split('_');
-        if (parts.length >= 6) {
-          const effectType = parts[0];
-          const effectValue = parseFloat(parts[3]) || 0;
-          const isPositive = parts[4] === 'pos';
-          const isPercentage = parts[5] === 'pct';
-          const effectDelta = isPositive ? effectValue : -effectValue;
-
-          const currentBonus = _.get(mvuData.stat_data, '临时状态.加成统计', {});
-          
-          // 从加成统计中移除对应的值
-          if (effectType === '性斗力') {
-            if (isPercentage) {
-              currentBonus.基础性斗力成算 = (currentBonus.基础性斗力成算 || 0) - effectDelta;
-            } else {
-              currentBonus.基础性斗力加成 = (currentBonus.基础性斗力加成 || 0) - effectDelta;
-            }
-          } else if (effectType === '忍耐力') {
-            if (isPercentage) {
-              currentBonus.基础忍耐力成算 = (currentBonus.基础忍耐力成算 || 0) - effectDelta;
-            } else {
-              currentBonus.基础忍耐力加成 = (currentBonus.基础忍耐力加成 || 0) - effectDelta;
-            }
-          } else if (effectType === '魅力') {
-            currentBonus.魅力加成 = (currentBonus.魅力加成 || 0) - effectDelta;
-          } else if (effectType === '幸运') {
-            currentBonus.幸运加成 = (currentBonus.幸运加成 || 0) - effectDelta;
-          } else if (effectType === '闪避率') {
-            currentBonus.闪避率加成 = (currentBonus.闪避率加成 || 0) - effectDelta;
-          } else if (effectType === '暴击率') {
-            currentBonus.暴击率加成 = (currentBonus.暴击率加成 || 0) - effectDelta;
-          } else if (effectType === '意志力') {
-            currentBonus.意志力加成 = (currentBonus.意志力加成 || 0) - effectDelta;
-          }
-
-          _.set(mvuData.stat_data, '临时状态.加成统计', currentBonus);
-          logs.push(`${player.value.name} 的 ${effectType} 效果消失了`);
-        }
+        const effectType = statusKey.split('_')[0];
+        logs.push(`${player.value.name} 的 ${getEffectTypeName(effectType)} 效果消失了`);
+        console.info(`[Debuff系统] 玩家状态过期: ${statusKey}`);
       }
     }
-    
     _.set(mvuData.stat_data, '临时状态.状态列表', updatedPlayerStatus);
 
-    // 更新对手的临时状态
-    const enemyStatusList = _.get(mvuData.stat_data, '性斗系统.对手临时状态.状态列表', {});
-    const updatedEnemyStatus: Record<string, number> = {};
+    // 处理对手状态
+    const enemyStatusList = _.get(mvuData.stat_data, '性斗系统.对手临时状态.状态列表', {}) as Record<string, any>;
+    const updatedEnemyStatus: Record<string, any> = {};
     
-    for (const [statusKey, duration] of Object.entries(enemyStatusList)) {
-      const newDuration = (duration as number) - 1;
+    for (const [statusKey, statusData] of Object.entries(enemyStatusList)) {
+      if (typeof statusData !== 'object' || statusData === null) continue;
+      
+      const currentDuration = statusData.剩余回合 || 0;
+      const newDuration = currentDuration - 1;
+      
       if (newDuration > 0) {
-        updatedEnemyStatus[statusKey] = newDuration;
+        updatedEnemyStatus[statusKey] = { ...statusData, 剩余回合: newDuration };
       } else {
-        // 状态结束，从加成统计中移除
-        const parts = statusKey.split('_');
-        if (parts.length >= 6) {
-          const effectType = parts[0];
-          const effectValue = parseFloat(parts[3]) || 0;
-          const isPositive = parts[4] === 'pos';
-          const isPercentage = parts[5] === 'pct';
-          const effectDelta = isPositive ? effectValue : -effectValue;
-
-          const currentBonus = _.get(mvuData.stat_data, '性斗系统.对手临时状态.加成统计', {});
-          
-          // 从加成统计中移除对应的值
-          if (effectType === '性斗力') {
-            if (isPercentage) {
-              currentBonus.基础性斗力成算 = (currentBonus.基础性斗力成算 || 0) - effectDelta;
-            } else {
-              currentBonus.基础性斗力加成 = (currentBonus.基础性斗力加成 || 0) - effectDelta;
-            }
-          } else if (effectType === '忍耐力') {
-            if (isPercentage) {
-              currentBonus.基础忍耐力成算 = (currentBonus.基础忍耐力成算 || 0) - effectDelta;
-            } else {
-              currentBonus.基础忍耐力加成 = (currentBonus.基础忍耐力加成 || 0) - effectDelta;
-            }
-          } else if (effectType === '魅力') {
-            currentBonus.魅力加成 = (currentBonus.魅力加成 || 0) - effectDelta;
-          } else if (effectType === '幸运') {
-            currentBonus.幸运加成 = (currentBonus.幸运加成 || 0) - effectDelta;
-          } else if (effectType === '闪避率') {
-            currentBonus.闪避率加成 = (currentBonus.闪避率加成 || 0) - effectDelta;
-          } else if (effectType === '暴击率') {
-            currentBonus.暴击率加成 = (currentBonus.暴击率加成 || 0) - effectDelta;
-          } else if (effectType === '意志力') {
-            currentBonus.意志力加成 = (currentBonus.意志力加成 || 0) - effectDelta;
-          }
-
-          _.set(mvuData.stat_data, '性斗系统.对手临时状态.加成统计', currentBonus);
-          logs.push(`${enemy.value.name} 的 ${effectType} 效果消失了`);
-        }
+        const effectType = statusKey.split('_')[0];
+        logs.push(`${enemy.value.name} 的 ${getEffectTypeName(effectType)} 效果消失了`);
+        console.info(`[Debuff系统] 对手状态过期: ${statusKey}`);
       }
     }
-    
     _.set(mvuData.stat_data, '性斗系统.对手临时状态.状态列表', updatedEnemyStatus);
-    
+
     await Mvu.replaceMvuData(mvuData, { type: 'message', message_id: 'latest' });
-
-    // 清理本地状态管理（保持同步）
-    const effectsToRemove: string[] = [];
-    for (const [effectKey, effectInfo] of appliedEffects.value.entries()) {
-      effectInfo.duration--;
-      if (effectInfo.duration <= 0) {
-        effectsToRemove.push(effectKey);
-      }
-    }
     
-    for (const key of effectsToRemove) {
-      appliedEffects.value.delete(key);
-    }
-
-    // 更新玩家的临时状态列表（仅玩家，不处理对手）
-    if (typeof Mvu !== 'undefined') {
-      const mvuData = Mvu.getMvuData({ type: 'message', message_id: 'latest' });
-      if (mvuData?.stat_data) {
-        const playerStatusList = _.get(mvuData.stat_data, '临时状态.状态列表', {});
-        const updatedPlayerStatus: Record<string, number> = {};
-        for (const [key, duration] of Object.entries(playerStatusList)) {
-          const newDuration = (duration as number) - 1;
-          if (newDuration > 0) {
-            updatedPlayerStatus[key] = newDuration;
-          } else {
-            clearBonusFromStatus(key, '临时状态.加成统计', mvuData);
-            const effectType = key.split('_')[0];
-            logs.push(`${player.value.name} 的 ${getEffectTypeName(effectType)} 效果消失了`);
-          }
-        }
-        _.set(mvuData.stat_data, '临时状态.状态列表', updatedPlayerStatus);
-        await Mvu.replaceMvuData(mvuData, { type: 'message', message_id: 'latest' });
-      }
-    }
-
-    // 束缚回合数现在在回合结束时递减，不在这里处理
+    // 状态变化后更新对手实时属性
+    await updateEnemyRealtimeStats();
+    
   } catch (e) {
-    console.error('[战斗界面] 更新状态效果失败', e);
+    console.error('[Debuff系统] 更新状态失败', e);
   }
 
   return logs;
-}
-
-// 清除状态对应的加成
-// 从状态key中提取效果值并清除对应的加成
-// statusKey格式：效果类型_技能ID_效果名称_效果值_正负号_类型_时间戳（新格式）
-// 或：效果类型_技能ID_效果名称_效果值_类型_时间戳（旧格式，兼容）
-function clearBonusFromStatus(statusKey: string, bonusPath: string, mvuData: any) {
-  try {
-    // 从状态key中提取信息
-    const parts = statusKey.split('_');
-    // 兼容旧格式（没有正负号）和新格式（有正负号）
-    let effectType: string, effectValue: number, isPositive: boolean, isPercentage: boolean;
-    
-    if (parts.length >= 6) {
-      // 新格式：效果类型_技能ID_效果名称_效果值_正负号_类型_时间戳
-      effectType = parts[0];
-      effectValue = parseFloat(parts[3]) || 0;
-      const sign = parts[4];
-      isPositive = sign === 'pos';
-      isPercentage = parts[5] === 'pct';
-    } else if (parts.length >= 5) {
-      // 旧格式：效果类型_技能ID_效果名称_效果值_类型_时间戳（兼容处理）
-      effectType = parts[0];
-      effectValue = parseFloat(parts[3]) || 0;
-      isPercentage = parts[4] === 'pct';
-      // 对于旧格式，通过检查当前加成来判断正负（如果加成为负，说明原始效果是负数）
-      const currentBonus = _.get(mvuData.stat_data, `${bonusPath}.${effectType === '性斗力' ? (isPercentage ? '基础性斗力成算' : '基础性斗力加成') : (effectType === '忍耐力' ? (isPercentage ? '基础忍耐力成算' : '基础忍耐力加成') : '')}`, 0);
-      isPositive = currentBonus >= 0; // 如果当前加成为负，说明原始效果是负数
-      console.warn('[战斗界面] 检测到旧格式状态key，通过当前加成判断正负:', statusKey);
-    } else {
-      console.warn('[战斗界面] 状态key格式不正确:', statusKey);
-      return;
-    }
-
-    if (effectValue === 0) {
-      return; // 没有效果值，不需要清除
-    }
-
-    // 根据效果类型确定加成字段
-    let bonusField: string;
-    if (effectType === '性斗力') {
-      bonusField = isPercentage ? '基础性斗力成算' : '基础性斗力加成';
-    } else if (effectType === '忍耐力') {
-      bonusField = isPercentage ? '基础忍耐力成算' : '基础忍耐力加成';
-    } else {
-      const bonusFieldMap: Record<string, string> = {
-        魅力: '魅力加成',
-        幸运: '幸运加成',
-        闪避率: '闪避率加成',
-        暴击率: '暴击率加成',
-        意志力: '意志力加成',
-      };
-      bonusField = bonusFieldMap[effectType];
-    }
-
-    if (!bonusField) {
-      console.warn(`[战斗界面] 未知的效果类型: ${effectType}`);
-      return;
-    }
-
-    // 从加成统计中恢复对应的值
-    // 应用时：newBonus = currentBonus + (isPositive ? actualValue : -actualValue)
-    // 清除时：newBonus = currentBonus - (isPositive ? actualValue : -actualValue)
-    const currentBonus = _.get(mvuData.stat_data, `${bonusPath}.${bonusField}`, 0);
-    const newBonus = currentBonus - (isPositive ? effectValue : -effectValue);
-    _.set(mvuData.stat_data, `${bonusPath}.${bonusField}`, newBonus);
-    console.info(`[战斗界面] 清除${effectType}加成: ${currentBonus} -> ${newBonus} (${isPositive ? '减少' : '增加'}${effectValue})`);
-  } catch (e) {
-    console.error('[战斗界面] 清除状态加成失败', e);
-  }
 }
 
 // 获取效果类型的中文名称
@@ -1386,128 +1230,153 @@ function getEffectTypeName(effectType: string): string {
     幸运: '幸运',
     闪避率: '闪避率',
     暴击率: '暴击率',
-    意志力: '意志力',
     束缚: '束缚',
   };
   return names[effectType] || effectType;
 }
 
-// 重新读取MVU中的临时状态加成，更新UI显示
+// 从状态列表中动态计算加成总和（符合 mvuSchema.ts 设计：加成统计由代码实时计算）
+function calculateBonusFromStatusList(statusList: Record<string, any>): Record<string, number> {
+  const totalBonus: Record<string, number> = {
+    魅力加成: 0,
+    幸运加成: 0,
+    基础性斗力加成: 0,
+    基础性斗力成算: 0,
+    基础忍耐力加成: 0,
+    基础忍耐力成算: 0,
+    闪避率加成: 0,
+    暴击率加成: 0,
+  };
+  
+  for (const [_statusKey, statusData] of Object.entries(statusList)) {
+    if (typeof statusData === 'object' && statusData !== null) {
+      const bonus = (statusData as any).加成 || {};
+      for (const [key, value] of Object.entries(bonus)) {
+        if (typeof value === 'number' && key in totalBonus) {
+          totalBonus[key] += value;
+        }
+      }
+    }
+  }
+  
+  return totalBonus;
+}
+
+/**
+ * 更新对手实时属性到 MVU 和 UI
+ * 流程：状态列表 -> 计算加成统计 -> 写入加成统计 -> 基础属性+加成统计=实时属性 -> 写入实时属性 -> 同步UI
+ */
+async function updateEnemyRealtimeStats(): Promise<void> {
+  try {
+    if (typeof Mvu === 'undefined') return;
+    
+    const mvuData = Mvu.getMvuData({ type: 'message', message_id: 'latest' });
+    if (!mvuData?.stat_data) return;
+    
+    const data = mvuData.stat_data;
+    
+    // 1. 从状态列表计算加成统计
+    const enemyStatusList = _.get(data, '性斗系统.对手临时状态.状态列表', {});
+    const enemyTempBonus = calculateBonusFromStatusList(enemyStatusList);
+    
+    // 2. 写入加成统计到 MVU
+    _.set(data, '性斗系统.对手临时状态.加成统计', enemyTempBonus);
+    
+    // 3. 读取基础属性
+    const baseCharm = _.get(data, '性斗系统.对手魅力', 0);
+    const baseLuck = _.get(data, '性斗系统.对手幸运', 0);
+    const baseEvasion = _.get(data, '性斗系统.对手闪避率', 0);
+    const baseCrit = _.get(data, '性斗系统.对手暴击率', 0);
+    const baseSexPower = _.get(data, '性斗系统.对手性斗力', 0);
+    const baseEndurance = _.get(data, '性斗系统.对手忍耐力', 0);
+    
+    // 4. 计算实时属性 = 基础属性 + 加成统计
+    const realtimeCharm = Math.max(0, baseCharm + (enemyTempBonus.魅力加成 || 0));
+    const realtimeLuck = Math.max(0, baseLuck + (enemyTempBonus.幸运加成 || 0));
+    const realtimeEvasion = Math.min(60, Math.max(0, baseEvasion + (enemyTempBonus.闪避率加成 || 0)));
+    const realtimeCrit = Math.min(100, Math.max(0, baseCrit + (enemyTempBonus.暴击率加成 || 0)));
+    
+    // 性斗力和忍耐力支持百分比加成
+    const sexPowerBonus = enemyTempBonus.基础性斗力加成 || 0;
+    const sexPowerMultiplier = (enemyTempBonus.基础性斗力成算 || 0) / 100;
+    const realtimeSexPower = Math.max(0, Math.round((baseSexPower + sexPowerBonus) * (1 + sexPowerMultiplier)));
+    
+    const enduranceBonus = enemyTempBonus.基础忍耐力加成 || 0;
+    const enduranceMultiplier = (enemyTempBonus.基础忍耐力成算 || 0) / 100;
+    const realtimeEndurance = Math.max(0, Math.round((baseEndurance + enduranceBonus) * (1 + enduranceMultiplier)));
+    
+    // 5. 写入实时属性到 MVU
+    _.set(data, '性斗系统.对手实时魅力', realtimeCharm);
+    _.set(data, '性斗系统.对手实时幸运', realtimeLuck);
+    _.set(data, '性斗系统.对手实时闪避率', realtimeEvasion);
+    _.set(data, '性斗系统.对手实时暴击率', realtimeCrit);
+    _.set(data, '性斗系统.对手实时性斗力', realtimeSexPower);
+    _.set(data, '性斗系统.对手实时忍耐力', realtimeEndurance);
+    
+    await Mvu.replaceMvuData(mvuData, { type: 'message', message_id: 'latest' });
+    
+    // 6. 同步更新 UI（从实时属性读取）
+    enemy.value.stats.charm = realtimeCharm;
+    enemy.value.stats.luck = realtimeLuck;
+    enemy.value.stats.evasion = realtimeEvasion;
+    enemy.value.stats.crit = realtimeCrit;
+    enemy.value.stats.sexPower = realtimeSexPower;
+    enemy.value.stats.baseEndurance = realtimeEndurance;
+    
+    console.info(`[Debuff系统] 对手实时属性已更新 - 性斗力:${baseSexPower}->${realtimeSexPower}, 忍耐力:${baseEndurance}->${realtimeEndurance}`);
+  } catch (e) {
+    console.error('[Debuff系统] 更新对手实时属性失败', e);
+  }
+}
+
+/**
+ * 重新读取 MVU 中的状态，更新 UI 显示
+ * 玩家：从临时/永久/装备加成计算
+ * 对手：调用 updateEnemyRealtimeStats 更新
+ */
 async function reloadStatusFromMvu() {
   try {
-    if (typeof Mvu === 'undefined') {
-      return;
-    }
+    if (typeof Mvu === 'undefined') return;
 
     const mvuData = Mvu.getMvuData({ type: 'message', message_id: 'latest' });
-    if (!mvuData) {
-      return;
-    }
+    if (!mvuData?.stat_data) return;
 
     const data = mvuData.stat_data;
 
-    // 读取玩家的临时状态加成统计
-    const playerTempBonus = _.get(data, '临时状态.加成统计', {});
+    // === 玩家属性计算 ===
+    const playerStatusList = _.get(data, '临时状态.状态列表', {});
+    const playerTempBonus = calculateBonusFromStatusList(playerStatusList);
     const playerPermBonus = _.get(data, '永久状态.加成统计', {});
     const playerEquipBonus = _.get(data, '物品系统.装备总加成', {});
+    
+    // 写入玩家的临时状态加成统计
+    _.set(data, '临时状态.加成统计', playerTempBonus);
 
-    // 注意：不再读取对手的临时状态加成统计，因为效果直接应用到enemy.value属性
-
-    // 更新玩家的属性（基础值 + 临时加成 + 永久加成 + 装备加成）
-    // 重新计算玩家的实时性斗力和忍耐力（应用临时状态加成）
+    // 玩家性斗力
     const playerBaseSexPower = _.get(data, '核心状态.$基础性斗力', 10);
-    const playerSexPowerBonus = 
-      (playerTempBonus.基础性斗力加成 || 0) + 
-      (playerPermBonus.基础性斗力加成 || 0) + 
-      (playerEquipBonus.基础性斗力加成 || 0);
-    const playerSexPowerMultiplier = 
-      ((playerTempBonus.基础性斗力成算 || 0) + 
-       (playerPermBonus.基础性斗力成算 || 0) + 
-       (playerEquipBonus.基础性斗力成算 || 0)) / 100;
-    const calculatedSexPower = Math.max(0, Math.round(
-      (playerBaseSexPower + playerSexPowerBonus) * (1 + playerSexPowerMultiplier)
-    ));
+    const playerSexPowerBonus = (playerTempBonus.基础性斗力加成 || 0) + (playerPermBonus.基础性斗力加成 || 0) + (playerEquipBonus.基础性斗力加成 || 0);
+    const playerSexPowerMultiplier = ((playerTempBonus.基础性斗力成算 || 0) + (playerPermBonus.基础性斗力成算 || 0) + (playerEquipBonus.基础性斗力成算 || 0)) / 100;
+    const calculatedSexPower = Math.max(0, Math.round((playerBaseSexPower + playerSexPowerBonus) * (1 + playerSexPowerMultiplier)));
     player.value.stats.sexPower = calculatedSexPower;
     
+    // 玩家忍耐力
     const playerBaseEndurance = _.get(data, '核心状态.$基础忍耐力', 10);
-    const playerEnduranceBonus = 
-      (playerTempBonus.基础忍耐力加成 || 0) + 
-      (playerPermBonus.基础忍耐力加成 || 0) + 
-      (playerEquipBonus.基础忍耐力加成 || 0);
-    const playerEnduranceMultiplier = 
-      ((playerTempBonus.基础忍耐力成算 || 0) + 
-       (playerPermBonus.基础忍耐力成算 || 0) + 
-       (playerEquipBonus.基础忍耐力成算 || 0)) / 100;
-    const calculatedEndurance = Math.max(0, Math.round(
-      (playerBaseEndurance + playerEnduranceBonus) * (1 + playerEnduranceMultiplier)
-    ));
+    const playerEnduranceBonus = (playerTempBonus.基础忍耐力加成 || 0) + (playerPermBonus.基础忍耐力加成 || 0) + (playerEquipBonus.基础忍耐力加成 || 0);
+    const playerEnduranceMultiplier = ((playerTempBonus.基础忍耐力成算 || 0) + (playerPermBonus.基础忍耐力成算 || 0) + (playerEquipBonus.基础忍耐力成算 || 0)) / 100;
+    const calculatedEndurance = Math.max(0, Math.round((playerBaseEndurance + playerEnduranceBonus) * (1 + playerEnduranceMultiplier)));
     player.value.stats.baseEndurance = calculatedEndurance;
     
-    // 同时更新MVU中的实时值
-    _.set(mvuData.stat_data, '性斗系统.实时性斗力', calculatedSexPower);
-    _.set(mvuData.stat_data, '性斗系统.实时忍耐力', calculatedEndurance);
-    await Mvu.replaceMvuData(mvuData, { type: 'message', message_id: 'latest' });
+    // 写入玩家实时值
+    _.set(data, '性斗系统.实时性斗力', calculatedSexPower);
+    _.set(data, '性斗系统.实时忍耐力', calculatedEndurance);
 
-    // 其他属性
-    const playerBaseCharm = _.get(data, '核心状态.$基础魅力', 10);
-    player.value.stats.charm =
-      playerBaseCharm +
-      _.get(playerTempBonus, '魅力加成', 0) +
-      _.get(playerPermBonus, '魅力加成', 0) +
-      _.get(playerEquipBonus, '魅力加成', 0);
+    // 玩家其他属性
+    player.value.stats.charm = _.get(data, '核心状态.$基础魅力', 10) + (playerTempBonus.魅力加成 || 0) + (playerPermBonus.魅力加成 || 0) + (playerEquipBonus.魅力加成 || 0);
+    player.value.stats.luck = _.get(data, '核心状态.$基础幸运', 10) + (playerTempBonus.幸运加成 || 0) + (playerPermBonus.幸运加成 || 0) + (playerEquipBonus.幸运加成 || 0);
+    player.value.stats.evasion = _.get(data, '核心状态.$基础闪避率', 0) + (playerTempBonus.闪避率加成 || 0) + (playerPermBonus.闪避率加成 || 0) + (playerEquipBonus.闪避率加成 || 0);
+    player.value.stats.crit = Math.min(100, Math.max(0, _.get(data, '核心状态.$基础暴击率', 0) + (playerTempBonus.暴击率加成 || 0) + (playerPermBonus.暴击率加成 || 0) + (playerEquipBonus.暴击率加成 || 0)));
 
-    const playerBaseLuck = _.get(data, '核心状态.$基础幸运', 10);
-    player.value.stats.luck =
-      playerBaseLuck +
-      _.get(playerTempBonus, '幸运加成', 0) +
-      _.get(playerPermBonus, '幸运加成', 0) +
-      _.get(playerEquipBonus, '幸运加成', 0);
-
-    const playerBaseEvasion = _.get(data, '核心状态.$基础闪避率', 0);
-    player.value.stats.evasion =
-      playerBaseEvasion +
-      _.get(playerTempBonus, '闪避率加成', 0) +
-      _.get(playerPermBonus, '闪避率加成', 0) +
-      _.get(playerEquipBonus, '闪避率加成', 0);
-
-    const playerBaseCrit = _.get(data, '核心状态.$基础暴击率', 0);
-    player.value.stats.crit = Math.min(
-      100,
-      Math.max(
-        0,
-        playerBaseCrit +
-          _.get(playerTempBonus, '暴击率加成', 0) +
-          _.get(playerPermBonus, '暴击率加成', 0) +
-          _.get(playerEquipBonus, '暴击率加成', 0),
-      ),
-    );
-
-    // 更新对手的属性（基础值 + 临时状态加成）
-    const enemyTempBonus = _.get(data, '性斗系统.对手临时状态.加成统计', {});
-    
-    // 对手性斗力 = 基础值 + 加成 + 成算
-    const enemyBaseSexPower = _.get(data, '性斗系统.对手性斗力', 0);
-    const enemySexPowerBonus = enemyTempBonus.基础性斗力加成 || 0;
-    const enemySexPowerMultiplier = (enemyTempBonus.基础性斗力成算 || 0) / 100;
-    enemy.value.stats.sexPower = Math.max(0, Math.round(
-      (enemyBaseSexPower + enemySexPowerBonus) * (1 + enemySexPowerMultiplier)
-    ));
-    
-    // 对手忍耐力 = 基础值 + 加成 + 成算
-    const enemyBaseEndurance = _.get(data, '性斗系统.对手忍耐力', 0);
-    const enemyEnduranceBonus = enemyTempBonus.基础忍耐力加成 || 0;
-    const enemyEnduranceMultiplier = (enemyTempBonus.基础忍耐力成算 || 0) / 100;
-    enemy.value.stats.baseEndurance = Math.max(0, Math.round(
-      (enemyBaseEndurance + enemyEnduranceBonus) * (1 + enemyEnduranceMultiplier)
-    ));
-    
-    // 对手其他属性
-    enemy.value.stats.charm = Math.max(0, _.get(data, '性斗系统.对手魅力', 0) + (enemyTempBonus.魅力加成 || 0));
-    enemy.value.stats.luck = Math.max(0, _.get(data, '性斗系统.对手幸运', 0) + (enemyTempBonus.幸运加成 || 0));
-    enemy.value.stats.evasion = Math.min(60, Math.max(0, _.get(data, '性斗系统.对手闪避率', 0) + (enemyTempBonus.闪避率加成 || 0)));
-    enemy.value.stats.crit = Math.min(100, Math.max(0, _.get(data, '性斗系统.对手暴击率', 0) + (enemyTempBonus.暴击率加成 || 0)));
-
-    // 重要：同时更新快感和高潮次数（从MVU读取最新值）
+    // 快感和高潮次数
     player.value.stats.currentPleasure = _.get(data, '核心状态.$快感', 0);
     player.value.stats.maxPleasure = _.get(data, '核心状态.$最大快感', 100);
     player.value.stats.climaxCount = _.get(data, '性斗系统.高潮次数', 0);
@@ -1515,6 +1384,12 @@ async function reloadStatusFromMvu() {
     enemy.value.stats.currentPleasure = _.get(data, '性斗系统.对手快感', 0);
     enemy.value.stats.maxPleasure = _.get(data, '性斗系统.对手最大快感', 100);
     enemy.value.stats.climaxCount = _.get(data, '性斗系统.对手高潮次数', 0);
+
+    await Mvu.replaceMvuData(mvuData, { type: 'message', message_id: 'latest' });
+    
+    // === 对手属性计算（调用专用函数）===
+    await updateEnemyRealtimeStats();
+    
   } catch (e) {
     console.error('[战斗界面] 重新读取状态失败', e);
   }
@@ -1570,7 +1445,7 @@ async function clearTemporaryStatus() {
       return;
     }
 
-    // 清空玩家的临时状态
+    // 清空玩家的临时状态（已移除意志力加成）
     _.set(mvuData.stat_data, '临时状态.状态列表', {});
     _.set(mvuData.stat_data, '临时状态.加成统计', {
       魅力加成: 0,
@@ -1581,10 +1456,9 @@ async function clearTemporaryStatus() {
       基础忍耐力成算: 0,
       闪避率加成: 0,
       暴击率加成: 0,
-      意志力加成: 0,
     });
 
-    // 清空对手的临时状态
+    // 清空对手的临时状态（已移除意志力加成）
     _.set(mvuData.stat_data, '性斗系统.对手临时状态.状态列表', {});
     _.set(mvuData.stat_data, '性斗系统.对手临时状态.加成统计', {
       魅力加成: 0,
@@ -1595,11 +1469,7 @@ async function clearTemporaryStatus() {
       基础忍耐力成算: 0,
       闪避率加成: 0,
       暴击率加成: 0,
-      意志力加成: 0,
     });
-
-    // 清空本地状态管理中的效果
-    appliedEffects.value.clear();
 
     // 清空束缚状态
     playerBoundTurns.value = 0;
@@ -1782,10 +1652,10 @@ function handlePlayerSkill(skill: Skill) {
       addLog(`${nextPlayer.name} 使用了 ${skill.name}！`, 'player', 'info');
 
       if (result.isDodged) {
-        addLog(`${nextEnemy.name} 闪避了攻击！`, 'system', 'info');
+        addLog(`${nextEnemy.name} 闪避了所有攻击！`, 'system', 'info');
         triggerEffect('dodge');
       } else {
-        // 输出详细的伤害计算过程（包括减伤过程）
+        // 输出详细的伤害计算过程（包括连击日志）
         console.info('[战斗界面] 玩家攻击 - result.logs:', result.logs);
         if (result.logs && result.logs.length > 0) {
           result.logs.forEach(log => {
@@ -1795,18 +1665,19 @@ function handlePlayerSkill(skill: Skill) {
           console.warn('[战斗界面] 玩家攻击 - result.logs 为空或未定义');
         }
 
+        // 使用totalDamage而不是actualDamage（连击总伤害）
         if (result.isCritical) {
-          addLog(`暴击！造成 ${result.actualDamage} 点快感伤害！`, 'player', 'critical');
+          addLog(`暴击！总计造成 ${result.totalDamage} 点快感伤害！`, 'player', 'critical');
           triggerEffect('critical');
         } else {
-          addLog(`造成 ${result.actualDamage} 点快感伤害`, 'player', 'damage');
+          addLog(`总计造成 ${result.totalDamage} 点快感伤害`, 'player', 'damage');
         }
 
-        // 应用伤害（结算快感）
+        // 应用伤害（结算快感）- 使用totalDamage
         const oldPleasure = nextEnemy.stats.currentPleasure;
         nextEnemy.stats.currentPleasure = Math.min(
           nextEnemy.stats.maxPleasure,
-          nextEnemy.stats.currentPleasure + result.actualDamage,
+          nextEnemy.stats.currentPleasure + result.totalDamage,
         );
         addLog(`${nextEnemy.name} 的快感从 ${oldPleasure} 增加到 ${nextEnemy.stats.currentPleasure}`, 'system', 'info');
 
@@ -1896,14 +1767,54 @@ async function handlePlayerItem(item: Item) {
   player.value = nextPlayer;
   enemy.value = nextEnemy;
 
-  // 重新读取MVU中的临时状态加成，更新UI显示
-  await reloadStatusFromMvu();
+  // 如果物品有临时buff，写入MVU的临时状态
+  if (item.bonuses && Object.keys(item.bonuses).length > 0 && typeof Mvu !== 'undefined') {
+    const mvuData = Mvu.getMvuData({ type: 'message', message_id: 'latest' });
+    if (mvuData && mvuData.stat_data) {
+      // 确保临时状态结构存在
+      if (!mvuData.stat_data.临时状态) mvuData.stat_data.临时状态 = {};
+      if (!mvuData.stat_data.临时状态.状态列表) mvuData.stat_data.临时状态.状态列表 = {};
+      if (!mvuData.stat_data.临时状态.加成统计) mvuData.stat_data.临时状态.加成统计 = {};
+      
+      // 从描述中提取持续回合数
+      const buffDesc = item.description?.match(/持续(\d+)回合/);
+      const duration = buffDesc ? parseInt(buffDesc[1]) : 3;
+      
+      // 生成唯一的状态key
+      let statusKey = item.name;
+      let index = 1;
+      while (mvuData.stat_data.临时状态.状态列表[statusKey]) {
+        statusKey = `${item.name}_${index}`;
+        index++;
+      }
+      
+      // 写入临时状态.状态列表
+      mvuData.stat_data.临时状态.状态列表[statusKey] = {
+        加成: item.bonuses,
+        剩余回合: duration,
+      };
+      
+      // 更新加成统计（累加所有状态的加成）
+      for (const [bonusKey, bonusValue] of Object.entries(item.bonuses)) {
+        mvuData.stat_data.临时状态.加成统计[bonusKey] = 
+          (mvuData.stat_data.临时状态.加成统计[bonusKey] || 0) + (bonusValue as number);
+      }
+      
+      // 保存到MVU
+      await Mvu.replaceMvuData(mvuData, { type: 'message', message_id: 'latest' });
+      
+      addLog(`${item.name} 的增益效果已生效，持续 ${duration} 回合`, 'system', 'info');
+    }
+  }
 
   // 返回主菜单
   activeMenu.value = 'main';
 
-  // 保存物品使用后的状态到MVU（包括物品数量变化）
-  saveToMvu();
+  // 先保存物品使用后的状态到MVU（包括物品数量变化和快感/耐力变化）
+  await saveToMvu();
+
+  // 然后重新读取MVU中的临时状态加成，更新UI显示
+  await reloadStatusFromMvu();
 
   addLog(`--- 继续 ${nextPlayer.name} 的回合 ---`, 'system', 'info');
 
@@ -2024,6 +1935,7 @@ function handleEnemyTurn() {
                 },
               ];
 
+              // 读取连击数、准确率、暴击修正
               const basicSkillData = {
                 id: skill.id,
                 name: mvuSkill.基本信息.技能名称 || skill.id,
@@ -2035,10 +1947,11 @@ function handleEnemyTurn() {
                 castTime: 0,
                 damageFormula: damageFormula,
                 accuracy: damageInfo.基础命中率 || 100,
-                critModifier: 0,
+                critModifier: damageInfo.暴击修正 || 0,
                 buffs: [],
                 canBeReflected: false,
-                hitCount: 1,
+                hitCount: damageInfo.连击数 || 1,
+                accuracyModifier: damageInfo.准确率 || 100,
               };
               skill.data = basicSkillData;
               console.info('[战斗界面] 从MVU重新构建敌人技能数据:', skill.name, '伤害公式:', damageFormula);
@@ -2076,15 +1989,19 @@ function handleEnemyTurn() {
         }
 
         const result = executeAttack(nextEnemy, nextPlayer, skill.data);
+        
+        // 调试日志：检查40%伤害上限是否生效
+        const maxDamageCap = Math.floor(nextPlayer.stats.maxPleasure * 0.4);
+        console.info(`[战斗界面] 敌人攻击玩家 - 玩家最大快感=${nextPlayer.stats.maxPleasure}, 40%上限=${maxDamageCap}, 总伤害=${result.totalDamage}`);
 
         // 记录战斗日志
         addLog(`${nextEnemy.name} 使用了 ${skill.name}！`, 'enemy', 'info');
 
         if (result.isDodged) {
-          addLog(`${nextPlayer.name} 闪避了攻击！`, 'system', 'info');
+          addLog(`${nextPlayer.name} 闪避了所有攻击！`, 'system', 'info');
           triggerEffect('dodge');
         } else {
-          // 输出详细的伤害计算过程（包括减伤过程）
+          // 输出详细的伤害计算过程（包括连击日志）
           console.info('[战斗界面] 敌人攻击 - result.logs:', result.logs);
           if (result.logs && result.logs.length > 0) {
             result.logs.forEach(log => {
@@ -2094,18 +2011,19 @@ function handleEnemyTurn() {
             console.warn('[战斗界面] 敌人攻击 - result.logs 为空或未定义');
           }
 
+          // 使用totalDamage而不是actualDamage（连击总伤害）
           if (result.isCritical) {
-            addLog(`暴击！造成 ${result.actualDamage} 点快感伤害！`, 'enemy', 'critical');
+            addLog(`暴击！总计造成 ${result.totalDamage} 点快感伤害！`, 'enemy', 'critical');
             triggerEffect('critical');
           } else {
-            addLog(`造成 ${result.actualDamage} 点快感伤害`, 'enemy', 'damage');
+            addLog(`总计造成 ${result.totalDamage} 点快感伤害`, 'enemy', 'damage');
           }
 
-          // 应用伤害（结算快感）
+          // 应用伤害（结算快感）- 使用totalDamage
           const oldPleasure = nextPlayer.stats.currentPleasure;
           nextPlayer.stats.currentPleasure = Math.min(
             nextPlayer.stats.maxPleasure,
-            nextPlayer.stats.currentPleasure + result.actualDamage,
+            nextPlayer.stats.currentPleasure + result.totalDamage,
           );
           addLog(
             `${nextPlayer.name} 的快感从 ${oldPleasure} 增加到 ${nextPlayer.stats.currentPleasure}`,

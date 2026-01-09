@@ -22,7 +22,7 @@ export interface CoreStats {
   _闪避率: number;
   _暴击率: number;
   堕落度: number;
-  意志力: number;
+  // 已移除意志力字段
 }
 
 export interface PermanentBonus {
@@ -34,7 +34,7 @@ export interface PermanentBonus {
   基础忍耐力成算: number;
   闪避率加成: number;
   暴击率加成: number;
-  意志力加成: number;
+  // 已移除意志力加成字段
 }
 
 // 背包物品基础结构

@@ -54,7 +54,6 @@
             <div class="help-text">
               <div>耐力：行动与持续对抗的资源。显示为 当前耐力 / 最大耐力。</div>
               <div>快感：累积到上限会导致失败/高潮等结果（依战斗规则）。显示为 当前快感 / 最大快感。</div>
-              <div>意志力：用于抵抗负面影响与维持状态（以百分比显示）。</div>
               <div>堕落度：代表角色当前倾向/状态变化（以百分比显示）。</div>
             </div>
           </div>
@@ -213,19 +212,6 @@
             <div 
               class="progress-fill lust" 
               :style="{ width: `${getPercentage(characterData.核心状态?.$快感 || 0, characterData.核心状态?.$最大快感 || 100)}%` }"
-            ></div>
-          </div>
-        </div>
-
-        <div class="progress-item">
-          <div class="progress-header">
-            <span><i class="fas fa-brain"></i> 意志力</span>
-            <span class="progress-value">{{ characterData.核心状态?.意志力 || 100 }}%</span>
-          </div>
-          <div class="progress-bar">
-            <div 
-              class="progress-fill willpower" 
-              :style="{ width: `${characterData.核心状态?.意志力 || 100}%` }"
             ></div>
           </div>
         </div>

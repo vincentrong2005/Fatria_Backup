@@ -3,11 +3,11 @@
  * 将开局UI的技能数据转换为MVU变量所需的结构
  */
 
-import { SkillData, DamageSource, BuffType } from '../data/skill-types';
+import { BuffType, DamageSource, SkillData } from '../data/skill-types';
 
 // MVU变量中技能效果的结构
 export interface MvuSkillEffect {
-  效果类型: '性斗力' | '忍耐力' | '魅力' | '幸运' | '闪避率' | '暴击率' | '意志力' | '束缚';
+  效果类型: '性斗力' | '忍耐力' | '魅力' | '幸运' | '闪避率' | '暴击率' | '束缚';
   效果值: number;
   是否为百分比: boolean;
   持续回合数: number;
@@ -26,7 +26,7 @@ export interface MvuActiveSkill {
     冷却回合数: number;
   };
   伤害与效果: {
-    伤害来源: '性斗力' | '魅力' | '幸运' | '意志力' | '固定值' | '目标快感';
+    伤害来源: '性斗力' | '魅力' | '幸运' | '固定值' | '目标快感';
     系数: number;
     基础命中率: number;
     效果列表: Record<string, MvuSkillEffect>;
@@ -38,11 +38,10 @@ export interface MvuActiveSkill {
 }
 
 // 伤害来源映射
-const DAMAGE_SOURCE_MAP: Record<DamageSource, MvuActiveSkill['伤害与效果']['伤害来源']> = {
+const DAMAGE_SOURCE_MAP: Partial<Record<DamageSource, MvuActiveSkill['伤害与效果']['伤害来源']>> = {
   [DamageSource.SEX_POWER]: '性斗力',
   [DamageSource.CHARM]: '魅力',
   [DamageSource.LUCK]: '幸运',
-  [DamageSource.WILLPOWER]: '意志力',
   [DamageSource.FIXED]: '固定值',
   [DamageSource.TARGET_LUST]: '目标快感',
   [DamageSource.LEVEL]: '性斗力', // 等级按性斗力处理
@@ -63,7 +62,6 @@ const BUFF_TYPE_MAP: Partial<Record<BuffType, MvuSkillEffect['效果类型']>> =
   [BuffType.CRIT_DOWN]: '暴击率',
   [BuffType.DODGE_UP]: '闪避率',
   [BuffType.DODGE_DOWN]: '闪避率',
-  [BuffType.WILLPOWER_DOWN]: '意志力',
   [BuffType.BIND]: '束缚',
   [BuffType.CHARM_DEBUFF]: '魅力',
 };

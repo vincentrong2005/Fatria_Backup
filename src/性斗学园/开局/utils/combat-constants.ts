@@ -31,11 +31,6 @@ export const LUCK_RANGE = {
   MAX: 100,
 } as const;
 
-/** 意志力范围 */
-export const WILLPOWER_RANGE = {
-  MIN: 0,
-  MAX: 100,
-} as const;
 
 /** 最大耐力范围 */
 export const MAX_STAMINA_RANGE = {
