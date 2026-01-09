@@ -97,8 +97,8 @@
 
 <script setup lang="ts">
 import { computed, ref } from 'vue';
-import { CharacterData, CharacterAttributes, INITIAL_ATTRIBUTES } from '../types';
 import { DIFFICULTY_POINTS, MAX_STATS } from '../constants';
+import { CharacterAttributes, CharacterData, INITIAL_ATTRIBUTES } from '../types';
 import { updateMvuVariable } from '../utils/mvu-helper';
 
 const props = defineProps<{
@@ -149,8 +149,9 @@ const pointsUsed = computed(() => {
   
   // 角色基础 - 等级
   used += (getVal(attrs, ['角色基础', '_等级'], 1) - getVal(init, ['角色基础', '_等级'], 1)) * 1;
-  // 核心状态 - 潜力
-  used += (getVal(attrs, ['核心状态', '_潜力'], 5.0) - getVal(init, ['核心状态', '_潜力'], 5.0)) * 20;
+  // 核心状态 - 潜力（使用 Math.round 避免浮点数精度问题）
+  const potentialDiff = getVal(attrs, ['核心状态', '_潜力'], 5.0) - getVal(init, ['核心状态', '_潜力'], 5.0);
+  used += Math.round(potentialDiff * 10) * 2; // 0.1潜力 = 2点，先乘10取整再乘2避免浮点误差
   // 核心状态 - 基础魅力
   used += (getVal(attrs, ['核心状态', '$基础魅力'], 10) - getVal(init, ['核心状态', '$基础魅力'], 10)) * 1;
   // 核心状态 - 基础幸运

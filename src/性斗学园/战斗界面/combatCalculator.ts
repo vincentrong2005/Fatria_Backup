@@ -66,27 +66,46 @@ export function calculateBaseDamage(attacker: Character, skill: SkillData): numb
 }
 
 /**
- * 应用非线性减伤模型
- * 公式: 最终伤害 = 基础伤害 * 40 / (忍耐力 + 100)
- * 这意味着：
- * - 忍耐力为0时，最终伤害 = 基础伤害 * 40/100 = 基础伤害 * 0.4（减伤60%）
- * - 忍耐力为50时，最终伤害 = 基础伤害 * 40/150 = 基础伤害 * 0.267（减伤73%）
- * - 忍耐力为100时，最终伤害 = 基础伤害 * 40/200 = 基础伤害 * 0.2（减伤80%）
- * - 忍耐力为200时，最终伤害 = 基础伤害 * 40/300 = 基础伤害 * 0.133（减伤87%）
- * - 忍耐力越高，减伤越多，但永远不会完全减伤到0
+ * 应用非线性减伤模型（支持等级压制）
+ * 
+ * 玩家攻击敌人时（isPlayerAttacking=true）：
+ *   公式: 最终伤害 = 基础伤害 * 40 / (忍耐力 + 100 + 5 * max(0, 对方等级 - 我方等级))
+ *   等级压制：敌人等级高于玩家时，额外增加减伤
+ * 
+ * 敌人攻击玩家时（isPlayerAttacking=false）：
+ *   公式: 最终伤害 = 基础伤害 * 40 / (忍耐力 + 100)
+ *   无等级压制
+ * 
  * @param baseDamage 基础伤害
  * @param targetEndurance 目标的忍耐力
+ * @param isPlayerAttacking 是否是玩家在攻击（true=玩家攻击敌人，false=敌人攻击玩家）
+ * @param attackerLevel 攻击者等级
+ * @param targetLevel 目标等级
  * @returns 减伤后的伤害
  */
-export function applyDefenseReduction(baseDamage: number, targetEndurance: number): number {
-  // 非线性减伤公式：最终伤害 = 基础伤害 * 40 / (忍耐力 + 100)
-  // 这个公式确保：忍耐力越高，减伤越多
-  const denominator = targetEndurance + 100;
+export function applyDefenseReduction(
+  baseDamage: number, 
+  targetEndurance: number,
+  isPlayerAttacking: boolean = false,
+  attackerLevel: number = 1,
+  targetLevel: number = 1
+): number {
+  // 计算等级压制加成（仅玩家攻击敌人时生效）
+  let levelSuppression = 0;
+  if (isPlayerAttacking) {
+    levelSuppression = 5 * Math.max(0, targetLevel - attackerLevel);
+  }
+  
+  // 非线性减伤公式：最终伤害 = 基础伤害 * 40 / (忍耐力 + 100 + 等级压制)
+  const denominator = targetEndurance + 100 + levelSuppression;
   const finalDamage = (baseDamage * 40) / denominator;
-  const reductionPercent = ((targetEndurance / denominator) * 100).toFixed(1);
+  const reductionPercent = (((targetEndurance + levelSuppression) / denominator) * 100).toFixed(1);
   
   console.info(`[防御减伤] 基础伤害: ${baseDamage}, 目标忍耐力: ${targetEndurance}`);
-  console.info(`[防御减伤] 减伤公式: ${baseDamage} * 40 / (${targetEndurance} + 100) = ${baseDamage} * 40 / ${denominator}`);
+  if (isPlayerAttacking && levelSuppression > 0) {
+    console.info(`[防御减伤] 等级压制: 攻击者Lv${attackerLevel} vs 目标Lv${targetLevel}, 压制加成: +${levelSuppression}`);
+  }
+  console.info(`[防御减伤] 减伤公式: ${baseDamage} * 40 / (${targetEndurance} + 100${levelSuppression > 0 ? ` + ${levelSuppression}` : ''}) = ${baseDamage} * 40 / ${denominator}`);
   console.info(`[防御减伤] 计算过程: ${baseDamage} * 40 = ${baseDamage * 40}, ${baseDamage * 40} / ${denominator} = ${finalDamage}`);
   console.info(`[防御减伤] 减伤比例: ${reductionPercent}%, 最终伤害: ${Math.floor(finalDamage)}`);
 
@@ -173,9 +192,10 @@ export function applyBuffModifiers(damage: number, attacker: Character, target: 
  * @param attacker 攻击者
  * @param target 目标
  * @param skill 技能数据
+ * @param isPlayerAttacking 是否是玩家在攻击（用于等级压制计算）
  * @returns 战斗结果
  */
-export function executeAttack(attacker: Character, target: Character, skill: SkillData): CombatResult {
+export function executeAttack(attacker: Character, target: Character, skill: SkillData, isPlayerAttacking: boolean = false): CombatResult {
   const logs: string[] = [];
   const hits: { damage: number; isCritical: boolean; isDodged: boolean }[] = [];
   
@@ -221,9 +241,15 @@ export function executeAttack(attacker: Character, target: Character, skill: Ski
       hitLog.push(`暴击! 伤害提升50%: ${finalDamage}`);
     }
 
-    // 4. 应用防御减伤
+    // 4. 应用防御减伤（玩家攻击时应用等级压制）
     const targetEndurance = target.stats.baseEndurance;
-    const damageAfterDefense = applyDefenseReduction(finalDamage, targetEndurance);
+    const damageAfterDefense = applyDefenseReduction(
+      finalDamage, 
+      targetEndurance,
+      isPlayerAttacking,
+      attacker.stats.level,
+      target.stats.level
+    );
     finalDamage = damageAfterDefense;
 
     // 5. 应用buff修正

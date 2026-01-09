@@ -1646,7 +1646,7 @@ function handlePlayerSkill(skill: Skill) {
         return;
       }
 
-      const result = executeAttack(nextPlayer, nextEnemy, skill.data);
+      const result = executeAttack(nextPlayer, nextEnemy, skill.data, true); // 玩家攻击敌人，启用等级压制
 
       // 记录战斗日志
       addLog(`${nextPlayer.name} 使用了 ${skill.name}！`, 'player', 'info');
