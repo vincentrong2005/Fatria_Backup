@@ -13,9 +13,9 @@
 import { get, isEqual, set } from '@/util/common';
 import { createScriptIdDiv, destroyScriptIdDiv, deteleportStyle, teleportStyle } from '@/util/script';
 import {
-  canLevelUp,
-  EXP_PER_LEVEL,
-  shouldTriggerOrgasm
+    canLevelUp,
+    EXP_PER_LEVEL,
+    shouldTriggerOrgasm
 } from '../开局/utils/combat-calculator';
 import StatusBarWrapper from './components/StatusBarWrapper.vue';
 
@@ -439,7 +439,7 @@ eventOn(Mvu.events.VARIABLE_INITIALIZED, async () => {
 
 /**
  * 处理对话后的耐力和快感更新
- * 每次对话后：耐力+5，快感-5
+ * 每次对话后：恢复10%最大耐力，降低10%最大快感（向下取整）
  */
 async function handleConversationUpdate() {
   try {
@@ -456,10 +456,15 @@ async function handleConversationUpdate() {
     const currentStamina = getValue(mvuData, '核心状态.$耐力', 0);
     const maxStamina = getValue(mvuData, '核心状态.$最大耐力', 100);
     const currentLust = getValue(mvuData, '核心状态.$快感', 0);
+    const maxLust = getValue(mvuData, '核心状态.$最大快感', 100);
+    
+    // 计算恢复/降低量（10%最大值，向下取整）
+    const staminaRecover = Math.floor(maxStamina * 0.1);
+    const lustReduce = Math.floor(maxLust * 0.1);
     
     // 计算新值（带上下限限制）
-    const newStamina = Math.min(maxStamina, Math.max(0, currentStamina + 5));
-    const newLust = Math.max(0, currentLust - 5);
+    const newStamina = Math.min(maxStamina, Math.max(0, currentStamina + staminaRecover));
+    const newLust = Math.max(0, currentLust - lustReduce);
     
     // 更新值
     set(statData, '核心状态.$耐力', newStamina);
@@ -468,7 +473,7 @@ async function handleConversationUpdate() {
     // 写回 MVU 数据
     await Mvu.replaceMvuData(mvuData, { type: 'message', message_id: 'latest' });
     
-    console.info(`[性斗学园脚本] 对话后更新：耐力 ${currentStamina} → ${newStamina} (+5), 快感 ${currentLust} → ${newLust} (-5)`);
+    console.info(`[性斗学园脚本] 对话后更新：耐力 ${currentStamina} → ${newStamina} (+${staminaRecover}), 快感 ${currentLust} → ${newLust} (-${lustReduce})`);
   } catch (error) {
     console.error('[性斗学园脚本] 对话更新时出错:', error);
   }

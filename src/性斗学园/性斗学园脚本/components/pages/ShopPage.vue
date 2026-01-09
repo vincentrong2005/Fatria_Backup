@@ -1,5 +1,5 @@
 <template>
-  <div class="shop-page">
+  <div class="shop-page" ref="shopPageRef">
     <!-- 金币显示 -->
     <div class="shop-header">
       <div class="gold-card">
@@ -148,11 +148,11 @@
       </div>
     </div>
 
-    <!-- 装备详情Tooltip -->
+    <!-- 装备详情Tooltip（在手机UI内部显示） -->
     <div 
       v-if="tooltipData.visible" 
       class="equipment-tooltip"
-      :style="{ top: tooltipData.top + 'px', left: tooltipData.left + 'px' }"
+      :class="{ 'tooltip-top': tooltipData.position === 'top', 'tooltip-bottom': tooltipData.position === 'bottom' }"
     >
       <div class="tooltip-header" :class="'grade-' + tooltipData.item.grade.toLowerCase()">
         <span class="tooltip-name">{{ tooltipData.item.name }}</span>
@@ -519,12 +519,14 @@ const consumableSubCategories = [
   },
 ];
 
+// 商店页面引用
+const shopPageRef = ref<HTMLElement | null>(null);
+
 // Tooltip状态
 const tooltipData = ref({
   visible: false,
   item: {} as any,
-  top: 0,
-  left: 0,
+  position: 'bottom' as 'top' | 'bottom', // tooltip显示位置
 });
 
 let tooltipTimer: any = null;
@@ -533,36 +535,19 @@ let tooltipTimer: any = null;
 function showEquipmentTooltip(item: any, event: MouseEvent) {
   const target = event.currentTarget as HTMLElement;
   const rect = target.getBoundingClientRect();
+  const shopPage = shopPageRef.value;
   
-  // 计算tooltip位置，确保不会被遮挡
-  let top = rect.top + window.scrollY - 10;
-  let left = rect.right + 10;
+  if (!shopPage) return;
   
-  // 如果右侧空间不够，显示在左侧
-  if (left + 300 > window.innerWidth) {
-    left = rect.left - 310;
-  }
-  
-  // 如果上方空间不够，向下调整
-  if (top < 10) {
-    top = 10;
-  }
-  
-  // 如果下方空间不够，向上调整（预估tooltip高度约400px）
-  const tooltipHeight = 400;
-  if (top + tooltipHeight > window.innerHeight + window.scrollY) {
-    top = window.innerHeight + window.scrollY - tooltipHeight - 10;
-    // 确保不会超出顶部
-    if (top < 10) {
-      top = 10;
-    }
-  }
+  const shopRect = shopPage.getBoundingClientRect();
+  // 判断点击的元素在容器上半部还是下半部
+  const itemCenterY = rect.top + rect.height / 2;
+  const shopCenterY = shopRect.top + shopRect.height / 2;
   
   tooltipData.value = {
     visible: true,
     item: item,
-    top: top,
-    left: left,
+    position: itemCenterY < shopCenterY ? 'bottom' : 'top',
   };
 }
 
@@ -571,13 +556,18 @@ function showEquipmentTooltipMobile(item: any, event: TouchEvent) {
   event.preventDefault();
   const target = event.currentTarget as HTMLElement;
   const rect = target.getBoundingClientRect();
+  const shopPage = shopPageRef.value;
   
-  // 移动端显示在屏幕中央
+  if (!shopPage) return;
+  
+  const shopRect = shopPage.getBoundingClientRect();
+  const itemCenterY = rect.top + rect.height / 2;
+  const shopCenterY = shopRect.top + shopRect.height / 2;
+  
   tooltipData.value = {
     visible: true,
     item: item,
-    top: window.innerHeight / 2 - 150,
-    left: window.innerWidth / 2 - 150,
+    position: itemCenterY < shopCenterY ? 'bottom' : 'top',
   };
   
   // 3秒后自动隐藏
@@ -739,6 +729,7 @@ function getSlotType(slot: string): "主装备" | "副装备" | "饰品" | "特�
 
 <style scoped lang="scss">
 .shop-page {
+  position: relative;
   padding: 16px 20px;
   overflow-y: auto;
   flex: 1;
@@ -1311,24 +1302,49 @@ function getSlotType(slot: string): "主装备" | "副装备" | "饰品" | "特�
   i { color: #34d399; }
 }
 
-// 装备详情Tooltip样式
+// 装备详情Tooltip样式（在手机UI内部显示）
 .equipment-tooltip {
-  position: fixed;
-  width: 300px;
+  position: absolute;
+  left: 10px;
+  right: 10px;
+  width: auto;
+  max-width: calc(100% - 20px);
   background: linear-gradient(135deg, rgba(30, 41, 59, 0.98), rgba(15, 23, 42, 0.98));
   border: 1px solid rgba(255, 255, 255, 0.15);
   border-radius: 12px;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
-  z-index: 9999;
+  z-index: 100;
   backdrop-filter: blur(10px);
   pointer-events: none;
-  animation: tooltipFadeIn 0.2s ease-out;
+  
+  // 显示在底部
+  &.tooltip-bottom {
+    bottom: 10px;
+    animation: tooltipSlideUp 0.2s ease-out;
+  }
+  
+  // 显示在顶部
+  &.tooltip-top {
+    top: 10px;
+    animation: tooltipSlideDown 0.2s ease-out;
+  }
 }
 
-@keyframes tooltipFadeIn {
+@keyframes tooltipSlideUp {
   from {
     opacity: 0;
-    transform: translateY(-5px);
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes tooltipSlideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
   }
   to {
     opacity: 1;
