@@ -7403,7 +7403,7 @@ export const ENEMY_SKILLS: Record<string, SkillData> = {
     id: '索亚伊万诺娃_5',
     name: '双脚压制',
     description: '将对手压倒后,用一只穿着运动袜的脚覆盖住其口鼻进行气味支配,另一只赤裸的、沾满汗水的脚则对其性器进行高强度的足交榨取。',
-    effectDescription: '造成120%性斗力伤害，342%魅力伤害'
+    effectDescription: '造成120%性斗力伤害，342%魅力伤害',
     icon: 'Heart',
     type: SkillType.CHARM,
     staminaCost: 14,
