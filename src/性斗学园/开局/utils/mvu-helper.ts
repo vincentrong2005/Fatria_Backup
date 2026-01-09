@@ -1,5 +1,5 @@
 // MVU 变量操作辅助函数
-// 注意：lodash 和 Mvu 都是全局可用的，不需要导入
+import _ from 'lodash';
 
 /**
  * 等待 MVU 初始化并获取 MVU 数据

@@ -43,6 +43,7 @@
 </template>
 
 <script setup lang="ts">
+import _ from 'lodash';
 import { onMounted, ref } from 'vue';
 
 // 正则表达式：匹配 <option> 标签包裹的内容

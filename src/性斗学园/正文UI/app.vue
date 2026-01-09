@@ -186,6 +186,7 @@
 </template>
 
 <script setup lang="ts">
+import _ from 'lodash';
 import { computed, onMounted, ref } from 'vue';
 
 // 正则表达式：匹配最后一个 <content> 标签包裹的内容（跳过思维链中的 <content>）

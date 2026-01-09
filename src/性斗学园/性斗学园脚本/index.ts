@@ -11,10 +11,11 @@
  */
 
 import { createScriptIdDiv, destroyScriptIdDiv, deteleportStyle, teleportStyle } from '@/util/script';
+import _ from 'lodash';
 import {
-  canLevelUp,
-  EXP_PER_LEVEL,
-  shouldTriggerOrgasm
+    canLevelUp,
+    EXP_PER_LEVEL,
+    shouldTriggerOrgasm
 } from '../开局/utils/combat-calculator';
 import StatusBarWrapper from './components/StatusBarWrapper.vue';
 
