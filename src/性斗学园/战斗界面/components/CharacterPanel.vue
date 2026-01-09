@@ -7,8 +7,8 @@
       <!-- 头像与悬停属性 -->
       <div class="avatar-container">
         <div class="avatar-glow" :class="isEnemy ? 'glow-enemy' : 'glow-player'"></div>
-        
-        <img 
+
+        <img
           :src="character.avatarUrl"
           :alt="character.name"
           class="avatar-image"
@@ -17,7 +17,8 @@
             'avatar-player': !isEnemy,
             'avatar-pulse': turnState.phase === 'processing' && !isEnemy,
             'avatar-scale': turnState.phase === 'enemyAction' && isEnemy,
-            'avatar-climax': turnState.phase === 'climaxResolution' && turnState.climaxTarget === (isEnemy ? 'enemy' : 'player')
+            'avatar-climax':
+              turnState.phase === 'climaxResolution' && turnState.climaxTarget === (isEnemy ? 'enemy' : 'player'),
           }"
           @error="handleImageError"
         />
@@ -88,10 +89,10 @@ const imageLoadError = ref(false);
 const handleImageError = (event: Event) => {
   const img = event.target as HTMLImageElement;
   if (imageLoadError.value) return; // 避免无限循环
-  
+
   console.warn(`[战斗界面] 图片加载失败: ${img.src}`);
   imageLoadError.value = true;
-  
+
   // 降级使用随机图片
   img.src = getRandomImageUrl();
 };
@@ -134,7 +135,7 @@ const zapIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" 
   color: rgba(255, 255, 255, 0.9);
   margin-bottom: 0.75rem;
   text-align: center;
-  
+
   @media (min-width: 1024px) {
     font-size: 1.25rem;
     margin-bottom: 1rem;
@@ -374,8 +375,12 @@ const zapIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" 
 }
 
 @keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.6; }
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.6;
+  }
 }
 </style>
-

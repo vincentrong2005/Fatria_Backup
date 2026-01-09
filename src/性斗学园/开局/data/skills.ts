@@ -675,9 +675,7 @@ export const STARTER_SKILLS: SkillData[] = [
     staminaCost: 0,
     cooldown: 8,
     castTime: 0,
-    damageFormula: [
-      { source: DamageSource.LUCK, coefficient: 4.0 },
-    ],
+    damageFormula: [{ source: DamageSource.LUCK, coefficient: 4.0 }],
     target: SkillTarget.SINGLE_ENEMY,
     accuracy: 100,
     critModifier: 10,
@@ -912,9 +910,7 @@ export const PHYSICAL_SKILLS: SkillData[] = [
     target: SkillTarget.SINGLE_ENEMY,
     accuracy: 100,
     critModifier: 0,
-    buffs: [
-      { type: BuffType.EDGE, value: 20, isPercent: true, duration: 3, stackable: false },
-    ],
+    buffs: [{ type: BuffType.EDGE, value: 20, isPercent: true, duration: 3, stackable: false }],
     ignoreDefense: false,
     canBeDodged: false,
     canBeReflected: false,
