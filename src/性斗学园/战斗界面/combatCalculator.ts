@@ -14,8 +14,8 @@ export interface CombatResult {
   isDodged: boolean;
   actualDamage: number;
   logs: string[];
-  hitCount: number;        // 实际命中次数
-  totalDamage: number;     // 连击总伤害
+  hitCount: number; // 实际命中次数
+  totalDamage: number; // 连击总伤害
   hits: { damage: number; isCritical: boolean; isDodged: boolean }[]; // 每次攻击的详情
 }
 
@@ -30,7 +30,7 @@ export function calculateBaseDamage(attacker: Character, skill: SkillData): numb
 
   console.info('[战斗计算] 计算基础伤害:');
   console.info('  技能伤害公式组件数量:', skill.damageFormula.length);
-  
+
   if (skill.damageFormula.length === 0) {
     console.warn('[战斗计算] 技能伤害公式为空，返回0');
     return 0;
@@ -56,8 +56,10 @@ export function calculateBaseDamage(attacker: Character, skill: SkillData): numb
 
     const componentDamage = sourceValue * component.coefficient + component.baseValue;
     totalDamage += componentDamage;
-    
-    console.info(`  组件: ${component.source}, 来源值: ${sourceValue}, 系数: ${component.coefficient}, 基础值: ${component.baseValue}, 组件伤害: ${componentDamage}`);
+
+    console.info(
+      `  组件: ${component.source}, 来源值: ${sourceValue}, 系数: ${component.coefficient}, 基础值: ${component.baseValue}, 组件伤害: ${componentDamage}`,
+    );
   }
 
   const finalDamage = Math.max(0, Math.floor(totalDamage));
@@ -84,10 +86,14 @@ export function applyDefenseReduction(baseDamage: number, targetEndurance: numbe
   const denominator = targetEndurance + 100;
   const finalDamage = (baseDamage * 40) / denominator;
   const reductionPercent = ((targetEndurance / denominator) * 100).toFixed(1);
-  
+
   console.info(`[防御减伤] 基础伤害: ${baseDamage}, 目标忍耐力: ${targetEndurance}`);
-  console.info(`[防御减伤] 减伤公式: ${baseDamage} * 40 / (${targetEndurance} + 100) = ${baseDamage} * 40 / ${denominator}`);
-  console.info(`[防御减伤] 计算过程: ${baseDamage} * 40 = ${baseDamage * 40}, ${baseDamage * 40} / ${denominator} = ${finalDamage}`);
+  console.info(
+    `[防御减伤] 减伤公式: ${baseDamage} * 40 / (${targetEndurance} + 100) = ${baseDamage} * 40 / ${denominator}`,
+  );
+  console.info(
+    `[防御减伤] 计算过程: ${baseDamage} * 40 = ${baseDamage * 40}, ${baseDamage * 40} / ${denominator} = ${finalDamage}`,
+  );
   console.info(`[防御减伤] 减伤比例: ${reductionPercent}%, 最终伤害: ${Math.floor(finalDamage)}`);
 
   return Math.max(1, Math.floor(finalDamage));
@@ -100,13 +106,9 @@ export function applyDefenseReduction(baseDamage: number, targetEndurance: numbe
  * @param skillAccuracy 技能命中率
  * @returns 是否闪避成功
  */
-export function checkDodge(
-  attackerLuck: number,
-  targetEvasion: number,
-  skillAccuracy: number
-): boolean {
+export function checkDodge(attackerLuck: number, targetEvasion: number, skillAccuracy: number): boolean {
   // 计算最终命中率 = 技能基础命中率 - 目标闪避率 + (攻击者幸运 / 10)
-  const finalAccuracy = skillAccuracy - targetEvasion + (attackerLuck / 10);
+  const finalAccuracy = skillAccuracy - targetEvasion + attackerLuck / 10;
 
   // 命中率最低10%,最高95%
   const clampedAccuracy = Math.max(10, Math.min(95, finalAccuracy));
@@ -125,7 +127,7 @@ export function checkDodge(
  */
 export function checkCritical(attackerCrit: number, attackerLuck: number, skillCritModifier: number): boolean {
   // 计算最终暴击率 = 基础暴击率 + (幸运 / 10) + 技能修正
-  const finalCritRate = attackerCrit + (attackerLuck / 10) + skillCritModifier;
+  const finalCritRate = attackerCrit + attackerLuck / 10 + skillCritModifier;
 
   // 暴击率最低0%,最高100%
   const clampedCritRate = Math.max(0, Math.min(100, finalCritRate));
@@ -178,16 +180,16 @@ export function applyBuffModifiers(damage: number, attacker: Character, target: 
 export function executeAttack(attacker: Character, target: Character, skill: SkillData): CombatResult {
   const logs: string[] = [];
   const hits: { damage: number; isCritical: boolean; isDodged: boolean }[] = [];
-  
+
   // 获取连击次数，默认为1
   const hitCount = skill.hitCount || 1;
   let totalActualDamage = 0;
   let anyHit = false;
   let anyCrit = false;
-  
+
   // 1. 计算基础伤害（每次攻击相同）
   const baseDamage = calculateBaseDamage(attacker, skill);
-  
+
   if (hitCount > 1) {
     logs.push(`【${hitCount}连击技能】`);
   }
@@ -208,13 +210,13 @@ export function executeAttack(attacker: Character, target: Character, skill: Ski
       logs.push(...hitLog);
       continue;
     }
-    
+
     anyHit = true;
 
     // 3. 判定暴击（每次攻击独立判定）
     const critical = checkCritical(attacker.stats.crit, attacker.stats.luck, skill.critModifier);
     if (critical) anyCrit = true;
-    
+
     let finalDamage = baseDamage;
     if (critical) {
       finalDamage = Math.floor(baseDamage * 1.5);
@@ -237,7 +239,7 @@ export function executeAttack(attacker: Character, target: Character, skill: Ski
 
     hits.push({ damage: finalDamage, isCritical: critical, isDodged: false });
     totalActualDamage += finalDamage;
-    
+
     hitLog.push(`造成伤害: ${finalDamage}`);
     logs.push(...hitLog);
   }
@@ -278,9 +280,7 @@ export function applySkillBuffs(target: Character, skill: SkillData): string[] {
 
   for (const buff of skill.buffs) {
     // 检查是否已有相同类型的buff
-    const existingBuffIndex = target.statusEffects.findIndex(
-      effect => effect.effect.type === buff.type
-    );
+    const existingBuffIndex = target.statusEffects.findIndex(effect => effect.effect.type === buff.type);
 
     if (existingBuffIndex >= 0 && !buff.stackable) {
       // 不可叠加,刷新持续时间
@@ -288,9 +288,7 @@ export function applySkillBuffs(target: Character, skill: SkillData): string[] {
       logs.push(`刷新了 ${target.statusEffects[existingBuffIndex].name} 的持续时间`);
     } else if (existingBuffIndex >= 0 && buff.stackable) {
       // 可叠加,检查层数限制
-      const currentStacks = target.statusEffects.filter(
-        effect => effect.effect.type === buff.type
-      ).length;
+      const currentStacks = target.statusEffects.filter(effect => effect.effect.type === buff.type).length;
       if (!buff.maxStacks || currentStacks < buff.maxStacks) {
         // 添加新层
         const newEffect: StatusEffect = {
@@ -349,11 +347,11 @@ export function updateStatusEffects(character: Character): string[] {
       logs.push(`${character.name} 受到持续快感影响 (${lustChange > 0 ? '+' : ''}${lustChange})`);
     } else if (effect.effect.type === BuffType.REGEN) {
       const regenValue = effect.effect.isPercent
-        ? Math.floor(character.stats.maxEndurance * effect.effect.value / 100)
+        ? Math.floor((character.stats.maxEndurance * effect.effect.value) / 100)
         : effect.effect.value;
       character.stats.currentEndurance = Math.min(
         character.stats.maxEndurance,
-        character.stats.currentEndurance + regenValue
+        character.stats.currentEndurance + regenValue,
       );
       logs.push(`${character.name} 回复了 ${regenValue} 点耐力`);
     }
@@ -405,4 +403,3 @@ function isDebuff(type: BuffType): boolean {
   ];
   return debuffs.includes(type);
 }
-
