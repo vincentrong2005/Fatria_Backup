@@ -1,5 +1,5 @@
 <template>
-  <div class="shop-page" ref="shopPageRef">
+  <div class="shop-page">
     <!-- 金币显示 -->
     <div class="shop-header">
       <div class="gold-card">
@@ -88,10 +88,6 @@
             class="shop-item"
             :class="'grade-' + item.grade.toLowerCase()"
             @click="selectItem(item)"
-            @mouseenter="showEquipmentTooltip(item, $event)"
-            @mouseleave="hideEquipmentTooltip"
-            @touchstart="showEquipmentTooltipMobile(item, $event)"
-            @touchend="hideEquipmentTooltip"
           >
             <div class="item-icon">
               <i :class="item.icon"></i>
@@ -148,38 +144,6 @@
       </div>
     </div>
 
-    <!-- 装备详情Tooltip（在手机UI内部显示） -->
-    <div 
-      v-if="tooltipData.visible" 
-      class="equipment-tooltip"
-      :class="{ 'tooltip-top': tooltipData.position === 'top', 'tooltip-bottom': tooltipData.position === 'bottom' }"
-    >
-      <div class="tooltip-header" :class="'grade-' + tooltipData.item.grade.toLowerCase()">
-        <span class="tooltip-name">{{ tooltipData.item.name }}</span>
-        <span class="tooltip-grade">{{ tooltipData.item.grade }}</span>
-      </div>
-      <div class="tooltip-body">
-        <div class="tooltip-meta">
-          <span class="tooltip-slot">{{ tooltipData.item.slot }}</span>
-          <span class="tooltip-price">
-            <i class="fas fa-coins"></i>
-            {{ tooltipData.item.price }}
-          </span>
-        </div>
-        <div class="tooltip-desc">{{ tooltipData.item.description }}</div>
-        <div class="tooltip-bonuses" v-if="tooltipData.item.bonuses && Object.keys(tooltipData.item.bonuses).length > 0">
-          <div class="bonus-title">属性加成:</div>
-          <div class="bonus-list">
-            <div v-for="(value, key) in tooltipData.item.bonuses" :key="key" class="bonus-item">
-              <span class="bonus-name">{{ key }}</span>
-              <span class="bonus-value" :class="value > 0 ? 'positive' : ''">
-                {{ value > 0 ? '+' : '' }}{{ value }}
-              </span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
 
     <!-- 购买确认弹窗 -->
     <div v-if="selectedItem" class="purchase-modal" @click.self="selectedItem = null">
@@ -519,76 +483,8 @@ const consumableSubCategories = [
   },
 ];
 
-// 商店页面引用
-const shopPageRef = ref<HTMLElement | null>(null);
-
-// Tooltip状态
-const tooltipData = ref({
-  visible: false,
-  item: {} as any,
-  position: 'bottom' as 'top' | 'bottom', // tooltip显示位置
-});
-
-let tooltipTimer: any = null;
-
-// 显示装备tooltip（PC端）
-function showEquipmentTooltip(item: any, event: MouseEvent) {
-  const target = event.currentTarget as HTMLElement;
-  const rect = target.getBoundingClientRect();
-  const shopPage = shopPageRef.value;
-  
-  if (!shopPage) return;
-  
-  const shopRect = shopPage.getBoundingClientRect();
-  // 判断点击的元素在容器上半部还是下半部
-  const itemCenterY = rect.top + rect.height / 2;
-  const shopCenterY = shopRect.top + shopRect.height / 2;
-  
-  tooltipData.value = {
-    visible: true,
-    item: item,
-    position: itemCenterY < shopCenterY ? 'bottom' : 'top',
-  };
-}
-
-// 显示装备tooltip（移动端）
-function showEquipmentTooltipMobile(item: any, event: TouchEvent) {
-  event.preventDefault();
-  const target = event.currentTarget as HTMLElement;
-  const rect = target.getBoundingClientRect();
-  const shopPage = shopPageRef.value;
-  
-  if (!shopPage) return;
-  
-  const shopRect = shopPage.getBoundingClientRect();
-  const itemCenterY = rect.top + rect.height / 2;
-  const shopCenterY = shopRect.top + shopRect.height / 2;
-  
-  tooltipData.value = {
-    visible: true,
-    item: item,
-    position: itemCenterY < shopCenterY ? 'bottom' : 'top',
-  };
-  
-  // 3秒后自动隐藏
-  if (tooltipTimer) clearTimeout(tooltipTimer);
-  tooltipTimer = setTimeout(() => {
-    hideEquipmentTooltip();
-  }, 3000);
-}
-
-// 隐藏装备tooltip
-function hideEquipmentTooltip() {
-  tooltipData.value.visible = false;
-  if (tooltipTimer) {
-    clearTimeout(tooltipTimer);
-    tooltipTimer = null;
-  }
-}
-
 // 选择物品
 function selectItem(item: any) {
-  hideEquipmentTooltip(); // 点击时隐藏tooltip
   selectedItem.value = item;
   purchaseQuantity.value = 1;
 }
@@ -1302,153 +1198,4 @@ function getSlotType(slot: string): "主装备" | "副装备" | "饰品" | "特�
   i { color: #34d399; }
 }
 
-// 装备详情Tooltip样式（在手机UI内部显示）
-.equipment-tooltip {
-  position: absolute;
-  left: 10px;
-  right: 10px;
-  width: auto;
-  max-width: calc(100% - 20px);
-  background: linear-gradient(135deg, rgba(30, 41, 59, 0.98), rgba(15, 23, 42, 0.98));
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  border-radius: 12px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
-  z-index: 100;
-  backdrop-filter: blur(10px);
-  pointer-events: none;
-  
-  // 显示在底部
-  &.tooltip-bottom {
-    bottom: 10px;
-    animation: tooltipSlideUp 0.2s ease-out;
-  }
-  
-  // 显示在顶部
-  &.tooltip-top {
-    top: 10px;
-    animation: tooltipSlideDown 0.2s ease-out;
-  }
-}
-
-@keyframes tooltipSlideUp {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes tooltipSlideDown {
-  from {
-    opacity: 0;
-    transform: translateY(-10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.tooltip-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 12px 14px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 12px 12px 0 0;
-  
-  &.grade-c { background: linear-gradient(135deg, rgba(156, 163, 175, 0.3), rgba(107, 114, 128, 0.3)); }
-  &.grade-b { background: linear-gradient(135deg, rgba(96, 165, 250, 0.3), rgba(59, 130, 246, 0.3)); }
-  &.grade-a { background: linear-gradient(135deg, rgba(167, 139, 250, 0.3), rgba(139, 92, 246, 0.3)); }
-  &.grade-s { background: linear-gradient(135deg, rgba(251, 191, 36, 0.3), rgba(245, 158, 11, 0.3)); }
-  &.grade-ss { background: linear-gradient(135deg, rgba(244, 114, 182, 0.3), rgba(236, 72, 153, 0.3)); }
-}
-
-.tooltip-name {
-  font-size: 14px;
-  font-weight: 600;
-  color: white;
-}
-
-.tooltip-grade {
-  font-size: 11px;
-  padding: 2px 6px;
-  border-radius: 4px;
-  background: rgba(255, 255, 255, 0.15);
-  color: white;
-  font-weight: 600;
-}
-
-.tooltip-body {
-  padding: 12px 14px;
-}
-
-.tooltip-meta {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 10px;
-  font-size: 11px;
-}
-
-.tooltip-slot {
-  color: rgba(255, 255, 255, 0.6);
-}
-
-.tooltip-price {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  color: #fbbf24;
-  font-weight: 600;
-  
-  i { font-size: 10px; }
-}
-
-.tooltip-desc {
-  font-size: 12px;
-  color: rgba(255, 255, 255, 0.7);
-  line-height: 1.5;
-  margin-bottom: 10px;
-}
-
-.tooltip-bonuses {
-  padding-top: 10px;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
-}
-
-.bonus-title {
-  font-size: 11px;
-  color: rgba(255, 255, 255, 0.5);
-  margin-bottom: 6px;
-}
-
-.tooltip-bonuses .bonus-list {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.tooltip-bonuses .bonus-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: 11px;
-  padding: 4px 8px;
-  background: rgba(255, 255, 255, 0.03);
-  border-radius: 6px;
-}
-
-.tooltip-bonuses .bonus-name {
-  color: rgba(255, 255, 255, 0.7);
-}
-
-.tooltip-bonuses .bonus-value {
-  font-weight: 600;
-  
-  &.positive { color: #34d399; }
-}
 </style>

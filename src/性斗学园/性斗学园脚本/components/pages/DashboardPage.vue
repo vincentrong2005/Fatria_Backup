@@ -75,19 +75,6 @@
           </div>
         </div>
 
-        <div class="bar-item">
-          <div class="bar-header">
-            <i class="fas fa-brain willpower-icon"></i>
-            <span class="bar-label">意志</span>
-            <span class="bar-value">{{ characterData.核心状态?.意志力 || 0 }}%</span>
-          </div>
-          <div class="bar-track">
-            <div 
-              class="bar-fill willpower" 
-              :style="{ width: `${characterData.核心状态?.意志力 || 0}%` }"
-            ></div>
-          </div>
-        </div>
       </div>
     </div>
 
