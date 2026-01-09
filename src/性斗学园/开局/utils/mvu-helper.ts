@@ -1,5 +1,38 @@
 // MVU 变量操作辅助函数
-import _ from 'lodash';
+
+
+/**
+ * 原生实现的 get 函数
+ */
+function get<T = any>(obj: any, path: string, defaultValue?: T): T {
+  if (!obj || !path) return defaultValue as T;
+  const keys = path.replace(/\[(\d+)\]/g, '.$1').split('.').filter(Boolean);
+  let result: any = obj;
+  for (const key of keys) {
+    if (result == null) return defaultValue as T;
+    result = result[key];
+  }
+  return result === undefined ? (defaultValue as T) : result;
+}
+
+/**
+ * 原生实现的 set 函数
+ */
+function set<T extends object>(obj: T, path: string, value: any): T {
+  if (!obj || !path) return obj;
+  const keys = path.replace(/\[(\d+)\]/g, '.$1').split('.').filter(Boolean);
+  let current: any = obj;
+  for (let i = 0; i < keys.length - 1; i++) {
+    const key = keys[i];
+    const nextKey = keys[i + 1];
+    if (current[key] == null) {
+      current[key] = /^\d+$/.test(nextKey) ? [] : {};
+    }
+    current = current[key];
+  }
+  current[keys[keys.length - 1]] = value;
+  return obj;
+}
 
 /**
  * 等待 MVU 初始化并获取 MVU 数据
@@ -45,8 +78,8 @@ export async function updateMvuVariable(path: string, value: any, reason?: strin
       mvuData.stat_data = {};
     }
 
-    // 使用 lodash 设置值（lodash 是全局可用的）
-    _.set(mvuData.stat_data, path, value);
+    // 使用原生 set 函数设置值
+    set(mvuData.stat_data, path, value);
 
     // 写回 MVU 数据
     await globalAny.Mvu.replaceMvuData(mvuData, { type: 'message', message_id: 'latest' });
@@ -82,7 +115,7 @@ export async function updateMvuVariables(updates: Record<string, any>): Promise<
 
     // 批量设置值
     for (const [path, value] of Object.entries(updates)) {
-      _.set(mvuData.stat_data, path, value);
+      set(mvuData.stat_data, path, value);
     }
 
     await globalAny.Mvu.replaceMvuData(mvuData, { type: 'message', message_id: 'latest' });
@@ -99,36 +132,35 @@ export function syncFromMvu(mvuData: any): any {
     return null;
   }
 
-  // lodash 是全局可用的
   return {
     角色基础: {
-      _等级: _.get(mvuData.stat_data, '角色基础._等级', 1),
-      经验值: _.get(mvuData.stat_data, '角色基础.经验值', 0),
-      声望: _.get(mvuData.stat_data, '角色基础.声望', 0),
-      _段位: _.get(mvuData.stat_data, '角色基础._段位', '无段位'),
-      段位积分: _.get(mvuData.stat_data, '角色基础.段位积分', 0),
-      难度: _.get(mvuData.stat_data, '角色基础.难度', '普通'), // 新增
-      性别: _.get(mvuData.stat_data, '角色基础.性别', '女'), // 新增
+      _等级: get(mvuData.stat_data, '角色基础._等级', 1),
+      经验值: get(mvuData.stat_data, '角色基础.经验值', 0),
+      声望: get(mvuData.stat_data, '角色基础.声望', 0),
+      _段位: get(mvuData.stat_data, '角色基础._段位', '无段位'),
+      段位积分: get(mvuData.stat_data, '角色基础.段位积分', 0),
+      难度: get(mvuData.stat_data, '角色基础.难度', '普通'),
+      性别: get(mvuData.stat_data, '角色基础.性别', '女'),
     },
     核心状态: {
-      $属性点: _.get(mvuData.stat_data, '核心状态.$属性点', 0),
-      $技能点: _.get(mvuData.stat_data, '核心状态.$技能点', 0),
-      _潜力: _.get(mvuData.stat_data, '核心状态._潜力', 5.0),
-      _魅力: _.get(mvuData.stat_data, '核心状态._魅力', 10),
-      $基础魅力: _.get(mvuData.stat_data, '核心状态.$基础魅力', 10),
-      _幸运: _.get(mvuData.stat_data, '核心状态._幸运', 10),
-      $基础幸运: _.get(mvuData.stat_data, '核心状态.$基础幸运', 10),
-      $最大耐力: _.get(mvuData.stat_data, '核心状态.$最大耐力', 100),
-      $耐力: _.get(mvuData.stat_data, '核心状态.$耐力', 100),
-      $最大快感: _.get(mvuData.stat_data, '核心状态.$最大快感', 100),
-      $快感: _.get(mvuData.stat_data, '核心状态.$快感', 0),
-      堕落度: _.get(mvuData.stat_data, '核心状态.堕落度', 0),
-      $基础性斗力: _.get(mvuData.stat_data, '核心状态.$基础性斗力', 10),
-      $基础忍耐力: _.get(mvuData.stat_data, '核心状态.$基础忍耐力', 10),
-      _闪避率: _.get(mvuData.stat_data, '核心状态._闪避率', 0),
-      $基础闪避率: _.get(mvuData.stat_data, '核心状态.$基础闪避率', 0),
-      _暴击率: _.get(mvuData.stat_data, '核心状态._暴击率', 0),
-      $基础暴击率: _.get(mvuData.stat_data, '核心状态.$基础暴击率', 0),
+      $属性点: get(mvuData.stat_data, '核心状态.$属性点', 0),
+      $技能点: get(mvuData.stat_data, '核心状态.$技能点', 0),
+      _潜力: get(mvuData.stat_data, '核心状态._潜力', 5.0),
+      _魅力: get(mvuData.stat_data, '核心状态._魅力', 10),
+      $基础魅力: get(mvuData.stat_data, '核心状态.$基础魅力', 10),
+      _幸运: get(mvuData.stat_data, '核心状态._幸运', 10),
+      $基础幸运: get(mvuData.stat_data, '核心状态.$基础幸运', 10),
+      $最大耐力: get(mvuData.stat_data, '核心状态.$最大耐力', 100),
+      $耐力: get(mvuData.stat_data, '核心状态.$耐力', 100),
+      $最大快感: get(mvuData.stat_data, '核心状态.$最大快感', 100),
+      $快感: get(mvuData.stat_data, '核心状态.$快感', 0),
+      堕落度: get(mvuData.stat_data, '核心状态.堕落度', 0),
+      $基础性斗力: get(mvuData.stat_data, '核心状态.$基础性斗力', 10),
+      $基础忍耐力: get(mvuData.stat_data, '核心状态.$基础忍耐力', 10),
+      _闪避率: get(mvuData.stat_data, '核心状态._闪避率', 0),
+      $基础闪避率: get(mvuData.stat_data, '核心状态.$基础闪避率', 0),
+      _暴击率: get(mvuData.stat_data, '核心状态._暴击率', 0),
+      $基础暴击率: get(mvuData.stat_data, '核心状态.$基础暴击率', 0),
     },
   };
 }

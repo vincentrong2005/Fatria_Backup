@@ -186,11 +186,19 @@
 </template>
 
 <script setup lang="ts">
-import _ from 'lodash';
 import { computed, onMounted, ref } from 'vue';
 
-// 正则表达式：匹配最后一个 <content> 标签包裹的内容（跳过思维链中的 <content>）
-const CONTENT_REGEX = /[\s\S]*?<content>([\s\S]*?)<\/content>/;
+// 原生实现的 get 函数
+function get<T = any>(obj: any, path: string, defaultValue?: T): T {
+  if (!obj || !path) return defaultValue as T;
+  const keys = path.replace(/\[(\d+)\]/g, '.$1').split('.').filter(Boolean);
+  let result: any = obj;
+  for (const key of keys) {
+    if (result == null) return defaultValue as T;
+    result = result[key];
+  }
+  return result === undefined ? (defaultValue as T) : result;
+}
 
 const content = ref<string>('');
 const showSettings = ref(false);
@@ -238,14 +246,13 @@ const loadMvuInfo = async () => {
       return;
     }
 
-    // 使用 lodash 获取变量（lodash 是全局可用的）
     const statData = mvuData.stat_data;
 
     dateInfo.value = {
-      日期: _.get(statData, '时间系统.日期'),
-      星期: _.get(statData, '时间系统.星期'),
-      时间: _.get(statData, '时间系统.时间'),
-      地点名称: _.get(statData, '位置系统.地点名称'),
+      日期: get(statData, '时间系统.日期'),
+      星期: get(statData, '时间系统.星期'),
+      时间: get(statData, '时间系统.时间'),
+      地点名称: get(statData, '位置系统.地点名称'),
     };
 
     console.info('[正文美化] MVU 信息已加载:', dateInfo.value);

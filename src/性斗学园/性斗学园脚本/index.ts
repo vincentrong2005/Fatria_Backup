@@ -10,12 +10,12 @@
  * 计算顺序：先计算基础属性 → 再计算性斗力和忍耐力
  */
 
+import { get, isEqual, set } from '@/util/common';
 import { createScriptIdDiv, destroyScriptIdDiv, deteleportStyle, teleportStyle } from '@/util/script';
-import _ from 'lodash';
 import {
-    canLevelUp,
-    EXP_PER_LEVEL,
-    shouldTriggerOrgasm
+  canLevelUp,
+  EXP_PER_LEVEL,
+  shouldTriggerOrgasm
 } from '../开局/utils/combat-calculator';
 import StatusBarWrapper from './components/StatusBarWrapper.vue';
 
@@ -34,7 +34,7 @@ let statusBarVisible = false;
  * 从 MVU 数据中获取变量值（安全获取）
  */
 function getValue(data: any, path: string, defaultValue: number = 0): number {
-  return _.get(data, `stat_data.${path}`, defaultValue);
+  return get(data, `stat_data.${path}`, defaultValue);
 }
 
 /**
@@ -72,10 +72,10 @@ async function updateRank() {
     
     const level = getValue(mvuData, '角色基础._等级', 1);
     const expectedRank = calculateRank(level);
-    const currentRank = _.get(mvuData.stat_data, '角色基础._段位', '无段位');
+    const currentRank = get(mvuData.stat_data, '角色基础._段位', '无段位');
     
     if (expectedRank !== currentRank) {
-      _.set(mvuData.stat_data, '角色基础._段位', expectedRank);
+      set(mvuData.stat_data, '角色基础._段位', expectedRank);
       await Mvu.replaceMvuData(mvuData, { type: 'message', message_id: 'latest' });
       console.info(`[性斗学园脚本] [独立段位更新] 等级 ${level} → ${expectedRank}段 (从 "${currentRank}" 更新为 "${expectedRank}")`);
     }
@@ -328,7 +328,7 @@ async function updateDependentVariables() {
 
     // ==================== 步骤6.5: 根据等级自动更新段位 ====================
     const expectedRank = calculateRank(finalLevel);
-    const currentRank = _.get(mvuData.stat_data, '角色基础._段位', '无段位');
+    const currentRank = get(mvuData.stat_data, '角色基础._段位', '无段位');
     
     console.info(`[性斗学园脚本] 段位检查：当前等级=${finalLevel}, 当前段位="${currentRank}", 期望段位="${expectedRank}"`);
     
@@ -344,9 +344,9 @@ async function updateDependentVariables() {
     if (hasUpdates) {
       console.info('[性斗学园脚本] 开始应用变量更新:', Object.keys(updates));
       
-      // 直接使用 _.set 更新数据，然后一次性写回
+      // 直接使用 set 更新数据，然后一次性写回
       for (const [path, value] of Object.entries(updates)) {
-        _.set(mvuData.stat_data, path, value);
+        set(mvuData.stat_data, path, value);
         console.info(`[性斗学园脚本] 设置变量: ${path} = ${JSON.stringify(value)}`);
       }
       
@@ -357,7 +357,7 @@ async function updateDependentVariables() {
       // 验证段位是否已更新
       if (updates['角色基础._段位']) {
         const verifyData = Mvu.getMvuData({ type: 'message', message_id: 'latest' });
-        const verifyRank = _.get(verifyData?.stat_data, '角色基础._段位', '未知');
+        const verifyRank = get(verifyData?.stat_data, '角色基础._段位', '未知');
         console.info(`[性斗学园脚本] 段位更新验证：写回后的段位值为 "${verifyRank}"`);
       }
     } else {
@@ -408,11 +408,11 @@ eventOn(Mvu.events.VARIABLE_UPDATE_ENDED, async (variables, variables_before_upd
   const changedPaths: string[] = [];
   
   for (const path of basePaths) {
-    const oldValue = _.get(variables_before_update, `stat_data.${path}`);
-    const newValue = _.get(variables, `stat_data.${path}`);
+    const oldValue = get(variables_before_update, `stat_data.${path}`);
+    const newValue = get(variables, `stat_data.${path}`);
     
     // 使用深度比较，因为可能是对象
-    if (!_.isEqual(oldValue, newValue)) {
+    if (!isEqual(oldValue, newValue)) {
       hasBaseChange = true;
       changedPaths.push(path);
       console.info(`[性斗学园脚本] 检测到变量变化: ${path}`, { oldValue, newValue });
@@ -462,8 +462,8 @@ async function handleConversationUpdate() {
     const newLust = Math.max(0, currentLust - 5);
     
     // 更新值
-    _.set(statData, '核心状态.$耐力', newStamina);
-    _.set(statData, '核心状态.$快感', newLust);
+    set(statData, '核心状态.$耐力', newStamina);
+    set(statData, '核心状态.$快感', newLust);
     
     // 写回 MVU 数据
     await Mvu.replaceMvuData(mvuData, { type: 'message', message_id: 'latest' });

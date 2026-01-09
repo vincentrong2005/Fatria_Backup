@@ -43,11 +43,19 @@
 </template>
 
 <script setup lang="ts">
-import _ from 'lodash';
 import { onMounted, ref } from 'vue';
 
-// 正则表达式：匹配 <option> 标签包裹的内容
-const OPTION_REGEX = /<option>([\s\S]*?)<\/option>/g;
+// 原生实现的 get 函数
+function get<T = any>(obj: any, path: string, defaultValue?: T): T {
+  if (!obj || !path) return defaultValue as T;
+  const keys = path.replace(/\[(\d+)\]/g, '.$1').split('.').filter(Boolean);
+  let result: any = obj;
+  for (const key of keys) {
+    if (result == null) return defaultValue as T;
+    result = result[key];
+  }
+  return result === undefined ? (defaultValue as T) : result;
+}
 
 interface OptionItem {
   label: string;
@@ -69,7 +77,7 @@ const loadEnemyNameFromMvu = async () => {
       return;
     }
     const mvuData = globalAny.Mvu.getMvuData({ type: 'message', message_id: 'latest' });
-    const name = _.get(mvuData, 'stat_data.性斗系统.对手名称', '');
+    const name = get(mvuData, 'stat_data.性斗系统.对手名称', '');
     enemyName.value = typeof name === 'string' ? name.trim() : '';
   } catch (error) {
     console.error('[选项美化] 获取对手名称失败:', error);
