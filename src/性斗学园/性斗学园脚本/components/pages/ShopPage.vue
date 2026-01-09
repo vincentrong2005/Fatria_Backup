@@ -513,8 +513,8 @@ const consumableSubCategories = [
     items: [
       { id: 'con_p_3', name: '魅力精华', icon: 'fas fa-heart', price: 800, category: 'consumable', combatOnly: false, effectText: '基础魅力+2', effect: { permanent: { '$基础魅力': 2 } }, description: '永久提升2点基础魅力' },
       { id: 'con_p_4', name: '幸运草精华', icon: 'fas fa-clover', price: 800, category: 'consumable', combatOnly: false, effectText: '基础幸运+2', effect: { permanent: { '$基础幸运': 2 } }, description: '永久提升2点基础幸运' },
-      { id: 'con_p_5', name: '潜力觉醒药', icon: 'fas fa-star', price: 1500, category: 'consumable', combatOnly: false, effectText: '潜力+0.1', effect: { permanent: { '_潜力': 0.1 } }, description: '永久提升0.1点潜力值（极其珍贵）' },
-      { id: 'con_p_6', name: '高级潜力觉醒药', icon: 'fas fa-sun', price: 3500, category: 'consumable', combatOnly: false, effectText: '潜力+0.3', effect: { permanent: { '_潜力': 0.3 } }, description: '永久提升0.3点潜力值（传说级）' },
+      { id: 'con_p_5', name: '潜力觉醒药', icon: 'fas fa-star', price: 8000, category: 'consumable', combatOnly: false, effectText: '潜力+0.1', effect: { permanent: { '_潜力': 0.1 } }, description: '永久提升0.1点潜力值（极其珍贵）' },
+      { id: 'con_p_6', name: '高级潜力觉醒药', icon: 'fas fa-sun', price: 22000, category: 'consumable', combatOnly: false, effectText: '潜力+0.3', effect: { permanent: { '_潜力': 0.3 } }, description: '永久提升0.3点潜力值（传说级）' },
     ]
   },
 ];
