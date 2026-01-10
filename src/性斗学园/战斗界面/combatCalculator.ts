@@ -225,6 +225,9 @@ export function executeAttack(attacker: Character, target: Character, skill: Ski
     if (dodged) {
       hits.push({ damage: 0, isCritical: false, isDodged: true });
       hitLog.push(`${target.name} 闪避了攻击!`);
+      if (hitCount > 1) {
+        hitLog.push(`本次伤害: 0 (被闪避)`);
+      }
       logs.push(...hitLog);
       continue;
     }
@@ -236,9 +239,14 @@ export function executeAttack(attacker: Character, target: Character, skill: Ski
     if (critical) anyCrit = true;
     
     let finalDamage = baseDamage;
+    let damageBeforeCap = baseDamage;
+    
     if (critical) {
       finalDamage = Math.floor(baseDamage * 1.5);
-      hitLog.push(`暴击! 伤害提升50%: ${finalDamage}`);
+      damageBeforeCap = finalDamage;
+      hitLog.push(`暴击! 伤害提升50%`);
+    } else {
+      hitLog.push(`普通命中`);
     }
 
     // 4. 应用防御减伤（玩家攻击时应用等级压制）
@@ -254,17 +262,25 @@ export function executeAttack(attacker: Character, target: Character, skill: Ski
 
     // 5. 应用buff修正
     finalDamage = applyBuffModifiers(finalDamage, attacker, target);
+    damageBeforeCap = finalDamage;
 
-    // 6. 应用快感上限限制（单次攻击最多造成目标最大快感的40%）
+    // 6. 应用快感上限限制（每次攻击独立计算，最多造成目标最大快感的40%）
     const maxPleasureCap = Math.floor(target.stats.maxPleasure * 0.4);
+    let cappedByLimit = false;
     if (finalDamage > maxPleasureCap) {
       finalDamage = maxPleasureCap;
+      cappedByLimit = true;
     }
 
     hits.push({ damage: finalDamage, isCritical: critical, isDodged: false });
     totalActualDamage += finalDamage;
     
-    hitLog.push(`造成伤害: ${finalDamage}`);
+    // 详细的伤害日志
+    if (cappedByLimit) {
+      hitLog.push(`伤害计算: ${damageBeforeCap} → ${finalDamage} (受40%上限限制)`);
+    } else {
+      hitLog.push(`本次伤害: ${finalDamage}`);
+    }
     logs.push(...hitLog);
   }
 

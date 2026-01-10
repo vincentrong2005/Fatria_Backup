@@ -1026,6 +1026,7 @@ async function saveToMvu() {
 }
 
 // ================= 辅助函数 =================
+
 // ================= 完全重写的 Debuff 运算逻辑 =================
 // 设计原则：
 // 1. 技能命中时：只写入 MVU 状态列表，不修改任何属性值
@@ -1040,6 +1041,7 @@ async function saveToMvu() {
  */
 async function applySkillEffectsFromMvu(skillId: string, isPlayerSkill: boolean): Promise<string[]> {
   const logs: string[] = [];
+  console.info(`[Debuff系统] applySkillEffectsFromMvu被调用: skillId=${skillId}, isPlayerSkill=${isPlayerSkill}`);
 
   try {
     if (typeof Mvu === 'undefined') {
@@ -1063,33 +1065,49 @@ async function applySkillEffectsFromMvu(skillId: string, isPlayerSkill: boolean)
       return logs;
     }
     
-    console.info(`[Debuff系统] 处理技能效果: ${skillId}`, effectList);
+    console.info(`[Debuff系统] 处理技能效果: ${skillId}, isPlayerSkill=${isPlayerSkill}, 路径=${skillPath}`, effectList);
 
+    console.info(`[Debuff系统] 效果列表keys:`, Object.keys(effectList));
     for (const [effectName, effectData] of Object.entries(effectList)) {
-      if (!effectData || typeof effectData !== 'object') continue;
+      console.info(`[Debuff系统] 开始处理效果: ${effectName}, effectData类型=${typeof effectData}, effectData=`, effectData);
+      if (!effectData || typeof effectData !== 'object') {
+        console.warn(`[Debuff系统] 跳过无效效果: ${effectName}`);
+        continue;
+      }
 
       const effectType = _.get(effectData, '效果类型', '') as string;
+      console.info(`[Debuff系统] 处理效果: ${effectName}, 类型=${effectType}`);
       const effectValue = _.get(effectData, '效果值', 0) as number;
       const isPercentage = _.get(effectData, '是否为百分比', false) as boolean;
       const duration = _.get(effectData, '持续回合数', 0) as number;
       const targetEnemy = _.get(effectData, '是否作用敌人', true) as boolean;
 
-      if (effectValue === 0 || duration === 0) continue;
-
       // 特殊处理：束缚效果（不写入状态列表，直接设置束缚回合数）
+      // 束缚效果的effectValue可以为0，只需要duration>0即可生效
       if (effectType === '束缚') {
+        console.info(`[束缚] 检测到束缚效果: duration=${duration}, targetEnemy=${targetEnemy}, isPlayerSkill=${isPlayerSkill}`);
+        if (duration === 0) {
+          console.warn(`[束缚] 束缚效果duration为0，跳过`);
+          continue;
+        }
         const targetIsPlayer = isPlayerSkill ? !targetEnemy : targetEnemy;
+        console.info(`[束缚] 束缚目标计算: targetIsPlayer=${targetIsPlayer}, isPlayerSkill=${isPlayerSkill}, targetEnemy=${targetEnemy}`);
         if (targetIsPlayer) {
           playerBoundTurns.value = duration;
           playerBindSource.value = isPlayerSkill ? 'player' : 'enemy';
           logs.push(`${player.value.name} 被束缚了 ${duration} 回合，无法行动！`);
+          console.info(`[束缚] ★★★ 设置玩家束缚: playerBoundTurns=${playerBoundTurns.value}`);
         } else {
           enemyBoundTurns.value = duration;
           enemyBindSource.value = isPlayerSkill ? 'player' : 'enemy';
           logs.push(`${enemy.value.name} 被束缚了 ${duration} 回合，无法行动！`);
+          console.info(`[束缚] ★★★ 设置敌人束缚: enemyBoundTurns=${enemyBoundTurns.value}, enemyBindSource=${enemyBindSource.value}`);
         }
         continue;
       }
+
+      // 对于非束缚效果，如果effectValue为0或duration为0则跳过
+      if (effectValue === 0 || duration === 0) continue;
 
       // 确定目标和状态路径
       const targetIsPlayer = isPlayerSkill ? !targetEnemy : targetEnemy;
@@ -1591,16 +1609,7 @@ function determineEnemyIntention() {
 function handlePlayerSkill(skill: Skill) {
   if (turnState.phase !== 'playerInput') return;
 
-  // 玩家行动开始时，递减玩家施加的束缚效果
-  if (enemyBoundTurns.value > 0 && enemyBindSource.value === 'player') {
-    enemyBoundTurns.value--;
-    if (enemyBoundTurns.value === 0) {
-      addLog(`${enemy.value.name} 的束缚效果消失了`, 'system', 'info');
-      enemyBindSource.value = null;
-    } else {
-      addLog(`${enemy.value.name} 的束缚剩余 ${enemyBoundTurns.value} 回合`, 'system', 'info');
-    }
-  }
+  // 注意：敌人束缚的递减在敌人回合开始时处理（handleEnemyTurn），不在这里处理
 
   // 检查是否被束缚
   if (playerBoundTurns.value > 0) {
@@ -1681,13 +1690,38 @@ function handlePlayerSkill(skill: Skill) {
         );
         addLog(`${nextEnemy.name} 的快感从 ${oldPleasure} 增加到 ${nextEnemy.stats.currentPleasure}`, 'system', 'info');
 
-        // 应用buff效果（从MVU读取）- 等待完成
+        // ========== 简化的束缚效果处理 ==========
+        // 直接从MVU读取技能效果，检查是否有束缚
+        try {
+          if (typeof Mvu !== 'undefined') {
+            const mvuData = Mvu.getMvuData({ type: 'message', message_id: 'latest' });
+            if (mvuData?.stat_data) {
+              const effectList = _.get(mvuData.stat_data, `技能系统.主动技能.${skill.id}.伤害与效果.效果列表`, {});
+              for (const [, effect] of Object.entries(effectList)) {
+                if (effect && typeof effect === 'object') {
+                  const type = (effect as any)['效果类型'];
+                  const dur = (effect as any)['持续回合数'] || 0;
+                  const targetEnemy = (effect as any)['是否作用敌人'] !== false; // 默认true
+                  if (type === '束缚' && dur > 0 && targetEnemy) {
+                    // 玩家使用技能，效果作用于敌人 -> 设置敌人束缚
+                    enemyBoundTurns.value = dur;
+                    enemyBindSource.value = 'player';
+                    addLog(`${nextEnemy.name} 被束缚了 ${dur} 回合！`, 'system', 'info');
+                  }
+                }
+              }
+            }
+          }
+        } catch (e) {
+          console.error('束缚效果处理失败', e);
+        }
+
+        // 应用其他buff/debuff效果（从MVU读取并写入状态列表）
         try {
           const effectLogs = await applySkillEffectsFromMvu(skill.id, true);
           effectLogs.forEach(log => addLog(log, 'system', 'info'));
         } catch (e) {
           console.error('[战斗界面] 应用技能效果失败', e);
-          addLog('应用技能效果时出错，但战斗继续', 'system', 'warn');
         }
       }
 
@@ -1824,6 +1858,8 @@ async function handlePlayerItem(item: Item) {
 
 function handleEnemyTurn() {
   turnState.phase = 'enemyAction';
+  
+  console.info(`[束缚系统] 敌人回合开始 - enemyBoundTurns=${enemyBoundTurns.value}, enemyBindSource=${enemyBindSource.value}`);
 
   // 敌人行动开始时，递减敌人施加的束缚效果
   if (playerBoundTurns.value > 0 && playerBindSource.value === 'enemy') {
@@ -1836,9 +1872,16 @@ function handleEnemyTurn() {
     }
   }
 
-  // 检查是否被束缚
+  // 检查敌人是否被束缚（玩家施加的束缚）
+  console.info(`[束缚系统] 检查敌人束缚状态 - enemyBoundTurns=${enemyBoundTurns.value}`);
   if (enemyBoundTurns.value > 0) {
-    addLog(`${enemy.value.name} 被束缚了，无法行动！剩余 ${enemyBoundTurns.value} 回合`, 'system', 'warn');
+    addLog(`${enemy.value.name} 被束缚了，无法行动！剩余 ${enemyBoundTurns.value} 回合`, 'system', 'info');
+    // 递减束缚回合数
+    enemyBoundTurns.value--;
+    if (enemyBoundTurns.value === 0) {
+      enemyBindSource.value = null;
+      addLog(`${enemy.value.name} 的束缚效果消失了`, 'system', 'info');
+    }
     endTurn();
     setTimeout(startNewTurn, 1000);
     return;
@@ -2031,13 +2074,38 @@ function handleEnemyTurn() {
             'info',
           );
 
-          // 应用buff效果（从MVU读取）- 等待完成
+          // ========== 简化的束缚效果处理（敌人技能） ==========
+          try {
+            if (typeof Mvu !== 'undefined') {
+              const mvuData = Mvu.getMvuData({ type: 'message', message_id: 'latest' });
+              if (mvuData?.stat_data) {
+                const effectList = _.get(mvuData.stat_data, `性斗系统.对手可用技能.${skill.id}.伤害与效果.效果列表`, {});
+                for (const [, effect] of Object.entries(effectList)) {
+                  if (effect && typeof effect === 'object') {
+                    const type = (effect as any)['效果类型'];
+                    const dur = (effect as any)['持续回合数'] || 0;
+                    const targetEnemy = (effect as any)['是否作用敌人'] !== false;
+                    if (type === '束缚' && dur > 0 && targetEnemy) {
+                      // 敌人使用技能，效果作用于"敌人"（从敌人视角看是玩家）-> 设置玩家束缚
+                      playerBoundTurns.value = dur;
+                      playerBindSource.value = 'enemy';
+                      addLog(`${nextPlayer.name} 被束缚了 ${dur} 回合！`, 'system', 'info');
+                    }
+                  }
+                }
+              }
+            }
+          } catch (e) {
+            console.error('束缚效果处理失败', e);
+          }
+
+          // 应用其他buff效果（从MVU读取并写入状态列表）
           try {
             const effectLogs = await applySkillEffectsFromMvu(skill.id, false);
             effectLogs.forEach(log => addLog(log, 'system', 'info'));
           } catch (e) {
             console.error('[战斗界面] 应用技能效果失败', e);
-            addLog('应用技能效果时出错，但战斗继续', 'system', 'warn');
+            addLog('应用技能效果时出错，但战斗继续', 'system', 'info');
           }
         }
 

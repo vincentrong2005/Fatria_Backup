@@ -11,6 +11,7 @@ export interface MvuSkillEffect {
   效果值: number;
   是否为百分比: boolean;
   持续回合数: number;
+  是否作用敌人: boolean; // true=作用于敌人, false=作用于自己
 }
 
 // MVU变量中主动技能的结构
@@ -66,6 +67,26 @@ const BUFF_TYPE_MAP: Partial<Record<BuffType, MvuSkillEffect['效果类型']>> =
   [BuffType.CHARM_DEBUFF]: '魅力',
 };
 
+// Debuff类型集合（作用于敌人）
+const DEBUFF_TYPES = new Set<BuffType>([
+  BuffType.ATK_DOWN,
+  BuffType.DEF_DOWN,
+  BuffType.ENDURANCE_DOWN,
+  BuffType.CRIT_DOWN,
+  BuffType.DODGE_DOWN,
+  BuffType.BIND,
+  BuffType.CHARM_DEBUFF,
+  BuffType.SILENCE,
+  BuffType.CONFUSION,
+  BuffType.FEAR,
+  BuffType.SENSITIVE,
+  BuffType.SHAME,
+  BuffType.DOT_LUST,
+  BuffType.EDGE,
+  BuffType.EXHAUSTED,
+  BuffType.MARKED,
+]);
+
 // 稀有度映射
 const RARITY_MAP: Record<string, 'C' | 'B' | 'A' | 'S' | 'SS'> = {
   'C': 'C',
@@ -117,6 +138,7 @@ export function convertSkillToMvu(skill: SkillData, level: number = 1): MvuActiv
           效果值: buff.value,
           是否为百分比: buff.isPercent,
           持续回合数: buff.duration,
+          是否作用敌人: DEBUFF_TYPES.has(buff.type), // debuff作用于敌人，buff作用于自己
         };
       }
     });

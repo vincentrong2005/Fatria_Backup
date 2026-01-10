@@ -13222,18 +13222,20 @@ export function convertToMvuSkillFormat(skill: SkillData) {
       const effectType = buffTypeMap[buff.type] || '性斗力';
       let effectValue = buff.value;
       
-      // 束缚使用持续回合作为效果值，debuff使用负值
+      // 束缚效果值为0，持续回合数决定束缚时长；debuff使用负值
       if (buff.type === BuffType.BIND) {
-        effectValue = buff.duration;
+        effectValue = 0; // 束缚效果值为0，通过持续回合数来控制
       } else if (buff.type === BuffType.SENSITIVE || buff.type === BuffType.DODGE_DOWN || buff.type === BuffType.ATK_DOWN) {
         effectValue = -Math.abs(buff.value);
       }
       
+      // 敌人技能的效果默认作用于玩家（即targetEnemy=true从敌人视角看是作用于"敌人"即玩家）
       effectList[`效果${index + 1}_${effectType}`] = {
         效果类型: effectType,
         效果值: effectValue,
         是否为百分比: buff.isPercent,
         持续回合数: buff.duration,
+        是否作用敌人: true, // 敌人技能的debuff作用于玩家
       };
     });
   }

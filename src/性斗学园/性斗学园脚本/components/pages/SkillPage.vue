@@ -1,18 +1,151 @@
 <template>
   <div class="skill-page">
-    <!-- 技能点显示 -->
-    <div class="skill-header">
-      <div class="skill-points-card">
+    <!-- 资源显示 -->
+    <div class="resource-header">
+      <div class="resource-card skill-points">
         <i class="fas fa-book-sparkles"></i>
-        <div class="points-info">
-          <span class="points-label">可用技能点</span>
-          <span class="points-value">{{ skillPoints }}</span>
+        <div class="resource-info">
+          <span class="resource-label">技能点</span>
+          <span class="resource-value">{{ skillPoints }}</span>
+        </div>
+      </div>
+      <div class="resource-card gold">
+        <i class="fas fa-coins"></i>
+        <div class="resource-info">
+          <span class="resource-label">金币</span>
+          <span class="resource-value">{{ goldCoins }}</span>
         </div>
       </div>
     </div>
 
-    <!-- 技能列表 -->
-    <div class="skills-section">
+    <!-- 标签页切换 -->
+    <div class="tab-bar">
+      <button 
+        class="tab-btn" 
+        :class="{ active: currentTab === 'skills' }"
+        @click="currentTab = 'skills'"
+      >
+        <i class="fas fa-hand-fist"></i> 我的技能
+      </button>
+      <button 
+        class="tab-btn" 
+        :class="{ active: currentTab === 'gacha' }"
+        @click="currentTab = 'gacha'"
+      >
+        <i class="fas fa-dice"></i> 技能抽取
+      </button>
+      <button 
+        class="tab-btn" 
+        :class="{ active: currentTab === 'exchange' }"
+        @click="currentTab = 'exchange'"
+      >
+        <i class="fas fa-exchange-alt"></i> 兑换
+      </button>
+    </div>
+
+    <!-- 技能抽取页面 -->
+    <div v-if="currentTab === 'gacha'" class="gacha-section">
+      <div class="gacha-info">
+        <h3><i class="fas fa-info-circle"></i> 抽取说明</h3>
+        <div class="rate-list">
+          <span class="rate-item rarity-c">C级 50%</span>
+          <span class="rate-item rarity-b">B级 30%</span>
+          <span class="rate-item rarity-a">A级 17.5%</span>
+          <span class="rate-item rarity-s">S级 2%</span>
+          <span class="rate-item rarity-ss">SS级 0.5%</span>
+        </div>
+        <p class="gacha-note">十连抽保底至少获得一个A级及以上技能</p>
+      </div>
+
+      <div class="gacha-buttons">
+        <button 
+          class="gacha-btn single"
+          :disabled="skillPoints < 3"
+          @click="performGacha(1)"
+        >
+          <i class="fas fa-dice-one"></i>
+          <span class="btn-text">单抽</span>
+          <span class="btn-cost">3 技能点</span>
+        </button>
+        <button 
+          class="gacha-btn ten"
+          :disabled="skillPoints < 30"
+          @click="performGacha(10)"
+        >
+          <i class="fas fa-dice-d20"></i>
+          <span class="btn-text">十连抽</span>
+          <span class="btn-cost">30 技能点</span>
+        </button>
+      </div>
+
+      <!-- 抽取结果展示 -->
+      <div v-if="gachaResults.length > 0" class="gacha-results">
+        <h3><i class="fas fa-gift"></i> 抽取结果（选择你想要的技能）</h3>
+        <div class="result-grid">
+          <div 
+            v-for="(skill, index) in gachaResults" 
+            :key="index"
+            class="result-card"
+            :class="[getRarityClass(skill.rarity), { selected: selectedSkills.has(skill.id) }]"
+            @click="toggleSkillSelection(skill.id)"
+          >
+            <div class="result-checkbox">
+              <i :class="selectedSkills.has(skill.id) ? 'fas fa-check-square' : 'far fa-square'"></i>
+            </div>
+            <div class="result-rarity">{{ skill.rarity }}</div>
+            <div class="result-name">{{ skill.name }}</div>
+            <div class="result-desc">{{ skill.effectDescription }}</div>
+          </div>
+        </div>
+        <div class="result-actions">
+          <button class="select-all-btn" @click="selectAllSkills">
+            <i class="fas fa-check-double"></i> 全选
+          </button>
+          <button class="deselect-all-btn" @click="deselectAllSkills">
+            <i class="fas fa-times"></i> 全不选
+          </button>
+          <button class="confirm-btn" @click="confirmGachaResults" :disabled="selectedSkills.size === 0">
+            <i class="fas fa-check"></i> 确认获得 ({{ selectedSkills.size }}/{{ gachaResults.length }})
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 兑换页面 -->
+    <div v-if="currentTab === 'exchange'" class="exchange-section">
+      <div class="exchange-card">
+        <div class="exchange-icon">
+          <i class="fas fa-coins"></i>
+          <i class="fas fa-arrow-right"></i>
+          <i class="fas fa-book-sparkles"></i>
+        </div>
+        <h3>金币兑换技能点</h3>
+        <p class="exchange-rate">3000 金币 = 1 技能点</p>
+        <p class="exchange-note">注意：兑换不可逆，请谨慎操作</p>
+        
+        <div class="exchange-controls">
+          <div class="quantity-control">
+            <button class="qty-btn" @click="exchangeAmount = Math.max(1, exchangeAmount - 1)">-</button>
+            <input type="number" v-model.number="exchangeAmount" min="1" :max="maxExchangeAmount" />
+            <button class="qty-btn" @click="exchangeAmount = Math.min(maxExchangeAmount, exchangeAmount + 1)">+</button>
+          </div>
+          <div class="exchange-summary">
+            <span>消耗: {{ exchangeAmount * 3000 }} 金币</span>
+            <span>获得: {{ exchangeAmount }} 技能点</span>
+          </div>
+          <button 
+            class="exchange-btn"
+            :disabled="goldCoins < exchangeAmount * 3000"
+            @click="performExchange"
+          >
+            <i class="fas fa-exchange-alt"></i> 确认兑换
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 技能列表页面 -->
+    <div v-if="currentTab === 'skills'" class="skills-section">
       <h3 class="section-title">
         <i class="fas fa-hand-fist"></i> 
         主动技能 
@@ -84,15 +217,23 @@
             </span>
           </div>
 
-          <!-- 升级按钮 -->
-          <div class="skill-upgrade" v-if="canUpgrade(skill)">
+          <!-- 操作按钮 -->
+          <div class="skill-actions">
             <button 
+              v-if="canUpgrade(skill)"
               class="upgrade-btn"
-              @click="upgradeSkill(skillId, skill)"
+              @click="upgradeSkill(String(skillId), skill)"
               :disabled="skillPoints < getUpgradeCost(skill)"
             >
               <i class="fas fa-arrow-up"></i>
               升级 ({{ getUpgradeCost(skill) }} 点)
+            </button>
+            <button 
+              class="forget-btn"
+              @click="forgetSkill(String(skillId))"
+            >
+              <i class="fas fa-trash"></i>
+              遗忘
             </button>
           </div>
         </div>
@@ -103,15 +244,38 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
+import { performSingleGacha, performTenGacha, type GachaSkillData } from '../../data/skillGachaPool';
 
 const props = defineProps<{
   characterData: any;
 }>();
 
+// 当前标签页
+const currentTab = ref<'skills' | 'gacha' | 'exchange'>('skills');
+
+// 抽取结果
+const gachaResults = ref<GachaSkillData[]>([]);
+
+// 选中的技能（用于抽取后选择）
+const selectedSkills = ref<Set<string>>(new Set());
+
+// 兑换数量
+const exchangeAmount = ref(1);
+
 // 技能点
 const skillPoints = computed(() => {
   return props.characterData.核心状态?.$技能点 || 0;
+});
+
+// 金币
+const goldCoins = computed(() => {
+  return props.characterData.物品系统?.学园金币 || 0;
+});
+
+// 最大可兑换数量
+const maxExchangeAmount = computed(() => {
+  return Math.floor(goldCoins.value / 3000) || 1;
 });
 
 // 主动技能
@@ -233,6 +397,225 @@ async function upgradeSkill(skillId: string, skill: any) {
     console.error('[技能] 升级失败:', error);
     if (typeof toastr !== 'undefined') {
       toastr.error('技能升级失败', '错误', { timeOut: 2000 });
+    }
+  }
+}
+
+// 执行抽取
+async function performGacha(count: number) {
+  const cost = count === 1 ? 3 : 30;
+  if (skillPoints.value < cost) return;
+  
+  try {
+    const globalAny = window as any;
+    if (!globalAny.Mvu) return;
+    
+    const mvuData = globalAny.Mvu.getMvuData({ type: 'message', message_id: 'latest' });
+    if (!mvuData || !mvuData.stat_data) return;
+    
+    // 扣除技能点
+    if (!mvuData.stat_data.核心状态) mvuData.stat_data.核心状态 = {};
+    mvuData.stat_data.核心状态.$技能点 = (mvuData.stat_data.核心状态.$技能点 || 0) - cost;
+    
+    // 写回MVU
+    await globalAny.Mvu.replaceMvuData(mvuData, { type: 'message', message_id: 'latest' });
+    
+    // 执行抽取
+    if (count === 1) {
+      gachaResults.value = [performSingleGacha()];
+    } else {
+      gachaResults.value = performTenGacha();
+    }
+    
+    // 清空之前的选择
+    selectedSkills.value.clear();
+    
+    if (typeof toastr !== 'undefined') {
+      toastr.info(`抽取完成！消耗${cost}技能点`, '抽取', { timeOut: 1500 });
+    }
+  } catch (error) {
+    console.error('[技能] 抽取失败:', error);
+    if (typeof toastr !== 'undefined') {
+      toastr.error('抽取失败', '错误', { timeOut: 2000 });
+    }
+  }
+}
+
+// 切换技能选择状态
+function toggleSkillSelection(skillId: string) {
+  if (selectedSkills.value.has(skillId)) {
+    selectedSkills.value.delete(skillId);
+  } else {
+    selectedSkills.value.add(skillId);
+  }
+}
+
+// 全选技能
+function selectAllSkills() {
+  selectedSkills.value.clear();
+  gachaResults.value.forEach(skill => {
+    selectedSkills.value.add(skill.id);
+  });
+}
+
+// 全不选
+function deselectAllSkills() {
+  selectedSkills.value.clear();
+}
+
+// 确认抽取结果，将选中的技能添加到玩家技能列表
+async function confirmGachaResults() {
+  if (selectedSkills.value.size === 0) {
+    if (typeof toastr !== 'undefined') {
+      toastr.warning('请至少选择一个技能', '提示', { timeOut: 2000 });
+    }
+    return;
+  }
+  
+  try {
+    const globalAny = window as any;
+    if (!globalAny.Mvu) return;
+    
+    const mvuData = globalAny.Mvu.getMvuData({ type: 'message', message_id: 'latest' });
+    if (!mvuData || !mvuData.stat_data) return;
+    
+    // 确保技能系统存在
+    if (!mvuData.stat_data.技能系统) mvuData.stat_data.技能系统 = {};
+    if (!mvuData.stat_data.技能系统.主动技能) mvuData.stat_data.技能系统.主动技能 = {};
+    
+    // 只添加选中的技能
+    const selectedSkillsList = gachaResults.value.filter(skill => selectedSkills.value.has(skill.id));
+    for (const skill of selectedSkillsList) {
+      const skillData = {
+        基本信息: {
+          技能ID: skill.id,
+          技能名称: skill.name,
+          技能描述: skill.effectDescription,
+          稀有度: skill.rarity,
+          技能等级: 1,
+          技能类型: skill.type,
+        },
+        冷却与消耗: {
+          耐力消耗: skill.staminaCost,
+          冷却回合数: skill.cooldown,
+        },
+        伤害与效果: {
+          伤害来源: skill.damageSource,
+          系数: skill.coefficient,
+          基础命中率: skill.accuracy,
+          暴击修正: skill.critModifier,
+          连击数: skill.hitCount,
+          效果列表: {},
+        },
+      };
+      
+      // 添加buff效果
+      if (skill.buffs && skill.buffs.length > 0) {
+        skill.buffs.forEach((buff, index) => {
+          (skillData.伤害与效果.效果列表 as any)[`effect_${index}`] = {
+            效果类型: buff.type,
+            效果值: buff.value,
+            是否为百分比: buff.isPercent,
+            持续回合数: buff.duration,
+            是否作用敌人: buff.isTargetEnemy,
+          };
+        });
+      }
+      
+      // 使用技能ID作为键，如果已存在则覆盖
+      mvuData.stat_data.技能系统.主动技能[skill.id] = skillData;
+    }
+    
+    // 写回MVU
+    await globalAny.Mvu.replaceMvuData(mvuData, { type: 'message', message_id: 'latest' });
+    
+    // 清空结果和选择
+    const count = selectedSkills.value.size;
+    gachaResults.value = [];
+    selectedSkills.value.clear();
+    
+    if (typeof toastr !== 'undefined') {
+      toastr.success(`成功获得${count}个技能！`, '成功', { timeOut: 1500 });
+    }
+  } catch (error) {
+    console.error('[技能] 确认抽取失败:', error);
+    if (typeof toastr !== 'undefined') {
+      toastr.error('确认失败', '错误', { timeOut: 2000 });
+    }
+  }
+}
+
+// 执行金币兑换技能点
+async function performExchange() {
+  const goldCost = exchangeAmount.value * 3000;
+  if (goldCoins.value < goldCost) return;
+  
+  try {
+    const globalAny = window as any;
+    if (!globalAny.Mvu) return;
+    
+    const mvuData = globalAny.Mvu.getMvuData({ type: 'message', message_id: 'latest' });
+    if (!mvuData || !mvuData.stat_data) return;
+    
+    // 扣除金币
+    if (!mvuData.stat_data.物品系统) mvuData.stat_data.物品系统 = {};
+    mvuData.stat_data.物品系统.学园金币 = (mvuData.stat_data.物品系统.学园金币 || 0) - goldCost;
+    
+    // 增加技能点
+    if (!mvuData.stat_data.核心状态) mvuData.stat_data.核心状态 = {};
+    mvuData.stat_data.核心状态.$技能点 = (mvuData.stat_data.核心状态.$技能点 || 0) + exchangeAmount.value;
+    
+    // 写回MVU
+    await globalAny.Mvu.replaceMvuData(mvuData, { type: 'message', message_id: 'latest' });
+    
+    if (typeof toastr !== 'undefined') {
+      toastr.success(`兑换成功！消耗${goldCost}金币，获得${exchangeAmount.value}技能点`, '成功', { timeOut: 1500 });
+    }
+    
+    // 重置兑换数量
+    exchangeAmount.value = 1;
+  } catch (error) {
+    console.error('[技能] 兑换失败:', error);
+    if (typeof toastr !== 'undefined') {
+      toastr.error('兑换失败', '错误', { timeOut: 2000 });
+    }
+  }
+}
+
+// 遗忘技能（带确认对话框）
+async function forgetSkill(skillId: string) {
+  const skill = activeSkills.value[skillId];
+  const skillName = skill?.基本信息?.技能名称 || '未知技能';
+  
+  // 使用原生confirm对话框进行确认
+  const confirmed = confirm(`确定要遗忘技能「${skillName}」吗？\n\n此操作不可逆！`);
+  
+  if (!confirmed) {
+    return;
+  }
+  
+  try {
+    const globalAny = window as any;
+    if (!globalAny.Mvu) return;
+    
+    const mvuData = globalAny.Mvu.getMvuData({ type: 'message', message_id: 'latest' });
+    if (!mvuData || !mvuData.stat_data) return;
+    
+    // 删除技能
+    if (mvuData.stat_data.技能系统?.主动技能?.[skillId]) {
+      delete mvuData.stat_data.技能系统.主动技能[skillId];
+    }
+    
+    // 写回MVU
+    await globalAny.Mvu.replaceMvuData(mvuData, { type: 'message', message_id: 'latest' });
+    
+    if (typeof toastr !== 'undefined') {
+      toastr.success(`技能「${skillName}」已遗忘`, '成功', { timeOut: 1500 });
+    }
+  } catch (error) {
+    console.error('[技能] 遗忘失败:', error);
+    if (typeof toastr !== 'undefined') {
+      toastr.error('遗忘失败', '错误', { timeOut: 2000 });
     }
   }
 }
@@ -507,9 +890,10 @@ async function upgradeSkill(skillId: string, skill: any) {
   }
 }
 
-.skill-upgrade {
+.skill-actions {
   display: flex;
   justify-content: flex-end;
+  gap: 8px;
   padding-top: 10px;
   border-top: 1px solid rgba(255, 255, 255, 0.05);
 }
@@ -539,5 +923,492 @@ async function upgradeSkill(skillId: string, skill: any) {
   }
 }
 
+.forget-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  background: rgba(239, 68, 68, 0.2);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-radius: 8px;
+  color: #f87171;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  
+  &:hover {
+    background: rgba(239, 68, 68, 0.3);
+    transform: scale(1.05);
+  }
+}
+
+// 资源头部
+.resource-header {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.resource-card {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  backdrop-filter: blur(10px);
+  
+  > i {
+    font-size: 20px;
+  }
+  
+  .resource-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  
+  .resource-label {
+    font-size: 10px;
+    color: rgba(255, 255, 255, 0.5);
+    text-transform: uppercase;
+  }
+  
+  .resource-value {
+    font-size: 18px;
+    font-weight: 700;
+  }
+  
+  &.skill-points {
+    background: linear-gradient(135deg, rgba(139, 92, 246, 0.25), rgba(139, 92, 246, 0.08));
+    border: 1px solid rgba(139, 92, 246, 0.3);
+    
+    > i { color: #a78bfa; }
+    .resource-value { color: #c4b5fd; }
+  }
+  
+  &.gold {
+    background: linear-gradient(135deg, rgba(251, 191, 36, 0.25), rgba(251, 191, 36, 0.08));
+    border: 1px solid rgba(251, 191, 36, 0.3);
+    
+    > i { color: #fbbf24; }
+    .resource-value { color: #fcd34d; }
+  }
+}
+
+// 标签页
+.tab-bar {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+  padding: 4px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 12px;
+}
+
+.tab-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px 12px;
+  background: transparent;
+  border: none;
+  border-radius: 8px;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  
+  i { font-size: 12px; }
+  
+  &:hover {
+    color: rgba(255, 255, 255, 0.8);
+    background: rgba(255, 255, 255, 0.05);
+  }
+  
+  &.active {
+    color: white;
+    background: linear-gradient(135deg, rgba(139, 92, 246, 0.4), rgba(139, 92, 246, 0.2));
+  }
+}
+
+// 抽取页面
+.gacha-section {
+  padding: 16px 0;
+}
+
+.gacha-info {
+  padding: 16px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 12px;
+  margin-bottom: 16px;
+  
+  h3 {
+    font-size: 14px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.8);
+    margin: 0 0 12px 0;
+    
+    i { margin-right: 6px; color: #60a5fa; }
+  }
+}
+
+.rate-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.rate-item {
+  font-size: 11px;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-weight: 500;
+  
+  &.rarity-c { background: rgba(156, 163, 175, 0.2); color: #d1d5db; }
+  &.rarity-b { background: rgba(96, 165, 250, 0.2); color: #93c5fd; }
+  &.rarity-a { background: rgba(167, 139, 250, 0.2); color: #c4b5fd; }
+  &.rarity-s { background: rgba(251, 191, 36, 0.2); color: #fcd34d; }
+  &.rarity-ss { background: rgba(244, 114, 182, 0.2); color: #f9a8d4; }
+}
+
+.gacha-note {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.4);
+  margin: 0;
+}
+
+.gacha-buttons {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.gacha-btn {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 20px 16px;
+  border: none;
+  border-radius: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+  
+  i { font-size: 28px; }
+  
+  .btn-text {
+    font-size: 14px;
+    font-weight: 600;
+  }
+  
+  .btn-cost {
+    font-size: 11px;
+    opacity: 0.7;
+  }
+  
+  &.single {
+    background: linear-gradient(135deg, rgba(96, 165, 250, 0.3), rgba(96, 165, 250, 0.1));
+    border: 1px solid rgba(96, 165, 250, 0.4);
+    color: #93c5fd;
+  }
+  
+  &.ten {
+    background: linear-gradient(135deg, rgba(251, 191, 36, 0.3), rgba(251, 191, 36, 0.1));
+    border: 1px solid rgba(251, 191, 36, 0.4);
+    color: #fcd34d;
+  }
+  
+  &:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+  }
+  
+  &:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+}
+
+.gacha-results {
+  padding: 16px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 12px;
+  
+  h3 {
+    font-size: 14px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.8);
+    margin: 0 0 16px 0;
+    
+    i { margin-right: 6px; color: #34d399; }
+  }
+}
+
+.result-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.result-card {
+  position: relative;
+  padding: 12px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  cursor: pointer;
+  transition: all 0.2s;
+  
+  &:hover {
+    background: rgba(255, 255, 255, 0.06);
+    transform: translateY(-2px);
+  }
+  
+  &.selected {
+    background: rgba(139, 92, 246, 0.15);
+    border-color: rgba(139, 92, 246, 0.5);
+    box-shadow: 0 0 12px rgba(139, 92, 246, 0.3);
+  }
+  
+  .result-checkbox {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    font-size: 16px;
+    color: #a78bfa;
+  }
+  
+  .result-rarity {
+    font-size: 10px;
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+  
+  .result-name {
+    font-size: 13px;
+    font-weight: 600;
+    color: white;
+    margin-bottom: 4px;
+    padding-right: 24px;
+  }
+  
+  .result-desc {
+    font-size: 10px;
+    color: rgba(255, 255, 255, 0.5);
+    line-height: 1.4;
+  }
+  
+  &.rarity-c { border-left: 3px solid #9ca3af; .result-rarity { color: #d1d5db; } }
+  &.rarity-b { border-left: 3px solid #60a5fa; .result-rarity { color: #93c5fd; } }
+  &.rarity-a { border-left: 3px solid #a78bfa; .result-rarity { color: #c4b5fd; } }
+  &.rarity-s { border-left: 3px solid #fbbf24; .result-rarity { color: #fcd34d; } }
+  &.rarity-ss { border-left: 3px solid #f472b6; .result-rarity { color: #f9a8d4; } }
+}
+
+.result-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.select-all-btn,
+.deselect-all-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px;
+  border: none;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.select-all-btn {
+  background: rgba(96, 165, 250, 0.2);
+  border: 1px solid rgba(96, 165, 250, 0.4);
+  color: #93c5fd;
+  
+  &:hover {
+    background: rgba(96, 165, 250, 0.3);
+    transform: scale(1.02);
+  }
+}
+
+.deselect-all-btn {
+  background: rgba(239, 68, 68, 0.2);
+  border: 1px solid rgba(239, 68, 68, 0.4);
+  color: #f87171;
+  
+  &:hover {
+    background: rgba(239, 68, 68, 0.3);
+    transform: scale(1.02);
+  }
+}
+
+.confirm-btn {
+  flex: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px;
+  background: linear-gradient(135deg, #34d399, #10b981);
+  border: none;
+  border-radius: 10px;
+  color: white;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  
+  &:hover:not(:disabled) {
+    transform: scale(1.02);
+    box-shadow: 0 4px 16px rgba(52, 211, 153, 0.4);
+  }
+  
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+// 兑换页面
+.exchange-section {
+  padding: 16px 0;
+}
+
+.exchange-card {
+  padding: 24px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 16px;
+  text-align: center;
+  
+  h3 {
+    font-size: 16px;
+    font-weight: 600;
+    color: white;
+    margin: 16px 0 8px 0;
+  }
+}
+
+.exchange-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  font-size: 28px;
+  
+  .fa-coins { color: #fbbf24; }
+  .fa-arrow-right { color: rgba(255, 255, 255, 0.3); font-size: 20px; }
+  .fa-book-sparkles { color: #a78bfa; }
+}
+
+.exchange-rate {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.6);
+  margin: 0 0 4px 0;
+}
+
+.exchange-note {
+  font-size: 11px;
+  color: rgba(239, 68, 68, 0.8);
+  margin: 0 0 20px 0;
+}
+
+.exchange-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.quantity-control {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  
+  input {
+    width: 80px;
+    padding: 10px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    color: white;
+    font-size: 16px;
+    font-weight: 600;
+    text-align: center;
+    
+    &:focus {
+      outline: none;
+      border-color: rgba(139, 92, 246, 0.5);
+    }
+  }
+}
+
+.qty-btn {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 8px;
+  color: white;
+  font-size: 18px;
+  cursor: pointer;
+  transition: all 0.2s;
+  
+  &:hover {
+    background: rgba(255, 255, 255, 0.2);
+  }
+}
+
+.exchange-summary {
+  display: flex;
+  justify-content: center;
+  gap: 24px;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.exchange-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 14px 24px;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  border: none;
+  border-radius: 10px;
+  color: white;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  
+  &:hover:not(:disabled) {
+    transform: scale(1.02);
+    box-shadow: 0 4px 16px rgba(102, 126, 234, 0.4);
+  }
+  
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
 </style>
+
 

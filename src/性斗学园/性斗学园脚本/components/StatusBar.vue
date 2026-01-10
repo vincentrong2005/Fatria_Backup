@@ -63,7 +63,7 @@
         </div>
 
         <!-- 底部导航栏 -->
-        <div class="bottom-nav">
+        <div class="bottom-nav" ref="bottomNavRef" @wheel.prevent="handleBottomNavWheel">
           <button class="nav-button" :class="{ active: currentPage === 'profile' }" @click="currentPage = 'profile'">
             <i class="fas fa-user"></i>
             <span>档案</span>
@@ -140,6 +140,19 @@ const characterData = ref<any>({});
 const combatData = ref<any>({});
 const currentTime = ref('12:00');
 const currentPage = ref<'dashboard' | 'profile' | 'skills' | 'inventory' | 'quest' | 'relationship' | 'shop' | 'map'>('dashboard');
+
+const bottomNavRef = ref<HTMLElement | null>(null);
+
+function handleBottomNavWheel(event: WheelEvent) {
+  const el = bottomNavRef.value;
+  if (!el) return;
+
+  // 将鼠标滚轮的纵向滚动转换为横向滚动
+  const delta = Math.abs(event.deltaY) >= Math.abs(event.deltaX) ? event.deltaY : event.deltaX;
+  if (delta === 0) return;
+
+  el.scrollLeft += delta;
+}
 
 // 从 MVU 获取数据
 async function loadMvuData() {
