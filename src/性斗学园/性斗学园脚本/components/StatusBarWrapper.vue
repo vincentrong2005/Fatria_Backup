@@ -14,7 +14,7 @@ if (!globalAny.__statusBarState) {
     isVisible: isVisibleRef,
     toggle: () => {
       isVisibleRef.value = !isVisibleRef.value;
-    }
+    },
   };
 }
 
