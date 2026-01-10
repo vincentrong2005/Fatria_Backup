@@ -1,6 +1,7 @@
 import { compare } from 'compare-versions';
 import { toDotPath } from 'zod/v4/core';
 
+<<<<<<< HEAD
 /**
  * 原生实现的 get 函数，替代 lodash 的 _.get
  * @param obj 目标对象
@@ -87,6 +88,8 @@ export function isEqual(a: any, b: any): boolean {
   return false;
 }
 
+=======
+>>>>>>> b46ddb92fd5449e29fb6ab10f5a94f01b416987a
 export function assignInplace<T>(destination: T[], new_array: T[]): T[] {
   destination.length = 0;
   destination.push(...new_array);
@@ -109,6 +112,32 @@ export function chunkBy<T>(array: T[], predicate: (lhs: T, rhs: T) => boolean): 
   return chunks;
 }
 
+<<<<<<< HEAD
+=======
+export function regexFromString(input: string): RegExp | null {
+  if (!input) {
+    return null;
+  }
+  try {
+    const match = input.match(/\/(.+)\/([a-z]*)/i);
+    if (!match) {
+      return new RegExp(_.escapeRegExp(input), 'i');
+    }
+    if (match[2] && !/^(?!.*?(.).*?\1)[gmixXsuUAJ]+$/.test(match[3])) {
+      return new RegExp(input, 'i');
+    }
+    let flags = match[2] ?? '';
+    _.pull(flags, 'g');
+    if (flags.indexOf('i') === -1) {
+      flags = flags + 'i';
+    }
+    return new RegExp(match[1], flags);
+  } catch {
+    return null;
+  }
+}
+
+>>>>>>> b46ddb92fd5449e29fb6ab10f5a94f01b416987a
 export function uuidv4(): string {
   return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
     const r = (Math.random() * 16) | 0;
