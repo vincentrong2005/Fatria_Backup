@@ -36,6 +36,7 @@ async function enforcePotentialCapOnStartup() {
     }
 
     let hasChanges = false;
+    let hasNegative = false;
     const warnings: string[] = [];
 
     // 1. 检测潜力上限
@@ -53,6 +54,14 @@ async function enforcePotentialCapOnStartup() {
     const rawAttrPoints = get(mvuData.stat_data, '核心状态.$属性点', 0);
     const attrPoints = Number(rawAttrPoints);
 
+    if (Number.isFinite(attrPoints) && attrPoints < 0) {
+      console.warn(`[性斗学园脚本] 不要点那么快！检测到属性点为负数：${attrPoints}。已重置为 0。`);
+      warnings.push(`属性点为负数：${attrPoints}`);
+      set(mvuData.stat_data, '核心状态.$属性点', 0);
+      hasChanges = true;
+      hasNegative = true;
+    }
+
     if (Number.isFinite(attrPoints) && attrPoints > 500) {
       console.warn(`[性斗学园脚本] 检测到属性点异常：${attrPoints} (> 500)。自动清零。`);
       warnings.push(`属性点异常：${attrPoints}（>500）`);
@@ -64,6 +73,14 @@ async function enforcePotentialCapOnStartup() {
     const rawSkillPoints = get(mvuData.stat_data, '核心状态.$技能点', 0);
     const skillPoints = Number(rawSkillPoints);
 
+    if (Number.isFinite(skillPoints) && skillPoints < 0) {
+      console.warn(`[性斗学园脚本] 不要点那么快！检测到技能点为负数：${skillPoints}。已重置为 0。`);
+      warnings.push(`技能点为负数：${skillPoints}`);
+      set(mvuData.stat_data, '核心状态.$技能点', 0);
+      hasChanges = true;
+      hasNegative = true;
+    }
+
     if (Number.isFinite(skillPoints) && skillPoints > 500) {
       console.warn(`[性斗学园脚本] 检测到技能点异常：${skillPoints} (> 500)。自动清零。`);
       warnings.push(`技能点异常：${skillPoints}（>500）`);
@@ -74,8 +91,10 @@ async function enforcePotentialCapOnStartup() {
     // 统一提示并写回
     if (hasChanges) {
       if (warnings.length > 0 && typeof toastr !== 'undefined') {
-        const message = `你小子，是不是偷偷改我变量了？\n${warnings.join('\n')}\n给你改回去了。`;
-        toastr.warning(message, '😈', { timeOut: 8000 });
+        const message = hasNegative
+          ? `不要点那么快！\n${warnings.join('\n')}\n已重置为 0。`
+          : `你小子，是不是偷偷改我变量了？\n${warnings.join('\n')}\n给你改回去了。`;
+        toastr.warning(message, hasNegative ? '😤' : '😈', { timeOut: 8000 });
       }
       await Mvu.replaceMvuData(mvuData, { type: 'message', message_id: 'latest' });
       console.info('[性斗学园脚本] 启动校验完成，异常数值已修正');

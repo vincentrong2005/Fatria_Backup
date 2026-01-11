@@ -263,6 +263,9 @@ const selectedSkills = ref<Set<string>>(new Set());
 // 兑换数量
 const exchangeAmount = ref(1);
 
+// 升级锁（防止连点导致并发升级）
+const upgradingSkillIds = ref<Set<string>>(new Set());
+
 // 技能点
 const skillPoints = computed(() => {
   return props.characterData.核心状态?.$技能点 || 0;
@@ -328,8 +331,8 @@ function generateSkillDescription(skill: any, originalDesc: string): string {
 
 // 升级技能
 async function upgradeSkill(skillId: string, skill: any) {
-  const cost = getUpgradeCost(skill);
-  if (skillPoints.value < cost) return;
+  if (upgradingSkillIds.value.has(skillId)) return;
+  upgradingSkillIds.value.add(skillId);
   
   try {
     const globalAny = window as any;
@@ -353,8 +356,21 @@ async function upgradeSkill(skillId: string, skill: any) {
     // 保存原始描述用于后续更新
     const originalDesc = skillData.基本信息.技能描述 || '';
     
-    // 提升等级
+    // 以 MVU 中的实时等级为准计算本次升级费用（避免连点按旧等级重复计费）
     const currentLevel = skillData.基本信息.技能等级 || 1;
+    const cost = currentLevel + 1;
+    
+    // 二次校验技能点（以 MVU 实际值为准）
+    if (!mvuData.stat_data.核心状态) mvuData.stat_data.核心状态 = {};
+    const currentSkillPoints = Number(mvuData.stat_data.核心状态.$技能点 || 0);
+    if (currentSkillPoints < cost) {
+      if (typeof toastr !== 'undefined') {
+        toastr.warning('不要点那么快！技能点不足了', '😤', { timeOut: 2000 });
+      }
+      return;
+    }
+    
+    // 提升等级
     skillData.基本信息.技能等级 = Math.min(5, currentLevel + 1);
     
     // 根据等级调整属性
@@ -373,9 +389,8 @@ async function upgradeSkill(skillId: string, skill: any) {
     // 更新技能描述（只更新数值，保留原有格式）
     skillData.基本信息.技能描述 = generateSkillDescription(skillData, originalDesc);
     
-    // 减少技能点
-    if (!mvuData.stat_data.核心状态) mvuData.stat_data.核心状态 = {};
-    mvuData.stat_data.核心状态.$技能点 = (mvuData.stat_data.核心状态.$技能点 || 0) - cost;
+    // 减少技能点（夹紧，防负数）
+    mvuData.stat_data.核心状态.$技能点 = Math.max(0, currentSkillPoints - cost);
     
     // 写回MVU
     await globalAny.Mvu.replaceMvuData(mvuData, { type: 'message', message_id: 'latest' });
@@ -389,6 +404,8 @@ async function upgradeSkill(skillId: string, skill: any) {
     if (typeof toastr !== 'undefined') {
       toastr.error('技能升级失败', '错误', { timeOut: 2000 });
     }
+  } finally {
+    upgradingSkillIds.value.delete(skillId);
   }
 }
 
@@ -406,7 +423,14 @@ async function performGacha(count: number) {
     
     // 扣除技能点
     if (!mvuData.stat_data.核心状态) mvuData.stat_data.核心状态 = {};
-    mvuData.stat_data.核心状态.$技能点 = (mvuData.stat_data.核心状态.$技能点 || 0) - cost;
+    const currentSkillPoints = Number(mvuData.stat_data.核心状态.$技能点 || 0);
+    if (currentSkillPoints < cost) {
+      if (typeof toastr !== 'undefined') {
+        toastr.warning('不要点那么快！技能点不足了', '😤', { timeOut: 2000 });
+      }
+      return;
+    }
+    mvuData.stat_data.核心状态.$技能点 = Math.max(0, currentSkillPoints - cost);
     
     // 写回MVU
     await globalAny.Mvu.replaceMvuData(mvuData, { type: 'message', message_id: 'latest' });
