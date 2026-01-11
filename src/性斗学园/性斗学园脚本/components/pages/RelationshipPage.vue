@@ -407,7 +407,7 @@ function handleModalImageError(event: Event) {
   if (parent && !parent.querySelector('.modal-fallback')) {
     const fallback = document.createElement('div');
     fallback.className = 'modal-fallback';
-    fallback.innerHTML = '<i class="fas fa-user"></i><p>图片加载失败</p>';
+    fallback.innerHTML = '<i class="fas fa-user"></i><p>暂无此图片</p>';
     parent.appendChild(fallback);
   }
 }

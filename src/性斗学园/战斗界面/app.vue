@@ -285,6 +285,12 @@
               {{ turnState.phase === 'victory' ? '完全胜利' : '彻底败北' }}
             </h2>
             <p class="result-subtitle">战斗结束</p>
+            
+            <!-- CG图片显示 -->
+            <div v-if="cgImageUrl" class="cg-container">
+              <img :src="cgImageUrl" :alt="cgDescription" class="cg-image" @error="handleCGImageError" />
+            </div>
+            
             <button class="btn btn-process" @click="handleSendCombatLogToLLM">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -318,6 +324,7 @@ import CharacterPanel from './components/CharacterPanel.vue';
 import CombatEffect from './components/CombatEffect.vue';
 import CombatLog from './components/CombatLog.vue';
 import { createDefaultEnemy, createDefaultPlayer, getEnemyPortraitUrl, savePlayerCustomAvatar } from './constants';
+import { selectCGEvent } from './data/cgConfig';
 import { resolveEnemyName } from './enemyDatabase';
 import type { Character, CombatLogEntry, Item, Skill, TurnState } from './types';
 
@@ -362,6 +369,10 @@ const showEffect = ref(false);
 
 // 玩家立绘上传 input
 const playerPortraitInput = ref<HTMLInputElement | null>(null);
+
+// CG相关状态
+const cgImageUrl = ref<string | null>(null);
+const cgDescription = ref<string>('');
 
 // ================= MVU 集成 =================
 // 获取用户名字
@@ -2314,6 +2325,89 @@ function collectCombatLogs(): string {
   return logTexts.join('\n');
 }
 
+// 选择并显示CG
+function selectAndDisplayCG() {
+  console.log('[战斗界面] ========================================');
+  console.log('[战斗界面] selectAndDisplayCG 函数被调用');
+  console.log('[战斗界面] 当前战斗阶段:', turnState.phase);
+  console.log('[战斗界面] ========================================');
+  
+  try {
+    // 获取玩家性别
+    const globalAny = window as any;
+    let playerGender: '男' | '女' = '男';
+    
+    console.log('[战斗界面] 检查Mvu是否可用:', typeof Mvu !== 'undefined');
+    
+    if (typeof Mvu !== 'undefined') {
+      const mvuData = Mvu.getMvuData({ type: 'message', message_id: 'latest' });
+      console.log('[战斗界面] MVU数据获取成功:', !!mvuData);
+      console.log('[战斗界面] MVU stat_data存在:', !!mvuData?.stat_data);
+      
+      if (mvuData && mvuData.stat_data) {
+        const gender = _.get(mvuData.stat_data, '角色基础.性别', '男');
+        console.log('[战斗界面] 从MVU读取的性别值:', gender);
+        playerGender = gender === '男' ? '男' : '女';
+        console.log('[战斗界面] 处理后的性别:', playerGender);
+      }
+    } else {
+      console.warn('[战斗界面] Mvu未定义，使用默认性别');
+    }
+    
+    // 判断胜负
+    const isVictory = turnState.phase === 'victory';
+    console.log('[战斗界面] 是否胜利:', isVictory);
+    
+    // 获取对手名称
+    const enemyName = enemy.value.name;
+    console.log('[战斗界面] 对手名称:', enemyName);
+    
+    console.log('[战斗界面] 准备调用selectCGEvent，参数:', {
+      enemyName,
+      playerGender,
+      isVictory
+    });
+    
+    // 选择CG事件
+    const cgResult = selectCGEvent(enemyName, playerGender, isVictory);
+    
+    console.log('[战斗界面] selectCGEvent返回结果:', cgResult);
+    
+    if (cgResult) {
+      cgImageUrl.value = cgResult.imageUrl;
+      cgDescription.value = cgResult.description;
+      console.log('[战斗界面] ✓ CG已设置');
+      console.log('[战斗界面]   - 事件名称:', cgResult.event.name);
+      console.log('[战斗界面]   - 图片URL:', cgResult.imageUrl);
+      console.log('[战斗界面]   - 描述:', cgResult.description);
+      console.log('[战斗界面]   - cgImageUrl.value:', cgImageUrl.value);
+      console.log('[战斗界面]   - cgDescription.value:', cgDescription.value);
+    } else {
+      cgImageUrl.value = null;
+      cgDescription.value = '';
+      console.warn('[战斗界面] ✗ 未找到匹配的CG，已清空CG状态');
+    }
+  } catch (e) {
+    console.error('[战斗界面] ✗✗✗ 选择CG时发生异常 ✗✗✗');
+    console.error('[战斗界面] 异常详情:', e);
+    console.error('[战斗界面] 异常堆栈:', (e as Error).stack);
+    cgImageUrl.value = null;
+    cgDescription.value = '';
+  }
+  
+  console.log('[战斗界面] ========================================');
+  console.log('[战斗界面] selectAndDisplayCG 函数执行完毕');
+  console.log('[战斗界面] 最终 cgImageUrl.value:', cgImageUrl.value);
+  console.log('[战斗界面] 最终 cgDescription.value:', cgDescription.value);
+  console.log('[战斗界面] ========================================');
+}
+
+// 处理CG图片加载错误
+function handleCGImageError() {
+  console.warn('[战斗界面] CG图片加载失败:', cgImageUrl.value);
+  cgImageUrl.value = null;
+}
+
 // 发送战斗日志给LLM生成过程描述
 async function sendCombatLogToLLM(context: string) {
   try {
@@ -2325,8 +2419,13 @@ async function sendCombatLogToLLM(context: string) {
     const resultText = isVictory ? '胜利' : '战败';
     const contextText = isVictory ? '调教/羞辱场景' : '被调教场景';
 
-    // 构建完整的提示词（包含开头和结尾）
-    const fullPrompt = `请根据以下战斗日志生成${resultText}剧情\n[战斗日志]\n${combatLogText}\n共${totalTurns}回合。\n请根据以上性斗过程，生成一段性斗时的剧情描写（${contextText}）。`;
+    // 构建完整的提示词（包含CG描述）
+    let fullPrompt = `请根据以下战斗日志生成${resultText}剧情\n[战斗日志]\n${combatLogText}\n共${totalTurns}回合。\n请根据以上性斗过程，生成一段性斗时的剧情描写（${contextText}）。`;
+    
+    // 如果有CG描述，添加到提示词中
+    if (cgDescription.value) {
+      fullPrompt += `\n${cgDescription.value}`;
+    }
 
     // 先发送战斗日志文本到聊天中显示（作为用户消息）
     if (typeof createChatMessages === 'function') {
@@ -2490,6 +2589,7 @@ async function processClimaxAfterLLM(targetIsEnemy: boolean) {
     turnState.phase = 'victory';
     addLog(`${enemy.value.name} 达到了最大高潮次数！战斗胜利！共${turnState.currentTurn}回合。`, 'system', 'critical');
     triggerEffect('victory');
+    selectAndDisplayCG(); // 选择并显示CG
     await clearTemporaryStatus();
     await initializeCombatSystem();
     saveToMvu();
@@ -2500,6 +2600,7 @@ async function processClimaxAfterLLM(targetIsEnemy: boolean) {
     turnState.phase = 'defeat';
     addLog(`${player.value.name} 达到了最大高潮次数... 败北，共${turnState.currentTurn}回合。`, 'system', 'damage');
     triggerEffect('defeat');
+    selectAndDisplayCG(); // 选择并显示CG
     await clearTemporaryStatus();
     await initializeCombatSystem();
     saveToMvu();
@@ -2580,6 +2681,7 @@ async function handleSurrender() {
   turnState.phase = 'defeat';
   addLog('你选择了投降...', 'system', 'info');
   addLog('--- 战斗结束 ---', 'system', 'info');
+  selectAndDisplayCG(); // 选择并显示CG
 
   // 清空临时状态
   await clearTemporaryStatus();
@@ -3404,16 +3506,16 @@ onMounted(async () => {
 
 .result-content {
   text-align: center;
-  padding: 3rem 2rem;
+  padding: 2.4rem 1.6rem;
   background: linear-gradient(135deg, rgba(15, 23, 42, 0.95), rgba(9, 9, 11, 0.98));
-  border-radius: 1.5rem;
+  border-radius: 1.2rem;
   border: 1px solid rgba(255, 255, 255, 0.1);
   box-shadow:
     0 20px 60px rgba(0, 0, 0, 0.8),
     0 0 0 1px rgba(255, 255, 255, 0.05) inset;
   backdrop-filter: blur(30px);
-  max-width: 500px;
-  width: 90%;
+  max-width: 400px;
+  width: 72%;
   position: relative;
   overflow: hidden;
 
@@ -3457,11 +3559,36 @@ onMounted(async () => {
   color: #cbd5e1;
   font-weight: 400;
   letter-spacing: 0.15em;
-  margin-bottom: 2.5rem;
+  margin-bottom: 2rem;
   text-transform: uppercase;
   position: relative;
   z-index: 1;
   opacity: 0.8;
+}
+
+.cg-container {
+  width: 100%;
+  max-width: 600px;
+  margin: 0 auto 2rem;
+  border-radius: 1rem;
+  overflow: hidden;
+  border: 2px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+  position: relative;
+  z-index: 1;
+  
+  @media (max-width: 640px) {
+    max-width: 100%;
+    margin-bottom: 1.5rem;
+  }
+}
+
+.cg-image {
+  width: 100%;
+  height: auto;
+  display: block;
+  object-fit: contain;
+  background: rgba(0, 0, 0, 0.3);
 }
 
 .restart-btn {
