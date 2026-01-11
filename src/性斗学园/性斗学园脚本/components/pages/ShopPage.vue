@@ -475,8 +475,8 @@ const consumableSubCategories = [
     name: '永久提升用品（购买后自动使用）',
     icon: 'fas fa-infinity',
     items: [
-      { id: 'con_p_3', name: '魅力精华', icon: 'fas fa-heart', price: 800, category: 'consumable', combatOnly: false, effectText: '基础魅力+2', effect: { permanent: { '$基础魅力': 2 } }, description: '永久提升2点基础魅力' },
-      { id: 'con_p_4', name: '幸运草精华', icon: 'fas fa-clover', price: 800, category: 'consumable', combatOnly: false, effectText: '基础幸运+2', effect: { permanent: { '$基础幸运': 2 } }, description: '永久提升2点基础幸运' },
+      { id: 'con_p_3', name: '魅力精华', icon: 'fas fa-heart', price: 1500, category: 'consumable', combatOnly: false, effectText: '基础魅力+2', effect: { permanent: { '$基础魅力': 2 } }, description: '永久提升2点基础魅力' },
+      { id: 'con_p_4', name: '幸运草精华', icon: 'fas fa-clover', price: 1500, category: 'consumable', combatOnly: false, effectText: '基础幸运+2', effect: { permanent: { '$基础幸运': 2 } }, description: '永久提升2点基础幸运' },
       { id: 'con_p_5', name: '潜力觉醒药', icon: 'fas fa-star', price: 8000, category: 'consumable', combatOnly: false, effectText: '潜力+0.1', effect: { permanent: { '_潜力': 0.1 } }, description: '永久提升0.1点潜力值（极其珍贵）' },
       { id: 'con_p_6', name: '高级潜力觉醒药', icon: 'fas fa-sun', price: 22000, category: 'consumable', combatOnly: false, effectText: '潜力+0.3', effect: { permanent: { '_潜力': 0.3 } }, description: '永久提升0.3点潜力值（传说级）' },
     ]
@@ -499,14 +499,6 @@ function getItemGradeClass(item: any) {
 // 购买物品
 async function purchaseItem() {
   if (!selectedItem.value) return;
-  
-  const totalPrice = selectedItem.value.price * purchaseQuantity.value;
-  if (goldCoins.value < totalPrice) {
-    if (typeof toastr !== 'undefined') {
-      toastr.error('金币不足！', '购买失败');
-    }
-    return;
-  }
 
   try {
     const globalAny = window as any;
@@ -519,11 +511,57 @@ async function purchaseItem() {
     if (!mvuData.stat_data.物品系统) mvuData.stat_data.物品系统 = {};
     if (!mvuData.stat_data.物品系统.背包) mvuData.stat_data.物品系统.背包 = {};
     
-    // 扣除金币
-    mvuData.stat_data.物品系统.学园金币 = (mvuData.stat_data.物品系统.学园金币 || 0) - totalPrice;
-    
     const item = selectedItem.value;
-    const quantity = purchaseQuantity.value;
+    let quantity = purchaseQuantity.value;
+
+    // 永久提升类购买保护（潜力上限、禁购阈值、批量购买不浪费）
+    if (item.category === 'consumable' && item.effect?.permanent && Object.prototype.hasOwnProperty.call(item.effect.permanent, '_潜力')) {
+      if (!mvuData.stat_data.核心状态) mvuData.stat_data.核心状态 = {};
+      const currentPotentialRaw = mvuData.stat_data.核心状态._潜力 ?? 0;
+      const currentPotential = Number(currentPotentialRaw) || 0;
+      const delta = Number(item.effect.permanent._潜力) || 0;
+
+      if (item.id === 'con_p_6' && currentPotential >= 9.8) {
+        if (typeof toastr !== 'undefined') {
+          toastr.warning('潜力已接近上限（>=9.8），无法购买高级潜力觉醒药', '购买限制');
+        }
+        return;
+      }
+      if (item.id === 'con_p_5' && currentPotential >= 10) {
+        if (typeof toastr !== 'undefined') {
+          toastr.warning('潜力已达上限（10），无法购买潜力觉醒药', '购买限制');
+        }
+        return;
+      }
+
+      const remaining = Math.max(0, 10 - currentPotential);
+      const maxUsable = delta > 0 ? Math.floor((remaining + 1e-9) / delta) : 0;
+
+      if (maxUsable <= 0) {
+        if (typeof toastr !== 'undefined') {
+          toastr.warning('潜力提升空间不足，本次购买不会产生收益', '购买限制');
+        }
+        return;
+      }
+
+      if (quantity > maxUsable) {
+        quantity = maxUsable;
+        if (typeof toastr !== 'undefined') {
+          toastr.info(`潜力最高为10，已自动将购买数量调整为 ${quantity}`, '数量调整');
+        }
+      }
+    }
+
+    const totalPrice = item.price * quantity;
+    if (goldCoins.value < totalPrice) {
+      if (typeof toastr !== 'undefined') {
+        toastr.error('金币不足！', '购买失败');
+      }
+      return;
+    }
+
+    // 扣除金币（按实际生效数量扣费）
+    mvuData.stat_data.物品系统.学园金币 = (mvuData.stat_data.物品系统.学园金币 || 0) - totalPrice;
     
     // 根据物品类型处理
     if (item.category === 'equipment') {
@@ -578,7 +616,14 @@ async function purchaseItem() {
             // 永久提升类：直接应用效果
             if (!mvuData.stat_data.核心状态) mvuData.stat_data.核心状态 = {};
             for (const [key, value] of Object.entries(item.effect.permanent)) {
-              mvuData.stat_data.核心状态[key] = (mvuData.stat_data.核心状态[key] || 0) + (value as number) * quantity;
+              if (key === '_潜力') {
+                const currentPotentialRaw = mvuData.stat_data.核心状态._潜力 ?? 0;
+                const currentPotential = Number(currentPotentialRaw) || 0;
+                const nextPotential = Math.min(10, currentPotential + (Number(value) || 0) * quantity);
+                mvuData.stat_data.核心状态._潜力 = nextPotential;
+              } else {
+                mvuData.stat_data.核心状态[key] = (mvuData.stat_data.核心状态[key] || 0) + (value as number) * quantity;
+              }
             }
             // 永久提升不存入背包，直接生效
             await globalAny.Mvu.replaceMvuData(mvuData, { type: 'message', message_id: 'latest' });
