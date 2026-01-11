@@ -3,20 +3,10 @@
  * 包含所有初始可选的特殊体质（被动）
  */
 
-import {
-  ConstitutionCategory,
-  ConstitutionData,
-  ConstitutionRarity,
-  TriggerTiming,
-} from './constitution-types';
+import { ConstitutionCategory, ConstitutionData, ConstitutionRarity, TriggerTiming } from './constitution-types';
 
 // 重新导出类型
-export {
-  ConstitutionCategory,
-  ConstitutionRarity,
-  TriggerTiming,
-  type ConstitutionData
-};
+export { ConstitutionCategory, ConstitutionRarity, TriggerTiming, type ConstitutionData };
 
 // ==================== 通用体质（所有性别可选） ====================
 
@@ -51,9 +41,7 @@ export const COMMON_CONSTITUTIONS: ConstitutionData[] = [
     icon: 'Snowflake',
     category: ConstitutionCategory.SENSITIVITY,
     rarity: ConstitutionRarity.COMMON,
-    permanentModifiers: [
-      { stat: '基础忍耐力成算', value: 25, isPercent: true },
-    ],
+    permanentModifiers: [{ stat: '基础忍耐力成算', value: 25, isPercent: true }],
     sensitivityModifiers: [],
     triggerEffects: [],
     genderRestriction: [],

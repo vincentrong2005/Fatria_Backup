@@ -37,7 +37,8 @@ const xingYeGuangConfig: CharacterCGConfig = {
       {
         id: 'butt_tease_denial',
         name: '星野光-淫臀摩擦寸止事件',
-        description: '你被星野光击败，作为惩罚她坐在你身上，全部会用皮筋捆住你的下体，同时臀部寸止摩擦你的下体让你想射但是射不出。',
+        description:
+          '你被星野光击败，作为惩罚她坐在你身上，全部会用皮筋捆住你的下体，同时臀部寸止摩擦你的下体让你想射但是射不出。',
         images: ['星野光-淫臀摩擦寸止事件-1.png', '星野光-淫臀摩擦寸止-2.png'],
       },
       {
@@ -55,13 +56,15 @@ const xingYeGuangConfig: CharacterCGConfig = {
       {
         id: 'restraint_tease_denial',
         name: '星野光-拘束摩擦寸止事件',
-        description: '你被星野光击败，作为惩罚她坐在你身上，全部会用皮筋捆住你的下体，同时用蜜穴摩擦寸止，让你的下体让你想射但是射不出。',
+        description:
+          '你被星野光击败，作为惩罚她坐在你身上，全部会用皮筋捆住你的下体，同时用蜜穴摩擦寸止，让你的下体让你想射但是射不出。',
         images: ['星野光-拘束摩擦寸止事件.png'],
       },
       {
         id: 'loyalty_extraction',
         name: '星野光-榨取效忠事件',
-        description: '你被星野光击败，作为惩罚她坐在你身上，小穴进行高速榨精，同时用白丝脚气味洗脑，并且希望你成为她的经纪人，若以成为经纪人则会用更加爱意方式调教。',
+        description:
+          '你被星野光击败，作为惩罚她坐在你身上，小穴进行高速榨精，同时用白丝脚气味洗脑，并且希望你成为她的经纪人，若以成为经纪人则会用更加爱意方式调教。',
         images: ['星野光-榨取效忠事件.png'],
       },
       {
@@ -199,14 +202,19 @@ const aiLinHaiDeConfig: CharacterCGConfig = {
       {
         id: 'human_chair',
         name: '艾琳海德-人肉座椅事件',
-        description: '你被艾琳海德击败，作为处罚你需要赤身裸体地四肢跪地，头戴眼罩，口里含着她的袜子作为她的人肉椅子3小时，她会坐在你身上处理公务。',
+        description:
+          '你被艾琳海德击败，作为处罚你需要赤身裸体地四肢跪地，头戴眼罩，口里含着她的袜子作为她的人肉椅子3小时，她会坐在你身上处理公务。',
         images: ['艾琳海德-人肉座椅事件-1.png', '艾琳海德-人肉座椅事件-2.png'],
       },
       {
         id: 'bondage_yuri_discipline',
         name: '艾琳海德-捆绑百合调教事件',
         description: '你被艾琳海德击败，作为处罚你需要被龟甲缚并且在床上玩弄。',
-        images: ['艾琳海德-捆绑百合调教事件-1.png', '艾琳海德-捆绑百合调教-2事件.png', '艾琳海德-捆绑百合调教事件事件-2.png'],
+        images: [
+          '艾琳海德-捆绑百合调教事件-1.png',
+          '艾琳海德-捆绑百合调教-2事件.png',
+          '艾琳海德-捆绑百合调教事件事件-2.png',
+        ],
       },
       {
         id: 'armpit_domination',
@@ -250,21 +258,24 @@ export const CG_CONFIGS: CharacterCGConfig[] = [xingYeGuangConfig, aiLinHaiDeCon
 // 根据角色名称获取CG配置
 export function getCGConfigByCharacter(characterName: string): CharacterCGConfig | null {
   console.log('[CG配置] 开始查找角色CG配置，角色名称:', characterName);
-  console.log('[CG配置] 可用配置列表:', CG_CONFIGS.map(c => c.characterName));
-  
+  console.log(
+    '[CG配置] 可用配置列表:',
+    CG_CONFIGS.map(c => c.characterName),
+  );
+
   // 模糊匹配角色名称
-  const config = CG_CONFIGS.find((cfg) => {
+  const config = CG_CONFIGS.find(cfg => {
     const match = characterName.includes(cfg.characterName) || cfg.characterName.includes(characterName);
     console.log(`[CG配置] 匹配检查: "${characterName}" vs "${cfg.characterName}" = ${match}`);
     return match;
   });
-  
+
   if (config) {
     console.log('[CG配置] 找到匹配的配置:', config.characterName);
   } else {
     console.warn('[CG配置] 未找到匹配的配置');
   }
-  
+
   return config || null;
 }
 
@@ -272,11 +283,11 @@ export function getCGConfigByCharacter(characterName: string): CharacterCGConfig
 export function selectCGEvent(
   characterName: string,
   playerGender: '男' | '女',
-  isVictory: boolean
+  isVictory: boolean,
 ): { event: CGEvent; imageUrl: string; description: string } | null {
   console.log('[CG选择] ========== 开始选择CG事件 ==========');
   console.log('[CG选择] 参数 - 角色:', characterName, '性别:', playerGender, '胜利:', isVictory);
-  
+
   const config = getCGConfigByCharacter(characterName);
   if (!config) {
     console.warn('[CG选择] 未找到角色配置，返回null');
@@ -287,7 +298,7 @@ export function selectCGEvent(
   const genderKey = playerGender === '男' ? 'male' : 'female';
   const resultKey = isVictory ? 'victory' : 'defeat';
   console.log('[CG选择] 选择事件池 - 性别key:', genderKey, '结果key:', resultKey);
-  
+
   const events = config[genderKey][resultKey];
   console.log('[CG选择] 事件池内容:', events);
   console.log('[CG选择] 事件池数量:', events?.length || 0);
@@ -298,8 +309,8 @@ export function selectCGEvent(
   }
 
   // 分离稀有事件和普通事件
-  const rareEvents = events.filter((e) => e.probability !== undefined);
-  const normalEvents = events.filter((e) => e.probability === undefined);
+  const rareEvents = events.filter(e => e.probability !== undefined);
+  const normalEvents = events.filter(e => e.probability === undefined);
   console.log('[CG选择] 稀有事件数量:', rareEvents.length, '普通事件数量:', normalEvents.length);
 
   let selectedEvent: CGEvent | null = null;
@@ -337,7 +348,7 @@ export function selectCGEvent(
   const genderFolder = playerGender === '男' ? '男u' : '女u';
   const resultFolder = isVictory ? '战胜事件' : '战败事件';
   const imageUrl = `https://raw.githubusercontent.com/vincentrong2005/Fatria/main/图片素材/性斗学园/cg/${config.characterName}/${genderFolder}/${resultFolder}/${randomImage}`;
-  
+
   console.log('[CG选择] 生成的图片URL:', imageUrl);
   console.log('[CG选择] 事件描述:', selectedEvent.description);
   console.log('[CG选择] ========== CG事件选择完成 ==========');
