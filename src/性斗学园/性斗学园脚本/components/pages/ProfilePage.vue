@@ -39,8 +39,8 @@
               <div>其中：加成和 = 临时.基础性斗力加成 + 永久.基础性斗力加成 + 装备.基础性斗力加成；成算和 = 临时.基础性斗力成算 + 永久.基础性斗力成算 + 装备.基础性斗力成算。</div>
               <div>忍耐力（实时忍耐力）= round( (基础忍耐力 + 加成和) × (1 + 成算和/100) )。</div>
               <div>其中：加成和 = 临时.基础忍耐力加成 + 永久.基础忍耐力加成 + 装备.基础忍耐力加成；成算和 = 临时.基础忍耐力成算 + 永久.基础忍耐力成算 + 装备.基础忍耐力成算。</div>
-              <div>闪避率 = 基础闪避率 + (临时.闪避率加成) + (永久.闪避率加成) + (装备.闪避率加成)。</div>
-              <div>暴击率 = clamp( 基础暴击率 + (临时.暴击率加成) + (永久.暴击率加成) + (装备.暴击率加成), 0..100 )。</div>
+              <div>闪避率（上限60） = 基础闪避率 + (临时.闪避率加成) + (永久.闪避率加成) + (装备.闪避率加成)。</div>
+              <div>暴击率（上限100）  = clamp( 基础暴击率 + (临时.暴击率加成) + (永久.暴击率加成) + (装备.暴击率加成), 0..100 )。</div>
               <div>段位：你当前的竞技/评价等级；段位积分会影响升段流程。</div>
               <div>战斗判定（来自战斗计算）：</div>
               <div>- 闪避判定：最终命中率 = 技能命中率 - 目标闪避率 + (攻击者幸运/10)，并 clamp 到 10%..95%；随机 roll∈[0,100)，若 roll ≥ 最终命中率 则视为闪避成功。</div>
@@ -332,6 +332,7 @@ const props = defineProps<{
 const fileInputRef = ref<HTMLInputElement | null>(null);
 const avatarUrl = ref<string>('');
 const showHelp = ref(false);
+const isUpgrading = ref(false); // 防抖锁，防止快速点击
 
 // 可用属性点
 const availablePoints = computed(() => {
@@ -360,14 +361,32 @@ function getAttributeValue(key: string): number {
 
 // 升级属性
 async function upgradeAttribute(key: string, increment: number) {
+  // 防抖：如果正在升级中，直接返回
+  if (isUpgrading.value) return;
   if (availablePoints.value <= 0) return;
+  
+  // 设置防抖锁
+  isUpgrading.value = true;
   
   try {
     const globalAny = window as any;
-    if (!globalAny.Mvu) return;
+    if (!globalAny.Mvu) {
+      isUpgrading.value = false;
+      return;
+    }
     
     const mvuData = globalAny.Mvu.getMvuData({ type: 'message', message_id: 'latest' });
-    if (!mvuData || !mvuData.stat_data) return;
+    if (!mvuData || !mvuData.stat_data) {
+      isUpgrading.value = false;
+      return;
+    }
+    
+    // 二次检查：从MVU数据中获取实际属性点数量
+    const actualPoints = mvuData.stat_data.核心状态?.$属性点 || 0;
+    if (actualPoints <= 0) {
+      isUpgrading.value = false;
+      return;
+    }
     
     // 获取当前值
     const parts = key.split('.');
@@ -382,9 +401,9 @@ async function upgradeAttribute(key: string, increment: number) {
     // 更新属性值
     currentValue[lastKey] = oldValue + increment;
     
-    // 减少属性点
+    // 减少属性点（确保不会变成负数）
     if (!mvuData.stat_data.核心状态) mvuData.stat_data.核心状态 = {};
-    mvuData.stat_data.核心状态.$属性点 = (mvuData.stat_data.核心状态.$属性点 || 0) - 1;
+    mvuData.stat_data.核心状态.$属性点 = Math.max(0, actualPoints - 1);
     
     // 写回MVU
     await globalAny.Mvu.replaceMvuData(mvuData, { type: 'message', message_id: 'latest' });
@@ -398,6 +417,11 @@ async function upgradeAttribute(key: string, increment: number) {
     if (typeof toastr !== 'undefined') {
       toastr.error('属性升级失败', '错误', { timeOut: 2000 });
     }
+  } finally {
+    // 延迟释放防抖锁，防止快速连续点击
+    setTimeout(() => {
+      isUpgrading.value = false;
+    }, 100);
   }
 }
 

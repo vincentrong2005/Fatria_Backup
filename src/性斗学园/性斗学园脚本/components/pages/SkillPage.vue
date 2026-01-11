@@ -314,29 +314,16 @@ function getUpgradeCost(skill: any): number {
 }
 
 // 生成技能描述（根据当前技能数据）
-function generateSkillDescription(skill: any): string {
+// 只更新数值部分，保留原有描述格式
+function generateSkillDescription(skill: any, originalDesc: string): string {
   const damageInfo = skill.伤害与效果 || {};
-  const source = damageInfo.伤害来源 || '性斗力';
-  const coefficient = damageInfo.系数 || 100;
+  const newCoefficient = damageInfo.系数 || 100;
   
-  // 构建伤害描述
-  let desc = `造成${coefficient}%${source}伤害`;
+  // 使用正则表达式只替换描述中的伤害数值部分
+  // 匹配 "造成XXX%" 格式
+  const updatedDesc = originalDesc.replace(/造成(\d+)%/, `造成${newCoefficient}%`);
   
-  // 添加效果列表信息
-  const effects = damageInfo.效果列表 || {};
-  if (Object.keys(effects).length > 0) {
-    const effectTexts: string[] = [];
-    for (const effect of Object.values(effects) as any[]) {
-      const value = effect.是否为百分比 ? `${effect.效果值}%` : effect.效果值;
-      const sign = effect.效果值 > 0 ? '' : '';
-      effectTexts.push(`${effect.效果类型}${sign}${value}`);
-    }
-    if (effectTexts.length > 0) {
-      desc += `，${effectTexts.join('、')}`;
-    }
-  }
-  
-  return desc;
+  return updatedDesc;
 }
 
 // 升级技能
@@ -363,6 +350,9 @@ async function upgradeSkill(skillId: string, skill: any) {
     // 确保基本信息存在
     if (!skillData.基本信息) skillData.基本信息 = {};
     
+    // 保存原始描述用于后续更新
+    const originalDesc = skillData.基本信息.技能描述 || '';
+    
     // 提升等级
     const currentLevel = skillData.基本信息.技能等级 || 1;
     skillData.基本信息.技能等级 = Math.min(5, currentLevel + 1);
@@ -371,16 +361,17 @@ async function upgradeSkill(skillId: string, skill: any) {
     if (!skillData.冷却与消耗) skillData.冷却与消耗 = {};
     if (!skillData.伤害与效果) skillData.伤害与效果 = {};
     
-    // 每级增加系数 10%
-    skillData.伤害与效果.系数 = (skillData.伤害与效果.系数 || 100) + 10;
+    // 每级增加系数：当前值 × 1.05（向下取整）
+    const currentCoefficient = skillData.伤害与效果.系数 || 100;
+    skillData.伤害与效果.系数 = Math.floor(currentCoefficient * 1.05);
     
     // 每2级减少消耗1点
     if (currentLevel % 2 === 0) {
       skillData.冷却与消耗.耐力消耗 = Math.max(0, (skillData.冷却与消耗.耐力消耗 || 0) - 1);
     }
     
-    // 更新技能描述（根据新的系数和效果）
-    skillData.基本信息.技能描述 = generateSkillDescription(skillData);
+    // 更新技能描述（只更新数值，保留原有格式）
+    skillData.基本信息.技能描述 = generateSkillDescription(skillData, originalDesc);
     
     // 减少技能点
     if (!mvuData.stat_data.核心状态) mvuData.stat_data.核心状态 = {};
