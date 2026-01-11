@@ -13,14 +13,80 @@
 import { get, isEqual, set } from '@/util/common';
 import { createScriptIdDiv, destroyScriptIdDiv, deteleportStyle, teleportStyle } from '@/util/script';
 import {
-    canLevelUp,
-    EXP_PER_LEVEL,
-    shouldTriggerOrgasm
+  canLevelUp,
+  EXP_PER_LEVEL,
+  shouldTriggerOrgasm
 } from '../开局/utils/combat-calculator';
 import StatusBarWrapper from './components/StatusBarWrapper.vue';
 
 // 等待 MVU 初始化
 await waitGlobalInitialized('Mvu');
+
+/**
+ * 启动校验：数值上限保护
+ * - 潜力 > 10 → 警告并修正为 10
+ * - 属性点/技能点 > 500 → 警告并清零
+ */
+async function enforcePotentialCapOnStartup() {
+  try {
+    const mvuData = Mvu.getMvuData({ type: 'message', message_id: 'latest' });
+    if (!mvuData || !mvuData.stat_data) {
+      console.warn('[性斗学园脚本] 无法获取 MVU 数据，跳过启动校验');
+      return;
+    }
+
+    let hasChanges = false;
+    const warnings: string[] = [];
+
+    // 1. 检测潜力上限
+    const rawPotential = get(mvuData.stat_data, '核心状态._潜力', 0);
+    const potential = Number(rawPotential);
+
+    if (Number.isFinite(potential) && potential > 10) {
+      console.warn(`[性斗学园脚本] 检测到潜力异常：${potential} (> 10)。是否偷偷改数值了？将自动修正为 10。`);
+      warnings.push(`潜力异常：${potential}（>10）`);
+      set(mvuData.stat_data, '核心状态._潜力', 10);
+      hasChanges = true;
+    }
+
+    // 2. 检测属性点上限
+    const rawAttrPoints = get(mvuData.stat_data, '核心状态.$属性点', 0);
+    const attrPoints = Number(rawAttrPoints);
+
+    if (Number.isFinite(attrPoints) && attrPoints > 500) {
+      console.warn(`[性斗学园脚本] 检测到属性点异常：${attrPoints} (> 500)。自动清零。`);
+      warnings.push(`属性点异常：${attrPoints}（>500）`);
+      set(mvuData.stat_data, '核心状态.$属性点', 0);
+      hasChanges = true;
+    }
+
+    // 3. 检测技能点上限
+    const rawSkillPoints = get(mvuData.stat_data, '核心状态.$技能点', 0);
+    const skillPoints = Number(rawSkillPoints);
+
+    if (Number.isFinite(skillPoints) && skillPoints > 500) {
+      console.warn(`[性斗学园脚本] 检测到技能点异常：${skillPoints} (> 500)。自动清零。`);
+      warnings.push(`技能点异常：${skillPoints}（>500）`);
+      set(mvuData.stat_data, '核心状态.$技能点', 0);
+      hasChanges = true;
+    }
+
+    // 统一提示并写回
+    if (hasChanges) {
+      if (warnings.length > 0 && typeof toastr !== 'undefined') {
+        const message = `你小子，是不是偷偷改我变量了？\n${warnings.join('\n')}\n给你改回去了。`;
+        toastr.warning(message, '😈', { timeOut: 8000 });
+      }
+      await Mvu.replaceMvuData(mvuData, { type: 'message', message_id: 'latest' });
+      console.info('[性斗学园脚本] 启动校验完成，异常数值已修正');
+    }
+  } catch (error) {
+    console.error('[性斗学园脚本] 启动校验时出错:', error);
+  }
+}
+
+// 脚本启动即执行一次校验（防止历史存档/手改导致潜力越界）
+await enforcePotentialCapOnStartup();
 
 // 防止重复更新的标志
 let isUpdating = false;
@@ -434,6 +500,7 @@ eventOn(Mvu.events.VARIABLE_UPDATE_ENDED, async (variables, variables_before_upd
  * 在变量初始化后，计算初始的依赖变量值
  */
 eventOn(Mvu.events.VARIABLE_INITIALIZED, async () => {
+  await enforcePotentialCapOnStartup();
   await updateDependentVariables();
 });
 
