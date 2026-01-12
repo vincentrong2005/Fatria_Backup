@@ -1342,58 +1342,70 @@ export const NAME_ALIASES: Record<string, string> = {
 };
 
 /**
- * 根据对手名称获取MVU变量数据（支持模糊匹配）
- * @param enemyName 对手名称（可以是全名或部分名称）
+ * 根据对手名称获取MVU变量数据（支持包含匹配）
+ * @param enemyName 对手名称（可以是全名、部分名称或包含多个角色的复合名称）
  * @returns MVU变量数据，如果不存在则返回null
  */
 export function getEnemyMvuData(enemyName: string): EnemyMvuData | null {
-  // 先尝试精确匹配
+  // 1. 先尝试精确匹配（对手名刚好是某个数据库全名）
   if (enemyName in ENEMY_DATABASE) {
     return ENEMY_DATABASE[enemyName];
   }
   
-  // 尝试别名匹配
-  const fullName = NAME_ALIASES[enemyName];
-  if (fullName && fullName in ENEMY_DATABASE) {
-    console.info(`[战斗界面] 通过别名 "${enemyName}" 匹配到角色: ${fullName}`);
-    return ENEMY_DATABASE[fullName];
-  }
-  
-  // 尝试部分匹配（名字中包含输入的字符串）
-  for (const name of Object.keys(ENEMY_DATABASE)) {
-    if (name.includes(enemyName)) {
-      console.info(`[战斗界面] 通过部分匹配 "${enemyName}" 找到角色: ${name}`);
-      return ENEMY_DATABASE[name];
+  // 2. 尝试包含匹配：遍历数据库全名，如果对手名包含某个全名，返回该数据
+  //    如果包含多个，以第一个为准
+  for (const fullName of Object.keys(ENEMY_DATABASE)) {
+    if (enemyName.includes(fullName)) {
+      console.info(`[敌人数据库] 包含匹配成功（数据）: "${enemyName}" 包含 "${fullName}"`);
+      return ENEMY_DATABASE[fullName];
     }
   }
   
+  // 3. 尝试别名包含匹配：遍历别名表，如果对手名包含某个别名，返回对应数据
+  //    如果包含多个，以第一个为准
+  for (const [alias, fullName] of Object.entries(NAME_ALIASES)) {
+    if (enemyName.includes(alias) && fullName in ENEMY_DATABASE) {
+      console.info(`[敌人数据库] 别名包含匹配成功（数据）: "${enemyName}" 包含别名 "${alias}" -> "${fullName}"`);
+      return ENEMY_DATABASE[fullName];
+    }
+  }
+  
+  // 4. 都没匹配到，返回null
+  console.warn(`[敌人数据库] 未找到数据匹配: "${enemyName}"`);
   return null;
 }
 
 /**
- * 根据对手名称获取完整名称（支持模糊匹配）
- * @param enemyName 对手名称（可以是全名或部分名称）
+ * 根据对手名称获取完整名称（支持包含匹配）
+ * @param enemyName 对手名称（可以是全名、部分名称或包含多个角色的复合名称）
  * @returns 完整名称，如果不存在则返回原名称
  */
 export function resolveEnemyName(enemyName: string): string {
-  // 先尝试精确匹配
+  // 1. 先尝试精确匹配（对手名刚好是某个数据库全名）
   if (enemyName in ENEMY_DATABASE) {
     return enemyName;
   }
   
-  // 尝试别名匹配
-  const fullName = NAME_ALIASES[enemyName];
-  if (fullName && fullName in ENEMY_DATABASE) {
-    return fullName;
-  }
-  
-  // 尝试部分匹配
-  for (const name of Object.keys(ENEMY_DATABASE)) {
-    if (name.includes(enemyName)) {
-      return name;
+  // 2. 尝试包含匹配：遍历数据库全名，如果对手名包含某个全名，返回该全名
+  //    如果包含多个，以第一个为准
+  for (const fullName of Object.keys(ENEMY_DATABASE)) {
+    if (enemyName.includes(fullName)) {
+      console.info(`[敌人数据库] 包含匹配成功: "${enemyName}" 包含 "${fullName}"`);
+      return fullName;
     }
   }
   
+  // 3. 尝试别名包含匹配：遍历别名表，如果对手名包含某个别名，返回对应全名
+  //    如果包含多个，以第一个为准
+  for (const [alias, fullName] of Object.entries(NAME_ALIASES)) {
+    if (enemyName.includes(alias) && fullName in ENEMY_DATABASE) {
+      console.info(`[敌人数据库] 别名包含匹配成功: "${enemyName}" 包含别名 "${alias}" -> "${fullName}"`);
+      return fullName;
+    }
+  }
+  
+  // 4. 都没匹配到，返回原名
+  console.warn(`[敌人数据库] 未找到匹配: "${enemyName}"，返回原名`);
   return enemyName;
 }
 
