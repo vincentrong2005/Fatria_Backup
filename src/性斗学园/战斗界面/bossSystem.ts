@@ -42,6 +42,15 @@ export const MUXINLAN_DIALOGUES = {
     { speaker: '茉莉(?)', text: '"再努力一点嘛~不然我都要睡着了呢~"', emotion: 'arrogant' as const },
     { speaker: '茉莉(?)', text: '"小东西你真的有在认真吗？还是说...这就是你的全力了？噗~"', emotion: 'arrogant' as const },
     { speaker: '茉莉(?)', text: '"被我的丝线缠住了呢~接下来要怎么玩弄你好呢？"', emotion: 'arrogant' as const },
+    { speaker: '茉莉(?)', text: '"哟~小可怜还在挣扎呢？真是可爱到让人想欺负呢♡"', emotion: 'arrogant' as const },
+    { speaker: '茉莉(?)', text: '"要不要姐姐我稍微放点水呀？啊，不用了，反正你也赢不了~"', emotion: 'arrogant' as const },
+    { speaker: '茉莉(?)', text: '"看你这么努力的样子，本小姐都有点不忍心了呢~骗你的啦♡"', emotion: 'arrogant' as const },
+    { speaker: '茉莉(?)', text: '"杂鱼杂鱼~♡ 要不要我教教你怎么打架呀？"', emotion: 'arrogant' as const },
+    { speaker: '茉莉(?)', text: '"哎呀，这么弱还敢来挑战我？是谁给你的勇气呢~"', emotion: 'arrogant' as const },
+    { speaker: '茉莉(?)', text: '"哎呀呀~小垃圾的体力快不行了吗？要不要姐姐我帮你一把呀~♡"', emotion: 'arrogant' as const },
+    { speaker: '茉莉(?)', text: '"你的攻击...是在给我挠痒痒吗？噗~真是太好笑了呢~"', emotion: 'arrogant' as const },
+    { speaker: '茉莉(?)', text: '"要不要我让你一只手呀？啊，不行不行，那样太欺负你了呢~♡"', emotion: 'arrogant' as const },
+    { speaker: '茉莉(?)', text: '"小可怜~♡ 看你这么努力的样子，我都快要感动了呢~骗你的啦！"', emotion: 'arrogant' as const },
   ],
   
   // 第一阶段锁血时
@@ -54,9 +63,7 @@ export const MUXINLAN_DIALOGUES = {
   // 第一阶段到第二阶段转换
   phase1_to_2: [
     { speaker: '???', text: '"...够了。"', emotion: 'angry' as const },
-    { speaker: '???', text: '"看来...是我太小看你了呢。"', emotion: 'angry' as const },
     { speaker: '祸星茉莉', text: '"那么...就让你见识一下真正的力量吧。"', emotion: 'angry' as const },
-    { speaker: '祸星茉莉', text: '"【过载同步】——启动！"', emotion: 'angry' as const },
     { speaker: '꧁༺茉莉༻꧂', text: '"利息已经滚到你付不起的程度了。现在，把你的胜算全部清零吧。"', emotion: 'angry' as const },
   ],
   
@@ -64,26 +71,35 @@ export const MUXINLAN_DIALOGUES = {
   phase2_battle: [
     { speaker: '꧁༺茉莉༻꧂', text: '"感受到了吗？这就是被完全支配的感觉。"', emotion: 'angry' as const },
     { speaker: '꧁༺茉莉༻꧂', text: '"你的意识...现在归我所有了。"', emotion: 'angry' as const },
-    { speaker: '꧁༺茉莉༻꧂', text: '"让我的傀儡们...把你撕碎吧！"', emotion: 'angry' as const },
+    { speaker: '꧁༺茉莉༻꧂', text: '"让我...将你撕碎吧！"', emotion: 'angry' as const },
     { speaker: '꧁༺茉莉༻꧂', text: '"在女王面前...跪下吧，杂鱼。"', emotion: 'angry' as const },
     { speaker: '꧁༺茉莉༻꧂', text: '"这就是与女王为敌的下场。"', emotion: 'angry' as const },
     { speaker: '꧁༺茉莉༻꧂', text: '"挣扎吧，反抗吧...然后绝望吧。"', emotion: 'angry' as const },
+    { speaker: '꧁༺茉莉༻꧂', text: '"你的抵抗...只会让我更加兴奋！"', emotion: 'angry' as const },
+    { speaker: '꧁༺茉莉༻꧂', text: '"碾碎你...是我此刻唯一的念头。"', emotion: 'angry' as const },
+    { speaker: '꧁༺茉莉༻꧂', text: '"我的茉莉...会让你体验真正的恐惧！"', emotion: 'angry' as const },
+    { speaker: '꧁༺茉莉༻꧂', text: '"你的灵魂...将成为我的收藏品。"', emotion: 'angry' as const },
+    { speaker: '꧁༺茉莉༻꧂', text: '"反抗？可笑...你已经是我的玩偶了。"', emotion: 'angry' as const },
+    { speaker: '꧁༺茉莉༻꧂', text: '"你的意志...在我面前一文不值！"', emotion: 'angry' as const },
+    { speaker: '꧁༺茉莉༻꧂', text: '"这就是反抗女王的代价！好好享受吧！"', emotion: 'angry' as const },
+    { speaker: '꧁༺茉莉༻꧂', text: '"你的绝望...是我最美妙的食粮！"', emotion: 'angry' as const },
+    { speaker: '꧁༺茉莉༻꧂', text: '"跪下！然后向我忏悔你的愚蠢！"', emotion: 'angry' as const },
   ],
   
   // 第二阶段锁血时
   phase2_lockHp: [
     { speaker: '꧁༺茉莉༻꧂', text: '"不...不可能...！"', emotion: 'angry' as const },
-    { speaker: '꧁༺茉莉༻꧂', text: '"这具傀儡...竟然...！"', emotion: 'angry' as const },
+    { speaker: '꧁༺茉莉༻꧂', text: '"我的茉莉...竟然...！"', emotion: 'angry' as const },
   ],
   
   // 第二阶段到第三阶段转换
   phase2_to_3: [
-    { speaker: '꧁༺茉莉༻꧂', text: '"不...不要...！（傀儡开始崩解）"', emotion: 'weak' as const },
+    { speaker: '꧁༺茉莉༻꧂', text: '"不...不要...！（茉莉跪倒在地，不再行动）"', emotion: 'weak' as const },
     { speaker: '???', text: '"啊啊啊啊——！！！"', emotion: 'weak' as const },
-    { speaker: '系统', text: '【傀儡"茉莉"已被击毁，意识强制弹回本体】', emotion: 'weak' as const },
+    { speaker: '系统', text: '【"茉莉"已被击败，意识强制弹回本体】', emotion: 'weak' as const },
     { speaker: '沐芯兰（真身）', text: '"咳...咳咳...（瘫坐在地，浑身颤抖）"', emotion: 'weak' as const },
     { speaker: '沐芯兰（真身）', text: '"茉莉...竟然被你这种杂鱼...（咬牙）"', emotion: 'tsundere' as const },
-    { speaker: '沐芯兰（真身）', text: '"...算了，维修费就从你的校园金币里扣！"', emotion: 'tsundere' as const },
+    { speaker: '沐芯兰（真身）', text: '"...杂鱼！维修费要从你的校园金币里扣！"', emotion: 'tsundere' as const },
   ],
   
   // 第三阶段战斗中（顺序播放，有连续性）
@@ -93,22 +109,39 @@ export const MUXINLAN_DIALOGUES = {
     { speaker: '沐芯兰（真身）', text: '"扶、扶我一下...这是命令！"', emotion: 'tsundere' as const },
     { speaker: '沐芯兰（真身）', text: '"...你还在等什么？快点啊笨蛋！"', emotion: 'tsundere' as const },
     { speaker: '沐芯兰（真身）', text: '"（小声）...为什么不直接结束呢..."', emotion: 'weak' as const },
-    { speaker: '沐芯兰（真身）', text: '"明明只是个杂鱼...为什么能在这种时候..."', emotion: 'weak' as const },
-    { speaker: '沐芯兰（真身）', text: '"（抓住衣角）...别走..."', emotion: 'weak' as const },
-    { speaker: '沐芯兰（真身）', text: '"我才不会...认输呢...笨蛋杂鱼..."', emotion: 'tsundere' as const },
-    { speaker: '沐芯兰（真身）', text: '"谢、谢谢什么的，我才不会说呢！"', emotion: 'tsundere' as const },
-    { speaker: '沐芯兰（真身）', text: '"...（低头不语，身体微微发抖）"', emotion: 'weak' as const },
   ],
   
   // 使用三好学生勋章时（跳过第二阶段）
   medal_trigger: [
     { speaker: '茉莉(?)', text: '"那、那个是...！"', emotion: 'weak' as const },
     { speaker: '茉莉(?)', text: '"为什么你会有那个东西...！"', emotion: 'weak' as const },
-    { speaker: '???', text: '"（傀儡突然停止动作）"', emotion: 'weak' as const },
+    { speaker: '???', text: '"（茉莉突然停止动作）"', emotion: 'weak' as const },
     { speaker: '沐芯兰（真身）', text: '"...你是从哪里得到那个勋章的？"', emotion: 'tsundere' as const },
     { speaker: '沐芯兰（真身）', text: '"（声音颤抖）那是...那是我以前..."', emotion: 'weak' as const },
-    { speaker: '沐芯兰（真身）', text: '"...算了。既然你有那个东西..."', emotion: 'tsundere' as const },
-    { speaker: '沐芯兰（真身）', text: '"（傀儡自行解除）...我就亲自来面对你吧。"', emotion: 'tsundere' as const },
+    { speaker: '沐芯兰（真身）', text: '"...既...既然你有那个东西..."', emotion: 'tsundere' as const },
+  ],
+  
+  // 免疫束缚时的嘲笑（第一阶段）
+  bind_immune_phase1: [
+    { speaker: '茉莉(?)', text: '"哎呀呀~想用丝线束缚本小姐？你是不是搞错了什么？"', emotion: 'arrogant' as const },
+    { speaker: '茉莉(?)', text: '"束缚？噗~这种小把戏对我可没用哦~♡"', emotion: 'arrogant' as const },
+    { speaker: '茉莉(?)', text: '"就凭这点程度就想困住我？真是天真的小垃圾呢~"', emotion: 'arrogant' as const },
+    { speaker: '茉莉(?)', text: '"我可是操纵丝线的专家，你这是班门弄斧呢~"', emotion: 'arrogant' as const },
+  ],
+  
+  // 免疫束缚时的嘲笑（第二阶段）
+  bind_immune_phase2: [
+    { speaker: '꧁༺茉莉༻꧂', text: '"束缚？你在开玩笑吗？"', emotion: 'angry' as const },
+    { speaker: '꧁༺茉莉༻꧂', text: '"想困住女王？你配吗？"', emotion: 'angry' as const },
+    { speaker: '꧁༺茉莉༻꧂', text: '"这种低级手段...简直是侮辱。"', emotion: 'angry' as const },
+    { speaker: '꧁༺茉莉༻꧂', text: '"我的技术可不是你这种杂鱼能理解的。"', emotion: 'angry' as const },
+  ],
+  
+  // 免疫束缚时的嘲笑（第三阶段）
+  bind_immune_phase3: [
+    { speaker: '沐芯兰（真身）', text: '"哼...别、别想用这种手段...（轻松挣脱）"', emotion: 'tsundere' as const },
+    { speaker: '沐芯兰（真身）', text: '"就算是真身...我也不会被这种东西困住的！"', emotion: 'tsundere' as const },
+    { speaker: '沐芯兰（真身）', text: '"（小声）...虽然很虚弱，但束缚还是免疫的..."', emotion: 'weak' as const },
   ],
 };
 
@@ -127,6 +160,10 @@ export const bossState = reactive<BossState>({
 export const currentDialogue = ref<BossDialogue | null>(null);
 export const dialogueQueue = ref<BossDialogue[]>([]);
 export const isShowingDialogue = ref(false);
+
+// 对话自动播放定时器
+let dialogueAutoPlayTimer: number | null = null;
+const DIALOGUE_DISPLAY_DURATION = 2500; // 每句对话显示2.5秒
 
 // ==================== BOSS检测函数 ====================
 /**
@@ -172,19 +209,46 @@ export function resetBossState(): void {
 
 // ==================== 对话系统 ====================
 /**
- * 将对话加入队列
+ * 清空对话队列并停止自动播放
  */
-export function queueDialogues(dialogues: BossDialogue[]): void {
+export function clearDialogueQueue(): void {
+  if (dialogueAutoPlayTimer !== null) {
+    window.clearTimeout(dialogueAutoPlayTimer);
+    dialogueAutoPlayTimer = null;
+  }
+  dialogueQueue.value = [];
+  isShowingDialogue.value = false;
+  currentDialogue.value = null;
+}
+
+/**
+ * 将对话加入队列（可选择是否打断当前对话）
+ * @param dialogues 对话数组
+ * @param interrupt 是否打断当前对话（默认true，清空队列后显示新对话）
+ */
+export function queueDialogues(dialogues: BossDialogue[], interrupt: boolean = true): void {
+  if (interrupt) {
+    // 打断模式：清空队列，立即显示新对话
+    clearDialogueQueue();
+  }
+  
   dialogueQueue.value.push(...dialogues);
+  
   if (!isShowingDialogue.value) {
     showNextDialogue();
   }
 }
 
 /**
- * 显示下一条对话
+ * 显示下一条对话（并启动自动播放定时器）
  */
 export function showNextDialogue(): void {
+  // 清除之前的定时器
+  if (dialogueAutoPlayTimer !== null) {
+    window.clearTimeout(dialogueAutoPlayTimer);
+    dialogueAutoPlayTimer = null;
+  }
+  
   if (dialogueQueue.value.length === 0) {
     isShowingDialogue.value = false;
     currentDialogue.value = null;
@@ -193,13 +257,92 @@ export function showNextDialogue(): void {
   
   isShowingDialogue.value = true;
   currentDialogue.value = dialogueQueue.value.shift() || null;
+  
+  // 启动自动播放定时器：3秒后自动显示下一条
+  dialogueAutoPlayTimer = window.setTimeout(() => {
+    showNextDialogue();
+  }, DIALOGUE_DISPLAY_DURATION);
 }
 
 /**
- * 跳过当前对话
+ * 跳过当前对话（立即显示下一条）
  */
 export function skipDialogue(): void {
   showNextDialogue();
+}
+
+/**
+ * 获取指定阶段的对话数组
+ * @param phase 当前阶段
+ * @param type 对话类型：'lockHp' 锁血对话, 'transition' 转阶段对话, 'entry' 入场对话, 'battle' 战斗对话
+ */
+export function getPhaseDialogues(phase: 1 | 2 | 3, type: 'lockHp' | 'transition' | 'entry' | 'battle'): BossDialogue[] | null {
+  switch (type) {
+    case 'lockHp':
+      if (phase === 1) return MUXINLAN_DIALOGUES.phase1_lockHp;
+      if (phase === 2) return MUXINLAN_DIALOGUES.phase2_lockHp;
+      return null;
+    case 'transition':
+      if (phase === 1) return MUXINLAN_DIALOGUES.phase1_to_2;
+      if (phase === 2) return MUXINLAN_DIALOGUES.phase2_to_3;
+      return null;
+    case 'entry':
+      if (phase === 1) return MUXINLAN_DIALOGUES.phase1_entry;
+      return null;
+    case 'battle':
+      if (phase === 1) return MUXINLAN_DIALOGUES.phase1_battle;
+      if (phase === 2) return MUXINLAN_DIALOGUES.phase2_battle;
+      if (phase === 3) return MUXINLAN_DIALOGUES.phase3_battle;
+      return null;
+    default:
+      return null;
+  }
+}
+
+/**
+ * 获取随机锁血对话
+ */
+export function getLockHpDialogue(phase: 1 | 2 | 3): BossDialogue | null {
+  let dialogues: BossDialogue[];
+  
+  switch (phase) {
+    case 1:
+      dialogues = MUXINLAN_DIALOGUES.phase1_lockHp;
+      break;
+    case 2:
+      dialogues = MUXINLAN_DIALOGUES.phase2_lockHp;
+      break;
+    case 3:
+      // 第三阶段没有锁血对话
+      return null;
+    default:
+      return null;
+  }
+  
+  return dialogues[Math.floor(Math.random() * dialogues.length)];
+}
+
+/**
+ * 获取随机束缚免疫嘲笑对话
+ */
+export function getBindImmuneDialogue(phase: 1 | 2 | 3): BossDialogue | null {
+  let dialogues: BossDialogue[];
+  
+  switch (phase) {
+    case 1:
+      dialogues = MUXINLAN_DIALOGUES.bind_immune_phase1;
+      break;
+    case 2:
+      dialogues = MUXINLAN_DIALOGUES.bind_immune_phase2;
+      break;
+    case 3:
+      dialogues = MUXINLAN_DIALOGUES.bind_immune_phase3;
+      break;
+    default:
+      return null;
+  }
+  
+  return dialogues[Math.floor(Math.random() * dialogues.length)];
 }
 
 /**
@@ -324,21 +467,12 @@ export function shouldTransitionPhase(
 
 /**
  * 执行阶段转换
+ * 注意：转换对话已在app.vue的handleBossPhaseTransition中统一处理，这里不再重复播放
  */
 export function executePhaseTransition(nextPhase: 1 | 2 | 3): void {
-  const currentPhase = bossState.currentPhase;
   bossState.phaseTransitioning = true;
   
-  // 播放转换对话
-  if (currentPhase === 1 && nextPhase === 2) {
-    queueDialogues(MUXINLAN_DIALOGUES.phase1_to_2);
-  } else if (currentPhase === 1 && nextPhase === 3) {
-    // 使用勋章跳过第二阶段
-    queueDialogues(MUXINLAN_DIALOGUES.medal_trigger);
-  } else if (currentPhase === 2 && nextPhase === 3) {
-    queueDialogues(MUXINLAN_DIALOGUES.phase2_to_3);
-  }
-  
+  // 转换对话已在app.vue中播放，这里只处理状态更新
   // 更新阶段
   bossState.currentPhase = nextPhase;
   bossState.dialogueIndex = 0; // 重置第三阶段对话索引

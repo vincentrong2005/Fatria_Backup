@@ -8,6 +8,12 @@
           <span class="gold-label">学园金币</span>
           <span class="gold-value">{{ goldCoins }}</span>
         </div>
+        <button
+          v-if="!isSpecialBattleUnlocked"
+          class="special-battle-unlock"
+          type="button"
+          @click="unlockSpecialBattle"
+        ></button>
       </div>
     </div>
 
@@ -113,7 +119,7 @@
 
       <!-- 消耗品 -->
       <div v-if="activeCategory === 'consumables'" class="item-section">
-        <div class="sub-category" v-for="subCat in consumableSubCategories" :key="subCat.type">
+        <div class="sub-category" v-for="subCat in visibleConsumableSubCategories" :key="subCat.type">
           <h4 class="sub-title consumable-title">
             <i :class="subCat.icon"></i>
             {{ subCat.name }}
@@ -209,7 +215,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 
 const props = defineProps<{
   characterData: any;
@@ -226,6 +232,25 @@ const activeCategory = ref('equipment');
 // 选中的物品
 const selectedItem = ref<any>(null);
 const purchaseQuantity = ref(1);
+
+const isSpecialBattleUnlocked = ref(false);
+
+onMounted(() => {
+  try {
+    isSpecialBattleUnlocked.value = localStorage.getItem('shop_unlock_special_battle') === '1';
+  } catch {
+    isSpecialBattleUnlocked.value = false;
+  }
+});
+
+function unlockSpecialBattle() {
+  isSpecialBattleUnlocked.value = true;
+  try {
+    localStorage.setItem('shop_unlock_special_battle', '1');
+  } catch {
+    // ignore
+  }
+}
 
 // 分类列表（移除礼物）
 const categories = [
@@ -481,7 +506,20 @@ const consumableSubCategories = [
       { id: 'con_p_6', name: '高级潜力觉醒药', icon: 'fas fa-sun', price: 22000, category: 'consumable', combatOnly: false, effectText: '潜力+0.3', effect: { permanent: { '_潜力': 0.3 } }, description: '永久提升0.3点潜力值（传说级）' },
     ]
   },
+  {
+    type: 'special_battle',
+    name: '特殊战斗道具',
+    icon: 'fas fa-medal',
+    items: [
+      { id: 'con_s_medal_muxinlan', name: '刻有沐芯兰名字的三好学生荣誉勋章', icon: 'fas fa-medal', price: 99999999999999, category: 'consumable', combatOnly: true, effectText: '跳过沐芯兰第二阶段', effect: {}, description: '仅在与沐芯兰的战斗中可用：第一阶段使用后，将在阶段转换时跳过第二阶段，直接进入第三阶段。' },
+    ]
+  },
 ];
+
+const visibleConsumableSubCategories = computed(() => {
+  if (isSpecialBattleUnlocked.value) return consumableSubCategories;
+  return consumableSubCategories.filter(sc => sc.type !== 'special_battle');
+});
 
 // 选择物品
 function selectItem(item: any) {
@@ -591,7 +629,7 @@ async function purchaseItem() {
       }
     } else if (item.category === 'consumable') {
       // 消耗品类（使用name作为key）
-      const itemKey = item.name;
+      const itemKey = item.id === 'con_s_medal_muxinlan' ? 'honor_medal_muxinlan' : item.name;
       const existing = mvuData.stat_data.物品系统.背包[itemKey];
       
       if (existing) {
@@ -600,7 +638,7 @@ async function purchaseItem() {
         const consumableData: any = {
           类型: '消耗品',
           等级: 'C',
-          描述: item.description,
+          描述: item.id === 'con_s_medal_muxinlan' ? '刻有沐芯兰名字的三好学生荣誉勋章' : item.description,
           战斗用品: item.combatOnly || false,
           数量: quantity,
         };
@@ -678,6 +716,24 @@ function getSlotType(slot: string): "主装备" | "副装备" | "饰品" | "特�
 
 .shop-header {
   margin-bottom: 16px;
+  position: relative;
+}
+
+.special-battle-unlock {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 20px;
+  height: 20px;
+  border: none;
+  background: transparent;
+  opacity: 0.08;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.special-battle-unlock:hover {
+  opacity: 0.2;
 }
 
 .gold-card {
@@ -688,6 +744,7 @@ function getSlotType(slot: string): "主装备" | "副装备" | "饰品" | "特�
   background: linear-gradient(135deg, rgba(251, 191, 36, 0.25), rgba(251, 191, 36, 0.08));
   border: 1px solid rgba(251, 191, 36, 0.4);
   border-radius: 16px;
+  position: relative;
   backdrop-filter: blur(10px);
   
   > i {

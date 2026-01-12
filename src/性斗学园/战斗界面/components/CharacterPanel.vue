@@ -129,12 +129,31 @@ const zapIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" 
 }
 
 .character-name {
-  font-size: 1rem;
+  font-size: 0.875rem;
   font-weight: 700;
   color: rgba(255, 255, 255, 0.9);
   margin-bottom: 0.75rem;
   text-align: center;
+  word-break: break-word;
+  line-height: 1.2;
+  max-width: 100%;
   
+  // 小屏手机（<375px）
+  @media (max-width: 374px) {
+    font-size: 0.75rem;
+  }
+  
+  // 中等手机（375px-640px）
+  @media (min-width: 375px) and (max-width: 640px) {
+    font-size: 0.875rem;
+  }
+  
+  // 平板（641px-1023px）
+  @media (min-width: 641px) and (max-width: 1023px) {
+    font-size: 1rem;
+  }
+  
+  // 桌面（>=1024px）
   @media (min-width: 1024px) {
     font-size: 1.25rem;
     margin-bottom: 1rem;

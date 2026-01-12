@@ -56,8 +56,13 @@
     </main>
 
     <!-- BOSS文字特效 -->
-    <div v-if="bossText" class="boss-text-overlay" :class="{ active: bossText }">
-      {{ bossText }}
+    <div
+      v-if="bossOverlayText"
+      :key="bossDialogueKey"
+      class="boss-text-overlay active"
+      @click="handleBossTextClick"
+    >
+      {{ bossOverlayText }}
     </div>
 
     <!-- BOSS阶段转换特效 -->
@@ -391,8 +396,9 @@ const enemyBindSource = ref<'player' | 'enemy' | null>(null); // 敌人束缚的
 const isBossItemsDisabled = ref<boolean>(false);
 const isBossSurrenderDisabled = ref<boolean>(false);
 
-// BOSS文字特效状态
-const bossText = ref<string>('');
+// BOSS对话显示状态
+const bossOverlayText = ref<string>('');
+const bossDialogueKey = ref<number>(0); // 用于强制重新创建DOM元素，让动画重新播放
 const sealCanvas = ref<HTMLCanvasElement | null>(null);
 
 // BOSS阶段转换状态
@@ -410,43 +416,30 @@ const playerPortraitInput = ref<HTMLInputElement | null>(null);
 const cgImageUrl = ref<string | null>(null);
 const cgDescription = ref<string>('');
 
-// ================= BOSS文字特效系统 =================
-// 显示BOSS文字特效（屏幕中央大字）
-type BossTextTask = { text: string; duration: number; delay: number };
-
-const bossTextQueue: BossTextTask[] = [];
-let bossTextIsPlaying = false;
-let bossTextShowTimer: number | null = null;
-let bossTextHideTimer: number | null = null;
-
-function playNextBossText() {
-  if (bossTextIsPlaying) return;
-  const task = bossTextQueue.shift();
-  if (!task) return;
-
-  const BOSS_TEXT_ANIMATION_DURATION_MS = 3000;
-  const effectiveDuration = Math.max(task.duration, BOSS_TEXT_ANIMATION_DURATION_MS);
-
-  bossTextIsPlaying = true;
-
-  if (bossTextShowTimer !== null) window.clearTimeout(bossTextShowTimer);
-  if (bossTextHideTimer !== null) window.clearTimeout(bossTextHideTimer);
-
-  bossTextShowTimer = window.setTimeout(() => {
-    bossText.value = task.text;
-    // 自动隐藏文字：必须至少覆盖完整动画，否则会看不到淡出阶段
-    bossTextHideTimer = window.setTimeout(() => {
-      bossText.value = '';
-      bossTextIsPlaying = false;
-      playNextBossText();
-    }, effectiveDuration);
-  }, task.delay);
+// ================= BOSS对话显示系统 =================
+// 点击跳过当前对话
+function handleBossTextClick() {
+  if (BossSystem.isShowingDialogue.value) {
+    BossSystem.skipDialogue();
+  }
 }
 
-function showBossText(text: string, duration: number = 3000, delay: number = 0) {
-  bossTextQueue.push({ text, duration, delay });
-  playNextBossText();
-}
+// 将bossSystem.ts的对话直接映射到淡入淡出文字层
+watch(
+  () => [BossSystem.isShowingDialogue.value, BossSystem.currentDialogue.value],
+  () => {
+    if (BossSystem.isShowingDialogue.value && BossSystem.currentDialogue.value) {
+      const d = BossSystem.currentDialogue.value;
+      // 只显示对话文本，不显示说话人
+      bossOverlayText.value = d.text;
+      // 更新key强制Vue重新创建DOM元素，让动画重新播放
+      bossDialogueKey.value++;
+    } else {
+      bossOverlayText.value = '';
+    }
+  },
+  { immediate: true, deep: true }
+);
 
 // 粒子封印系统
 interface Particle {
@@ -822,7 +815,7 @@ async function loadFromMvu() {
           // 使用itemId作为名称（因为背包的key就是物品名称）
           const item: Item = {
             id: itemId,
-            name: itemId, // 直接使用itemId作为名称
+            name: itemName, // 显示用名称（优先使用描述里提取的名称）
             description: itemData?.描述 || '战斗用品',
             quantity: quantity,
             staminaRestore: itemData?.耐力增加,
@@ -943,12 +936,8 @@ async function loadEnemyFromMvuData(data: any, maxClimaxCount: number) {
     player.value.stats.maxClimaxCount = bossClimaxLimit;
     enemy.value.stats.maxClimaxCount = bossClimaxLimit;
     
-    // 添加入场对话
+    // 入场对话已在BossSystem.initMuxinlanBoss()中通过queueDialogues播放
     addLog(`【特殊战斗】沐芯兰BOSS战开始！`, 'system', 'critical');
-    showBossText('哎呀？这不是那个新来的小可怜吗？怎么如今有空来找姐姐玩了♡？', 2500, 2000);
-    setTimeout(() => {
-      showBossText('今天...就让你见识一下什么叫做真正的绝望吧，垃圾~', 2500, 2000);
-    }, 2800);
     
     console.info(`[战斗界面] BOSS战初始化完成: ${bossDisplayName}, 高潮次数上限: ${bossClimaxLimit}`);
   }
@@ -1395,6 +1384,17 @@ async function applySkillEffectsFromMvu(skillId: string, isPlayerSkill: boolean)
           logs.push(`${player.value.name} 被束缚了 ${duration} 回合，无法行动！`);
           console.info(`[束缚] ★★★ 设置玩家束缚: playerBoundTurns=${playerBoundTurns.value}`);
         } else {
+          // 检查是否是沐芯兰BOSS战，如果是则免疫束缚
+          if (BossSystem.bossState.isBossFight && BossSystem.bossState.bossId === 'muxinlan') {
+            const immuneDialogue = BossSystem.getBindImmuneDialogue(BossSystem.bossState.currentPhase);
+            if (immuneDialogue) {
+              BossSystem.queueDialogues([immuneDialogue]);
+            }
+            logs.push(`${enemy.value.name} 免疫了束缚效果！`);
+            console.info(`[束缚] 沐芯兰BOSS免疫束缚`);
+            continue;
+          }
+          
           enemyBoundTurns.value = duration;
           enemyBindSource.value = isPlayerSkill ? 'player' : 'enemy';
           logs.push(`${enemy.value.name} 被束缚了 ${duration} 回合，无法行动！`);
@@ -2008,10 +2008,20 @@ function handlePlayerSkill(skill: Skill) {
                   const dur = (effect as any)['持续回合数'] || 0;
                   const targetEnemy = (effect as any)['是否作用敌人'] !== false; // 默认true
                   if (type === '束缚' && dur > 0 && targetEnemy) {
-                    // 玩家使用技能，效果作用于敌人 -> 设置敌人束缚
-                    enemyBoundTurns.value = dur;
-                    enemyBindSource.value = 'player';
-                    addLog(`${nextEnemy.name} 被束缚了 ${dur} 回合！`, 'system', 'info');
+                    // 检查是否是沐芯兰BOSS战，如果是则免疫束缚
+                    if (BossSystem.bossState.isBossFight && BossSystem.bossState.bossId === 'muxinlan') {
+                      const immuneDialogue = BossSystem.getBindImmuneDialogue(BossSystem.bossState.currentPhase);
+                      if (immuneDialogue) {
+                        BossSystem.queueDialogues([immuneDialogue]);
+                      }
+                      addLog(`${nextEnemy.name} 免疫了束缚效果！`, 'system', 'info');
+                      console.info(`[束缚] 沐芯兰BOSS免疫束缚（玩家技能）`);
+                    } else {
+                      // 玩家使用技能，效果作用于敌人 -> 设置敌人束缚
+                      enemyBoundTurns.value = dur;
+                      enemyBindSource.value = 'player';
+                      addLog(`${nextEnemy.name} 被束缚了 ${dur} 回合！`, 'system', 'info');
+                    }
                   }
                 }
               }
@@ -2080,6 +2090,58 @@ async function handlePlayerItem(item: Item) {
       'system',
       'info',
     );
+  }
+
+  // ==================== 特殊道具：三好学生勋章（跳过沐芯兰第二阶段） ====================
+  if (item.id === 'honor_medal_muxinlan') {
+    if (!BossSystem.bossState.isBossFight || BossSystem.bossState.bossId !== 'muxinlan') {
+      addLog('该道具只能在与沐芯兰的战斗中使用。', 'system', 'info');
+      // 更新状态
+      player.value = nextPlayer;
+      enemy.value = nextEnemy;
+      activeMenu.value = 'main';
+      await saveToMvu();
+      await reloadStatusFromMvu();
+      return;
+    }
+
+    if (BossSystem.bossState.currentPhase !== 1) {
+      addLog('该道具只能在沐芯兰第一阶段使用。', 'system', 'info');
+      // 更新状态
+      player.value = nextPlayer;
+      enemy.value = nextEnemy;
+      activeMenu.value = 'main';
+      await saveToMvu();
+      await reloadStatusFromMvu();
+      return;
+    }
+
+    if (BossSystem.bossState.hasUsedMedal) {
+      addLog('该道具已经使用过了。', 'system', 'info');
+      // 更新状态
+      player.value = nextPlayer;
+      enemy.value = nextEnemy;
+      activeMenu.value = 'main';
+      await saveToMvu();
+      await reloadStatusFromMvu();
+      return;
+    }
+
+    const ok = BossSystem.useHonorMedal();
+    if (ok) {
+      addLog('你使用了【三好学生荣誉勋章】！沐芯兰的第二阶段将被跳过。', 'system', 'critical');
+    } else {
+      addLog('该道具使用失败。', 'system', 'info');
+    }
+
+    // 更新状态
+    player.value = nextPlayer;
+    enemy.value = nextEnemy;
+    activeMenu.value = 'main';
+    await saveToMvu();
+    await reloadStatusFromMvu();
+    addLog(`--- 继续 ${nextPlayer.name} 的回合 ---`, 'system', 'info');
+    return;
   }
 
   // 应用物品效果
@@ -2345,9 +2407,12 @@ function handleEnemyTurn() {
         // 记录战斗日志
         addLog(`${nextEnemy.name} 使用了 ${skill.name}！`, 'enemy', 'info');
         
-        // 显示技能描述文字（BOSS战时显示）
-        if (BossSystem.bossState.isBossFight && skill.data.description) {
-          showBossText(skill.data.description, 2000);
+        // BOSS战时：敌人使用技能后触发随机战斗对话
+        if (BossSystem.bossState.isBossFight && BossSystem.bossState.bossId === 'muxinlan') {
+          const battleDialogue = BossSystem.getRandomBattleDialogue(BossSystem.bossState.currentPhase);
+          if (battleDialogue) {
+            BossSystem.queueDialogues([battleDialogue]);
+          }
         }
 
         if (result.isDodged) {
@@ -2853,18 +2918,6 @@ function lockHealthAndChangeAvatar(nextPhase: 1 | 2 | 3) {
   console.info(`[战斗界面] 已锁血并更换立绘: ${newDisplayName}`);
 }
 
-// 步骤2：显示BOSS文字（会自动排队）
-function showPhaseTransitionText(nextPhase: 1 | 2 | 3) {
-  if (nextPhase === 2) {
-    showBossText('不错，有两下子么小东西，毕竟这样才能让本小姐打起兴趣~♡', 3000);
-    setTimeout(() => {
-      showBossText('性斗就好好性斗哦~♡，背包给你没收了哦，垃圾就是垃圾，没了背包就颓废了呢，杂鱼杂鱼♡', 3000);
-    }, 3200);
-  } else if (nextPhase === 3) {
-    showBossText('等...等一下！这不应该是这样的！我的茉莉！', 3000);
-  }
-}
-
 // 步骤3：执行转阶段逻辑（在文字播放完成后调用）
 async function executePhaseTransitionLogic(nextPhase: 1 | 2 | 3) {
   const currentPhase = BossSystem.bossState.currentPhase;
@@ -3012,17 +3065,35 @@ async function executePhaseTransitionLogic(nextPhase: 1 | 2 | 3) {
 
 // 完整的阶段转换流程（协调三个步骤）
 async function handleBossPhaseTransition(nextPhase: 1 | 2 | 3) {
+  const currentPhase = BossSystem.bossState.currentPhase;
+  
   // 步骤1：锁血+换图（立即执行）
   lockHealthAndChangeAvatar(nextPhase);
   
-  // 步骤2：显示文字（立即开始，但会排队播放）
-  showPhaseTransitionText(nextPhase);
+  // 步骤2：播放锁血对话 + 转阶段对话（使用bossSystem.ts的对话系统）
+  // 先播放lockHp对话，再播放phase_to对话
+  const allDialogues: BossSystem.BossDialogue[] = [];
   
-  // 步骤3：等待文字播放完成后执行转阶段逻辑
-  // 计算等待时间：第二阶段有两句话，每句3秒动画，间隔3.2秒 = 3000 + 3200 + 3000 = 9200ms
-  // 第三阶段一句话，3秒动画 = 3000ms
-  // 额外增加500ms缓冲确保文字完全播放完
-  const waitTime = nextPhase === 2 ? 9700 : 3500;
+  // 添加锁血对话
+  const lockHpDialogues = BossSystem.getPhaseDialogues(currentPhase, 'lockHp');
+  if (lockHpDialogues) {
+    allDialogues.push(...lockHpDialogues);
+  }
+  
+  // 添加转阶段对话
+  const transitionDialogues = BossSystem.getPhaseDialogues(currentPhase, 'transition');
+  if (transitionDialogues) {
+    allDialogues.push(...transitionDialogues);
+  }
+  
+  // 播放所有对话
+  if (allDialogues.length > 0) {
+    BossSystem.queueDialogues(allDialogues);
+  }
+  
+  // 步骤3：等待对话播放完成后执行转阶段逻辑
+  // 计算等待时间：每句对话2.5秒
+  const waitTime = allDialogues.length * 2500 + 500; // 额外500ms缓冲
   
   setTimeout(async () => {
     await executePhaseTransitionLogic(nextPhase);
@@ -3063,7 +3134,7 @@ async function processClimaxAfterLLM(targetIsEnemy: boolean) {
     );
     
     if (transitionCheck.shouldTransition) {
-      // 触发阶段转换
+      // 触发阶段转换（锁血对话和转阶段对话已在handleBossPhaseTransition中统一处理）
       await handleBossPhaseTransition(transitionCheck.nextPhase);
       // 阶段转换后，重置快感但不增加高潮次数（锁血效果）
       enemy.value.stats.currentPleasure = 0;
@@ -4206,7 +4277,7 @@ onMounted(async () => {
   font-family: "Courier New", monospace;
   
   &.active {
-    animation: bossTextSlam 3s ease-out forwards;
+    animation: bossTextSlam 2.5s ease-out forwards;
   }
 }
 
