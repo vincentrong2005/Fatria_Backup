@@ -947,7 +947,7 @@ async function loadEnemyFromMvuData(data: any, maxClimaxCount: number) {
     addLog(`【特殊战斗】沐芯兰BOSS战开始！`, 'system', 'critical');
     showBossText('哎呀？这不是那个新来的小可怜吗？怎么如今有空来找姐姐玩了♡？', 2500, 2000);
     setTimeout(() => {
-      showBossText('今天...就让你见识一下什么叫做真正的绝望吧~♡，你这只~杂~鱼~', 2500, 2000);
+      showBossText('今天...就让你见识一下什么叫做真正的绝望吧，垃圾~', 2500, 2000);
     }, 2800);
     
     console.info(`[战斗界面] BOSS战初始化完成: ${bossDisplayName}, 高潮次数上限: ${bossClimaxLimit}`);
@@ -967,8 +967,12 @@ async function loadEnemyFromMvuData(data: any, maxClimaxCount: number) {
       
       console.info(`[战斗界面] 名称解析: ${enemyName} -> ${fullEnemyName}`);
       
-      // 设置敌人立绘 URL（使用完整名称生成 GitHub 路径）
-      enemy.value.avatarUrl = getEnemyPortraitUrl(fullEnemyName);
+      // 设置敌人立绘 URL（沐芯兰BOSS战使用分阶段立绘，其它敌人使用名称生成 GitHub 路径）
+      if (BossSystem.bossState.isBossFight && BossSystem.bossState.bossId === 'muxinlan') {
+        enemy.value.avatarUrl = BossSystem.getMuxinlanAvatarUrl(BossSystem.bossState.currentPhase);
+      } else {
+        enemy.value.avatarUrl = getEnemyPortraitUrl(fullEnemyName);
+      }
       console.info(`[战斗界面] 敌人立绘 URL: ${enemy.value.avatarUrl}`);
       
       if (presetData) {
@@ -1066,7 +1070,11 @@ async function loadEnemyFromMvuData(data: any, maxClimaxCount: number) {
         console.info(`[战斗界面] 数据库中未找到对手数据: ${enemyName}，使用MVU中的现有数据`);
         // 即使数据库中没有数据，也尝试设置立绘（使用解析后的完整名称）
         const fullEnemyName = resolveEnemyName(enemyName);
-        enemy.value.avatarUrl = getEnemyPortraitUrl(fullEnemyName);
+        if (BossSystem.bossState.isBossFight && BossSystem.bossState.bossId === 'muxinlan') {
+          enemy.value.avatarUrl = BossSystem.getMuxinlanAvatarUrl(BossSystem.bossState.currentPhase);
+        } else {
+          enemy.value.avatarUrl = getEnemyPortraitUrl(fullEnemyName);
+        }
         console.info(`[战斗界面] 敌人立绘 URL: ${enemy.value.avatarUrl}`);
         // 即使数据库中没有，也尝试加载技能
         if (typeof Mvu !== 'undefined') {
@@ -2827,7 +2835,7 @@ function lockHealthAndChangeAvatar(nextPhase: 1 | 2 | 3) {
   // 锁血：快感设为最大值-1，防止触发高潮
   enemy.value.stats.currentPleasure = enemy.value.stats.maxPleasure - 1;
   
-  // 立即更换头像和名称
+  // 立即更立绘和名称
   const newDisplayName = BossSystem.getMuxinlanDisplayName(nextPhase);
   const newAvatarUrl = BossSystem.getMuxinlanAvatarUrl(nextPhase);
   enemy.value.name = newDisplayName;
@@ -2842,7 +2850,7 @@ function lockHealthAndChangeAvatar(nextPhase: 1 | 2 | 3) {
     phaseTransitionEffect.value = null;
   }, 1500);
   
-  console.info(`[战斗界面] 已锁血并更换头像: ${newDisplayName}`);
+  console.info(`[战斗界面] 已锁血并更换立绘: ${newDisplayName}`);
 }
 
 // 步骤2：显示BOSS文字（会自动排队）
@@ -2850,7 +2858,7 @@ function showPhaseTransitionText(nextPhase: 1 | 2 | 3) {
   if (nextPhase === 2) {
     showBossText('不错，有两下子么小东西，毕竟这样才能让本小姐打起兴趣~♡', 3000);
     setTimeout(() => {
-      showBossText('性斗就好好性斗哦~♡，背包给你没收了哦，杂鱼就是杂鱼，没了背包就颓废了呢，杂鱼杂鱼♡', 3000);
+      showBossText('性斗就好好性斗哦~♡，背包给你没收了哦，垃圾就是垃圾，没了背包就颓废了呢，杂鱼杂鱼♡', 3000);
     }, 3200);
   } else if (nextPhase === 3) {
     showBossText('等...等一下！这不应该是这样的！我的茉莉！', 3000);
@@ -2879,7 +2887,7 @@ async function executePhaseTransitionLogic(nextPhase: 1 | 2 | 3) {
     const newEnemyData = enemyDbModule.getEnemyMvuData(newDataKey);
     
     if (newEnemyData) {
-      // 更新敌人显示名称和头像
+      // 更新敌人显示名称和立绘
       enemy.value.name = newDisplayName;
       enemy.value.avatarUrl = BossSystem.getMuxinlanAvatarUrl(nextPhase);
       

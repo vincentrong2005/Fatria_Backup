@@ -30,17 +30,17 @@ export interface BossDialogue {
 export const MUXINLAN_DIALOGUES = {
   // 第一阶段入场
   phase1_entry: [
-    { speaker: '茉莉(?)', text: '"哎呀呀~是哪位不自量力的杂鱼前辈呢？"', emotion: 'arrogant' as const },
+    { speaker: '茉莉(?)', text: '"哎呀呀~是哪位不自量力的垃圾呢？"', emotion: 'arrogant' as const },
     { speaker: '茉莉(?)', text: '"让我猜猜...又是一个想挑战女王大人的蠢货吧？"', emotion: 'arrogant' as const },
     { speaker: '茉莉(?)', text: '"好吧好吧~既然你这么想被玩弄，那我就勉为其难地陪你玩玩吧♡"', emotion: 'arrogant' as const },
   ],
   
   // 第一阶段战斗中（随机）
   phase1_battle: [
-    { speaker: '茉莉(?)', text: '"哎呀呀，前辈的攻击是开了自动避让模式吗？真是让人发笑呢~♡"', emotion: 'arrogant' as const },
-    { speaker: '茉莉(?)', text: '"就这？就这点程度？杂鱼就是杂鱼呢~"', emotion: 'arrogant' as const },
+    { speaker: '茉莉(?)', text: '"哎呀呀，小垃圾的攻击是开了自动避让模式吗？真是让人发笑呢~♡"', emotion: 'arrogant' as const },
+    { speaker: '茉莉(?)', text: '"就这？就这点程度？杂鱼就是杂鱼呢~多练几年再来挑战本小姐吧"', emotion: 'arrogant' as const },
     { speaker: '茉莉(?)', text: '"再努力一点嘛~不然我都要睡着了呢~"', emotion: 'arrogant' as const },
-    { speaker: '茉莉(?)', text: '"前辈真的有在认真吗？还是说...这就是你的全力了？噗~"', emotion: 'arrogant' as const },
+    { speaker: '茉莉(?)', text: '"小东西你真的有在认真吗？还是说...这就是你的全力了？噗~"', emotion: 'arrogant' as const },
     { speaker: '茉莉(?)', text: '"被我的丝线缠住了呢~接下来要怎么玩弄你好呢？"', emotion: 'arrogant' as const },
   ],
   
@@ -256,10 +256,10 @@ export function getMuxinlanDisplayName(phase: 1 | 2 | 3): string {
 }
 
 /**
- * 获取当前阶段的头像
+ * 获取当前阶段的立绘
  */
 export function getMuxinlanAvatarUrl(phase: 1 | 2 | 3): string {
-  return `https://raw.githubusercontent.com/vincentrong2005/Fatria/main/图片素材/性斗学园/头像/沐芯兰_${phase}.png`;
+  return `https://raw.githubusercontent.com/vincentrong2005/Fatria/main/图片素材/性斗学园/立绘/沐芯兰_${phase}.png`;
 }
 
 /**
