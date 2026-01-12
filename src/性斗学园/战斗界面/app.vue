@@ -1024,7 +1024,20 @@ async function loadEnemyFromMvuData(data: any, maxClimaxCount: number) {
             
             // 自动加载对手技能（使用解析后的完整名称）
             // 重要：如果数据库中存在该对手技能，则直接覆盖MVU中的技能
-            const enemySkills = enemySkillDbModule.getEnemySkills(enemyName, fullEnemyName);
+            // 特殊处理：艾格妮丝根据玩家性别选择技能池
+            let skillLookupName = fullEnemyName;
+            if (fullEnemyName === '艾格妮丝' || fullEnemyName.includes('艾格妮丝')) {
+              const playerGender = _.get(mvuData.stat_data, '角色基础.性别', '女');
+              if (playerGender === '男') {
+                skillLookupName = '艾格妮丝_男';
+                console.info(`[战斗界面] 艾格妮丝检测到男性玩家，使用男性技能池`);
+              } else {
+                skillLookupName = '艾格妮丝';
+                console.info(`[战斗界面] 艾格妮丝检测到女性/非二元玩家，使用女性技能池`);
+              }
+            }
+            
+            const enemySkills = enemySkillDbModule.getEnemySkills(enemyName, skillLookupName);
             if (enemySkills && enemySkills.length > 0) {
               console.info(`[战斗界面] 为对手 ${fullEnemyName} 加载技能:`, enemySkills.map((s: any) => s.name));
               const mvuSkills: Record<string, any> = {};
@@ -1075,7 +1088,20 @@ async function loadEnemyFromMvuData(data: any, maxClimaxCount: number) {
             
             // 尝试加载对手技能（使用解析后的完整名称）
             // 重要：如果数据库中存在该对手技能，则直接覆盖MVU中的技能
-            const enemySkills = enemySkillDbModule.getEnemySkills(enemyName, fullEnemyName);
+            // 特殊处理：艾格妮丝根据玩家性别选择技能池
+            let skillLookupName = fullEnemyName;
+            if (fullEnemyName === '艾格妮丝' || fullEnemyName.includes('艾格妮丝')) {
+              const playerGender = _.get(mvuData.stat_data, '角色基础.性别', '女');
+              if (playerGender === '男') {
+                skillLookupName = '艾格妮丝_男';
+                console.info(`[战斗界面] 艾格妮丝检测到男性玩家，使用男性技能池`);
+              } else {
+                skillLookupName = '艾格妮丝';
+                console.info(`[战斗界面] 艾格妮丝检测到女性/非二元玩家，使用女性技能池`);
+              }
+            }
+            
+            const enemySkills = enemySkillDbModule.getEnemySkills(enemyName, skillLookupName);
             if (enemySkills && enemySkills.length > 0) {
               console.info(`[战斗界面] 为对手 ${fullEnemyName} 加载技能:`, enemySkills.map((s: any) => s.name));
               const mvuSkills: Record<string, any> = {};
