@@ -601,12 +601,126 @@ const xueLiKeLinMuXiErDeConfig: CharacterCGConfig = {
   },
 };
 
+// 美咲绫的CG配置
+const meiSuiLingConfig: CharacterCGConfig = {
+  characterName: '美咲绫',
+  male: {
+    defeat: [
+      {
+        id: 'bondage_smell_edging',
+        name: '美咲绫-束缚气味寸止事件',
+        description: '你被美咲绫击败，做为惩罚，她将你束缚在床，用发丝绑住你的四肢，屁股坐在你的脸上，将小穴贴紧你的嘴巴，让你只能被迫闻嗅她的气息，舔舐她的小穴，她再控制一缕发丝扎入你的尿道，控制射精（寸止），让你坠入她的发丝气味地狱中',
+        images: ['美咲绫-束缚气味寸止事件-1.png', '美咲绫-束缚气味寸止事件-2.png', '美咲绫-束缚气味寸止事件-3.png'],
+      },
+      {
+        id: 'brainwash_transformation',
+        name: '美咲绫-洗脑改造事件',
+        description: '你被美咲绫击败，做为惩罚，她褪下和服，露出白皙的身子（有足袋），与你水乳相容，你感受着她的气息与柔软，突然，她操控发丝钻入你的双耳，对你实施洗脑改造，让你堕落为她的奴隶（你被她的身躯包裹，沉溺在她的乳肉气味之间，脸呈现阿黑颜状态，瞳孔变成心形）',
+        images: ['美咲绫-洗脑改造事件-1.png', '美咲绫-洗脑改造事件-2.png', '美咲绫-洗脑改造事件-3.png', '美咲绫-洗脑改造事件-4.png'],
+      },
+      {
+        id: 'tea_footjob_extraction',
+        name: '美咲绫-浇茶足交榨精事件',
+        description: '你被美咲绫击败，做为惩罚，她将你推在地上，自己坐在椅子上，将足袋套在你的肉棒上，玉足研磨着你的乳头，将茶水浇灌在被套了足袋的肉棒上，表情却无比温柔',
+        images: ['美咲绫-浇茶足交榨精事件-1.png', '美咲绫-浇茶足交榨精事件-2.png', '美咲绫-浇茶足交榨精事件-3.png', '美咲绫-浇茶足交榨精事件-4.png'],
+      },
+      {
+        id: 'smell_training_shoe_licking',
+        name: '美咲绫-气味调教舔鞋事件',
+        description: '你被美咲绫击败，做为惩罚，她在你的背后进行足交，用头发刺激乳头，手上拿着印着汗渍足印木履捂你的脸',
+        images: ['美咲绫-气味调教舔鞋事件-1.png', '美咲绫-气味调教舔鞋事件-2.png', '美咲绫-气味调教舔鞋事件-3.png'],
+      },
+      {
+        id: 'aphrodisiac_extraction',
+        name: '美咲绫-媚药榨精事件',
+        description: '你被美咲绫击败，做为惩罚，她坐在你的肉棒进行上下摩擦，用茶杯在你的嘴里面灌注媚药',
+        images: ['美咲绫-媚药榨精事件-1.png', '美咲绫-媚药榨精事件-2.png'],
+      },
+      {
+        id: 'paizuri_event',
+        name: '美咲绫-乳交事件',
+        description: '你被美咲绫击败，做为惩罚，她会用乳交让你沉溺在她的怀抱中',
+        images: ['美咲绫-乳交事件-1.png', '美咲绫-乳交事件-2.png'],
+      },
+    ],
+    victory: [
+      {
+        id: 'sow_sex_victory',
+        name: '美咲绫-母猪做爱战胜事件',
+        description: '美咲绫被击败，露出了M的本色，露出了标准的母猪脸，被你用肉棒狠狠的操',
+        images: ['美咲绫-母猪做爱战胜事件-1.png', '美咲绫-母猪做爱战胜事件-2.png', '美咲绫-母猪做爱战胜事件-3.png', '美咲绫-母猪做爱战胜事件-4.png', '美咲绫-母猪做爱战胜事件-5.png'],
+      },
+      {
+        id: 'paizuri_victory',
+        name: '美咲绫-乳交战胜事件',
+        description: '你战胜了美咲绫，她会用乳交服侍您',
+        images: ['美咲绫-乳交战胜事件-1.png', '美咲绫-乳交战胜事件-2.png'],
+      },
+    ],
+  },
+  female: {
+    defeat: [
+      {
+        id: 'bondage_smell_sex',
+        name: '美咲绫-束缚气味做爱事件',
+        description: '你被美咲绫击败，做为惩罚，她将你束缚在床，用发丝绑住你的四肢，屁股坐在你的脸上，将小穴贴紧你的嘴巴，让你只能被迫闻嗅她的气息，舔舐她的小穴，她控制发丝轻抚你的大腿，同样舔舐你的小穴，让你坠入她的发丝气味地狱中',
+        images: ['美咲绫-束缚气味做爱事件-1.png', '美咲绫-束缚气味做爱事件-2.png', '美咲绫-束缚气味做爱事件-3.png'],
+      },
+      {
+        id: 'brainwash_transformation_female',
+        name: '美咲绫-洗脑改造事件',
+        description: '你被美咲绫击败，做为惩罚，她褪下和服（这个元素要呈现），露出白皙的身子（有足袋），与你水乳相容，你感受着她的气息与柔软，突然，她操控发丝钻入你的双耳，对你实施洗脑改造，让你堕落为她的奴隶，你被她的身躯包裹，沉溺在她的乳肉气味之间，脸呈现阿黑颜状态，瞳孔变成心形',
+        images: ['美咲绫-洗脑改造事件-1.png', '美咲绫-洗脑改造事件-2.png', '美咲绫-洗脑改造事件-3.png', '美咲绫-洗脑改造事件-4.png'],
+      },
+      {
+        id: 'tea_footjob',
+        name: '美咲绫-浇茶足交事件',
+        description: '你被美咲绫击败，做为惩罚，她将你推在地上，自己坐在椅子上，将足袋放在你的脸上上，玉足研磨着你的乳头和小穴，将茶水浇灌在你的身体上，表情无比温柔',
+        images: ['美咲绫-浇茶足交事件-1.png', '美咲绫-浇茶足交事件-2.png', '美咲绫-浇茶足交事件-3.png'],
+      },
+      {
+        id: 'smell_training_shoe_licking_female',
+        name: '美咲绫-气味调教舔鞋事件',
+        description: '你被美咲绫击败，做为惩罚，她在你的背后进行足交，用头发刺激乳头，手上拿着印着汗渍足印木履捂你的脸',
+        images: ['美咲绫-气味调教舔鞋事件-1.png', '美咲绫-气味调教舔鞋事件-2.png', '美咲绫-气味调教舔鞋事件-3.png'],
+      },
+      {
+        id: 'aphrodisiac_event',
+        name: '美咲绫-媚药事件',
+        description: '你被美咲绫击败，做为惩罚，她用有汗渍的屁股与小穴在你的身体进行上下摩擦，用茶杯在你的嘴里面灌注媚药',
+        images: ['美咲绫-媚药事件.png'],
+      },
+      {
+        id: 'paizuri_event_female',
+        name: '美咲绫-乳交事件',
+        description: '你被美咲绫击败，做为惩罚，她会用乳交让你沉溺在她的怀抱中',
+        images: ['美咲绫-乳交事件-1.png', '美咲绫-乳交事件-2.png'],
+      },
+    ],
+    victory: [
+      {
+        id: 'sow_service_victory',
+        name: '美咲绫-母猪服侍战胜事件',
+        description: '美咲绫被击败，露出了M的本色，露出了标准的母猪脸，眼睛露出爱心，给你舔小穴，一脸母猪相',
+        images: ['美咲绫-母猪服侍战胜事件-1.png', '美咲绫-母猪服侍战胜事件-2.png'],
+      },
+      {
+        id: 'paizuri_victory_female',
+        name: '美咲绫-乳交战胜事件',
+        description: '你战胜了美咲绫，她会用乳交服侍您',
+        images: ['美咲绫-乳交战胜事件-1.png', '美咲绫-乳交战胜事件-2.png'],
+      },
+    ],
+  },
+};
+
 // 所有角色的CG配置
 export const CG_CONFIGS: CharacterCGConfig[] = [
   xingYeGuangConfig,
   aiLinHaiDeConfig,
   luNaLaKeDiSiConfig,
   xueLiKeLinMuXiErDeConfig,
+  meiSuiLingConfig,
 ];
 
 // 根据角色名称获取CG配置
