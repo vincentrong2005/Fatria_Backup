@@ -11,7 +11,7 @@
         <div class="quest-content">
           <div class="quest-title">{{ mainQuest.名称 }}</div>
           <div class="quest-desc">{{ mainQuest.描述 || '暂无描述' }}</div>
-          
+
           <div class="quest-meta">
             <div class="meta-item status" :class="getStatusClass(mainQuest.状态)">
               <i class="fas" :class="getStatusIcon(mainQuest.状态)"></i>
@@ -50,9 +50,9 @@
         <span class="quest-count">{{ sideQuestList.length }}</span>
       </div>
       <div class="quest-list">
-        <div 
-          class="quest-card side" 
-          v-for="quest in sideQuestList" 
+        <div
+          class="quest-card side"
+          v-for="quest in sideQuestList"
           :key="quest.name"
           :class="{ completed: quest.状态 === '已完成' }"
         >
@@ -62,7 +62,7 @@
           <div class="quest-content">
             <div class="quest-title">{{ quest.name }}</div>
             <div class="quest-desc">{{ quest.描述 || '暂无描述' }}</div>
-            
+
             <div class="quest-footer">
               <div class="meta-item status" :class="getStatusClass(quest.状态)">
                 <i class="fas" :class="getStatusIcon(quest.状态)"></i>
@@ -122,7 +122,7 @@ const sideQuestList = computed(() => {
   const quests = props.characterData.任务系统?.支线任务 || {};
   return Object.entries(quests).map(([name, data]: [string, any]) => ({
     name,
-    ...data
+    ...data,
   }));
 });
 
@@ -136,30 +136,30 @@ const hasQuests = computed(() => {
 
 function getStatusClass(status: string): string {
   const map: Record<string, string> = {
-    '进行中': 'active',
-    '已完成': 'completed',
-    '已失败': 'failed',
-    '已放弃': 'abandoned'
+    进行中: 'active',
+    已完成: 'completed',
+    已失败: 'failed',
+    已放弃: 'abandoned',
   };
   return map[status] || 'active';
 }
 
 function getStatusIcon(status: string): string {
   const map: Record<string, string> = {
-    '进行中': 'fa-spinner fa-pulse',
-    '已完成': 'fa-check',
-    '已失败': 'fa-times',
-    '已放弃': 'fa-ban'
+    进行中: 'fa-spinner fa-pulse',
+    已完成: 'fa-check',
+    已失败: 'fa-times',
+    已放弃: 'fa-ban',
   };
   return map[status] || 'fa-spinner fa-pulse';
 }
 
 function getTypeBadgeClass(type: string): string {
   const map: Record<string, string> = {
-    '日常': 'type-daily',
-    '特殊': 'type-special',
-    '限时': 'type-timed',
-    '隐藏': 'type-hidden'
+    日常: 'type-daily',
+    特殊: 'type-special',
+    限时: 'type-timed',
+    隐藏: 'type-hidden',
   };
   return map[type] || 'type-daily';
 }
@@ -202,11 +202,11 @@ function formatObjectiveValue(value: any): string {
   font-weight: 600;
   color: rgba(255, 255, 255, 0.8);
   margin-bottom: 12px;
-  
+
   i:first-child {
     color: #667eea;
   }
-  
+
   .quest-count {
     margin-left: auto;
     padding: 2px 8px;
@@ -216,20 +216,20 @@ function formatObjectiveValue(value: any): string {
     font-weight: 500;
     color: rgba(255, 255, 255, 0.6);
   }
-  
+
   &.collapsible {
     cursor: pointer;
     transition: color 0.2s;
-    
+
     &:hover {
       color: white;
     }
   }
-  
+
   .toggle-icon {
     transition: transform 0.2s;
     color: rgba(255, 255, 255, 0.4);
-    
+
     &.rotated {
       transform: rotate(180deg);
     }
@@ -243,15 +243,15 @@ function formatObjectiveValue(value: any): string {
   border: 1px solid rgba(255, 255, 255, 0.1);
   margin-bottom: 12px;
   overflow: hidden;
-  
+
   &.main {
     background: linear-gradient(135deg, rgba(102, 126, 234, 0.2), rgba(118, 75, 162, 0.1));
     border-color: rgba(102, 126, 234, 0.3);
   }
-  
+
   &.side {
     background: rgba(255, 255, 255, 0.03);
-    
+
     &.completed {
       opacity: 0.6;
     }
@@ -279,22 +279,22 @@ function formatObjectiveValue(value: any): string {
   border-radius: 6px;
   font-size: 10px;
   font-weight: 600;
-  
+
   &.type-daily {
     background: rgba(96, 165, 250, 0.2);
     color: #93c5fd;
   }
-  
+
   &.type-special {
     background: rgba(167, 139, 250, 0.2);
     color: #c4b5fd;
   }
-  
+
   &.type-timed {
     background: rgba(251, 191, 36, 0.2);
     color: #fcd34d;
   }
-  
+
   &.type-hidden {
     background: rgba(248, 113, 113, 0.2);
     color: #fca5a5;
@@ -332,29 +332,29 @@ function formatObjectiveValue(value: any): string {
   font-size: 11px;
   padding: 4px 10px;
   border-radius: 12px;
-  
+
   &.status {
     &.active {
       background: rgba(52, 211, 153, 0.15);
       color: #6ee7b7;
     }
-    
+
     &.completed {
       background: rgba(96, 165, 250, 0.15);
       color: #93c5fd;
     }
-    
+
     &.failed {
       background: rgba(248, 113, 113, 0.15);
       color: #fca5a5;
     }
-    
+
     &.abandoned {
       background: rgba(156, 163, 175, 0.15);
       color: #d1d5db;
     }
   }
-  
+
   &.deadline {
     background: rgba(251, 191, 36, 0.15);
     color: #fcd34d;
@@ -371,11 +371,11 @@ function formatObjectiveValue(value: any): string {
   font-size: 12px;
   color: #fcd34d;
   margin-bottom: 12px;
-  
+
   i {
     color: #fbbf24;
   }
-  
+
   &.small {
     padding: 4px 10px;
     font-size: 11px;
@@ -408,23 +408,23 @@ function formatObjectiveValue(value: any): string {
   align-items: center;
   gap: 8px;
   font-size: 12px;
-  
+
   i {
     font-size: 12px;
-    
+
     &.completed {
       color: #34d399;
     }
-    
+
     &.pending {
       color: rgba(255, 255, 255, 0.3);
     }
   }
-  
+
   .obj-key {
     color: rgba(255, 255, 255, 0.8);
   }
-  
+
   .obj-value {
     margin-left: auto;
     color: rgba(255, 255, 255, 0.5);
@@ -459,7 +459,7 @@ function formatObjectiveValue(value: any): string {
   border-radius: 10px;
   font-size: 12px;
   color: rgba(255, 255, 255, 0.5);
-  
+
   i {
     color: #34d399;
     font-size: 14px;
@@ -473,7 +473,7 @@ function formatObjectiveValue(value: any): string {
   justify-content: center;
   padding: 60px 20px;
   text-align: center;
-  
+
   .empty-icon {
     width: 80px;
     height: 80px;
@@ -483,20 +483,20 @@ function formatObjectiveValue(value: any): string {
     align-items: center;
     justify-content: center;
     margin-bottom: 20px;
-    
+
     i {
       font-size: 32px;
       color: rgba(255, 255, 255, 0.15);
     }
   }
-  
+
   .empty-title {
     font-size: 16px;
     font-weight: 600;
     color: rgba(255, 255, 255, 0.5);
     margin-bottom: 6px;
   }
-  
+
   .empty-desc {
     font-size: 13px;
     color: rgba(255, 255, 255, 0.3);

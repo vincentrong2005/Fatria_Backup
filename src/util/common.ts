@@ -9,19 +9,19 @@ import { toDotPath } from 'zod/v4/core';
  */
 export function get<T = any>(obj: any, path: string, defaultValue?: T): T {
   if (!obj || !path) return defaultValue as T;
-  
+
   // 将 path 转换为数组，支持 'a.b.c' 和 'a.b[0].c' 格式
   const keys = path
     .replace(/\[(\d+)\]/g, '.$1') // 将 [0] 转换为 .0
     .split('.')
     .filter(Boolean);
-  
+
   let result: any = obj;
   for (const key of keys) {
     if (result == null) return defaultValue as T;
     result = result[key];
   }
-  
+
   return result === undefined ? (defaultValue as T) : result;
 }
 
@@ -33,24 +33,24 @@ export function get<T = any>(obj: any, path: string, defaultValue?: T): T {
  */
 export function set<T extends object>(obj: T, path: string, value: any): T {
   if (!obj || !path) return obj;
-  
+
   const keys = path
     .replace(/\[(\d+)\]/g, '.$1')
     .split('.')
     .filter(Boolean);
-  
+
   let current: any = obj;
   for (let i = 0; i < keys.length - 1; i++) {
     const key = keys[i];
     const nextKey = keys[i + 1];
-    
+
     if (current[key] == null) {
       // 如果下一个 key 是数字，创建数组；否则创建对象
       current[key] = /^\d+$/.test(nextKey) ? [] : {};
     }
     current = current[key];
   }
-  
+
   current[keys[keys.length - 1]] = value;
   return obj;
 }
@@ -69,21 +69,21 @@ export function isEqual(a: any, b: any): boolean {
   if (a === b) return true;
   if (a == null || b == null) return a === b;
   if (typeof a !== typeof b) return false;
-  
+
   if (typeof a === 'object') {
     if (Array.isArray(a) !== Array.isArray(b)) return false;
-    
+
     const keysA = Object.keys(a);
     const keysB = Object.keys(b);
-    
+
     if (keysA.length !== keysB.length) return false;
-    
+
     for (const key of keysA) {
       if (!isEqual(a[key], b[key])) return false;
     }
     return true;
   }
-  
+
   return false;
 }
 
