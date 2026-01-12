@@ -1402,7 +1402,7 @@ async function reloadStatusFromMvu() {
     // 玩家其他属性
     player.value.stats.charm = _.get(data, '核心状态.$基础魅力', 10) + (playerTempBonus.魅力加成 || 0) + (playerPermBonus.魅力加成 || 0) + (playerEquipBonus.魅力加成 || 0);
     player.value.stats.luck = _.get(data, '核心状态.$基础幸运', 10) + (playerTempBonus.幸运加成 || 0) + (playerPermBonus.幸运加成 || 0) + (playerEquipBonus.幸运加成 || 0);
-    player.value.stats.evasion = _.get(data, '核心状态.$基础闪避率', 0) + (playerTempBonus.闪避率加成 || 0) + (playerPermBonus.闪避率加成 || 0) + (playerEquipBonus.闪避率加成 || 0);
+    player.value.stats.evasion = Math.min(60, Math.max(0, _.get(data, '核心状态.$基础闪避率', 0) + (playerTempBonus.闪避率加成 || 0) + (playerPermBonus.闪避率加成 || 0) + (playerEquipBonus.闪避率加成 || 0)));
     player.value.stats.crit = Math.min(100, Math.max(0, _.get(data, '核心状态.$基础暴击率', 0) + (playerTempBonus.暴击率加成 || 0) + (playerPermBonus.暴击率加成 || 0) + (playerEquipBonus.暴击率加成 || 0)));
 
     // 快感和高潮次数
