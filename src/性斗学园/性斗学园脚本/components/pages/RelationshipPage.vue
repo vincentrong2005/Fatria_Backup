@@ -838,10 +838,11 @@ function handleModalImageError(event: Event) {
   bottom: 0;
   z-index: 99999;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
-  padding: 20px;
-  padding-bottom: calc(20px + env(safe-area-inset-bottom, 0px));
+  padding: max(70px, env(safe-area-inset-top, 0px) + 40px) 20px calc(20px + env(safe-area-inset-bottom, 0px)) 20px;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .modal-backdrop {
@@ -863,7 +864,12 @@ function handleModalImageError(event: Event) {
   max-width: 95vw;
   overflow: hidden;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
-  transform: translateY(-14px);
+  margin-top: 20px;
+  margin-bottom: 20px;
+  
+  @media (min-height: 600px) {
+    margin-top: max(40px, 10vh);
+  }
 }
 
 .modal-close {
@@ -911,12 +917,11 @@ function handleModalImageError(event: Event) {
   align-items: center;
   justify-content: center;
   min-height: 200px;
-  padding-bottom: calc(24px + env(safe-area-inset-bottom, 0px));
 }
 
 .modal-avatar-img {
   width: 100%;
-  max-height: 60vh;
+  max-height: min(60vh, 500px);
   border-radius: 12px;
   object-fit: contain;
 }

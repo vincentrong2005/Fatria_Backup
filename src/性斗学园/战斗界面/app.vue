@@ -3499,8 +3499,11 @@ onMounted(async () => {
   background: rgba(0, 0, 0, 0.8);
   backdrop-filter: blur(20px);
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
+  padding: max(20px, env(safe-area-inset-top, 0px)) 20px calc(20px + env(safe-area-inset-bottom, 0px)) 20px;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
   animation: fadeIn 0.3s ease;
 }
 
@@ -3518,6 +3521,12 @@ onMounted(async () => {
   width: 72%;
   position: relative;
   overflow: hidden;
+  margin-top: 20px;
+  margin-bottom: 20px;
+
+  @media (min-height: 600px) {
+    margin-top: max(40px, 10vh);
+  }
 
   &::before {
     content: '';
