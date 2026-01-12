@@ -60,6 +60,7 @@ export enum BuffType {
   BIND = 'bind',
   DODGE_DOWN = 'dodge_down',
   CRIT_UP = 'crit_up',
+  LUCK_DOWN = 'luck_down',
   FOCUS = 'focus',
   SHAME = 'shame',
   HEAT = 'heat',

@@ -244,8 +244,370 @@ const aiLinHaiDeConfig: CharacterCGConfig = {
   },
 };
 
+// 露娜拉克缇丝的CG配置
+const luNaLaKeDiSiConfig: CharacterCGConfig = {
+  characterName: '露娜拉克缇丝',
+  male: {
+    defeat: [
+      {
+        id: 'anal_licking_paizuri',
+        name: '露娜拉克缇丝-舔肛乳交事件',
+        description: '你被露娜击败，作为惩罚，她让你学狗趴下，从你身后一边为你乳交，一边用舌头深入你的后穴。',
+        images: ['露娜拉克缇丝-舔肛乳交事件-1.png', '露娜拉克缇丝-舔肛乳交事件-2.png', '露娜拉克缇丝-舔肛乳交事件-3.png'],
+      },
+      {
+        id: 'bra_face_footjob',
+        name: '露娜拉克缇丝-胸罩盖脸足交事件',
+        description: '你被露娜击败，作为惩罚，她把你放在身上一边用浓郁奶香和酸涩的巨大奶罩覆盖你的面部，一边从你背后用玉足足交榨取。',
+        images: ['露娜拉克缇丝-胸罩盖脸足交事件-1.png', '露娜拉克缇丝-胸罩盖脸足交事件-2.png'],
+      },
+      {
+        id: 'breast_aroma_handjob',
+        name: '露娜拉克缇丝-乳香支配手淫事件',
+        description: '你被露娜击败，作为惩罚你坐在她身上，头被她的奶子夹着，一边轻语为你手淫。',
+        images: ['露娜拉克缇丝-乳香支配手淫事件-1.png', '露娜拉克缇丝-乳香支配手淫事件-2.png'],
+      },
+      {
+        id: 'double_extraction',
+        name: '露娜拉克缇丝-前后同榨事件',
+        description: '你被露娜击败，作为惩罚你的阴茎被榨取器榨取，一边被尾巴插入开发屁穴。',
+        images: ['露娜拉克缇丝-前后同榨事件.png'],
+      },
+      {
+        id: 'shota_wall_milking',
+        name: '露娜拉克缇丝-正太化按墙榨精事件',
+        description: '你被露娜击败，作为惩罚，她把你变成小正太，用巨大乳房把你按在墙上，让你两脚悬空，并且用手淫，前内腺开发你。',
+        images: ['露娜拉克缇丝-正太化按墙榨精事件-1.png', '露娜拉克缇丝-正太化按墙榨精事件-2.png', '露娜拉克缇丝-正太化按墙榨精事件-3.png'],
+      },
+      {
+        id: 'nursing_tail_anal',
+        name: '露娜拉克缇丝-哺乳与尾巴后穴开发事件',
+        description: '你被露娜击败，作为惩罚她一边为你哺乳（增加0.1潜力），一边用尾巴搅动你的屁穴。',
+        images: ['露娜拉克缇丝-哺乳与尾巴后穴开发事件-1.png', '露娜拉克缇丝-哺乳与尾巴后穴开发事件-2.png'],
+      },
+      {
+        id: 'pussy_teasing',
+        name: '露娜拉克缇丝-小穴摩擦事件',
+        description: '你被露娜击败，作为惩罚，她用小穴摩擦你的下体但是禁止你进入。',
+        images: ['露娜拉克缇丝-小穴摩擦事件.png'],
+      },
+      {
+        id: 'anal_milking',
+        name: '露娜拉克缇丝-肛交榨取事件',
+        description: '你被露娜击败，今天没有惩罚，但是她想试试用后穴的快感，用屁穴榨精。',
+        images: ['露娜拉克缇丝-肛交榨取事件-1.png', '露娜拉克缇丝-肛交榨取事件-2.png'],
+      },
+      {
+        id: 'paizuri_service',
+        name: '露娜拉克缇丝-乳交榨取事件',
+        description: '你被露娜击败，今天没有惩罚，她会用乳房温柔侍奉你。',
+        images: ['露娜拉克缇丝-乳交榨取事件.png'],
+      },
+      {
+        id: 'succubus_transformation',
+        name: '（稀有事件）露娜拉克缇丝-乳魔化事件',
+        description: '你被露娜击败，作为惩罚你被她注入魅魔化因子，并且带你到镜子前一边让你观看自己性转雌堕与魅魔化的形态，一边开发你的乳首（让你分泌乳汁）和下体。',
+        images: ['露娜拉克缇丝-乳魔化事件-1.png', '露娜拉克缇丝-乳魔化事件-2.png'],
+        probability: 0.04,
+      },
+      {
+        id: 'womb_regression',
+        name: '（稀有事件）露娜拉克缇丝-胎内回归事件',
+        description: '你被露娜击败，作为惩罚，她把你缩小塞入子宫，时间快进在一个月后，你会作为她的乳魔女儿降生。',
+        images: ['露娜拉克缇丝-胎内回归事件.png'],
+        probability: 0.04,
+      },
+    ],
+    victory: [
+      {
+        id: 'paizuri_victory',
+        name: '露娜拉克缇丝-乳交战胜事件',
+        description: '你战胜了露娜，她会用乳交服侍您。',
+        images: ['露娜拉克缇丝-乳交战胜事件.png'],
+      },
+      {
+        id: 'anal_victory',
+        name: '露娜拉克缇丝-肛交战胜事件',
+        description: '你战胜了露娜，她会用后穴服侍您。',
+        images: ['露娜拉克缇丝-肛交战胜事件-1.png', '露娜拉克缇丝-肛交战胜事件-2.png'],
+      },
+      {
+        id: 'pussy_victory',
+        name: '（稀有事件）露娜拉克缇丝-小穴战胜事件',
+        description: '你战胜了露娜，她允许你插入她的小穴。',
+        images: ['露娜拉克缇丝-小穴战胜事件.png'],
+        probability: 0.15,
+      },
+    ],
+  },
+  female: {
+    defeat: [
+      {
+        id: 'dogeza_submission',
+        name: '露娜拉克缇丝-土下座臣服事件',
+        description: '你被露娜击败，作为惩罚，她让你土下座后给予1000金币后让你离开。',
+        images: ['露娜拉克缇丝-土下座臣服事件-1.png', '露娜拉克缇丝-土下座臣服事件-2.png'],
+      },
+      {
+        id: 'yuri_sex',
+        name: '露娜拉克缇丝-百合事件',
+        description: '你被露娜击败，今天没有惩罚，她会和你进行百合性爱。',
+        images: ['露娜拉克缇丝-百合事件.png'],
+      },
+      {
+        id: 'breast_aroma_handjob_female',
+        name: '露娜拉克缇丝-乳香支配手淫事件',
+        description: '你被露娜击败，作为惩罚你坐在她身上，你被带上奶嘴和尿裤，头被她的奶子夹着，一边轻语为你手淫。',
+        images: ['露娜拉克缇丝-乳香支配手淫事件-1.png', '露娜拉克缇丝-乳香支配手淫事件-2.png', '露娜拉克缇丝-乳香支配手淫事件-3.png'],
+      },
+      {
+        id: 'handjob_event',
+        name: '露娜拉克缇丝-手淫事件',
+        description: '你被露娜击败，她会手淫让你高潮后让你离开。',
+        images: ['露娜拉克缇丝-手淫事件.png'],
+      },
+      {
+        id: 'loli_wall_training',
+        name: '露娜拉克缇丝-萝莉化按墙调教事件',
+        description: '你被露娜击败，作为惩罚，她把你变成萝莉，用巨大乳房把你按在墙上，让你两脚悬空，并且一边用假阳具插入你的小穴，一边用尾巴开发你的后穴。',
+        images: ['露娜拉克缇丝-萝莉化按墙调教事件-1.png', '露娜拉克缇丝-萝莉化按墙调教事件-2.png'],
+      },
+      {
+        id: 'nursing_tail_development',
+        name: '露娜拉克缇丝-哺乳与尾巴后穴开发事件',
+        description: '你被露娜击败，作为惩罚她一边为你哺乳（增加0.1潜力），一边用尾巴搅动你的屁穴和小穴。',
+        images: ['露娜拉克缇丝-哺乳与尾巴后穴开发事件.png', '露娜拉克缇丝-哺乳与尾巴后穴开发事件-2.png'],
+      },
+      {
+        id: 'cow_public_humiliation',
+        name: '露娜拉克缇丝-母牛公开处刑事件',
+        description: '你被露娜击败，作为惩罚，她把你的胸部变大，并且让你穿上奶牛服牵着你一起在广场逛街，结束后会给予3000金币补偿。',
+        images: ['露娜拉克缇丝-母牛公开处刑事件.png'],
+      },
+      {
+        id: 'puppy_play',
+        name: '露娜拉克缇丝-母狗扮演事件',
+        description: '你被露娜击败，你被她带上项圈，牵上狗绳，带上耳朵和尾巴肛塞，需要作为她的可爱小母狗一起度过3小时调教，她会温柔对待您。',
+        images: ['露娜拉克缇丝-母狗扮演事件-1.png', '露娜拉克缇丝-母狗扮演事件-2.png'],
+      },
+      {
+        id: 'forced_dildo_sitting',
+        name: '露娜拉克缇丝-强制假阳具坐事件',
+        description: '你被露娜击败，她让你坐在椅子的魔法假阳具上，并且给予奖励。',
+        images: ['露娜拉克缇丝-强制假阳具坐事件.png'],
+      },
+      {
+        id: 'succubus_riding',
+        name: '（稀有事件）露娜拉克缇丝-乳魔骑乘事件',
+        description: '你被露娜击败，作为惩罚她用扶她肉棒插入你的小穴，一边抽插注入魅魔化因子，一边刻画淫纹，即将成为她的乳魔妹妹。',
+        images: ['露娜拉克缇丝-乳魔骑乘事件.png'],
+        probability: 0.03,
+      },
+      {
+        id: 'succubus_transformation_female',
+        name: '（稀有事件）露娜拉克缇丝-乳魔化事件',
+        description: '你被露娜击败，作为惩罚你被她注入魅魔化因子，并且带你到镜子前一边让你观看自己恶堕魅魔化的形态，你的头发变得像露娜一样紫色，一边开发你的乳房（让乳房变大和分泌乳汁）和小穴。',
+        images: ['露娜拉克缇丝-乳魔化事件.png', '露娜拉克缇丝-乳魔化事件-1.png', '露娜拉克缇丝-乳魔化事件-2.png'],
+        probability: 0.03,
+      },
+      {
+        id: 'womb_regression_female',
+        name: '（稀有事件）露娜拉克缇丝-胎内回归事件',
+        description: '你被露娜击败，作为惩罚，她把你缩小塞入子宫，时间快进在一个月后，你会作为她的乳魔女儿降生。',
+        images: ['露娜拉克缇丝-胎内回归事件.png'],
+        probability: 0.03,
+      },
+    ],
+    victory: [
+      {
+        id: 'yuri_victory',
+        name: '露娜拉克缇丝-百合战胜事件',
+        description: '你战胜了露娜，她会和你进行温柔的百合性爱。',
+        images: ['露娜拉克缇丝-百合战胜事件.png'],
+      },
+      {
+        id: 'puppy_play_victory',
+        name: '（稀有事件）露娜拉克缇丝-母狗扮演战胜事件',
+        description: '你战胜了露娜，她会在三小时内扮演你的小母狗（之后解除）。',
+        images: ['露娜拉克缇丝-母狗扮演战胜事件.png'],
+        probability: 0.15,
+      },
+    ],
+  },
+};
+
+// 雪莉克里姆希尔德的CG配置
+const xueLiKeLinMuXiErDeConfig: CharacterCGConfig = {
+  characterName: '雪莉克里姆希尔德',
+  male: {
+    defeat: [
+      {
+        id: 'chastity_footjob',
+        name: '雪莉-带锁足交事件',
+        description: '你被雪莉击败，作为惩罚她会给你带上贞操锁，一边展示黑丝包裹的小穴色诱，一边为你足交，但是让你难以射精。',
+        images: ['雪莉-带锁足交事件-1.png', '雪莉-带锁足交事件-2.png', '雪莉-带锁足交事件-3.png'],
+      },
+      {
+        id: 'sock_sniffing_footjob',
+        name: '雪莉-闻袜足交事件',
+        description: '你被雪莉击败，作为惩罚，你被她强制闻她的黑丝，一边被她黑丝与裸足的双重足穴榨取。',
+        images: ['雪莉-闻袜足交事件-1.png', '雪莉-闻袜足交事件-2.png'],
+      },
+      {
+        id: 'humiliation_footjob',
+        name: '雪莉-羞辱足交事件',
+        description: '你被雪莉击败，作为惩罚她站起来用黑丝脚碾压坐在地下的你的肉棒让其射精。',
+        images: ['雪莉-羞辱足交事件-1.png', '雪莉-羞辱足交事件-2.png'],
+      },
+      {
+        id: 'humiliation_event',
+        name: '雪莉-羞辱事件',
+        description: '你被雪莉击败，她用黑丝玉足轻踩你头，并且询问你是否愿意加入成为女权协会的狗。',
+        images: ['雪莉-羞辱事件-1.png', '雪莉-羞辱事件-2.png'],
+      },
+      {
+        id: 'puppy_training',
+        name: '雪莉-小狗驯服事件',
+        description: '你被雪莉击败，作为惩罚她给你穿上狗耳，尾巴阳具，以及项圈狗链。',
+        images: ['雪莉-小狗驯服事件.png'],
+      },
+      {
+        id: 'shoe_sock_brainwash',
+        name: '雪莉-鞋袜气味洗脑事件',
+        description: '你被雪莉击败，作为惩罚她坐在桌上用两个脚掌闭合成足穴并且拿出散发诱人酸涩的运动鞋诱惑洗脑你。',
+        images: ['雪莉-鞋袜气味洗脑事件-1.png', '雪莉-鞋袜气味洗脑事件-2.png'],
+      },
+      {
+        id: 'onahole_milking',
+        name: '雪莉-飞机杯榨取事件',
+        description: '你被雪莉击败，作为惩罚她用来自女权协会某人的倒模飞机杯榨取。',
+        images: ['雪莉-飞机杯榨取事件.png'],
+      },
+      {
+        id: 'library_footjob',
+        name: '雪莉-图书馆足交事件',
+        description: '你被雪莉击败，作为惩罚她把你带到图书馆，在桌下为你足交，不要被其他人发现哦。',
+        images: ['雪莉-图书馆足交事件-1.png', '雪莉-图书馆足交事件-2.png'],
+      },
+      {
+        id: 'restraint_ejaculation_control',
+        name: '雪莉-约束射精管理事件',
+        description: '你被雪莉击败，作为惩罚她用蕾丝项圈绑住你的下体，一边舔弄撸动肉棒。',
+        images: ['雪莉-约束射精管理事件-1.png', '雪莉-约束射精管理事件-2.png'],
+      },
+      {
+        id: 'urethra_straw_torture',
+        name: '雪莉-马眼责吸管事件',
+        description: '你被雪莉击败，作为惩罚她使用金属纤细吸管，插入你的马眼，一边撸动肉棒，一边搅动马眼，并且吸取汁液。',
+        images: ['雪莉-马眼责吸管事件.png'],
+      },
+      {
+        id: 'footjob_milking',
+        name: '雪莉-足交榨精事件',
+        description: '你被雪莉击败，她将用玉足榨取你一次。',
+        images: ['雪莉-足交榨精事件.png'],
+      },
+      {
+        id: 'forced_shoejob',
+        name: '雪莉-强制鞋交事件',
+        description: '你被雪莉击败，她将用小皮鞋套弄你的肉棒，用鞋穴让你染上恋物癖。',
+        images: ['雪莉-强制鞋交事件.png'],
+      },
+      {
+        id: 'panty_footjob',
+        name: '（稀有事件）雪莉-内裤足交事件',
+        description: '你被雪莉击败，作为惩罚她会在肉棒上套着粉红内裤，为你足交。',
+        images: ['雪莉-内裤足交事件.png'],
+        probability: 0.08,
+      },
+      {
+        id: 'locker_room_training',
+        name: '（稀有事件）雪莉-换衣间气味调教事件',
+        description: '你被雪莉击败，作为惩罚你被带到女权协会的更衣室，里面堆满了各种没洗的丝袜内裤和胸罩，并且准备对你开始小狗调教。',
+        images: ['雪莉-换衣间气味调教事件-1.png', '雪莉-换衣间气味调教事件-2.png'],
+        probability: 0.08,
+      },
+    ],
+    victory: [
+      {
+        id: 'puppy_victory',
+        name: '雪莉-小狗战胜事件',
+        description: '你战胜了雪莉，作为奖励你可以给她带着项圈，调教她一次。',
+        images: ['雪莉-小狗战胜事件.png', '雪莉-小狗战胜事件-1.png'],
+      },
+      {
+        id: 'footjob_service',
+        name: '雪莉-足交服务事件',
+        description: '你战胜了雪莉，作为奖励她用美脚为你温柔服务。',
+        images: ['雪莉-战胜足交服务事件.png'],
+      },
+    ],
+  },
+  female: {
+    defeat: [
+      {
+        id: 'yuri_training_sex',
+        name: '雪莉-百合调教性爱事件',
+        description: '你被雪莉击败，作为惩罚她会穿上色情衣物和你进行贝合性爱。',
+        images: ['雪莉-百合调教性爱事件-1.png', '雪莉-百合调教性爱事件-2.png', '雪莉-百合调教性爱事件-3.png'],
+      },
+      {
+        id: 'humiliation_event_female',
+        name: '雪莉-羞辱事件',
+        description: '你被雪莉击败，她用黑丝玉足轻踩你头，并且询问你是否愿意加入女权协会。',
+        images: ['雪莉-羞辱事件-1.png', '雪莉-羞辱事件-2.png'],
+      },
+      {
+        id: 'puppy_training_female',
+        name: '雪莉-小狗驯服事件',
+        description: '你被雪莉击败，作为惩罚她给你穿上狗耳，尾巴阳具，以及项圈狗链。',
+        images: ['雪莉-小狗驯服事件-1.png', '雪莉-小狗驯服事件-2.png'],
+      },
+      {
+        id: 'shoe_sock_brainwash_female',
+        name: '雪莉-鞋袜气味洗脑事件',
+        description: '你被雪莉击败，作为惩罚她坐在桌上用两个脚掌闭合成足穴并且拿出散发诱人酸涩的运动鞋诱惑洗脑你。',
+        images: ['雪莉-鞋袜气味洗脑事件-1.png', '雪莉-鞋袜气味洗脑事件-2.png'],
+      },
+      {
+        id: 'kiss_gift',
+        name: '（稀有事件）雪莉-献吻事件',
+        description: '你被雪莉击败，今天没有惩罚，她给你献上一吻鼓励你继续加油。',
+        images: ['雪莉-献吻事件-1.png'],
+        probability: 0.08,
+      },
+      {
+        id: 'locker_room_training_female',
+        name: '（稀有事件）雪莉-换衣间气味调教事件',
+        description: '你被雪莉击败，作为惩罚你被带到女权协会的更衣室，里面堆满了各种没洗的丝袜内裤和胸罩，并且准备对你开始小狗调教。',
+        images: ['雪莉-换衣间气味调教事件-1.png', '雪莉-换衣间气味调教事件-2.png', '雪莉-换衣间气味调教事件-3.png'],
+        probability: 0.10,
+      },
+    ],
+    victory: [
+      {
+        id: 'puppy_victory_female',
+        name: '雪莉-小狗战胜事件',
+        description: '你战胜了雪莉，作为奖励你可以给她打赏项圈调教她一次。',
+        images: ['雪莉-小狗战胜事件-1.png', '雪莉-小狗战胜事件-2.png'],
+      },
+      {
+        id: 'yuri_kiss_victory',
+        name: '雪莉-百合之吻战胜事件',
+        description: '你战胜了雪莉，作为奖励她献上了少女的香吻。',
+        images: ['雪莉-百合之吻战胜事件-1.png'],
+      },
+    ],
+  },
+};
+
 // 所有角色的CG配置
-export const CG_CONFIGS: CharacterCGConfig[] = [xingYeGuangConfig, aiLinHaiDeConfig];
+export const CG_CONFIGS: CharacterCGConfig[] = [
+  xingYeGuangConfig,
+  aiLinHaiDeConfig,
+  luNaLaKeDiSiConfig,
+  xueLiKeLinMuXiErDeConfig,
+];
 
 // 根据角色名称获取CG配置
 export function getCGConfigByCharacter(characterName: string): CharacterCGConfig | null {

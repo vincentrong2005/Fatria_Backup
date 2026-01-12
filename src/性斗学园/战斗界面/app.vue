@@ -55,6 +55,23 @@
       />
     </main>
 
+    <!-- BOSS文字特效 -->
+    <div v-if="bossText" class="boss-text-overlay" :class="{ active: bossText }">
+      {{ bossText }}
+    </div>
+
+    <!-- BOSS阶段转换特效 -->
+    <div v-if="phaseTransitionEffect" class="phase-transition-effect" :class="phaseTransitionEffect">
+      <div class="transition-flash"></div>
+      <div class="transition-particles">
+        <div v-for="i in 50" :key="i" class="particle" :style="{ '--delay': i * 0.02 + 's', '--x': Math.random() * 100 + '%', '--y': Math.random() * 100 + '%' }"></div>
+      </div>
+      <div class="transition-shockwave"></div>
+    </div>
+
+    <!-- 粒子封印画布 -->
+    <canvas ref="sealCanvas" class="seal-canvas"></canvas>
+
     <!-- 底部操作区域 -->
     <footer class="combat-footer">
       <div class="footer-content">
@@ -110,7 +127,12 @@
                   </svg>
                   <span>战斗技能</span>
                 </Card>
-                <Card hover class="menu-card" @click="activeMenu = 'items'">
+                <Card 
+                  :hover="!isBossItemsDisabled"
+                  class="menu-card"
+                  :class="{ disabled: isBossItemsDisabled }"
+                  @click="!isBossItemsDisabled && (activeMenu = 'items')"
+                >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     width="32"
@@ -124,7 +146,7 @@
                     <path d="M4 20V10a4 4 0 0 1 4-4h8a4 4 0 0 1 4 4v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2Z" />
                     <path d="M9 6V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2" />
                   </svg>
-                  <span>物品背包</span>
+                  <span>{{ isBossItemsDisabled ? '已封印' : '物品背包' }}</span>
                 </Card>
                 <Card hover class="menu-card" @click="handleSkipTurn">
                   <svg
@@ -145,9 +167,9 @@
                 <div class="surrender-stack">
                   <button class="tab-btn portrait-upload-btn" @click="openPlayerPortraitPicker">更换立绘</button>
                   <Card
-                    :hover="!allowSurrender"
+                    :hover="!allowSurrender && !isBossSurrenderDisabled"
                     class="menu-card"
-                    :class="{ disabled: allowSurrender }"
+                    :class="{ disabled: allowSurrender || isBossSurrenderDisabled }"
                     @click="handleSurrender"
                   >
                     <svg
@@ -163,7 +185,7 @@
                       <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z" />
                       <line x1="4" y1="22" x2="4" y2="15" />
                     </svg>
-                    <span>{{ allowSurrender ? '不可投降' : '投降' }}</span>
+                    <span>{{ isBossSurrenderDisabled ? '已封印' : (allowSurrender ? '不可投降' : '投降') }}</span>
                   </Card>
                   <input
                     ref="playerPortraitInput"
@@ -327,6 +349,8 @@ import { createDefaultEnemy, createDefaultPlayer, getEnemyPortraitUrl, savePlaye
 import { selectCGEvent } from './data/cgConfig';
 import { resolveEnemyName } from './enemyDatabase';
 import type { Character, CombatLogEntry, Item, Skill, TurnState } from './types';
+// BOSS系统
+import * as BossSystem from './bossSystem';
 
 // 延迟加载数据库模块的辅助函数
 let enemyDbModule: any = null;
@@ -363,6 +387,18 @@ const enemyBoundTurns = ref<number>(0); // 敌人被束缚的回合数
 const playerBindSource = ref<'player' | 'enemy' | null>(null); // 玩家束缚的施加者
 const enemyBindSource = ref<'player' | 'enemy' | null>(null); // 敌人束缚的施加者
 
+// BOSS禁用状态（第二阶段禁用物品和投降）
+const isBossItemsDisabled = ref<boolean>(false);
+const isBossSurrenderDisabled = ref<boolean>(false);
+
+// BOSS文字特效状态
+const bossText = ref<string>('');
+const sealCanvas = ref<HTMLCanvasElement | null>(null);
+
+// BOSS阶段转换状态
+const isPhaseTransitioning = ref<boolean>(false);
+const phaseTransitionEffect = ref<'phase1to2' | 'phase2to3' | null>(null);
+
 // 特效状态
 const effectType = ref<'critical' | 'dodge' | 'climax' | 'victory' | 'defeat' | null>(null);
 const showEffect = ref(false);
@@ -373,6 +409,182 @@ const playerPortraitInput = ref<HTMLInputElement | null>(null);
 // CG相关状态
 const cgImageUrl = ref<string | null>(null);
 const cgDescription = ref<string>('');
+
+// ================= BOSS文字特效系统 =================
+// 显示BOSS文字特效（屏幕中央大字）
+type BossTextTask = { text: string; duration: number; delay: number };
+
+const bossTextQueue: BossTextTask[] = [];
+let bossTextIsPlaying = false;
+let bossTextShowTimer: number | null = null;
+let bossTextHideTimer: number | null = null;
+
+function playNextBossText() {
+  if (bossTextIsPlaying) return;
+  const task = bossTextQueue.shift();
+  if (!task) return;
+
+  const BOSS_TEXT_ANIMATION_DURATION_MS = 3000;
+  const effectiveDuration = Math.max(task.duration, BOSS_TEXT_ANIMATION_DURATION_MS);
+
+  bossTextIsPlaying = true;
+
+  if (bossTextShowTimer !== null) window.clearTimeout(bossTextShowTimer);
+  if (bossTextHideTimer !== null) window.clearTimeout(bossTextHideTimer);
+
+  bossTextShowTimer = window.setTimeout(() => {
+    bossText.value = task.text;
+    // 自动隐藏文字：必须至少覆盖完整动画，否则会看不到淡出阶段
+    bossTextHideTimer = window.setTimeout(() => {
+      bossText.value = '';
+      bossTextIsPlaying = false;
+      playNextBossText();
+    }, effectiveDuration);
+  }, task.delay);
+}
+
+function showBossText(text: string, duration: number = 3000, delay: number = 0) {
+  bossTextQueue.push({ text, duration, delay });
+  playNextBossText();
+}
+
+// 粒子封印系统
+interface Particle {
+  x: number;
+  y: number;
+  tx: number;
+  ty: number;
+  size: number;
+  color: string;
+  speed: number;
+  delay: number;
+  isArrived: boolean;
+}
+
+let particles: Particle[] = [];
+let animationFrameId: number | null = null;
+
+// 生成对角线叉叉坐标点
+function generateCrossPoints(rect: DOMRect, count: number): { x: number; y: number }[] {
+  const points: { x: number; y: number }[] = [];
+  const padding = 12;
+  const size = rect.width - padding * 2;
+  
+  for (let i = 0; i < count; i++) {
+    const pos = (i / count) * size;
+    // 左上到右下
+    points.push({ x: rect.left + padding + pos, y: rect.top + padding + pos });
+    // 右上到左下
+    points.push({ x: rect.left + padding + pos, y: rect.top + padding + (size - pos) });
+  }
+  return points;
+}
+
+// 创建粒子
+function createParticle(tx: number, ty: number, delay: number): Particle {
+  const angle = Math.random() * Math.PI * 2;
+  const dist = 500 + Math.random() * 300;
+  const shades = ['#000000', '#1a1a1a', '#0d0d0d'];
+  
+  return {
+    x: tx + Math.cos(angle) * dist,
+    y: ty + Math.sin(angle) * dist,
+    tx,
+    ty,
+    size: Math.random() * 6 + 4,
+    color: shades[Math.floor(Math.random() * shades.length)],
+    speed: 0.05 + Math.random() * 0.03,
+    delay,
+    isArrived: false,
+  };
+}
+
+// 更新粒子
+function updateParticle(p: Particle) {
+  if (p.delay > 0) {
+    p.delay--;
+    return;
+  }
+  if (p.isArrived) return;
+  
+  p.x += (p.tx - p.x) * p.speed;
+  p.y += (p.ty - p.y) * p.speed;
+  
+  if (Math.abs(p.x - p.tx) < 0.5 && Math.abs(p.y - p.ty) < 0.5) {
+    p.x = p.tx;
+    p.y = p.ty;
+    p.isArrived = true;
+  }
+}
+
+// 绘制粒子
+function drawParticle(ctx: CanvasRenderingContext2D, p: Particle) {
+  if (p.delay > 0) return;
+  ctx.fillStyle = p.color;
+  ctx.fillRect(Math.floor(p.x), Math.floor(p.y), p.size, p.size);
+}
+
+// 粒子动画循环
+function animateParticles() {
+  if (!sealCanvas.value) return;
+  const ctx = sealCanvas.value.getContext('2d');
+  if (!ctx) return;
+  
+  ctx.clearRect(0, 0, sealCanvas.value.width, sealCanvas.value.height);
+  particles.forEach(p => {
+    updateParticle(p);
+    drawParticle(ctx, p);
+  });
+  
+  animationFrameId = requestAnimationFrame(animateParticles);
+}
+
+// 执行封印效果（禁用按钮）
+function castSealEffect(targetSelectors: string[]) {
+  particles = [];
+  
+  targetSelectors.forEach(selector => {
+    const el = document.querySelector(selector) as HTMLElement;
+    if (!el) return;
+    
+    const rect = el.getBoundingClientRect();
+    const points = generateCrossPoints(rect, 50);
+    
+    points.forEach(p => {
+      particles.push(createParticle(p.x, p.y, Math.random() * 40));
+    });
+    
+    // 1.2秒后按钮变暗
+    setTimeout(() => {
+      el.classList.add('is-sealed');
+    }, 1200);
+  });
+  
+  if (animationFrameId === null) {
+    animateParticles();
+  }
+}
+
+// 解除封印效果
+function removeSealEffect(targetSelectors: string[]) {
+  targetSelectors.forEach(selector => {
+    const el = document.querySelector(selector) as HTMLElement;
+    if (el) {
+      el.classList.remove('is-sealed');
+    }
+  });
+  particles = [];
+  if (animationFrameId !== null) {
+    cancelAnimationFrame(animationFrameId);
+    animationFrameId = null;
+  }
+  if (sealCanvas.value) {
+    const ctx = sealCanvas.value.getContext('2d');
+    if (ctx) {
+      ctx.clearRect(0, 0, sealCanvas.value.width, sealCanvas.value.height);
+    }
+  }
+}
 
 // ================= MVU 集成 =================
 // 获取用户名字
@@ -704,6 +916,43 @@ async function loadEnemyFromMvuData(data: any, maxClimaxCount: number) {
   const enemyName = _.get(data, '性斗系统.对手名称', '风纪委员长');
   if (enemyName) enemy.value.name = enemyName;
 
+  // ==================== BOSS检测 ====================
+  // 检测是否是沐芯兰BOSS战
+  if (BossSystem.isMuxinlanBoss(enemyName)) {
+    console.info('[战斗界面] 检测到沐芯兰BOSS战！');
+    BossSystem.initMuxinlanBoss();
+    // 强制使用第一阶段数据
+    const bossDisplayName = BossSystem.getMuxinlanDisplayName(1);
+    const bossClimaxLimit = BossSystem.BOSS_CONFIG.muxinlan.climaxLimits[0]; // 第一阶段高潮次数上限
+    enemy.value.name = bossDisplayName;
+    enemy.value.avatarUrl = BossSystem.getMuxinlanAvatarUrl(1);
+    
+    // 更新MVU中的对手名称和胜负规则
+    if (typeof Mvu !== 'undefined') {
+      const mvuData = Mvu.getMvuData({ type: 'message', message_id: 'latest' });
+      if (mvuData?.stat_data) {
+        _.set(mvuData.stat_data, '性斗系统.对手名称', bossDisplayName);
+        // 第一阶段：设置高潮次数上限为1（达到1次高潮即可进入第二阶段）
+        _.set(mvuData.stat_data, '性斗系统.胜负规则.高潮次数上限', bossClimaxLimit);
+        // 对手高潮次数初始为0（记录已高潮次数）
+        _.set(mvuData.stat_data, '性斗系统.对手高潮次数', 0);
+        await Mvu.replaceMvuData(mvuData, { type: 'message', message_id: 'latest' });
+      }
+    }
+    // 同步更新UI中的高潮次数上限（双方共享）
+    player.value.stats.maxClimaxCount = bossClimaxLimit;
+    enemy.value.stats.maxClimaxCount = bossClimaxLimit;
+    
+    // 添加入场对话
+    addLog(`【特殊战斗】沐芯兰BOSS战开始！`, 'system', 'critical');
+    showBossText('哎呀？这不是那个新来的小可怜吗？怎么如今有空来找姐姐玩了♡？', 2500, 2000);
+    setTimeout(() => {
+      showBossText('今天...就让你见识一下什么叫做真正的绝望吧~♡，你这只~杂~鱼~', 2500, 2000);
+    }, 2800);
+    
+    console.info(`[战斗界面] BOSS战初始化完成: ${bossDisplayName}, 高潮次数上限: ${bossClimaxLimit}`);
+  }
+
   // 优先从数据库查找对手数据，如果存在则覆盖MVU变量
   if (enemyName) {
     try {
@@ -858,7 +1107,10 @@ async function loadEnemyFromMvuData(data: any, maxClimaxCount: number) {
   enemy.value.stats.maxPleasure = _.get(data, '性斗系统.对手最大快感', 100);
   enemy.value.stats.currentPleasure = _.get(data, '性斗系统.对手快感', 0);
   enemy.value.stats.climaxCount = _.get(data, '性斗系统.对手高潮次数', 0);
-  enemy.value.stats.maxClimaxCount = maxClimaxCount; // 使用统一的高潮次数上限
+  // BOSS战时高潮次数上限已在BOSS初始化时设置，不再覆盖
+  if (!BossSystem.bossState.isBossFight) {
+    enemy.value.stats.maxClimaxCount = maxClimaxCount;
+  }
   // UI 读取对手实时属性（已包含临时状态加成）
   enemy.value.stats.sexPower = _.get(data, '性斗系统.对手实时性斗力', _.get(data, '性斗系统.对手性斗力', 20));
   enemy.value.stats.baseEndurance = _.get(data, '性斗系统.对手实时忍耐力', _.get(data, '性斗系统.对手忍耐力', 20));
@@ -1457,6 +1709,14 @@ async function initializeCombatSystem() {
 
     await Mvu.replaceMvuData(mvuData, { type: 'message', message_id: 'latest' });
     console.info('[战斗界面] 已初始化性斗系统数据');
+    
+    // 重置BOSS状态
+    if (BossSystem.bossState.isBossFight) {
+      BossSystem.resetBossState();
+      isBossItemsDisabled.value = false;
+      isBossSurrenderDisabled.value = false;
+      console.info('[战斗界面] BOSS状态已重置');
+    }
   } catch (e) {
     console.error('[战斗界面] 初始化性斗系统数据失败', e);
   }
@@ -2050,6 +2310,11 @@ function handleEnemyTurn() {
 
         // 记录战斗日志
         addLog(`${nextEnemy.name} 使用了 ${skill.name}！`, 'enemy', 'info');
+        
+        // 显示技能描述文字（BOSS战时显示）
+        if (BossSystem.bossState.isBossFight && skill.data.description) {
+          showBossText(skill.data.description, 2000);
+        }
 
         if (result.isDodged) {
           addLog(`${nextPlayer.name} 闪避了所有攻击！`, 'system', 'info');
@@ -2527,6 +2792,209 @@ async function handleSendCombatLogToLLM() {
   }
 }
 
+// ==================== BOSS阶段切换处理 ====================
+// 步骤1：锁血并立即换图
+function lockHealthAndChangeAvatar(nextPhase: 1 | 2 | 3) {
+  const currentPhase = BossSystem.bossState.currentPhase;
+  console.info(`[战斗界面] BOSS阶段切换开始: ${currentPhase} -> ${nextPhase}`);
+  
+  // 锁血：快感设为最大值-1，防止触发高潮
+  enemy.value.stats.currentPleasure = enemy.value.stats.maxPleasure - 1;
+  
+  // 立即更换头像和名称
+  const newDisplayName = BossSystem.getMuxinlanDisplayName(nextPhase);
+  const newAvatarUrl = BossSystem.getMuxinlanAvatarUrl(nextPhase);
+  enemy.value.name = newDisplayName;
+  enemy.value.avatarUrl = newAvatarUrl;
+  
+  // 设置转换状态
+  isPhaseTransitioning.value = true;
+  phaseTransitionEffect.value = currentPhase === 1 ? 'phase1to2' : 'phase2to3';
+  
+  // 1.5秒后自动清除特效（冲击波动画完成后）
+  setTimeout(() => {
+    phaseTransitionEffect.value = null;
+  }, 1500);
+  
+  console.info(`[战斗界面] 已锁血并更换头像: ${newDisplayName}`);
+}
+
+// 步骤2：显示BOSS文字（会自动排队）
+function showPhaseTransitionText(nextPhase: 1 | 2 | 3) {
+  if (nextPhase === 2) {
+    showBossText('不错，有两下子么小东西，毕竟这样才能让本小姐打起兴趣~♡', 3000);
+    setTimeout(() => {
+      showBossText('性斗就好好性斗哦~♡，背包给你没收了哦，杂鱼就是杂鱼，没了背包就颓废了呢，杂鱼杂鱼♡', 3000);
+    }, 3200);
+  } else if (nextPhase === 3) {
+    showBossText('等...等一下！这不应该是这样的！我的茉莉！', 3000);
+  }
+}
+
+// 步骤3：执行转阶段逻辑（在文字播放完成后调用）
+async function executePhaseTransitionLogic(nextPhase: 1 | 2 | 3) {
+  const currentPhase = BossSystem.bossState.currentPhase;
+  console.info(`[战斗界面] 执行阶段转换逻辑: ${currentPhase} -> ${nextPhase}`);
+  
+  // 执行阶段转换（更新BOSS状态）
+  BossSystem.executePhaseTransition(nextPhase);
+  
+  // 获取新阶段的配置
+  const newDisplayName = BossSystem.getMuxinlanDisplayName(nextPhase);
+  const newClimaxLimit = BossSystem.BOSS_CONFIG.muxinlan.climaxLimits[nextPhase - 1];
+  const newDataKey = BossSystem.getMuxinlanDataKey(nextPhase);
+  
+  // 添加阶段切换日志
+  addLog(`【阶段切换】${enemy.value.name} 进入了新形态！`, 'system', 'critical');
+  
+  // 从数据库加载新阶段的敌人数据
+  try {
+    const { enemyDbModule, enemySkillDbModule } = await loadDatabaseModules();
+    const newEnemyData = enemyDbModule.getEnemyMvuData(newDataKey);
+    
+    if (newEnemyData) {
+      // 更新敌人显示名称和头像
+      enemy.value.name = newDisplayName;
+      enemy.value.avatarUrl = BossSystem.getMuxinlanAvatarUrl(nextPhase);
+      
+      // 更新敌人属性
+      enemy.value.stats.level = newEnemyData.对手等级;
+      enemy.value.stats.charm = newEnemyData.对手魅力;
+      enemy.value.stats.luck = newEnemyData.对手幸运;
+      enemy.value.stats.evasion = Math.min(60, newEnemyData.对手闪避率);
+      enemy.value.stats.crit = newEnemyData.对手暴击率;
+      enemy.value.stats.maxEndurance = newEnemyData.对手最大耐力;
+      enemy.value.stats.currentEndurance = newEnemyData.对手耐力;
+      enemy.value.stats.maxPleasure = newEnemyData.对手最大快感;
+      enemy.value.stats.currentPleasure = 0; // 新阶段快感重置
+      enemy.value.stats.climaxCount = 0; // 新阶段高潮次数重置
+      enemy.value.stats.sexPower = newEnemyData.对手性斗力;
+      enemy.value.stats.baseEndurance = newEnemyData.对手忍耐力;
+      
+      // 更新高潮次数上限（双方共享）
+      enemy.value.stats.maxClimaxCount = newClimaxLimit;
+      player.value.stats.maxClimaxCount = newClimaxLimit;
+      
+      // 加载新阶段的技能
+      const newSkills = enemySkillDbModule.getEnemySkills(newDataKey, newDataKey);
+      if (newSkills && newSkills.length > 0) {
+        // 更新UI中的技能列表
+        enemy.value.skills = newSkills.map((skill: any) => ({
+          id: skill.id,
+          name: skill.name,
+          description: skill.effectDescription || skill.description,
+          cost: skill.staminaCost,
+          type: skill.type,
+          cooldown: skill.cooldown,
+          currentCooldown: 0,
+          data: skill,
+        }));
+        console.info(`[战斗界面] 加载新阶段技能:`, newSkills.map((s: any) => s.name));
+        
+        // 同时写入MVU的对手可用技能
+        if (typeof Mvu !== 'undefined') {
+          const mvuData = Mvu.getMvuData({ type: 'message', message_id: 'latest' });
+          if (mvuData?.stat_data) {
+            // 清空旧技能
+            _.set(mvuData.stat_data, '性斗系统.对手可用技能', {});
+            
+            // 写入新技能（使用convertToMvuSkillFormat保持格式一致）
+            const mvuSkills: Record<string, any> = {};
+            newSkills.forEach((skill: any) => {
+              mvuSkills[skill.id] = enemySkillDbModule.convertToMvuSkillFormat(skill);
+            });
+            _.set(mvuData.stat_data, '性斗系统.对手可用技能', mvuSkills);
+            
+            // 重置技能冷却
+            _.set(mvuData.stat_data, '性斗系统.对手技能冷却', {});
+            
+            await Mvu.replaceMvuData(mvuData, { type: 'message', message_id: 'latest' });
+            console.info(`[战斗界面] 新阶段技能已写入MVU:`, newSkills.map((s: any) => s.id));
+          }
+        }
+      }
+      
+      // 更新MVU数据
+      if (typeof Mvu !== 'undefined') {
+        const mvuData = Mvu.getMvuData({ type: 'message', message_id: 'latest' });
+        if (mvuData?.stat_data) {
+          _.set(mvuData.stat_data, '性斗系统.对手名称', newDisplayName);
+          _.set(mvuData.stat_data, '性斗系统.胜负规则.高潮次数上限', newClimaxLimit);
+          _.set(mvuData.stat_data, '性斗系统.对手等级', newEnemyData.对手等级);
+          _.set(mvuData.stat_data, '性斗系统.对手魅力', newEnemyData.对手魅力);
+          _.set(mvuData.stat_data, '性斗系统.对手幸运', newEnemyData.对手幸运);
+          _.set(mvuData.stat_data, '性斗系统.对手闪避率', newEnemyData.对手闪避率);
+          _.set(mvuData.stat_data, '性斗系统.对手暴击率', newEnemyData.对手暴击率);
+          _.set(mvuData.stat_data, '性斗系统.对手耐力', newEnemyData.对手耐力);
+          _.set(mvuData.stat_data, '性斗系统.对手最大耐力', newEnemyData.对手最大耐力);
+          _.set(mvuData.stat_data, '性斗系统.对手快感', 0);
+          _.set(mvuData.stat_data, '性斗系统.对手最大快感', newEnemyData.对手最大快感);
+          _.set(mvuData.stat_data, '性斗系统.对手高潮次数', 0);
+          _.set(mvuData.stat_data, '性斗系统.对手性斗力', newEnemyData.对手性斗力);
+          _.set(mvuData.stat_data, '性斗系统.对手忍耐力', newEnemyData.对手忍耐力);
+          _.set(mvuData.stat_data, '性斗系统.对手实时性斗力', newEnemyData.对手性斗力);
+          _.set(mvuData.stat_data, '性斗系统.对手实时忍耐力', newEnemyData.对手忍耐力);
+          _.set(mvuData.stat_data, '性斗系统.对手实时魅力', newEnemyData.对手魅力);
+          _.set(mvuData.stat_data, '性斗系统.对手实时幸运', newEnemyData.对手幸运);
+          _.set(mvuData.stat_data, '性斗系统.对手实时闪避率', newEnemyData.对手闪避率);
+          _.set(mvuData.stat_data, '性斗系统.对手实时暴击率', newEnemyData.对手暴击率);
+          await Mvu.replaceMvuData(mvuData, { type: 'message', message_id: 'latest' });
+        }
+      }
+      
+      // 添加阶段特定效果和禁用
+      if (nextPhase === 2) {
+        // 第二阶段：禁用物品和投降，并施加封印效果
+        isBossItemsDisabled.value = true;
+        isBossSurrenderDisabled.value = true;
+        // 延迟执行封印动画
+        setTimeout(() => {
+          castSealEffect(['.menu-card:has(svg[data-icon="package"])', 'button:has-text("投降")']);
+        }, 500);
+        addLog(`【警告】物品背包和投降按钮已被禁用！`, 'system', 'critical');
+      } else if (nextPhase === 3) {
+        // 第三阶段：解除禁用和封印效果
+        isBossItemsDisabled.value = false;
+        isBossSurrenderDisabled.value = false;
+        removeSealEffect(['.menu-card:has(svg[data-icon="package"])', 'button:has-text("投降")']);
+        addLog(`【提示】禁用效果已解除，可以正常使用物品和投降（啊你真的会在这个阶段投降吗？）`, 'system', 'info');
+      }
+    }
+  } catch (e) {
+    console.error('[战斗界面] BOSS阶段切换失败', e);
+  }
+  
+  // 完成阶段转换
+  BossSystem.completePhaseTransition();
+  
+  // 清除转换状态和特效
+  isPhaseTransitioning.value = false;
+  phaseTransitionEffect.value = null;
+  
+  // 重置回合状态，继续战斗
+  turnState.phase = 'playerInput';
+  addLog(`阶段切换完成，继续战斗...`, 'system', 'info');
+}
+
+// 完整的阶段转换流程（协调三个步骤）
+async function handleBossPhaseTransition(nextPhase: 1 | 2 | 3) {
+  // 步骤1：锁血+换图（立即执行）
+  lockHealthAndChangeAvatar(nextPhase);
+  
+  // 步骤2：显示文字（立即开始，但会排队播放）
+  showPhaseTransitionText(nextPhase);
+  
+  // 步骤3：等待文字播放完成后执行转阶段逻辑
+  // 计算等待时间：第二阶段有两句话，每句3秒动画，间隔3.2秒 = 3000 + 3200 + 3000 = 9200ms
+  // 第三阶段一句话，3秒动画 = 3000ms
+  // 额外增加500ms缓冲确保文字完全播放完
+  const waitTime = nextPhase === 2 ? 9700 : 3500;
+  
+  setTimeout(async () => {
+    await executePhaseTransitionLogic(nextPhase);
+  }, waitTime);
+}
+
 // 处理高潮后的逻辑（自动继续，不显示按钮）
 async function processClimaxAfterLLM(targetIsEnemy: boolean) {
   // 防止重复调用：如果已经在处理高潮，则直接返回
@@ -2545,6 +3013,31 @@ async function processClimaxAfterLLM(targetIsEnemy: boolean) {
 
   // 立即设置climaxTarget，防止重复调用
   turnState.climaxTarget = targetIsEnemy ? 'enemy' : 'player';
+  
+  // ==================== BOSS锁血和阶段切换检测 ====================
+  // 必须在增加高潮次数之前检测，以实现锁血效果
+  if (targetIsEnemy && BossSystem.bossState.isBossFight && BossSystem.bossState.bossId === 'muxinlan') {
+    const currentPhase = BossSystem.bossState.currentPhase;
+    const currentClimaxCount = enemy.value.stats.climaxCount;
+    
+    // 检查是否应该触发阶段转换
+    const transitionCheck = BossSystem.shouldTransitionPhase(
+      char.stats.currentPleasure,
+      char.stats.maxPleasure,
+      currentClimaxCount,
+      currentPhase
+    );
+    
+    if (transitionCheck.shouldTransition) {
+      // 触发阶段转换
+      await handleBossPhaseTransition(transitionCheck.nextPhase);
+      // 阶段转换后，重置快感但不增加高潮次数（锁血效果）
+      enemy.value.stats.currentPleasure = 0;
+      turnState.climaxTarget = null;
+      saveToMvu();
+      return;
+    }
+  }
 
   // 直接修改stats对象，不使用cloneCharacter（确保Vue响应式更新）
   if (targetIsEnemy) {
@@ -2671,6 +3164,12 @@ function handlePlayerPortraitSelected(event: Event) {
 }
 
 async function handleSurrender() {
+  // BOSS第二阶段禁用投降
+  if (isBossSurrenderDisabled.value) {
+    addLog('「逃跑？在女王面前...你以为你有这个资格吗？」', 'enemy', 'critical');
+    return;
+  }
+  
   // allowSurrender为true时不可认输，false时允许认输
   if (allowSurrender.value) {
     addLog('不能逃跑！这是尊严之战！', 'system', 'info');
@@ -2730,6 +3229,12 @@ onMounted(async () => {
 
   // 重新计算所有属性（包括加成）
   await reloadStatusFromMvu();
+
+  // 初始化粒子封印画布
+  if (sealCanvas.value) {
+    sealCanvas.value.width = window.innerWidth;
+    sealCanvas.value.height = window.innerHeight;
+  }
 
   addLog(`遭遇了 ${enemy.value.name} !`, 'system', 'info');
 
@@ -3648,5 +4153,221 @@ onMounted(async () => {
 .slide-leave-to {
   opacity: 0;
   transform: translateY(-10px);
+}
+
+// ========== BOSS文字特效样式 ==========
+.boss-text-overlay {
+  position: fixed;
+  top: 35%;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 60px;
+  font-weight: 900;
+  color: #ff1493;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 100;
+  text-shadow: 0 0 20px #ff1493, 0 0 40px #dc143c, 2px 2px 0 #000;
+  letter-spacing: 10px;
+  font-family: "Courier New", monospace;
+  
+  &.active {
+    animation: bossTextSlam 3s ease-out forwards;
+  }
+}
+
+@keyframes bossTextSlam {
+  0% {
+    transform: translateX(-50%) scale(3);
+    opacity: 0;
+    filter: blur(10px);
+  }
+  30% {
+    transform: translateX(-50%) scale(1);
+    opacity: 1;
+    filter: blur(0px);
+  }
+  70% {
+    transform: translateX(-50%) scale(1);
+    opacity: 1;
+    filter: blur(0px);
+  }
+  80% {
+    transform: translateX(-50%) scale(1);
+    opacity: 0.8;
+    filter: blur(2px);
+  }
+  85% {
+    transform: translateX(-50%) scale(1);
+    opacity: 0.5;
+    filter: blur(5px);
+  }
+  90% {
+    transform: translateX(-50%) scale(1);
+    opacity: 0.2;
+    filter: blur(8px);
+  }
+  100% {
+    transform: translateX(-50%) scale(1);
+    opacity: 0;
+    filter: blur(10px);
+  }
+}
+
+// ========== 粒子封印画布 ==========
+.seal-canvas {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 50;
+}
+
+// ========== 封印效果（按钮暗淡） ==========
+.is-sealed {
+  filter: grayscale(1) brightness(0.3) contrast(1.2) !important;
+  pointer-events: none !important;
+  cursor: not-allowed !important;
+  transition: filter 0.5s ease;
+}
+
+// ========== BOSS阶段转换特效 ==========
+.phase-transition-effect {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 90;
+  overflow: hidden;
+}
+
+// 闪光效果
+.transition-flash {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle at center, rgba(255, 255, 255, 0.9) 0%, transparent 70%);
+  animation: flashEffect 0.8s ease-out;
+}
+
+// 粒子效果
+.transition-particles {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.transition-particles .particle {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  background: #ff1493;
+  border-radius: 50%;
+  box-shadow: 0 0 10px #ff1493, 0 0 20px #ff1493;
+  left: var(--x);
+  top: var(--y);
+  animation: particleExplode 1.5s ease-out var(--delay) forwards;
+}
+
+// 冲击波效果
+.transition-shockwave {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 100px;
+  height: 100px;
+  margin: -50px 0 0 -50px;
+  border: 3px solid #ff1493;
+  border-radius: 50%;
+  animation: shockwaveExpand 1.2s ease-out;
+}
+
+// 第一阶段转第二阶段特效（红粉色）
+.phase-transition-effect.phase1to2 {
+  .transition-flash {
+    background: radial-gradient(circle at center, rgba(255, 20, 147, 0.8) 0%, transparent 70%);
+  }
+  
+  .particle {
+    background: #ff1493;
+    box-shadow: 0 0 10px #ff1493, 0 0 20px #ff1493;
+  }
+  
+  .transition-shockwave {
+    border-color: #ff1493;
+    box-shadow: 0 0 20px #ff1493, 0 0 40px #ff1493, inset 0 0 20px #ff1493;
+  }
+}
+
+// 第二阶段转第三阶段特效（紫色）
+.phase-transition-effect.phase2to3 {
+  .transition-flash {
+    background: radial-gradient(circle at center, rgba(138, 43, 226, 0.8) 0%, transparent 70%);
+  }
+  
+  .particle {
+    background: #8a2be2;
+    box-shadow: 0 0 10px #8a2be2, 0 0 20px #8a2be2;
+  }
+  
+  .transition-shockwave {
+    border-color: #8a2be2;
+    box-shadow: 0 0 20px #8a2be2, 0 0 40px #8a2be2, inset 0 0 20px #8a2be2;
+  }
+}
+
+// 闪光动画
+@keyframes flashEffect {
+  0% {
+    opacity: 0;
+    transform: scale(0.5);
+  }
+  30% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.5);
+  }
+}
+
+// 粒子爆炸动画
+@keyframes particleExplode {
+  0% {
+    opacity: 1;
+    transform: translate(0, 0) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(
+      calc((var(--x) - 50%) * 2),
+      calc((var(--y) - 50%) * 2)
+    ) scale(0);
+  }
+}
+
+// 冲击波扩散动画
+@keyframes shockwaveExpand {
+  0% {
+    width: 100px;
+    height: 100px;
+    margin: -50px 0 0 -50px;
+    opacity: 1;
+  }
+  100% {
+    width: 2000px;
+    height: 2000px;
+    margin: -1000px 0 0 -1000px;
+    opacity: 0;
+  }
 }
 </style>

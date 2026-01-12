@@ -862,6 +862,30 @@ export const ENEMY_SKILL_MAP: Record<string, string[]> = {
     "田中勇_3",
     "田中勇_4",
     "田中勇_5"
+  ],
+  // ==================== 沐芯兰 BOSS 三阶段技能 ====================
+  // 第一阶段：代行机体·茉莉（伪装形态）- 只能使用部分技能
+  "沐芯兰_1": [
+    "沐芯兰_茉莉_1",
+    "沐芯兰_茉莉_2",
+    "沐芯兰_茉莉_3"
+  ],
+  // 第二阶段：完全同步·祸星茉莉（暴力女王形态）- 解锁全部技能
+  "沐芯兰_2": [
+    "沐芯兰_茉莉_1",
+    "沐芯兰_茉莉_2",
+    "沐芯兰_茉莉_3",
+    "沐芯兰_茉莉_4",
+    "沐芯兰_茉莉_5",
+    "沐芯兰_茉莉_6",
+    "沐芯兰_茉莉_7",
+    "沐芯兰_茉莉_8"
+  ],
+  // 第三阶段：真身露出·沐芯兰（羸弱的傲娇女王）- 羸弱技能
+  "沐芯兰_3": [
+    "沐芯兰_真身_1",
+    "沐芯兰_真身_2",
+    "沐芯兰_真身_3"
   ]
 };
 
@@ -13160,6 +13184,203 @@ export const ENEMY_SKILLS: Record<string, SkillData> = {
     buffs: [{ type: BuffType.ATK_UP, value: 30, isPercent: true, duration: 2, stackable: false }],
     canBeReflected: false,
     hitCount: 1,
+  },
+  // ==================== 沐芯兰 BOSS 技能 ====================
+  // === 茉莉形态技能（一阶段可用前3个，二阶段全部解锁）===
+  '沐芯兰_茉莉_1': {
+    id: '沐芯兰_茉莉_1',
+    name: '嘲讽闪避',
+    description: '"哎呀呀，前辈的攻击是开了自动避让模式吗？真是让人发笑呢~♡"',
+    effectDescription: '闪避率+40%，持续2回合',
+    icon: 'Wind',
+    type: SkillType.SUPPORT,
+    staminaCost: 10,
+    cooldown: 3,
+    castTime: 0,
+    damageFormula: [],
+    accuracy: 100,
+    critModifier: 0,
+    buffs: [{ type: BuffType.DODGE_DOWN, value: -40, isPercent: true, duration: 2, stackable: false }],
+    canBeReflected: false,
+    hitCount: 0,
+  },
+  '沐芯兰_茉莉_2': {
+    id: '沐芯兰_茉莉_2',
+    name: '傀儡丝线',
+    description: '"被我的丝线缠住了呢~接下来要怎么玩弄你好呢？"',
+    effectDescription: '造成80%性斗力伤害，束缚目标2回合',
+    icon: 'Link',
+    type: SkillType.CONTROL,
+    staminaCost: 15,
+    cooldown: 4,
+    castTime: 0,
+    damageFormula: [{ source: DamageSource.SEX_POWER, coefficient: 0.80, baseValue: 10 }],
+    accuracy: 85,
+    critModifier: 10,
+    buffs: [{ type: BuffType.BIND, value: 0, isPercent: false, duration: 2, stackable: false }],
+    canBeReflected: false,
+    hitCount: 1,
+  },
+  '沐芯兰_茉莉_3': {
+    id: '沐芯兰_茉莉_3',
+    name: '轻蔑一瞥',
+    description: '"就这？就这点程度？杂鱼就是杂鱼呢~"',
+    effectDescription: '造成60%魅力伤害，降低目标性斗力20%，降低闪避率100%（3回合）',
+    icon: 'Eye',
+    type: SkillType.CHARM,
+    staminaCost: 12,
+    cooldown: 2,
+    castTime: 0,
+    damageFormula: [{ source: DamageSource.CHARM, coefficient: 0.60, baseValue: 8 }],
+    accuracy: 90,
+    critModifier: 15,
+    buffs: [
+      { type: BuffType.ATK_DOWN, value: 20, isPercent: true, duration: 2, stackable: false },
+      { type: BuffType.DODGE_DOWN, value: 100, isPercent: true, duration: 3, stackable: false }
+    ],
+    canBeReflected: false,
+    hitCount: 1,
+  },
+  // === 二阶段解锁技能 ===
+  '沐芯兰_茉莉_4': {
+    id: '沐芯兰_茉莉_4',
+    name: '过载同步',
+    description: '"利息已经滚到你付不起的程度了。现在，把你的胜算全部清零吧。"',
+    effectDescription: '自身性斗力+100%，暴击率+30%，持续3回合',
+    icon: 'Zap',
+    type: SkillType.SUPPORT,
+    staminaCost: 20,
+    cooldown: 5,
+    castTime: 0,
+    damageFormula: [],
+    accuracy: 100,
+    critModifier: 0,
+    buffs: [
+      { type: BuffType.ATK_UP, value: 100, isPercent: true, duration: 3, stackable: false },
+      { type: BuffType.CRIT_UP, value: 30, isPercent: false, duration: 3, stackable: false }
+    ],
+    canBeReflected: false,
+    hitCount: 0,
+  },
+  '沐芯兰_茉莉_5': {
+    id: '沐芯兰_茉莉_5',
+    name: '意识波动',
+    description: '"感受到了吗？这就是被完全支配的感觉。"',
+    effectDescription: '造成250%性斗力伤害，降低目标幸运100点（3回合）',
+    icon: 'Brain',
+    type: SkillType.MENTAL,
+    staminaCost: 25,
+    cooldown: 3,
+    castTime: 0,
+    damageFormula: [{ source: DamageSource.SEX_POWER, coefficient: 2.50, baseValue: 20 }],
+    accuracy: 88,
+    critModifier: 25,
+    buffs: [{ type: BuffType.LUCK_DOWN, value: 100, isPercent: false, duration: 3, stackable: false }],
+    canBeReflected: false,
+    hitCount: 1,
+  },
+  '沐芯兰_茉莉_6': {
+    id: '沐芯兰_茉莉_6',
+    name: '心智劫持',
+    description: '"你的意识...现在归我所有了。"',
+    effectDescription: '造成500%魅力伤害，降低目标防御50%（2回合）',
+    icon: 'Ghost',
+    type: SkillType.CHARM,
+    staminaCost: 22,
+    cooldown: 4,
+    castTime: 0,
+    damageFormula: [{ source: DamageSource.CHARM, coefficient: 1.20, baseValue: 15 }],
+    accuracy: 85,
+    critModifier: 20,
+    buffs: [{ type: BuffType.DEF_DOWN, value: 50, isPercent: true, duration: 2, stackable: false }],
+    canBeReflected: false,
+    hitCount: 1,
+  },
+  '沐芯兰_茉莉_7': {
+    id: '沐芯兰_茉莉_7',
+    name: '傀儡风暴',
+    description: '"让我的傀儡们...把你撕碎吧！"',
+    effectDescription: '造成100%性斗力伤害，3连击',
+    icon: 'Tornado',
+    type: SkillType.PHYSICAL,
+    staminaCost: 35,
+    cooldown: 5,
+    castTime: 0,
+    damageFormula: [{ source: DamageSource.SEX_POWER, coefficient: 1.00, baseValue: 10 }],
+    accuracy: 80,
+    critModifier: 30,
+    buffs: [],
+    canBeReflected: false,
+    hitCount: 3,
+  },
+  '沐芯兰_茉莉_8': {
+    id: '沐芯兰_茉莉_8',
+    name: '女王的审判',
+    description: '"在女王面前...跪下吧，杂鱼。"',
+    effectDescription: '造成250%性斗力伤害，必定暴击',
+    icon: 'Crown',
+    type: SkillType.PHYSICAL,
+    staminaCost: 40,
+    cooldown: 6,
+    castTime: 0,
+    damageFormula: [{ source: DamageSource.SEX_POWER, coefficient: 2.50, baseValue: 30 }],
+    accuracy: 90,
+    critModifier: 100,
+    buffs: [],
+    canBeReflected: false,
+    hitCount: 1,
+  },
+  // === 真身形态技能（羸弱） ===
+  '沐芯兰_真身_1': {
+    id: '沐芯兰_真身_1',
+    name: '颤抖的反抗',
+    description: '"别、别过来！我警告你...（声音颤抖）"',
+    effectDescription: '造成30%性斗力伤害',
+    icon: 'Hand',
+    type: SkillType.PHYSICAL,
+    staminaCost: 5,
+    cooldown: 1,
+    castTime: 0,
+    damageFormula: [{ source: DamageSource.SEX_POWER, coefficient: 0.30, baseValue: 5 }],
+    accuracy: 60,
+    critModifier: 5,
+    buffs: [],
+    canBeReflected: false,
+    hitCount: 1,
+  },
+  '沐芯兰_真身_2': {
+    id: '沐芯兰_真身_2',
+    name: '傲娇威吓',
+    description: '"看什么看！没见过真正的女王吗？"',
+    effectDescription: '降低目标性斗力10%，持续1回合',
+    icon: 'AlertTriangle',
+    type: SkillType.CONTROL,
+    staminaCost: 8,
+    cooldown: 2,
+    castTime: 0,
+    damageFormula: [],
+    accuracy: 70,
+    critModifier: 0,
+    buffs: [{ type: BuffType.ATK_DOWN, value: 10, isPercent: true, duration: 1, stackable: false }],
+    canBeReflected: false,
+    hitCount: 0,
+  },
+  '沐芯兰_真身_3': {
+    id: '沐芯兰_真身_3',
+    name: '最后的倔强',
+    description: '"我才不会...认输呢...笨蛋杂鱼..."',
+    effectDescription: '造成50%魅力伤害',
+    icon: 'Heart',
+    type: SkillType.CHARM,
+    staminaCost: 10,
+    cooldown: 2,
+    castTime: 0,
+    damageFormula: [{ source: DamageSource.CHARM, coefficient: 0.50, baseValue: 8 }],
+    accuracy: 65,
+    critModifier: 10,
+    buffs: [],
+    canBeReflected: false,
+    hitCount: 1,
   }
 };
 
@@ -13220,6 +13441,7 @@ export function convertToMvuSkillFormat(skill: SkillData) {
         [BuffType.ATK_UP]: '性斗力',
         [BuffType.ATK_DOWN]: '性斗力',
         [BuffType.CRIT_UP]: '暴击率',
+        [BuffType.LUCK_DOWN]: '幸运',
       };
       const effectType = buffTypeMap[buff.type] || '性斗力';
       let effectValue = buff.value;
@@ -13227,7 +13449,7 @@ export function convertToMvuSkillFormat(skill: SkillData) {
       // 束缚效果值为0，持续回合数决定束缚时长；debuff使用负值
       if (buff.type === BuffType.BIND) {
         effectValue = 0; // 束缚效果值为0，通过持续回合数来控制
-      } else if (buff.type === BuffType.SENSITIVE || buff.type === BuffType.DODGE_DOWN || buff.type === BuffType.ATK_DOWN) {
+      } else if (buff.type === BuffType.SENSITIVE || buff.type === BuffType.DODGE_DOWN || buff.type === BuffType.ATK_DOWN || buff.type === BuffType.LUCK_DOWN) {
         effectValue = -Math.abs(buff.value);
       }
       
