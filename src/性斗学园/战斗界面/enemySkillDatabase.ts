@@ -13770,7 +13770,8 @@ export function getEnemySkills(enemyName: string, resolvedName?: string): SkillD
   
   // 尝试包含匹配：遍历技能映射表，如果对手名包含某个角色名，返回该角色技能
   // 如果包含多个，以第一个为准
-  for (const name of Object.keys(ENEMY_SKILL_MAP)) {
+  const enemySkillNames = Object.keys(ENEMY_SKILL_MAP).sort((a, b) => b.length - a.length);
+  for (const name of enemySkillNames) {
     if (enemyName.includes(name)) {
       console.info(`[技能数据库] 包含匹配成功: "${enemyName}" 包含 "${name}"`);
       const skillIds = ENEMY_SKILL_MAP[name];

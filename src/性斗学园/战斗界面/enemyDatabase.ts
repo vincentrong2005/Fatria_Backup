@@ -1471,7 +1471,8 @@ export function getEnemyMvuData(enemyName: string): EnemyMvuData | null {
   
   // 2. 尝试包含匹配：遍历数据库全名，如果对手名包含某个全名，返回该数据
   //    如果包含多个，以第一个为准
-  for (const fullName of Object.keys(ENEMY_DATABASE)) {
+  const enemyDbNames = Object.keys(ENEMY_DATABASE).sort((a, b) => b.length - a.length);
+  for (const fullName of enemyDbNames) {
     if (enemyName.includes(fullName)) {
       console.info(`[敌人数据库] 包含匹配成功（数据）: "${enemyName}" 包含 "${fullName}"`);
       return ENEMY_DATABASE[fullName];
@@ -1480,7 +1481,8 @@ export function getEnemyMvuData(enemyName: string): EnemyMvuData | null {
   
   // 3. 尝试别名包含匹配：遍历别名表，如果对手名包含某个别名，返回对应数据
   //    如果包含多个，以第一个为准
-  for (const [alias, fullName] of Object.entries(NAME_ALIASES)) {
+  const enemyAliases = Object.entries(NAME_ALIASES).sort((a, b) => b[0].length - a[0].length);
+  for (const [alias, fullName] of enemyAliases) {
     if (enemyName.includes(alias) && fullName in ENEMY_DATABASE) {
       console.info(`[敌人数据库] 别名包含匹配成功（数据）: "${enemyName}" 包含别名 "${alias}" -> "${fullName}"`);
       return ENEMY_DATABASE[fullName];
@@ -1505,7 +1507,8 @@ export function resolveEnemyName(enemyName: string): string {
   
   // 2. 尝试包含匹配：遍历数据库全名，如果对手名包含某个全名，返回该全名
   //    如果包含多个，以第一个为准
-  for (const fullName of Object.keys(ENEMY_DATABASE)) {
+  const enemyDbNames = Object.keys(ENEMY_DATABASE).sort((a, b) => b.length - a.length);
+  for (const fullName of enemyDbNames) {
     if (enemyName.includes(fullName)) {
       console.info(`[敌人数据库] 包含匹配成功: "${enemyName}" 包含 "${fullName}"`);
       return fullName;
@@ -1514,7 +1517,8 @@ export function resolveEnemyName(enemyName: string): string {
   
   // 3. 尝试别名包含匹配：遍历别名表，如果对手名包含某个别名，返回对应全名
   //    如果包含多个，以第一个为准
-  for (const [alias, fullName] of Object.entries(NAME_ALIASES)) {
+  const enemyAliases = Object.entries(NAME_ALIASES).sort((a, b) => b[0].length - a[0].length);
+  for (const [alias, fullName] of enemyAliases) {
     if (enemyName.includes(alias) && fullName in ENEMY_DATABASE) {
       console.info(`[敌人数据库] 别名包含匹配成功: "${enemyName}" 包含别名 "${alias}" -> "${fullName}"`);
       return fullName;

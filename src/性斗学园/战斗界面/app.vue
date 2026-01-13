@@ -60,6 +60,7 @@
       v-if="bossOverlayText"
       :key="bossDialogueKey"
       class="boss-text-overlay active"
+      :class="{ 'boss-text-muxinlan': BossSystem.bossState.isBossFight && BossSystem.bossState.bossId === 'muxinlan' }"
       @click="handleBossTextClick"
     >
       {{ bossOverlayText }}
@@ -952,7 +953,7 @@ async function loadEnemyFromMvuData(data: any, maxClimaxCount: number) {
       
       // 解析完整名称（支持模糊匹配）
       const fullEnemyName = enemyDbModule.resolveEnemyName(enemyName);
-      const presetData = enemyDbModule.getEnemyMvuData(enemyName);
+      const presetData = enemyDbModule.getEnemyMvuData(fullEnemyName);
       
       console.info(`[战斗界面] 名称解析: ${enemyName} -> ${fullEnemyName}`);
       
@@ -1030,7 +1031,7 @@ async function loadEnemyFromMvuData(data: any, maxClimaxCount: number) {
               }
             }
             
-            const enemySkills = enemySkillDbModule.getEnemySkills(enemyName, skillLookupName);
+            const enemySkills = enemySkillDbModule.getEnemySkills(fullEnemyName, skillLookupName);
             if (enemySkills && enemySkills.length > 0) {
               console.info(`[战斗界面] 为对手 ${fullEnemyName} 加载技能:`, enemySkills.map((s: any) => s.name));
               const mvuSkills: Record<string, any> = {};
@@ -1098,7 +1099,7 @@ async function loadEnemyFromMvuData(data: any, maxClimaxCount: number) {
               }
             }
             
-            const enemySkills = enemySkillDbModule.getEnemySkills(enemyName, skillLookupName);
+            const enemySkills = enemySkillDbModule.getEnemySkills(fullEnemyName, skillLookupName);
             if (enemySkills && enemySkills.length > 0) {
               console.info(`[战斗界面] 为对手 ${fullEnemyName} 加载技能:`, enemySkills.map((s: any) => s.name));
               const mvuSkills: Record<string, any> = {};
@@ -4279,6 +4280,11 @@ onMounted(async () => {
   &.active {
     animation: bossTextSlam 2.5s ease-out forwards;
   }
+}
+
+.boss-text-overlay.boss-text-muxinlan {
+  font-size: 44px;
+  letter-spacing: 6px;
 }
 
 @keyframes bossTextSlam {
