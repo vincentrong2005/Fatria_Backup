@@ -12,11 +12,7 @@
 
 import { get, isEqual, set } from '@/util/common';
 import { createScriptIdDiv, destroyScriptIdDiv, deteleportStyle, teleportStyle } from '@/util/script';
-import {
-  canLevelUp,
-  EXP_PER_LEVEL,
-  shouldTriggerOrgasm
-} from '../开局/utils/combat-calculator';
+import { shouldTriggerOrgasm } from '../开局/utils/combat-calculator';
 import StatusBarWrapper from './components/StatusBarWrapper.vue';
 
 // 等待 MVU 初始化
@@ -389,26 +385,49 @@ async function updateDependentVariables() {
     // ==================== 步骤6: 检查是否可以升级 ====================
     const currentLevel = getValue(mvuData, '角色基础._等级', 1);
     const currentExp = getValue(mvuData, '角色基础.经验值', 0);
+    const difficulty = getValue(mvuData, '角色基础.难度', '普通');
     
     let finalLevel = currentLevel; // 用于后续段位计算
+    let finalExp = currentExp;
+    const expNeededPerLevel = (() => {
+      switch (difficulty) {
+        case '简单':
+          return 100;
+        case '普通':
+          return 150;
+        case '困难':
+          return 200;
+        case '抖M':
+          return 300;
+        case '作弊':
+          return 100;
+        default:
+          return 150;
+      }
+    })();
     
-    if (canLevelUp(currentLevel, currentExp)) {
-      const newLevel = currentLevel + 1;
-      const expNeeded = currentLevel * EXP_PER_LEVEL;
-      
-      // 计算升级奖励：根据潜力计算，每级获得 floor(潜力/2) 点（属性点和技能点相同）
-      const pointsPerLevel = Math.floor(potential / 2);
-      const currentAttributePoints = getValue(mvuData, '核心状态.$属性点', 0);
-      const currentSkillPoints = getValue(mvuData, '核心状态.$技能点', 0);
-      
-      updates['角色基础._等级'] = newLevel;
-      updates['角色基础.经验值'] = currentExp - expNeeded;
-      updates['核心状态.$属性点'] = currentAttributePoints + pointsPerLevel;
-      updates['核心状态.$技能点'] = currentSkillPoints + pointsPerLevel;
-      hasUpdates = true;
-      
-      finalLevel = newLevel; // 更新最终等级
-      console.info(`[性斗学园脚本] 升级！${currentLevel} → ${newLevel}，获得 ${pointsPerLevel} 属性点和 ${pointsPerLevel} 技能点`);
+    if (finalLevel < 100 && finalExp >= expNeededPerLevel) {
+      const levelsGained = Math.min(100 - finalLevel, Math.floor(finalExp / expNeededPerLevel));
+      if (levelsGained > 0) {
+        const newLevel = finalLevel + levelsGained;
+        const remainingExp = finalExp - levelsGained * expNeededPerLevel;
+
+        // 计算升级奖励：根据潜力计算，每级获得 floor(潜力/2) 点（属性点和技能点相同）
+        const pointsPerLevel = Math.floor(potential / 2);
+        const currentAttributePoints = getValue(mvuData, '核心状态.$属性点', 0);
+        const currentSkillPoints = getValue(mvuData, '核心状态.$技能点', 0);
+        const pointsGained = levelsGained * pointsPerLevel;
+
+        updates['角色基础._等级'] = newLevel;
+        updates['角色基础.经验值'] = remainingExp;
+        updates['核心状态.$属性点'] = currentAttributePoints + pointsGained;
+        updates['核心状态.$技能点'] = currentSkillPoints + pointsGained;
+        hasUpdates = true;
+
+        finalLevel = newLevel;
+        finalExp = remainingExp;
+        console.info(`[性斗学园脚本] 升级！${currentLevel} → ${newLevel}，获得 ${pointsGained} 属性点和 ${pointsGained} 技能点`);
+      }
     }
 
     // ==================== 步骤6.5: 根据等级自动更新段位 ====================

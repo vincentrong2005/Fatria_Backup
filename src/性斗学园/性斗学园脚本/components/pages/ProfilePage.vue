@@ -18,7 +18,7 @@
             <div class="help-text">
               <div>属性点：用于在“属性加点”中提升基础属性与上限。</div>
               <div>技能点：用于学习/升级技能（在技能页消耗）。</div>
-              <div>经验值：用于提升等级（界面中显示为 当前经验 / 100）。</div>
+              <div>经验值：用于提升等级（界面中显示为 当前经验 / 升级所需经验）。</div>
               <div>潜力：角色成长强度的综合指标，每次升级增加当前潜力/2（向下取整）点属性/技能点。</div>
             </div>
           </div>
@@ -220,7 +220,7 @@
           <div class="progress-header">
             <span><i class="fas fa-star"></i> 经验值</span>
             <span class="progress-value">
-              {{ characterData.角色基础?.经验值 || 0 }} / 100
+              {{ characterData.角色基础?.经验值 || 0 }} / {{ expNeeded }}
             </span>
           </div>
           <div class="progress-bar">
@@ -573,9 +573,26 @@ function getPercentage(current: number, max: number): number {
   return Math.min(100, Math.max(0, (current / max) * 100));
 }
 
+const expNeeded = computed(() => {
+  const difficulty = props.characterData.角色基础?.难度 || '普通';
+  switch (difficulty) {
+    case '简单':
+      return 100;
+    case '普通':
+      return 150;
+    case '困难':
+      return 200;
+    case '抖M':
+      return 300;
+    case '作弊':
+      return 100;
+    default:
+      return 150;
+  }
+});
+
 function getExpPercentage(exp: number): number {
-  // 经验值上限固定为100
-  return getPercentage(exp % 100, 100);
+  return getPercentage(exp % expNeeded.value, expNeeded.value);
 }
 
 onMounted(() => {

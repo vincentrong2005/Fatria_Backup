@@ -196,9 +196,25 @@ async function checkAutoLevelUp(mvuData: any) {
     const currentExp = statData.角色基础?.经验值 || 0;
     const currentLevel = statData.角色基础?._等级 || 1;
     const potential = statData.核心状态?._潜力 || 5.0; // 潜力值 (5.0-10.0)
+    const difficulty = statData.角色基础?.难度 || '普通';
 
     // 每100经验值升一级
-    const expNeeded = 100;
+    const expNeeded = (() => {
+      switch (difficulty) {
+        case '简单':
+          return 100;
+        case '普通':
+          return 150;
+        case '困难':
+          return 200;
+        case '抖M':
+          return 300;
+        case '作弊':
+          return 100;
+        default:
+          return 150;
+      }
+    })();
 
     // 检查是否可以升级（最高100级）
     if (currentExp >= expNeeded && currentLevel < 100) {

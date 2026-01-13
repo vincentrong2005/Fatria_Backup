@@ -616,7 +616,7 @@ export const ENEMY_SKILL_MAP: Record<string, string[]> = {
     "角楯花凛_8",
     "角楯花凛_9"
   ],
-  "赤城 朱音": [
+  "赤城朱音": [
     "赤城 朱音_1",
     "赤城 朱音_2",
     "赤城 朱音_3",
@@ -12900,7 +12900,7 @@ export const ENEMY_SKILLS: Record<string, SkillData> = {
   },
   '沐芯兰_茉莉_2': {
     id: '沐芯兰_茉莉_2',
-    name: '傀儡丝线',
+    name: '束缚之丝',
     description: '"被我的丝线缠住了呢~接下来要怎么玩弄你好呢？"',
     effectDescription: '造成80%性斗力伤害，束缚目标2回合',
     icon: 'Link',
@@ -12917,7 +12917,7 @@ export const ENEMY_SKILLS: Record<string, SkillData> = {
   },
   '沐芯兰_茉莉_3': {
     id: '沐芯兰_茉莉_3',
-    name: '轻蔑一瞥',
+    name: '轻蔑的嘲讽',
     description: '"就这？就这点程度？杂鱼就是杂鱼呢~"',
     effectDescription: '造成60%魅力伤害，降低目标性斗力20%，降低闪避率100%（3回合）',
     icon: 'Eye',
@@ -12938,7 +12938,7 @@ export const ENEMY_SKILLS: Record<string, SkillData> = {
   // === 二阶段解锁技能 ===
   '沐芯兰_茉莉_4': {
     id: '沐芯兰_茉莉_4',
-    name: '过载同步',
+    name: '意识同步',
     description: '"利息已经滚到你付不起的程度了。现在，把你的胜算全部清零吧。"',
     effectDescription: '自身性斗力+100%，暴击率+30%，持续3回合',
     icon: 'Zap',
@@ -12958,7 +12958,7 @@ export const ENEMY_SKILLS: Record<string, SkillData> = {
   },
   '沐芯兰_茉莉_5': {
     id: '沐芯兰_茉莉_5',
-    name: '意识波动',
+    name: '意识劫持，快感赋予',
     description: '"感受到了吗？这就是被完全支配的感觉。"',
     effectDescription: '造成250%性斗力伤害，降低目标幸运150点（3回合）',
     icon: 'Brain',
@@ -12975,7 +12975,7 @@ export const ENEMY_SKILLS: Record<string, SkillData> = {
   },
   '沐芯兰_茉莉_6': {
     id: '沐芯兰_茉莉_6',
-    name: '心智劫持',
+    name: '心智劫持，防御剥离',
     description: '"你的意识...现在归我所有了。"',
     effectDescription: '造成500%魅力伤害，降低目标防御50%（2回合）',
     icon: 'Ghost',
@@ -12992,8 +12992,8 @@ export const ENEMY_SKILLS: Record<string, SkillData> = {
   },
   '沐芯兰_茉莉_7': {
     id: '沐芯兰_茉莉_7',
-    name: '傀儡风暴',
-    description: '"让我的傀儡们...把你撕碎吧！"',
+    name: '持续敏感点打击',
+    description: '"让我的傀儡们...把你撕碎，高潮吧杂鱼！"',
     effectDescription: '造成50%性斗力伤害，6连击',
     icon: 'Tornado',
     type: SkillType.PHYSICAL,
@@ -13009,7 +13009,7 @@ export const ENEMY_SKILLS: Record<string, SkillData> = {
   },
   '沐芯兰_茉莉_8': {
     id: '沐芯兰_茉莉_8',
-    name: '女王的审判',
+    name: '女王的踩踏',
     description: '"在女王面前...跪下吧，杂鱼。"',
     effectDescription: '造成250%性斗力伤害，必定暴击',
     icon: 'Crown',
