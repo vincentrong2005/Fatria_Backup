@@ -60,21 +60,21 @@
       <div class="gacha-buttons">
         <button 
           class="gacha-btn single"
-          :disabled="skillPoints < 3"
+          :disabled="skillPoints < 2"
           @click="performGacha(1)"
         >
           <i class="fas fa-dice-one"></i>
           <span class="btn-text">单抽</span>
-          <span class="btn-cost">3 技能点</span>
+          <span class="btn-cost">2 技能点</span>
         </button>
         <button 
           class="gacha-btn ten"
-          :disabled="skillPoints < 30"
+          :disabled="skillPoints < 20"
           @click="performGacha(10)"
         >
           <i class="fas fa-dice-d20"></i>
           <span class="btn-text">十连抽</span>
-          <span class="btn-cost">30 技能点</span>
+          <span class="btn-cost">20 技能点</span>
         </button>
       </div>
 
@@ -411,7 +411,7 @@ async function upgradeSkill(skillId: string, skill: any) {
 
 // 执行抽取
 async function performGacha(count: number) {
-  const cost = count === 1 ? 3 : 30;
+  const cost = count === 1 ? 2 : 20;
   if (skillPoints.value < cost) return;
   
   try {

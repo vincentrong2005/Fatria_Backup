@@ -204,15 +204,15 @@ async function checkAutoLevelUp(mvuData: any) {
         case '简单':
           return 100;
         case '普通':
-          return 150;
+          return 125;
         case '困难':
-          return 200;
+          return 150;
         case '抖M':
-          return 300;
+          return 200;
         case '作弊':
           return 100;
         default:
-          return 150;
+          return 125;
       }
     })();
 
