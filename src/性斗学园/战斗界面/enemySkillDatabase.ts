@@ -140,17 +140,17 @@ export const ENEMY_SKILL_MAP: Record<string, string[]> = {
     "安娜科兹洛娃_8",
     "安娜科兹洛娃_9"
   ],
-  "安琪 (原名": [
-    "安琪 (原名_1",
-    "安琪 (原名_2",
-    "安琪 (原名_3",
-    "安琪 (原名_4",
-    "安琪 (原名_5",
-    "安琪 (原名_6",
-    "安琪 (原名_7",
-    "安琪 (原名_8",
-    "安琪 (原名_9",
-    "安琪 (原名_10"
+  "安琪": [
+    "安琪_1",
+    "安琪_2",
+    "安琪_3",
+    "安琪_4",
+    "安琪_5",
+    "安琪_6",
+    "安琪_7",
+    "安琪_8",
+    "安琪_9",
+    "安琪_10"
   ],
   "小鸟游雏子": [
     "小鸟游雏子_1",
@@ -2759,8 +2759,8 @@ export const ENEMY_SKILLS: Record<string, SkillData> = {
     canBeReflected: false,
     hitCount: 1,
   },
-  '安琪 (原名_1': {
-    id: '安琪 (原名_1',
+  '安琪_1': {
+    id: '安琪_1',
     name: '汗臭驾驶服缠绕',
     description: '脱下沾满浓郁体味的驾驶服,如蟒蛇般将对手的头部与上半身紧紧包裹,在剥夺其视觉与呼吸的同时进行气味侵蚀。',
     effectDescription: '造成120%性斗力伤害，388%魅力伤害',
@@ -2776,8 +2776,8 @@ export const ENEMY_SKILLS: Record<string, SkillData> = {
     canBeReflected: false,
     hitCount: 1,
   },
-  '安琪 (原名_2': {
-    id: '安琪 (原名_2',
+  '安琪_2': {
+    id: '安琪_2',
     name: '座椅束缚调教',
     description: '将对手强行固定在Villkiss的特制调教座椅上,启动360度旋转与全方位按摩功能,进行无法反抗的机械化调教。',
     effectDescription: '造成80%性斗力伤害，束缚3回合',
@@ -2793,8 +2793,8 @@ export const ENEMY_SKILLS: Record<string, SkillData> = {
     canBeReflected: false,
     hitCount: 1,
   },
-  '安琪 (原名_3': {
-    id: '安琪 (原名_3',
+  '安琪_3': {
+    id: '安琪_3',
     name: '机械榨精供能',
     description: '启动机甲隐藏的榨精装置,将对手的性器连接至能源转化系统,每一次高潮都将成为Villkiss继续战斗的动力。',
     effectDescription: '造成203%性斗力伤害',
@@ -2810,8 +2810,8 @@ export const ENEMY_SKILLS: Record<string, SkillData> = {
     canBeReflected: false,
     hitCount: 1,
   },
-  '安琪 (原名_4': {
-    id: '安琪 (原名_4',
+  '安琪_4': {
+    id: '安琪_4',
     name: '人机双重调教',
     description: '本体以狂野的地面技压制对手,同时操控Villkiss的机械臂对对手的其他敏感点进行多重刺激,带来双倍的屈辱与快感。',
     effectDescription: '造成80%性斗力伤害，束缚3回合',
@@ -2827,8 +2827,8 @@ export const ENEMY_SKILLS: Record<string, SkillData> = {
     canBeReflected: false,
     hitCount: 1,
   },
-  '安琪 (原名_5': {
-    id: '安琪 (原名_5',
+  '安琪_5': {
+    id: '安琪_5',
     name: '汗臭光环',
     description: '在战斗中释放出强烈的、如同麝香般的汗臭,持续削弱对手的忍耐力,使其思维变得迟钝,呼吸急促。',
     effectDescription: '造成203%性斗力伤害',
@@ -2844,8 +2844,8 @@ export const ENEMY_SKILLS: Record<string, SkillData> = {
     canBeReflected: false,
     hitCount: 1,
   },
-  '安琪 (原名_6': {
-    id: '安琪 (原名_6',
+  '安琪_6': {
+    id: '安琪_6',
     name: '气味支配',
     description: '将自己穿过的、尚有余温的臭袜子强行塞入对手口中,浓烈的气味会侵蚀其大脑,让其在半昏迷状态下听从指令。',
     effectDescription: '造成120%性斗力伤害，388%魅力伤害',
@@ -2861,8 +2861,8 @@ export const ENEMY_SKILLS: Record<string, SkillData> = {
     canBeReflected: false,
     hitCount: 1,
   },
-  '安琪 (原名_7': {
-    id: '安琪 (原名_7',
+  '安琪_7': {
+    id: '安琪_7',
     name: '体味标记',
     description: '在对手身上留下自己独特的体味印记,使其在接下来的一段时间内,闻到任何相似的气味都会产生服从的冲动。',
     effectDescription: '造成120%性斗力伤害，388%魅力伤害',
@@ -2878,8 +2878,8 @@ export const ENEMY_SKILLS: Record<string, SkillData> = {
     canBeReflected: false,
     hitCount: 1,
   },
-  '安琪 (原名_8': {
-    id: '安琪 (原名_8',
+  '安琪_8': {
+    id: '安琪_8',
     name: '皇家束缚降服',
     description: '结合了皇室格斗术的地面锁技,能将对手固定成极其屈辱的姿势,并在关节要害处施加精准的压力,使其动弹不得。',
     effectDescription: '造成80%性斗力伤害，束缚3回合',
@@ -2895,8 +2895,8 @@ export const ENEMY_SKILLS: Record<string, SkillData> = {
     canBeReflected: false,
     hitCount: 1,
   },
-  '安琪 (原名_9': {
-    id: '安琪 (原名_9',
+  '安琪_9': {
+    id: '安琪_9',
     name: '傲慢的赏赐',
     description: '将自己不吃的食物(通常沾染了她的体液)强行喂给被压制的对手,用高高在上的姿态进行投食羞辱,摧毁其自尊。',
     effectDescription: '造成80%性斗力伤害，束缚3回合',
@@ -2912,8 +2912,8 @@ export const ENEMY_SKILLS: Record<string, SkillData> = {
     canBeReflected: false,
     hitCount: 1,
   },
-  '安琪 (原名_10': {
-    id: '安琪 (原名_10',
+  '安琪_10': {
+    id: '安琪_10',
     name: '电气按摩闷杀',
     description: '用结实的大腿紧紧夹住对手的头部,在令其窒息的同时,利用战斗服产生的微弱电流刺激其大脑,带来濒死的快感。',
     effectDescription: '造成203%性斗力伤害',
