@@ -12926,7 +12926,7 @@ export const ENEMY_SKILLS: Record<string, SkillData> = {
     cooldown: 2,
     castTime: 0,
     damageFormula: [{ source: DamageSource.CHARM, coefficient: 0.60, baseValue: 8 }],
-    accuracy: 90,
+    accuracy: 200,
     critModifier: 15,
     buffs: [
       { type: BuffType.ATK_DOWN, value: 20, isPercent: true, duration: 2, stackable: false },
