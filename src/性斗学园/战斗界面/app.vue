@@ -1097,8 +1097,8 @@ async function loadEnemyFromMvuData(data: any, maxClimaxCount: number) {
               const enemyLuck = vary(level * 1);
               const enemyEvasion = vary(level * 0.5);
               const enemyCrit = vary(level * 0.8);
-              const enemyMaxEndurance = vary(level * 8);
-              const enemyMaxPleasure = vary(level * 9);
+              const enemyMaxEndurance = Math.max(100, vary(level * 8));
+              const enemyMaxPleasure = Math.max(100, vary(level * 9));
               const enemySexPower = vary(level * 9);
               const enemyBaseEndurance = vary(level * 9);
 
