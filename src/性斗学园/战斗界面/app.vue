@@ -1041,9 +1041,29 @@ async function loadEnemyFromMvuData(data: any, maxClimaxCount: number) {
               _.set(mvuData.stat_data, '性斗系统.对手可用技能', mvuSkills);
               console.info(`[战斗界面] 技能覆盖完成，现有技能数: ${Object.keys(mvuSkills).length}`);
             } else {
-              // 如果MVU中没有对手可用技能，初始化为空对象
-              if (!_.get(mvuData.stat_data, '性斗系统.对手可用技能')) {
-                _.set(mvuData.stat_data, '性斗系统.对手可用技能', {});
+              // 如果未匹配到对手技能：使用基础技能库兜底，保证敌人至少有技能可用
+              const fallbackSkills = enemySkillDbModule.getFallbackEnemySkills(fullEnemyName, 5);
+              if (fallbackSkills && fallbackSkills.length > 0) {
+                console.info(`[战斗界面] 对手 ${fullEnemyName} 未匹配到专属技能，使用基础技能兜底:`, fallbackSkills.map((s: any) => s.name));
+                const mvuSkills: Record<string, any> = {};
+                fallbackSkills.forEach((skill: any) => {
+                  mvuSkills[skill.id] = enemySkillDbModule.convertToMvuSkillFormat(skill);
+                });
+                _.set(mvuData.stat_data, '性斗系统.对手可用技能', mvuSkills);
+
+                // 初始化该批技能的冷却表（不覆盖已有对象结构）
+                const cooldownObj = _.get(mvuData.stat_data, '性斗系统.对手技能冷却', {}) || {};
+                for (const skillId of Object.keys(mvuSkills)) {
+                  if (!(skillId in cooldownObj)) {
+                    cooldownObj[skillId] = 0;
+                  }
+                }
+                _.set(mvuData.stat_data, '性斗系统.对手技能冷却', cooldownObj);
+              } else {
+                // 保持原行为：不改动，仅保证字段存在
+                if (!_.get(mvuData.stat_data, '性斗系统.对手可用技能')) {
+                  _.set(mvuData.stat_data, '性斗系统.对手可用技能', {});
+                }
               }
             }
             
@@ -1060,6 +1080,81 @@ async function loadEnemyFromMvuData(data: any, maxClimaxCount: number) {
         console.info(`[战斗界面] 数据库中未找到对手数据: ${enemyName}，使用MVU中的现有数据`);
         // 即使数据库中没有数据，也尝试设置立绘（使用解析后的完整名称）
         const fullEnemyName = resolveEnemyName(enemyName);
+        // 如果敌人数据缺失：根据角色基础._等级生成一套基础敌人数据并覆盖写入MVU
+        try {
+          if (typeof Mvu !== 'undefined') {
+            const mvuData = Mvu.getMvuData({ type: 'message', message_id: 'latest' });
+            if (mvuData?.stat_data) {
+              const baseLevel = _.get(mvuData.stat_data, '角色基础._等级', 1);
+              const level = Math.max(1, Number(baseLevel) || 1);
+              const vary = (base: number) => {
+                const factor = 0.8 + Math.random() * 0.4;
+                return Math.floor(base * factor);
+              };
+
+              const enemyLevel = vary(level * 1);
+              const enemyCharm = vary(level * 1);
+              const enemyLuck = vary(level * 1);
+              const enemyEvasion = vary(level * 0.5);
+              const enemyCrit = vary(level * 0.8);
+              const enemyMaxEndurance = vary(level * 8);
+              const enemyMaxPleasure = vary(level * 9);
+              const enemySexPower = vary(level * 9);
+              const enemyBaseEndurance = vary(level * 9);
+
+              _.set(mvuData.stat_data, '性斗系统.对手名称', fullEnemyName);
+              _.set(mvuData.stat_data, '性斗系统.对手魅力', enemyCharm);
+              _.set(mvuData.stat_data, '性斗系统.对手幸运', enemyLuck);
+              _.set(mvuData.stat_data, '性斗系统.对手闪避率', enemyEvasion);
+              _.set(mvuData.stat_data, '性斗系统.对手暴击率', enemyCrit);
+              _.set(mvuData.stat_data, '性斗系统.对手等级', enemyLevel);
+              _.set(mvuData.stat_data, '性斗系统.对手最大耐力', enemyMaxEndurance);
+              _.set(mvuData.stat_data, '性斗系统.对手耐力', enemyMaxEndurance);
+              _.set(mvuData.stat_data, '性斗系统.对手快感', 0);
+              _.set(mvuData.stat_data, '性斗系统.对手最大快感', enemyMaxPleasure);
+              _.set(mvuData.stat_data, '性斗系统.对手高潮次数', 0);
+              _.set(mvuData.stat_data, '性斗系统.对手性斗力', enemySexPower);
+              _.set(mvuData.stat_data, '性斗系统.对手忍耐力', enemyBaseEndurance);
+
+              // 初始化对手实时属性（初始时等于基础属性）
+              _.set(mvuData.stat_data, '性斗系统.对手实时魅力', enemyCharm);
+              _.set(mvuData.stat_data, '性斗系统.对手实时幸运', enemyLuck);
+              _.set(mvuData.stat_data, '性斗系统.对手实时闪避率', enemyEvasion);
+              _.set(mvuData.stat_data, '性斗系统.对手实时暴击率', enemyCrit);
+              _.set(mvuData.stat_data, '性斗系统.对手实时性斗力', enemySexPower);
+              _.set(mvuData.stat_data, '性斗系统.对手实时忍耐力', enemyBaseEndurance);
+
+              // 确保对手临时状态结构存在
+              if (!_.get(mvuData.stat_data, '性斗系统.对手临时状态')) {
+                _.set(mvuData.stat_data, '性斗系统.对手临时状态', {
+                  状态列表: {},
+                  加成统计: {},
+                });
+              } else {
+                if (!_.get(mvuData.stat_data, '性斗系统.对手临时状态.状态列表')) {
+                  _.set(mvuData.stat_data, '性斗系统.对手临时状态.状态列表', {});
+                }
+                if (!_.get(mvuData.stat_data, '性斗系统.对手临时状态.加成统计')) {
+                  _.set(mvuData.stat_data, '性斗系统.对手临时状态.加成统计', {});
+                }
+              }
+
+              // 确保对手技能冷却存在（按需求为{}）
+              _.set(mvuData.stat_data, '性斗系统.对手技能冷却', {});
+
+              await Mvu.replaceMvuData(mvuData, { type: 'message', message_id: 'latest' });
+              console.info(`[战斗界面] 已根据角色等级生成并写入基础对手数据: ${fullEnemyName}，等级=${level}`);
+
+              // 重新读取数据
+              const updatedMvuData = Mvu.getMvuData({ type: 'message', message_id: 'latest' });
+              if (updatedMvuData?.stat_data) {
+                data = updatedMvuData.stat_data;
+              }
+            }
+          }
+        } catch (e) {
+          console.warn('[战斗界面] 生成基础对手数据失败，继续使用现有MVU数据', e);
+        }
         if (BossSystem.bossState.isBossFight && BossSystem.bossState.bossId === 'muxinlan') {
           enemy.value.avatarUrl = BossSystem.getMuxinlanAvatarUrl(BossSystem.bossState.currentPhase);
         } else {
@@ -1109,9 +1204,29 @@ async function loadEnemyFromMvuData(data: any, maxClimaxCount: number) {
               _.set(mvuData.stat_data, '性斗系统.对手可用技能', mvuSkills);
               console.info(`[战斗界面] 技能覆盖完成，现有技能数: ${Object.keys(mvuSkills).length}`);
             } else {
-              // 确保对手可用技能存在
-              if (!_.get(mvuData.stat_data, '性斗系统.对手可用技能')) {
-                _.set(mvuData.stat_data, '性斗系统.对手可用技能', {});
+              // 如果未匹配到对手技能：使用基础技能库兜底，保证敌人至少有技能可用
+              const fallbackSkills = enemySkillDbModule.getFallbackEnemySkills(fullEnemyName, 5);
+              if (fallbackSkills && fallbackSkills.length > 0) {
+                console.info(`[战斗界面] 对手 ${fullEnemyName} 未匹配到专属技能，使用基础技能兜底:`, fallbackSkills.map((s: any) => s.name));
+                const mvuSkills: Record<string, any> = {};
+                fallbackSkills.forEach((skill: any) => {
+                  mvuSkills[skill.id] = enemySkillDbModule.convertToMvuSkillFormat(skill);
+                });
+                _.set(mvuData.stat_data, '性斗系统.对手可用技能', mvuSkills);
+
+                // 初始化该批技能的冷却表（不覆盖已有对象结构）
+                const cooldownObj = _.get(mvuData.stat_data, '性斗系统.对手技能冷却', {}) || {};
+                for (const skillId of Object.keys(mvuSkills)) {
+                  if (!(skillId in cooldownObj)) {
+                    cooldownObj[skillId] = 0;
+                  }
+                }
+                _.set(mvuData.stat_data, '性斗系统.对手技能冷却', cooldownObj);
+              } else {
+                // 保持原行为：不改动，仅保证字段存在
+                if (!_.get(mvuData.stat_data, '性斗系统.对手可用技能')) {
+                  _.set(mvuData.stat_data, '性斗系统.对手可用技能', {});
+                }
               }
             }
             
