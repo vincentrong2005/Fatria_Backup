@@ -1986,7 +1986,65 @@ function isSkillDisabled(skill: Skill): boolean {
 }
 
 // ================= 战斗逻辑 =================
+function syncEnemySkillsFromMvuIfNeeded() {
+  try {
+    if (typeof Mvu === 'undefined') return;
+
+    const mvuData = Mvu.getMvuData({ type: 'message', message_id: 'latest' });
+    if (!mvuData?.stat_data) return;
+
+    const mvuEnemySkills = _.get(mvuData.stat_data, '性斗系统.对手可用技能', {}) || {};
+    const mvuSkillIds = Object.keys(mvuEnemySkills);
+    const currentIds = (enemy.value.skills || []).map(s => s.id).filter(Boolean);
+
+    const normalize = (ids: string[]) => ids.slice().sort();
+    const same = JSON.stringify(normalize(mvuSkillIds)) === JSON.stringify(normalize(currentIds));
+
+    // MVU为空：清空内存技能，避免残留默认技能导致预告错误
+    if (mvuSkillIds.length === 0) {
+      if (currentIds.length > 0) {
+        console.info('[战斗界面] MVU对手技能为空，清空内存对手技能列表以避免预告残留');
+      }
+      enemy.value.skills = [];
+      turnState.enemyIntention = null;
+      return;
+    }
+
+    // 不一致：用MVU重建内存技能列表（不依赖skillDatabase，保证预告即时正确）
+    if (!same) {
+      console.info('[战斗界面] 检测到对手技能与MVU不一致，使用MVU重建对手技能列表');
+      enemy.value.skills = (mvuSkillIds
+        .map((skillId: string) => {
+          const mvuSkill = mvuEnemySkills[skillId];
+          if (!mvuSkill?.基本信息) return null;
+          return {
+            id: skillId,
+            name: mvuSkill.基本信息?.技能名称 || skillId,
+            description: mvuSkill.基本信息?.技能描述 || '',
+            cost: mvuSkill.冷却与消耗?.耐力消耗 || 0,
+            type: 'attack' as any,
+            cooldown: mvuSkill.冷却与消耗?.冷却回合数 || 0,
+            currentCooldown: _.get(mvuData.stat_data, `性斗系统.对手技能冷却.${skillId}`, 0),
+            data: null,
+          } as any;
+        })
+        .filter((s: any): s is any => s !== null)) as any;
+
+      // 如果当前预告技能不在新技能池里，清空让后续重新选
+      const refreshedIds = new Set((enemy.value.skills || []).map(s => s.id));
+      if (turnState.enemyIntention && !refreshedIds.has(turnState.enemyIntention.id)) {
+        turnState.enemyIntention = null;
+      }
+    }
+  } catch (e) {
+    console.warn('[战斗界面] 同步对手技能失败（预告可能不准确）', e);
+  }
+}
+
 function determineEnemyIntention() {
+  // 预告生成前，确保内存技能池与MVU一致
+  syncEnemySkillsFromMvuIfNeeded();
+
   // 从对手的技能中随机选择一项，显示在预告中
   // 从 性斗系统.对手可用技能 中随机选取一个没有冷却的技能
 
