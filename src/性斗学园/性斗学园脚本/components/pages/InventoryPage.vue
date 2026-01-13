@@ -119,7 +119,7 @@
           <button 
             class="discard-btn"
             @click.stop="discardItem(itemKey)"
-            title="丢弃"
+            title="售卖"
           >
             <i class="fas fa-times"></i>
           </button>
@@ -575,7 +575,7 @@ async function equipItem(itemKey: string, item: any) {
 }
 
 async function discardItem(itemKey: string) {
-  const ok = confirm(`确认丢弃「${itemKey}」吗？`);
+  const ok = confirm(`确认售卖「${itemKey}」吗？每件固定 100 金币`);
   if (!ok) return;
 
   const globalAny = window as any;
@@ -596,12 +596,24 @@ async function discardItem(itemKey: string) {
       return;
     }
 
-    delete statData.物品系统.背包[itemKey];
+    // 扣除物品数量（优先按数量-1，数量不足则删除条目）
+    const item = statData.物品系统.背包[itemKey];
+    const currentQty = Number(item?.数量 ?? 1) || 1;
+    if (currentQty > 1) {
+      item.数量 = currentQty - 1;
+    } else {
+      delete statData.物品系统.背包[itemKey];
+    }
+
+    // 增加金币（每件固定100）
+    if (!statData.物品系统) statData.物品系统 = {};
+    const currentCoins = Number(statData.物品系统.学园金币 ?? 0) || 0;
+    statData.物品系统.学园金币 = currentCoins + 100;
 
     await globalAny.Mvu.replaceMvuData(mvuData, { type: 'message', message_id: 'latest' });
 
     if (typeof toastr !== 'undefined') {
-      toastr.success(`已丢弃 ${itemKey}`);
+      toastr.success(`已售卖 ${itemKey}，获得 100 金币`);
     }
 
     window.dispatchEvent(new CustomEvent('mvu-data-updated'));
