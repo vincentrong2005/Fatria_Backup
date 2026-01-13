@@ -44,19 +44,23 @@
           </div>
         </div>
       </div>
-      
+
       <!-- 状态条 -->
       <div class="status-bars">
         <div class="bar-item">
           <div class="bar-header">
             <i class="fas fa-bolt stamina-icon"></i>
             <span class="bar-label">耐力</span>
-            <span class="bar-value">{{ characterData.核心状态?.$耐力 || 0 }}/{{ characterData.核心状态?.$最大耐力 || 100 }}</span>
+            <span class="bar-value"
+              >{{ characterData.核心状态?.$耐力 || 0 }}/{{ characterData.核心状态?.$最大耐力 || 100 }}</span
+            >
           </div>
           <div class="bar-track">
-            <div 
-              class="bar-fill stamina" 
-              :style="{ width: `${getPercentage(characterData.核心状态?.$耐力 || 0, characterData.核心状态?.$最大耐力 || 100)}%` }"
+            <div
+              class="bar-fill stamina"
+              :style="{
+                width: `${getPercentage(characterData.核心状态?.$耐力 || 0, characterData.核心状态?.$最大耐力 || 100)}%`,
+              }"
             ></div>
           </div>
         </div>
@@ -65,16 +69,19 @@
           <div class="bar-header">
             <i class="fas fa-heart-pulse lust-icon"></i>
             <span class="bar-label">快感</span>
-            <span class="bar-value">{{ characterData.核心状态?.$快感 || 0 }}/{{ characterData.核心状态?.$最大快感 || 100 }}</span>
+            <span class="bar-value"
+              >{{ characterData.核心状态?.$快感 || 0 }}/{{ characterData.核心状态?.$最大快感 || 100 }}</span
+            >
           </div>
           <div class="bar-track">
-            <div 
-              class="bar-fill lust" 
-              :style="{ width: `${getPercentage(characterData.核心状态?.$快感 || 0, characterData.核心状态?.$最大快感 || 100)}%` }"
+            <div
+              class="bar-fill lust"
+              :style="{
+                width: `${getPercentage(characterData.核心状态?.$快感 || 0, characterData.核心状态?.$最大快感 || 100)}%`,
+              }"
             ></div>
           </div>
         </div>
-
       </div>
     </div>
 
@@ -112,7 +119,6 @@
         </div>
       </div>
     </div>
-
   </div>
 </template>
 
@@ -130,7 +136,6 @@ const locationData = computed(() => {
 const mainQuest = computed(() => {
   return props.characterData.任务系统?.主线任务 || {};
 });
-
 
 function getPercentage(current: number, max: number): number {
   if (max === 0) return 0;
@@ -158,7 +163,8 @@ function formatNumber(num: number): string {
   gap: 12px;
 }
 
-.location-card, .coins-card {
+.location-card,
+.coins-card {
   display: flex;
   align-items: center;
   gap: 12px;
@@ -170,7 +176,7 @@ function formatNumber(num: number): string {
 
 .location-card {
   background: linear-gradient(135deg, rgba(99, 102, 241, 0.3), rgba(99, 102, 241, 0.1));
-  
+
   .card-icon {
     color: #818cf8;
   }
@@ -178,11 +184,11 @@ function formatNumber(num: number): string {
 
 .coins-card {
   background: linear-gradient(135deg, rgba(251, 191, 36, 0.3), rgba(251, 191, 36, 0.1));
-  
+
   .card-icon {
     color: #fbbf24;
   }
-  
+
   .card-value.gold {
     color: #fcd34d;
   }
@@ -273,19 +279,19 @@ function formatNumber(num: number): string {
   padding: 6px 12px;
   background: rgba(255, 255, 255, 0.08);
   border-radius: 20px;
-  
+
   i {
     font-size: 12px;
-    
+
     &.fa-fire {
       color: #f87171;
     }
-    
+
     &.fa-shield-halved {
       color: #34d399;
     }
   }
-  
+
   span {
     font-size: 14px;
     font-weight: 600;
@@ -311,21 +317,27 @@ function formatNumber(num: number): string {
   align-items: center;
   gap: 8px;
   font-size: 12px;
-  
+
   i {
     font-size: 12px;
     width: 16px;
     text-align: center;
   }
-  
-  .stamina-icon { color: #34d399; }
-  .lust-icon { color: #f472b6; }
-  .willpower-icon { color: #60a5fa; }
-  
+
+  .stamina-icon {
+    color: #34d399;
+  }
+  .lust-icon {
+    color: #f472b6;
+  }
+  .willpower-icon {
+    color: #60a5fa;
+  }
+
   .bar-label {
     color: rgba(255, 255, 255, 0.7);
   }
-  
+
   .bar-value {
     margin-left: auto;
     color: rgba(255, 255, 255, 0.5);
@@ -345,15 +357,15 @@ function formatNumber(num: number): string {
   height: 100%;
   border-radius: 3px;
   transition: width 0.4s ease;
-  
+
   &.stamina {
     background: linear-gradient(90deg, #34d399, #10b981);
   }
-  
+
   &.lust {
     background: linear-gradient(90deg, #f472b6, #ec4899);
   }
-  
+
   &.willpower {
     background: linear-gradient(90deg, #60a5fa, #3b82f6);
   }
@@ -373,22 +385,30 @@ function formatNumber(num: number): string {
   background: rgba(255, 255, 255, 0.03);
   border-radius: 12px;
   border: 1px solid rgba(255, 255, 255, 0.05);
-  
+
   .qs-label {
     font-size: 10px;
     color: rgba(255, 255, 255, 0.4);
     margin-bottom: 4px;
   }
-  
+
   .qs-value {
     font-size: 16px;
     font-weight: 700;
     font-family: 'JetBrains Mono', monospace;
-    
-    &.charm { color: #f472b6; }
-    &.luck { color: #fbbf24; }
-    &.dodge { color: #60a5fa; }
-    &.crit { color: #f87171; }
+
+    &.charm {
+      color: #f472b6;
+    }
+    &.luck {
+      color: #fbbf24;
+    }
+    &.dodge {
+      color: #60a5fa;
+    }
+    &.crit {
+      color: #f87171;
+    }
   }
 }
 
@@ -408,7 +428,7 @@ function formatNumber(num: number): string {
   border-bottom: 1px solid rgba(255, 255, 255, 0.05);
   font-size: 12px;
   color: rgba(255, 255, 255, 0.7);
-  
+
   i {
     color: #667eea;
   }
@@ -438,12 +458,12 @@ function formatNumber(num: number): string {
   border-radius: 12px;
   font-size: 11px;
   font-weight: 500;
-  
+
   &.active {
     background: rgba(96, 165, 250, 0.2);
     color: #93c5fd;
   }
-  
+
   &.done {
     background: rgba(52, 211, 153, 0.2);
     color: #6ee7b7;
@@ -468,7 +488,7 @@ function formatNumber(num: number): string {
   display: flex;
   align-items: center;
   justify-content: center;
-  
+
   i {
     font-size: 18px;
     color: #60a5fa;
@@ -505,7 +525,7 @@ function formatNumber(num: number): string {
   font-size: 12px;
   color: rgba(255, 255, 255, 0.7);
   margin-bottom: 12px;
-  
+
   i {
     color: #667eea;
   }
@@ -529,11 +549,19 @@ function formatNumber(num: number): string {
   border-radius: 50%;
   margin-top: 5px;
   flex-shrink: 0;
-  
-  &.info { background: #60a5fa; }
-  &.warning { background: #fbbf24; }
-  &.success { background: #34d399; }
-  &.error { background: #f87171; }
+
+  &.info {
+    background: #60a5fa;
+  }
+  &.warning {
+    background: #fbbf24;
+  }
+  &.success {
+    background: #34d399;
+  }
+  &.error {
+    background: #f87171;
+  }
 }
 
 .feed-content {
@@ -551,5 +579,4 @@ function formatNumber(num: number): string {
   color: rgba(255, 255, 255, 0.4);
   margin-top: 4px;
 }
-
 </style>

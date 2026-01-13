@@ -1,13 +1,13 @@
 <template>
   <div class="option-beautifier">
     <div v-if="options.length > 0" class="options-container">
-      <div 
-        v-for="(option, index) in options" 
+      <div
+        v-for="(option, index) in options"
         :key="index"
         class="option-card"
-        :class="{ 
+        :class="{
           'option-card-hover': true,
-          'option-card-fight': option.isFight
+          'option-card-fight': option.isFight,
         }"
         @click="option.isFight ? triggerFight() : selectOption(option.text)"
       >
@@ -15,19 +15,19 @@
         <div v-if="option.isFight" class="fight-button-content">
           <div class="fight-button-text">【发起性斗】</div>
         </div>
-        
+
         <!-- 普通选项显示 -->
         <template v-else>
           <!-- 选项标签 -->
           <div class="option-label">
             {{ option.label }}
           </div>
-          
+
           <!-- 选项内容 -->
           <div class="option-content">
             {{ option.text }}
           </div>
-          
+
           <!-- 点击提示 -->
           <div class="option-hint">
             <i class="fas fa-mouse-pointer"></i>
@@ -48,7 +48,10 @@ import { onMounted, ref } from 'vue';
 // 原生实现的 get 函数
 function get<T = any>(obj: any, path: string, defaultValue?: T): T {
   if (!obj || !path) return defaultValue as T;
-  const keys = path.replace(/\[(\d+)\]/g, '.$1').split('.').filter(Boolean);
+  const keys = path
+    .replace(/\[(\d+)\]/g, '.$1')
+    .split('.')
+    .filter(Boolean);
   let result: any = obj;
   for (const key of keys) {
     if (result == null) return defaultValue as T;
@@ -88,10 +91,13 @@ const loadEnemyNameFromMvu = async () => {
 // 解析选项文本
 const parseOptions = (text: string): OptionItem[] => {
   const items: OptionItem[] = [];
-  
+
   // 按行分割
-  const lines = text.split('\n').map(line => line.trim()).filter(line => line.length > 0);
-  
+  const lines = text
+    .split('\n')
+    .map(line => line.trim())
+    .filter(line => line.length > 0);
+
   for (const line of lines) {
     // 特殊处理：E. 开头的选项为性斗选项
     if (line.match(/^E\.\s*(.+)$/i)) {
@@ -105,7 +111,7 @@ const parseOptions = (text: string): OptionItem[] => {
         continue; // 跳过后续匹配
       }
     }
-    
+
     // 匹配选项格式：
     // 1. A. 文本
     // 2. A、文本
@@ -121,7 +127,7 @@ const parseOptions = (text: string): OptionItem[] => {
     if (!match) {
       match = line.match(/^\(([A-Z])\)\s*(.+)$/);
     }
-    
+
     if (match) {
       items.push({
         label: match[1],
@@ -129,7 +135,7 @@ const parseOptions = (text: string): OptionItem[] => {
       });
     }
   }
-  
+
   // 如果没有匹配到标准格式，尝试按序号分割
   if (items.length === 0) {
     // 尝试匹配数字序号：1. 2. 3. 等
@@ -147,7 +153,7 @@ const parseOptions = (text: string): OptionItem[] => {
       }
     }
   }
-  
+
   return items;
 };
 
@@ -190,7 +196,7 @@ const extractOptions = () => {
   try {
     // 获取当前消息ID
     const messageId = getCurrentMessageId();
-    
+
     // 获取当前消息内容
     const messages = getChatMessages(messageId);
     if (messages.length === 0) {
@@ -204,7 +210,7 @@ const extractOptions = () => {
     // 使用正则表达式提取 <option> 标签中的内容
     const regex = /<option>([\s\S]*?)<\/option>/;
     const match = messageText.match(regex);
-    
+
     if (match && match[1]) {
       const optionText = match[1].trim();
       options.value = parseOptions(optionText);
@@ -226,12 +232,12 @@ const triggerFight = () => {
     const parentWindow = window.parent;
     const parentAny = parentWindow as any;
     const $parent = parentAny.$ || parentAny.jQuery;
-    
+
     if (!$parent) {
       console.warn('[选项美化] 无法访问父窗口的jQuery');
       return;
     }
-    
+
     // 获取当前角色信息
     const getCharacterInfo = () => {
       // 方法1：从 chat 对象获取
@@ -250,7 +256,7 @@ const triggerFight = () => {
           };
         }
       }
-      
+
       // 方法2：从全局变量获取
       if (parentAny.character) {
         return {
@@ -258,7 +264,7 @@ const triggerFight = () => {
           avatar: parentAny.character.avatar || '',
         };
       }
-      
+
       // 方法3：从当前消息中获取角色名
       if (parentAny.chat && parentAny.chat.messages && parentAny.chat.messages.length > 0) {
         const lastMessage = parentAny.chat.messages[parentAny.chat.messages.length - 1];
@@ -269,16 +275,16 @@ const triggerFight = () => {
           };
         }
       }
-      
+
       // 默认值
       return {
         name: 'Assistant',
         avatar: '',
       };
     };
-    
+
     const charInfo = getCharacterInfo();
-    
+
     // 方法1：尝试使用 SillyTavern 的命令执行器
     if (parentAny.executeSlashCommand && typeof parentAny.executeSlashCommand === 'function') {
       // 构建 /sendas 命令
@@ -287,7 +293,7 @@ const triggerFight = () => {
       console.info('[选项美化] 已通过 executeSlashCommand 执行 /sendas 命令');
       return;
     }
-    
+
     // 方法2：通过输入框执行命令（不触发自动回复）
     const inputSelectors = [
       '#send_textarea',
@@ -298,7 +304,7 @@ const triggerFight = () => {
       '.chat-input textarea',
       '#chat-input textarea',
     ];
-    
+
     let $input: JQuery | null = null;
     for (const selector of inputSelectors) {
       $input = $parent(selector);
@@ -306,26 +312,26 @@ const triggerFight = () => {
         break;
       }
     }
-    
+
     if (!$input || $input.length === 0) {
       console.warn('[选项美化] 未找到输入框，无法执行 /sendas 命令');
       return;
     }
-    
+
     // 构建 /sendas 命令字符串
     let command = `/sendas name="${charInfo.name}"`;
     if (charInfo.avatar) {
       command += ` avatar="${charInfo.avatar}"`;
     }
     command += ' <fight>';
-    
+
     // 设置输入框的值
     $input.val(command);
-    
+
     // 触发 input 和 change 事件
     $input.trigger('input');
     $input.trigger('change');
-    
+
     // 等待一小段时间确保命令已设置
     setTimeout(() => {
       // 查找发送按钮并点击（这会执行命令但不会触发AI生成）
@@ -338,7 +344,7 @@ const triggerFight = () => {
         'button[aria-label*="Send"]',
         'button[aria-label*="发送"]',
       ];
-      
+
       let $sendButton: JQuery | null = null;
       for (const selector of sendButtonSelectors) {
         $sendButton = $parent(selector);
@@ -346,7 +352,7 @@ const triggerFight = () => {
           break;
         }
       }
-      
+
       if ($sendButton && $sendButton.length > 0) {
         // 点击发送按钮执行命令
         $sendButton.trigger('click');
@@ -368,7 +374,6 @@ const triggerFight = () => {
         }
       }
     }, 50);
-    
   } catch (error) {
     console.error('[选项美化] 触发性斗时出错:', error);
   }
@@ -380,7 +385,7 @@ const selectOption = (optionText: string) => {
     // 使用 window.parent 访问父窗口
     const parentWindow = window.parent;
     const $parent = (parentWindow as any).$ || parentWindow.jQuery;
-    
+
     if (!$parent) {
       console.warn('[选项美化] 无法访问父窗口的jQuery');
       return;
@@ -408,18 +413,18 @@ const selectOption = (optionText: string) => {
     if ($input && $input.length > 0) {
       // 设置输入框的值
       $input.val(optionText);
-      
+
       // 触发 input 事件，确保 Vue/React 等框架能检测到变化
       $input.trigger('input');
       $input.trigger('change');
-      
+
       // 聚焦输入框
       $input.focus();
-      
+
       console.info('[选项美化] 已选择选项:', optionText);
     } else {
       console.warn('[选项美化] 未找到输入框');
-      
+
       // 如果找不到输入框，尝试使用剪贴板API
       if (navigator.clipboard) {
         navigator.clipboard.writeText(optionText).catch(() => {
@@ -456,55 +461,56 @@ onMounted(async () => {
   grid-template-columns: repeat(2, 1fr);
   gap: 1rem;
   padding: 1rem 0;
-  
+
   // 性斗选项独占一行，宽度为两倍
   .option-card-fight {
     grid-column: 1 / -1; // 跨越所有列
     background: linear-gradient(135deg, rgba(239, 68, 68, 0.15) 0%, rgba(220, 38, 38, 0.15) 100%) !important;
     border-color: rgba(239, 68, 68, 0.4) !important;
-    background-image: 
+    background-image:
       radial-gradient(circle at 20% 30%, rgba(239, 68, 68, 0.2) 0%, transparent 50%),
       radial-gradient(circle at 80% 70%, rgba(220, 38, 38, 0.2) 0%, transparent 50%) !important;
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
     padding: 1.5rem 2rem !important;
-    
+
     &::before {
-      background: linear-gradient(90deg, 
+      background: linear-gradient(
+        90deg,
         transparent 0%,
         rgba(239, 68, 68, 0.6) 25%,
         rgba(220, 38, 38, 0.6) 75%,
         transparent 100%
       ) !important;
     }
-    
+
     &:hover {
       background: linear-gradient(135deg, rgba(239, 68, 68, 0.25) 0%, rgba(220, 38, 38, 0.25) 100%) !important;
-      background-image: 
+      background-image:
         radial-gradient(circle at 20% 30%, rgba(239, 68, 68, 0.35) 0%, transparent 50%),
         radial-gradient(circle at 80% 70%, rgba(220, 38, 38, 0.35) 0%, transparent 50%) !important;
       border-color: rgba(239, 68, 68, 0.7) !important;
-      box-shadow: 
+      box-shadow:
         0 12px 40px rgba(239, 68, 68, 0.5),
         0 6px 20px rgba(220, 38, 38, 0.4),
         inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
       transform: translateY(-3px) scale(1.02) !important;
-      
+
       .fight-button-text {
         transform: scale(1.05);
-        text-shadow: 
+        text-shadow:
           0 0 15px rgba(239, 68, 68, 1),
           0 2px 6px rgba(0, 0, 0, 0.6),
           0 0 30px rgba(239, 68, 68, 0.6);
       }
     }
-    
+
     &:active {
-      transform: translateY(-1px) scale(1.0) !important;
+      transform: translateY(-1px) scale(1) !important;
     }
   }
-  
+
   // 性斗按钮内容区域
   .fight-button-content {
     width: 100%;
@@ -513,14 +519,14 @@ onMounted(async () => {
     justify-content: center;
     padding: 1rem 0;
   }
-  
+
   .fight-button-text {
     color: #ffffff;
     font-size: 1.5rem;
     font-weight: 800;
     letter-spacing: 0.1em;
     text-align: center;
-    text-shadow: 
+    text-shadow:
       0 0 10px rgba(239, 68, 68, 0.8),
       0 2px 4px rgba(0, 0, 0, 0.5),
       0 0 20px rgba(239, 68, 68, 0.4);
@@ -529,7 +535,7 @@ onMounted(async () => {
     -webkit-text-fill-color: transparent;
     background-clip: text;
     position: relative;
-    
+
     // 添加发光效果
     &::before {
       content: '【发起性斗】';
@@ -554,7 +560,7 @@ onMounted(async () => {
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   backdrop-filter: blur(20px) saturate(180%);
-  box-shadow: 
+  box-shadow:
     0 4px 16px rgba(0, 0, 0, 0.2),
     0 2px 4px rgba(99, 102, 241, 0.15),
     inset 0 1px 0 rgba(255, 255, 255, 0.1);
@@ -562,12 +568,12 @@ onMounted(async () => {
   display: flex;
   align-items: center;
   gap: 1rem;
-  
+
   // 渐变背景装饰
-  background-image: 
+  background-image:
     radial-gradient(circle at 20% 30%, rgba(99, 102, 241, 0.15) 0%, transparent 50%),
     radial-gradient(circle at 80% 70%, rgba(236, 72, 153, 0.15) 0%, transparent 50%);
-  
+
   // 装饰性渐变背景
   &::before {
     content: '';
@@ -576,7 +582,8 @@ onMounted(async () => {
     left: 0;
     right: 0;
     height: 3px;
-    background: linear-gradient(90deg, 
+    background: linear-gradient(
+      90deg,
       transparent 0%,
       rgba(99, 102, 241, 0.6) 25%,
       rgba(236, 72, 153, 0.6) 75%,
@@ -585,7 +592,7 @@ onMounted(async () => {
     opacity: 0;
     transition: opacity 0.3s ease;
   }
-  
+
   // 闪烁效果
   &::after {
     content: '';
@@ -594,54 +601,49 @@ onMounted(async () => {
     left: -100%;
     width: 100%;
     height: 100%;
-    background: linear-gradient(
-      90deg,
-      transparent 0%,
-      rgba(255, 255, 255, 0.1) 50%,
-      transparent 100%
-    );
+    background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.1) 50%, transparent 100%);
     transition: left 0.5s ease;
   }
-  
+
   &:hover {
     background: linear-gradient(135deg, rgba(99, 102, 241, 0.18) 0%, rgba(236, 72, 153, 0.18) 100%);
-    background-image: 
+    background-image:
       radial-gradient(circle at 20% 30%, rgba(99, 102, 241, 0.25) 0%, transparent 50%),
       radial-gradient(circle at 80% 70%, rgba(236, 72, 153, 0.25) 0%, transparent 50%);
     border-color: rgba(236, 72, 153, 0.4);
-    box-shadow: 
+    box-shadow:
       0 6px 24px rgba(0, 0, 0, 0.3),
       0 2px 8px rgba(99, 102, 241, 0.25),
       inset 0 1px 0 rgba(255, 255, 255, 0.15);
     transform: translateY(-2px);
-    
+
     &::before {
       opacity: 1;
     }
-    
+
     &::after {
       left: 100%;
     }
-    
+
     .option-label {
       background: linear-gradient(135deg, #6366f1 0%, #ec4899 100%);
       transform: scale(1.05);
       box-shadow: 0 4px 12px rgba(99, 102, 241, 0.5);
     }
-    
+
     .option-content {
       color: #f3f4f6;
     }
-    
+
     .option-hint {
       opacity: 1;
       transform: translateY(0);
     }
   }
-  
+
   &:active {
     transform: translateY(0);
-    box-shadow: 
+    box-shadow:
       0 2px 8px rgba(0, 0, 0, 0.2),
       0 1px 2px rgba(99, 102, 241, 0.15);
   }
@@ -661,7 +663,7 @@ onMounted(async () => {
   font-weight: 700;
   font-size: 1rem;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 
+  box-shadow:
     0 2px 8px rgba(99, 102, 241, 0.4),
     inset 0 1px 0 rgba(255, 255, 255, 0.2);
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
@@ -689,7 +691,7 @@ onMounted(async () => {
   transform: translateY(10px);
   transition: all 0.3s ease;
   flex-shrink: 0;
-  
+
   i {
     font-size: 0.85rem;
   }
@@ -700,7 +702,7 @@ onMounted(async () => {
   text-align: center;
   color: #9ca3af;
   font-size: 1rem;
-  
+
   p {
     margin: 0;
   }
@@ -712,17 +714,17 @@ onMounted(async () => {
     grid-template-columns: 1fr;
     gap: 0.75rem;
   }
-  
+
   .option-card {
     padding: 0.875rem 1rem;
   }
-  
+
   .option-label {
     width: 2rem;
     height: 2rem;
     font-size: 0.9rem;
   }
-  
+
   .option-content {
     font-size: 0.9rem;
   }

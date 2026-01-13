@@ -37,7 +37,8 @@ const xingYeGuangConfig: CharacterCGConfig = {
       {
         id: 'butt_tease_denial',
         name: '星野光-淫臀摩擦寸止事件',
-        description: '你被星野光击败，作为惩罚她坐在你身上，全部会用皮筋捆住你的下体，同时臀部寸止摩擦你的下体让你想射但是射不出。',
+        description:
+          '你被星野光击败，作为惩罚她坐在你身上，全部会用皮筋捆住你的下体，同时臀部寸止摩擦你的下体让你想射但是射不出。',
         images: ['星野光-淫臀摩擦寸止事件-1.png', '星野光-淫臀摩擦寸止-2.png'],
       },
       {
@@ -55,13 +56,15 @@ const xingYeGuangConfig: CharacterCGConfig = {
       {
         id: 'restraint_tease_denial',
         name: '星野光-拘束摩擦寸止事件',
-        description: '你被星野光击败，作为惩罚她坐在你身上，全部会用皮筋捆住你的下体，同时用蜜穴摩擦寸止，让你的下体让你想射但是射不出。',
+        description:
+          '你被星野光击败，作为惩罚她坐在你身上，全部会用皮筋捆住你的下体，同时用蜜穴摩擦寸止，让你的下体让你想射但是射不出。',
         images: ['星野光-拘束摩擦寸止事件.png'],
       },
       {
         id: 'loyalty_extraction',
         name: '星野光-榨取效忠事件',
-        description: '你被星野光击败，作为惩罚她坐在你身上，小穴进行高速榨精，同时用白丝脚气味洗脑，并且希望你成为她的经纪人，若以成为经纪人则会用更加爱意方式调教。',
+        description:
+          '你被星野光击败，作为惩罚她坐在你身上，小穴进行高速榨精，同时用白丝脚气味洗脑，并且希望你成为她的经纪人，若以成为经纪人则会用更加爱意方式调教。',
         images: ['星野光-榨取效忠事件.png'],
       },
       {
@@ -199,14 +202,19 @@ const aiLinHaiDeConfig: CharacterCGConfig = {
       {
         id: 'human_chair',
         name: '艾琳海德-人肉座椅事件',
-        description: '你被艾琳海德击败，作为处罚你需要赤身裸体地四肢跪地，头戴眼罩，口里含着她的袜子作为她的人肉椅子3小时，她会坐在你身上处理公务。',
+        description:
+          '你被艾琳海德击败，作为处罚你需要赤身裸体地四肢跪地，头戴眼罩，口里含着她的袜子作为她的人肉椅子3小时，她会坐在你身上处理公务。',
         images: ['艾琳海德-人肉座椅事件-1.png', '艾琳海德-人肉座椅事件-2.png'],
       },
       {
         id: 'bondage_yuri_discipline',
         name: '艾琳海德-捆绑百合调教事件',
         description: '你被艾琳海德击败，作为处罚你需要被龟甲缚并且在床上玩弄。',
-        images: ['艾琳海德-捆绑百合调教事件-1.png', '艾琳海德-捆绑百合调教-2事件.png', '艾琳海德-捆绑百合调教事件事件-2.png'],
+        images: [
+          '艾琳海德-捆绑百合调教事件-1.png',
+          '艾琳海德-捆绑百合调教-2事件.png',
+          '艾琳海德-捆绑百合调教事件事件-2.png',
+        ],
       },
       {
         id: 'armpit_domination',
@@ -253,12 +261,17 @@ const luNaLaKeDiSiConfig: CharacterCGConfig = {
         id: 'anal_licking_paizuri',
         name: '露娜拉克缇丝-舔肛乳交事件',
         description: '你被露娜击败，作为惩罚，她让你学狗趴下，从你身后一边为你乳交，一边用舌头深入你的后穴。',
-        images: ['露娜拉克缇丝-舔肛乳交事件-1.png', '露娜拉克缇丝-舔肛乳交事件-2.png', '露娜拉克缇丝-舔肛乳交事件-3.png'],
+        images: [
+          '露娜拉克缇丝-舔肛乳交事件-1.png',
+          '露娜拉克缇丝-舔肛乳交事件-2.png',
+          '露娜拉克缇丝-舔肛乳交事件-3.png',
+        ],
       },
       {
         id: 'bra_face_footjob',
         name: '露娜拉克缇丝-胸罩盖脸足交事件',
-        description: '你被露娜击败，作为惩罚，她把你放在身上一边用浓郁奶香和酸涩的巨大奶罩覆盖你的面部，一边从你背后用玉足足交榨取。',
+        description:
+          '你被露娜击败，作为惩罚，她把你放在身上一边用浓郁奶香和酸涩的巨大奶罩覆盖你的面部，一边从你背后用玉足足交榨取。',
         images: ['露娜拉克缇丝-胸罩盖脸足交事件-1.png', '露娜拉克缇丝-胸罩盖脸足交事件-2.png'],
       },
       {
@@ -276,8 +289,13 @@ const luNaLaKeDiSiConfig: CharacterCGConfig = {
       {
         id: 'shota_wall_milking',
         name: '露娜拉克缇丝-正太化按墙榨精事件',
-        description: '你被露娜击败，作为惩罚，她把你变成小正太，用巨大乳房把你按在墙上，让你两脚悬空，并且用手淫，前内腺开发你。',
-        images: ['露娜拉克缇丝-正太化按墙榨精事件-1.png', '露娜拉克缇丝-正太化按墙榨精事件-2.png', '露娜拉克缇丝-正太化按墙榨精事件-3.png'],
+        description:
+          '你被露娜击败，作为惩罚，她把你变成小正太，用巨大乳房把你按在墙上，让你两脚悬空，并且用手淫，前内腺开发你。',
+        images: [
+          '露娜拉克缇丝-正太化按墙榨精事件-1.png',
+          '露娜拉克缇丝-正太化按墙榨精事件-2.png',
+          '露娜拉克缇丝-正太化按墙榨精事件-3.png',
+        ],
       },
       {
         id: 'nursing_tail_anal',
@@ -306,7 +324,8 @@ const luNaLaKeDiSiConfig: CharacterCGConfig = {
       {
         id: 'succubus_transformation',
         name: '（稀有事件）露娜拉克缇丝-乳魔化事件',
-        description: '你被露娜击败，作为惩罚你被她注入魅魔化因子，并且带你到镜子前一边让你观看自己性转雌堕与魅魔化的形态，一边开发你的乳首（让你分泌乳汁）和下体。',
+        description:
+          '你被露娜击败，作为惩罚你被她注入魅魔化因子，并且带你到镜子前一边让你观看自己性转雌堕与魅魔化的形态，一边开发你的乳首（让你分泌乳汁）和下体。',
         images: ['露娜拉克缇丝-乳魔化事件-1.png', '露娜拉克缇丝-乳魔化事件-2.png'],
         probability: 0.04,
       },
@@ -358,7 +377,11 @@ const luNaLaKeDiSiConfig: CharacterCGConfig = {
         id: 'breast_aroma_handjob_female',
         name: '露娜拉克缇丝-乳香支配手淫事件',
         description: '你被露娜击败，作为惩罚你坐在她身上，你被带上奶嘴和尿裤，头被她的奶子夹着，一边轻语为你手淫。',
-        images: ['露娜拉克缇丝-乳香支配手淫事件-1.png', '露娜拉克缇丝-乳香支配手淫事件-2.png', '露娜拉克缇丝-乳香支配手淫事件-3.png'],
+        images: [
+          '露娜拉克缇丝-乳香支配手淫事件-1.png',
+          '露娜拉克缇丝-乳香支配手淫事件-2.png',
+          '露娜拉克缇丝-乳香支配手淫事件-3.png',
+        ],
       },
       {
         id: 'handjob_event',
@@ -369,7 +392,8 @@ const luNaLaKeDiSiConfig: CharacterCGConfig = {
       {
         id: 'loli_wall_training',
         name: '露娜拉克缇丝-萝莉化按墙调教事件',
-        description: '你被露娜击败，作为惩罚，她把你变成萝莉，用巨大乳房把你按在墙上，让你两脚悬空，并且一边用假阳具插入你的小穴，一边用尾巴开发你的后穴。',
+        description:
+          '你被露娜击败，作为惩罚，她把你变成萝莉，用巨大乳房把你按在墙上，让你两脚悬空，并且一边用假阳具插入你的小穴，一边用尾巴开发你的后穴。',
         images: ['露娜拉克缇丝-萝莉化按墙调教事件-1.png', '露娜拉克缇丝-萝莉化按墙调教事件-2.png'],
       },
       {
@@ -381,13 +405,15 @@ const luNaLaKeDiSiConfig: CharacterCGConfig = {
       {
         id: 'cow_public_humiliation',
         name: '露娜拉克缇丝-母牛公开处刑事件',
-        description: '你被露娜击败，作为惩罚，她把你的胸部变大，并且让你穿上奶牛服牵着你一起在广场逛街，结束后会给予3000金币补偿。',
+        description:
+          '你被露娜击败，作为惩罚，她把你的胸部变大，并且让你穿上奶牛服牵着你一起在广场逛街，结束后会给予3000金币补偿。',
         images: ['露娜拉克缇丝-母牛公开处刑事件.png'],
       },
       {
         id: 'puppy_play',
         name: '露娜拉克缇丝-母狗扮演事件',
-        description: '你被露娜击败，你被她带上项圈，牵上狗绳，带上耳朵和尾巴肛塞，需要作为她的可爱小母狗一起度过3小时调教，她会温柔对待您。',
+        description:
+          '你被露娜击败，你被她带上项圈，牵上狗绳，带上耳朵和尾巴肛塞，需要作为她的可爱小母狗一起度过3小时调教，她会温柔对待您。',
         images: ['露娜拉克缇丝-母狗扮演事件-1.png', '露娜拉克缇丝-母狗扮演事件-2.png'],
       },
       {
@@ -399,14 +425,16 @@ const luNaLaKeDiSiConfig: CharacterCGConfig = {
       {
         id: 'succubus_riding',
         name: '（稀有事件）露娜拉克缇丝-乳魔骑乘事件',
-        description: '你被露娜击败，作为惩罚她用扶她肉棒插入你的小穴，一边抽插注入魅魔化因子，一边刻画淫纹，即将成为她的乳魔妹妹。',
+        description:
+          '你被露娜击败，作为惩罚她用扶她肉棒插入你的小穴，一边抽插注入魅魔化因子，一边刻画淫纹，即将成为她的乳魔妹妹。',
         images: ['露娜拉克缇丝-乳魔骑乘事件.png'],
         probability: 0.03,
       },
       {
         id: 'succubus_transformation_female',
         name: '（稀有事件）露娜拉克缇丝-乳魔化事件',
-        description: '你被露娜击败，作为惩罚你被她注入魅魔化因子，并且带你到镜子前一边让你观看自己恶堕魅魔化的形态，你的头发变得像露娜一样紫色，一边开发你的乳房（让乳房变大和分泌乳汁）和小穴。',
+        description:
+          '你被露娜击败，作为惩罚你被她注入魅魔化因子，并且带你到镜子前一边让你观看自己恶堕魅魔化的形态，你的头发变得像露娜一样紫色，一边开发你的乳房（让乳房变大和分泌乳汁）和小穴。',
         images: ['露娜拉克缇丝-乳魔化事件.png', '露娜拉克缇丝-乳魔化事件-1.png', '露娜拉克缇丝-乳魔化事件-2.png'],
         probability: 0.03,
       },
@@ -444,7 +472,8 @@ const xueLiKeLinMuXiErDeConfig: CharacterCGConfig = {
       {
         id: 'chastity_footjob',
         name: '雪莉-带锁足交事件',
-        description: '你被雪莉击败，作为惩罚她会给你带上贞操锁，一边展示黑丝包裹的小穴色诱，一边为你足交，但是让你难以射精。',
+        description:
+          '你被雪莉击败，作为惩罚她会给你带上贞操锁，一边展示黑丝包裹的小穴色诱，一边为你足交，但是让你难以射精。',
         images: ['雪莉-带锁足交事件-1.png', '雪莉-带锁足交事件-2.png', '雪莉-带锁足交事件-3.png'],
       },
       {
@@ -498,7 +527,8 @@ const xueLiKeLinMuXiErDeConfig: CharacterCGConfig = {
       {
         id: 'urethra_straw_torture',
         name: '雪莉-马眼责吸管事件',
-        description: '你被雪莉击败，作为惩罚她使用金属纤细吸管，插入你的马眼，一边撸动肉棒，一边搅动马眼，并且吸取汁液。',
+        description:
+          '你被雪莉击败，作为惩罚她使用金属纤细吸管，插入你的马眼，一边撸动肉棒，一边搅动马眼，并且吸取汁液。',
         images: ['雪莉-马眼责吸管事件.png'],
       },
       {
@@ -523,7 +553,8 @@ const xueLiKeLinMuXiErDeConfig: CharacterCGConfig = {
       {
         id: 'locker_room_training',
         name: '（稀有事件）雪莉-换衣间气味调教事件',
-        description: '你被雪莉击败，作为惩罚你被带到女权协会的更衣室，里面堆满了各种没洗的丝袜内裤和胸罩，并且准备对你开始小狗调教。',
+        description:
+          '你被雪莉击败，作为惩罚你被带到女权协会的更衣室，里面堆满了各种没洗的丝袜内裤和胸罩，并且准备对你开始小狗调教。',
         images: ['雪莉-换衣间气味调教事件-1.png', '雪莉-换衣间气味调教事件-2.png'],
         probability: 0.08,
       },
@@ -579,9 +610,10 @@ const xueLiKeLinMuXiErDeConfig: CharacterCGConfig = {
       {
         id: 'locker_room_training_female',
         name: '（稀有事件）雪莉-换衣间气味调教事件',
-        description: '你被雪莉击败，作为惩罚你被带到女权协会的更衣室，里面堆满了各种没洗的丝袜内裤和胸罩，并且准备对你开始小狗调教。',
+        description:
+          '你被雪莉击败，作为惩罚你被带到女权协会的更衣室，里面堆满了各种没洗的丝袜内裤和胸罩，并且准备对你开始小狗调教。',
         images: ['雪莉-换衣间气味调教事件-1.png', '雪莉-换衣间气味调教事件-2.png', '雪莉-换衣间气味调教事件-3.png'],
-        probability: 0.10,
+        probability: 0.1,
       },
     ],
     victory: [
@@ -609,20 +641,33 @@ const meiSuiLingConfig: CharacterCGConfig = {
       {
         id: 'bondage_smell_edging',
         name: '美咲绫-束缚气味寸止事件',
-        description: '你被美咲绫击败，做为惩罚，她将你束缚在床，用发丝绑住你的四肢，屁股坐在你的脸上，将小穴贴紧你的嘴巴，让你只能被迫闻嗅她的气息，舔舐她的小穴，她再控制一缕发丝扎入你的尿道，控制射精（寸止），让你坠入她的发丝气味地狱中',
+        description:
+          '你被美咲绫击败，做为惩罚，她将你束缚在床，用发丝绑住你的四肢，屁股坐在你的脸上，将小穴贴紧你的嘴巴，让你只能被迫闻嗅她的气息，舔舐她的小穴，她再控制一缕发丝扎入你的尿道，控制射精（寸止），让你坠入她的发丝气味地狱中',
         images: ['美咲绫-束缚气味寸止事件-1.png', '美咲绫-束缚气味寸止事件-2.png', '美咲绫-束缚气味寸止事件-3.png'],
       },
       {
         id: 'brainwash_transformation',
         name: '美咲绫-洗脑改造事件',
-        description: '你被美咲绫击败，做为惩罚，她褪下和服，露出白皙的身子（有足袋），与你水乳相容，你感受着她的气息与柔软，突然，她操控发丝钻入你的双耳，对你实施洗脑改造，让你堕落为她的奴隶（你被她的身躯包裹，沉溺在她的乳肉气味之间，脸呈现阿黑颜状态，瞳孔变成心形）',
-        images: ['美咲绫-洗脑改造事件-1.png', '美咲绫-洗脑改造事件-2.png', '美咲绫-洗脑改造事件-3.png', '美咲绫-洗脑改造事件-4.png'],
+        description:
+          '你被美咲绫击败，做为惩罚，她褪下和服，露出白皙的身子（有足袋），与你水乳相容，你感受着她的气息与柔软，突然，她操控发丝钻入你的双耳，对你实施洗脑改造，让你堕落为她的奴隶（你被她的身躯包裹，沉溺在她的乳肉气味之间，脸呈现阿黑颜状态，瞳孔变成心形）',
+        images: [
+          '美咲绫-洗脑改造事件-1.png',
+          '美咲绫-洗脑改造事件-2.png',
+          '美咲绫-洗脑改造事件-3.png',
+          '美咲绫-洗脑改造事件-4.png',
+        ],
       },
       {
         id: 'tea_footjob_extraction',
         name: '美咲绫-浇茶足交榨精事件',
-        description: '你被美咲绫击败，做为惩罚，她将你推在地上，自己坐在椅子上，将足袋套在你的肉棒上，玉足研磨着你的乳头，将茶水浇灌在被套了足袋的肉棒上，表情却无比温柔',
-        images: ['美咲绫-浇茶足交榨精事件-1.png', '美咲绫-浇茶足交榨精事件-2.png', '美咲绫-浇茶足交榨精事件-3.png', '美咲绫-浇茶足交榨精事件-4.png'],
+        description:
+          '你被美咲绫击败，做为惩罚，她将你推在地上，自己坐在椅子上，将足袋套在你的肉棒上，玉足研磨着你的乳头，将茶水浇灌在被套了足袋的肉棒上，表情却无比温柔',
+        images: [
+          '美咲绫-浇茶足交榨精事件-1.png',
+          '美咲绫-浇茶足交榨精事件-2.png',
+          '美咲绫-浇茶足交榨精事件-3.png',
+          '美咲绫-浇茶足交榨精事件-4.png',
+        ],
       },
       {
         id: 'smell_training_shoe_licking',
@@ -648,7 +693,13 @@ const meiSuiLingConfig: CharacterCGConfig = {
         id: 'sow_sex_victory',
         name: '美咲绫-母猪做爱战胜事件',
         description: '美咲绫被击败，露出了M的本色，露出了标准的母猪脸，被你用肉棒狠狠的操',
-        images: ['美咲绫-母猪做爱战胜事件-1.png', '美咲绫-母猪做爱战胜事件-2.png', '美咲绫-母猪做爱战胜事件-3.png', '美咲绫-母猪做爱战胜事件-4.png', '美咲绫-母猪做爱战胜事件-5.png'],
+        images: [
+          '美咲绫-母猪做爱战胜事件-1.png',
+          '美咲绫-母猪做爱战胜事件-2.png',
+          '美咲绫-母猪做爱战胜事件-3.png',
+          '美咲绫-母猪做爱战胜事件-4.png',
+          '美咲绫-母猪做爱战胜事件-5.png',
+        ],
       },
       {
         id: 'paizuri_victory',
@@ -663,19 +714,27 @@ const meiSuiLingConfig: CharacterCGConfig = {
       {
         id: 'bondage_smell_sex',
         name: '美咲绫-束缚气味做爱事件',
-        description: '你被美咲绫击败，做为惩罚，她将你束缚在床，用发丝绑住你的四肢，屁股坐在你的脸上，将小穴贴紧你的嘴巴，让你只能被迫闻嗅她的气息，舔舐她的小穴，她控制发丝轻抚你的大腿，同样舔舐你的小穴，让你坠入她的发丝气味地狱中',
+        description:
+          '你被美咲绫击败，做为惩罚，她将你束缚在床，用发丝绑住你的四肢，屁股坐在你的脸上，将小穴贴紧你的嘴巴，让你只能被迫闻嗅她的气息，舔舐她的小穴，她控制发丝轻抚你的大腿，同样舔舐你的小穴，让你坠入她的发丝气味地狱中',
         images: ['美咲绫-束缚气味做爱事件-1.png', '美咲绫-束缚气味做爱事件-2.png', '美咲绫-束缚气味做爱事件-3.png'],
       },
       {
         id: 'brainwash_transformation_female',
         name: '美咲绫-洗脑改造事件',
-        description: '你被美咲绫击败，做为惩罚，她褪下和服（这个元素要呈现），露出白皙的身子（有足袋），与你水乳相容，你感受着她的气息与柔软，突然，她操控发丝钻入你的双耳，对你实施洗脑改造，让你堕落为她的奴隶，你被她的身躯包裹，沉溺在她的乳肉气味之间，脸呈现阿黑颜状态，瞳孔变成心形',
-        images: ['美咲绫-洗脑改造事件-1.png', '美咲绫-洗脑改造事件-2.png', '美咲绫-洗脑改造事件-3.png', '美咲绫-洗脑改造事件-4.png'],
+        description:
+          '你被美咲绫击败，做为惩罚，她褪下和服（这个元素要呈现），露出白皙的身子（有足袋），与你水乳相容，你感受着她的气息与柔软，突然，她操控发丝钻入你的双耳，对你实施洗脑改造，让你堕落为她的奴隶，你被她的身躯包裹，沉溺在她的乳肉气味之间，脸呈现阿黑颜状态，瞳孔变成心形',
+        images: [
+          '美咲绫-洗脑改造事件-1.png',
+          '美咲绫-洗脑改造事件-2.png',
+          '美咲绫-洗脑改造事件-3.png',
+          '美咲绫-洗脑改造事件-4.png',
+        ],
       },
       {
         id: 'tea_footjob',
         name: '美咲绫-浇茶足交事件',
-        description: '你被美咲绫击败，做为惩罚，她将你推在地上，自己坐在椅子上，将足袋放在你的脸上上，玉足研磨着你的乳头和小穴，将茶水浇灌在你的身体上，表情无比温柔',
+        description:
+          '你被美咲绫击败，做为惩罚，她将你推在地上，自己坐在椅子上，将足袋放在你的脸上上，玉足研磨着你的乳头和小穴，将茶水浇灌在你的身体上，表情无比温柔',
         images: ['美咲绫-浇茶足交事件-1.png', '美咲绫-浇茶足交事件-2.png', '美咲绫-浇茶足交事件-3.png'],
       },
       {
@@ -687,7 +746,8 @@ const meiSuiLingConfig: CharacterCGConfig = {
       {
         id: 'aphrodisiac_event',
         name: '美咲绫-媚药事件',
-        description: '你被美咲绫击败，做为惩罚，她用有汗渍的屁股与小穴在你的身体进行上下摩擦，用茶杯在你的嘴里面灌注媚药',
+        description:
+          '你被美咲绫击败，做为惩罚，她用有汗渍的屁股与小穴在你的身体进行上下摩擦，用茶杯在你的嘴里面灌注媚药',
         images: ['美咲绫-媚药事件.png'],
       },
       {
@@ -726,21 +786,24 @@ export const CG_CONFIGS: CharacterCGConfig[] = [
 // 根据角色名称获取CG配置
 export function getCGConfigByCharacter(characterName: string): CharacterCGConfig | null {
   console.log('[CG配置] 开始查找角色CG配置，角色名称:', characterName);
-  console.log('[CG配置] 可用配置列表:', CG_CONFIGS.map(c => c.characterName));
-  
+  console.log(
+    '[CG配置] 可用配置列表:',
+    CG_CONFIGS.map(c => c.characterName),
+  );
+
   // 模糊匹配角色名称
-  const config = CG_CONFIGS.find((cfg) => {
+  const config = CG_CONFIGS.find(cfg => {
     const match = characterName.includes(cfg.characterName) || cfg.characterName.includes(characterName);
     console.log(`[CG配置] 匹配检查: "${characterName}" vs "${cfg.characterName}" = ${match}`);
     return match;
   });
-  
+
   if (config) {
     console.log('[CG配置] 找到匹配的配置:', config.characterName);
   } else {
     console.warn('[CG配置] 未找到匹配的配置');
   }
-  
+
   return config || null;
 }
 
@@ -748,11 +811,11 @@ export function getCGConfigByCharacter(characterName: string): CharacterCGConfig
 export function selectCGEvent(
   characterName: string,
   playerGender: '男' | '女',
-  isVictory: boolean
+  isVictory: boolean,
 ): { event: CGEvent; imageUrl: string; description: string } | null {
   console.log('[CG选择] ========== 开始选择CG事件 ==========');
   console.log('[CG选择] 参数 - 角色:', characterName, '性别:', playerGender, '胜利:', isVictory);
-  
+
   const config = getCGConfigByCharacter(characterName);
   if (!config) {
     console.warn('[CG选择] 未找到角色配置，返回null');
@@ -763,7 +826,7 @@ export function selectCGEvent(
   const genderKey = playerGender === '男' ? 'male' : 'female';
   const resultKey = isVictory ? 'victory' : 'defeat';
   console.log('[CG选择] 选择事件池 - 性别key:', genderKey, '结果key:', resultKey);
-  
+
   const events = config[genderKey][resultKey];
   console.log('[CG选择] 事件池内容:', events);
   console.log('[CG选择] 事件池数量:', events?.length || 0);
@@ -774,8 +837,8 @@ export function selectCGEvent(
   }
 
   // 分离稀有事件和普通事件
-  const rareEvents = events.filter((e) => e.probability !== undefined);
-  const normalEvents = events.filter((e) => e.probability === undefined);
+  const rareEvents = events.filter(e => e.probability !== undefined);
+  const normalEvents = events.filter(e => e.probability === undefined);
   console.log('[CG选择] 稀有事件数量:', rareEvents.length, '普通事件数量:', normalEvents.length);
 
   let selectedEvent: CGEvent | null = null;
@@ -813,7 +876,7 @@ export function selectCGEvent(
   const genderFolder = playerGender === '男' ? '男u' : '女u';
   const resultFolder = isVictory ? '战胜事件' : '战败事件';
   const imageUrl = `https://raw.githubusercontent.com/vincentrong2005/Fatria/main/图片素材/性斗学园/cg/${config.characterName}/${genderFolder}/${resultFolder}/${randomImage}`;
-  
+
   console.log('[CG选择] 生成的图片URL:', imageUrl);
   console.log('[CG选择] 事件描述:', selectedEvent.description);
   console.log('[CG选择] ========== CG事件选择完成 ==========');
