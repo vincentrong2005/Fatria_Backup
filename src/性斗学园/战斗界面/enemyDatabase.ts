@@ -1468,8 +1468,16 @@ export function getEnemyMvuData(enemyName: string): EnemyMvuData | null {
   if (enemyName in ENEMY_DATABASE) {
     return ENEMY_DATABASE[enemyName];
   }
+
+  // 2. 先尝试精确别名匹配（避免短名包含匹配误判，如“雪莉”误命中“雪”）
+  if (enemyName in NAME_ALIASES) {
+    const fullName = NAME_ALIASES[enemyName];
+    if (fullName in ENEMY_DATABASE) {
+      return ENEMY_DATABASE[fullName];
+    }
+  }
   
-  // 2. 尝试包含匹配：遍历数据库全名，如果对手名包含某个全名，返回该数据
+  // 3. 尝试包含匹配：遍历数据库全名，如果对手名包含某个全名，返回该数据
   //    如果包含多个，以第一个为准
   const enemyDbNames = Object.keys(ENEMY_DATABASE).sort((a, b) => b.length - a.length);
   for (const fullName of enemyDbNames) {
@@ -1479,7 +1487,7 @@ export function getEnemyMvuData(enemyName: string): EnemyMvuData | null {
     }
   }
   
-  // 3. 尝试别名包含匹配：遍历别名表，如果对手名包含某个别名，返回对应数据
+  // 4. 尝试别名包含匹配：遍历别名表，如果对手名包含某个别名，返回对应数据
   //    如果包含多个，以第一个为准
   const enemyAliases = Object.entries(NAME_ALIASES).sort((a, b) => b[0].length - a[0].length);
   for (const [alias, fullName] of enemyAliases) {
@@ -1489,7 +1497,7 @@ export function getEnemyMvuData(enemyName: string): EnemyMvuData | null {
     }
   }
   
-  // 4. 都没匹配到，返回null
+  // 5. 都没匹配到，返回null
   console.warn(`[敌人数据库] 未找到数据匹配: "${enemyName}"`);
   return null;
 }
@@ -1504,8 +1512,16 @@ export function resolveEnemyName(enemyName: string): string {
   if (enemyName in ENEMY_DATABASE) {
     return enemyName;
   }
+
+  // 2. 先尝试精确别名匹配（避免短名包含匹配误判，如“雪莉”误命中“雪”）
+  if (enemyName in NAME_ALIASES) {
+    const fullName = NAME_ALIASES[enemyName];
+    if (fullName in ENEMY_DATABASE) {
+      return fullName;
+    }
+  }
   
-  // 2. 尝试包含匹配：遍历数据库全名，如果对手名包含某个全名，返回该全名
+  // 3. 尝试包含匹配：遍历数据库全名，如果对手名包含某个全名，返回该全名
   //    如果包含多个，以第一个为准
   const enemyDbNames = Object.keys(ENEMY_DATABASE).sort((a, b) => b.length - a.length);
   for (const fullName of enemyDbNames) {
@@ -1515,7 +1531,7 @@ export function resolveEnemyName(enemyName: string): string {
     }
   }
   
-  // 3. 尝试别名包含匹配：遍历别名表，如果对手名包含某个别名，返回对应全名
+  // 4. 尝试别名包含匹配：遍历别名表，如果对手名包含某个别名，返回对应全名
   //    如果包含多个，以第一个为准
   const enemyAliases = Object.entries(NAME_ALIASES).sort((a, b) => b[0].length - a[0].length);
   for (const [alias, fullName] of enemyAliases) {
@@ -1525,7 +1541,7 @@ export function resolveEnemyName(enemyName: string): string {
     }
   }
   
-  // 4. 都没匹配到，返回原名
+  // 5. 都没匹配到，返回原名
   console.warn(`[敌人数据库] 未找到匹配: "${enemyName}"，返回原名`);
   return enemyName;
 }

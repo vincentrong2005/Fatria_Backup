@@ -1852,6 +1852,14 @@ async function initializeCombatSystem() {
     _.set(mvuData.stat_data, '性斗系统.对手技能冷却', {});
     _.set(mvuData.stat_data, '性斗系统.战斗物品', {});
 
+    // 战斗结束：高潮次数归零（双方）
+    _.set(mvuData.stat_data, '性斗系统.高潮次数', 0);
+    _.set(mvuData.stat_data, '性斗系统.对手高潮次数', 0);
+
+    // 同步清零内存态，避免后续 saveToMvu 把旧值覆盖回 MVU
+    player.value.stats.climaxCount = 0;
+    enemy.value.stats.climaxCount = 0;
+
     // 清空对手数据（可选，根据需求决定是否清空）
     // _.set(mvuData.stat_data, '性斗系统.对手名称', '');
     // _.set(mvuData.stat_data, '性斗系统.对手性斗力', 0);
@@ -3463,6 +3471,7 @@ async function handleSurrender() {
 
   // 清空临时状态
   await clearTemporaryStatus();
+  await initializeCombatSystem();
   saveToMvu();
 }
 
