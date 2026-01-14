@@ -3,31 +3,25 @@
  * 与MVU变量结构对应
  */
 
-export type StatType = 
-  | 'sexPower' 
-  | 'endurance' 
-  | 'evasion' 
-  | 'crit' 
-  | 'charm' 
-  | 'luck';
+export type StatType = 'sexPower' | 'endurance' | 'evasion' | 'crit' | 'charm' | 'luck';
 
 /** 战斗属性 - 对应MVU变量（已移除意志力相关字段） */
 export interface CombatStats {
-  maxEndurance: number;      // 核心状态._最大耐力
-  currentEndurance: number;  // 核心状态._耐力
-  maxPleasure: number;       // 核心状态._最大快感
-  currentPleasure: number;   // 核心状态._快感
-  climaxCount: number;       // 性斗系统.$高潮次数
-  maxClimaxCount: number;    // 性斗系统.胜负规则.高潮次数上限
-  
+  maxEndurance: number; // 核心状态._最大耐力
+  currentEndurance: number; // 核心状态._耐力
+  maxPleasure: number; // 核心状态._最大快感
+  currentPleasure: number; // 核心状态._快感
+  climaxCount: number; // 性斗系统.$高潮次数
+  maxClimaxCount: number; // 性斗系统.胜负规则.高潮次数上限
+
   // 核心属性
-  sexPower: number;          // 性斗系统.$实时性斗力
-  baseEndurance: number;     // 性斗系统.$实时忍耐力
-  evasion: number;           // 核心状态.$闪避率
-  crit: number;              // 核心状态.$暴击率
-  charm: number;             // 核心状态._魅力
-  luck: number;              // 核心状态._幸运
-  level: number;             // 角色基础._等级 / 对手等级
+  sexPower: number; // 性斗系统.$实时性斗力
+  baseEndurance: number; // 性斗系统.$实时忍耐力
+  evasion: number; // 核心状态.$闪避率
+  crit: number; // 核心状态.$暴击率
+  charm: number; // 核心状态._魅力
+  luck: number; // 核心状态._幸运
+  level: number; // 角色基础._等级 / 对手等级
 }
 
 /** 技能伤害来源（已移除意志力） */
@@ -307,4 +301,3 @@ export interface BonusStats {
   闪避率加成: number;
   暴击率加成: number;
 }
-

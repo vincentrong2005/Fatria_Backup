@@ -36,15 +36,30 @@
             <div class="help-section-title">战斗相关</div>
             <div class="help-text">
               <div>性斗力（实时性斗力）= round( (基础性斗力 + 加成和) × (1 + 成算和/100) )。</div>
-              <div>其中：加成和 = 临时.基础性斗力加成 + 永久.基础性斗力加成 + 装备.基础性斗力加成；成算和 = 临时.基础性斗力成算 + 永久.基础性斗力成算 + 装备.基础性斗力成算。</div>
+              <div>
+                其中：加成和 = 临时.基础性斗力加成 + 永久.基础性斗力加成 + 装备.基础性斗力加成；成算和 =
+                临时.基础性斗力成算 + 永久.基础性斗力成算 + 装备.基础性斗力成算。
+              </div>
               <div>忍耐力（实时忍耐力）= round( (基础忍耐力 + 加成和) × (1 + 成算和/100) )。</div>
-              <div>其中：加成和 = 临时.基础忍耐力加成 + 永久.基础忍耐力加成 + 装备.基础忍耐力加成；成算和 = 临时.基础忍耐力成算 + 永久.基础忍耐力成算 + 装备.基础忍耐力成算。</div>
+              <div>
+                其中：加成和 = 临时.基础忍耐力加成 + 永久.基础忍耐力加成 + 装备.基础忍耐力加成；成算和 =
+                临时.基础忍耐力成算 + 永久.基础忍耐力成算 + 装备.基础忍耐力成算。
+              </div>
               <div>闪避率（上限60） = 基础闪避率 + (临时.闪避率加成) + (永久.闪避率加成) + (装备.闪避率加成)。</div>
-              <div>暴击率（上限100）  = clamp( 基础暴击率 + (临时.暴击率加成) + (永久.暴击率加成) + (装备.暴击率加成), 0..100 )。</div>
+              <div>
+                暴击率（上限100） = clamp( 基础暴击率 + (临时.暴击率加成) + (永久.暴击率加成) + (装备.暴击率加成),
+                0..100 )。
+              </div>
               <div>段位：你当前的竞技/评价等级；段位积分会影响升段流程。</div>
               <div>战斗判定（来自战斗计算）：</div>
-              <div>- 闪避判定：最终命中率 = 技能命中率 - 目标闪避率 + (攻击者幸运/10)，并 clamp 到 10%..95%；随机 roll∈[0,100)，若 roll ≥ 最终命中率 则视为闪避成功。</div>
-              <div>- 暴击判定：最终暴击率 = 攻击者暴击率 + (攻击者幸运/10) + 技能暴击修正，并 clamp 到 0%..100%；随机 roll∈[0,100)，若 roll &lt; 最终暴击率 则暴击。</div>
+              <div>
+                - 闪避判定：最终命中率 = 技能命中率 - 目标闪避率 + (攻击者幸运/10)，并 clamp 到 10%..95%；随机
+                roll∈[0,100)，若 roll ≥ 最终命中率 则视为闪避成功。
+              </div>
+              <div>
+                - 暴击判定：最终暴击率 = 攻击者暴击率 + (攻击者幸运/10) + 技能暴击修正，并 clamp 到 0%..100%；随机
+                roll∈[0,100)，若 roll &lt; 最终暴击率 则暴击。
+              </div>
               <div>- 忍耐减伤：减伤后伤害 = floor( 基础伤害 × 40 / (目标忍耐力 + 100) )，最低为 1。</div>
             </div>
           </div>
@@ -83,26 +98,14 @@
     <div class="profile-header">
       <div class="profile-avatar" @click="handleAvatarClick">
         <div class="avatar-inner">
-          <img 
-            v-if="avatarUrl" 
-            :src="avatarUrl" 
-            alt="头像" 
-            class="avatar-image"
-            @error="handleImageError"
-          />
+          <img v-if="avatarUrl" :src="avatarUrl" alt="头像" class="avatar-image" @error="handleImageError" />
           <i v-else class="fas fa-user"></i>
         </div>
         <div class="avatar-upload-hint">
           <i class="fas fa-camera"></i>
         </div>
       </div>
-      <input 
-        ref="fileInputRef"
-        type="file" 
-        accept="image/*" 
-        style="display: none"
-        @change="handleAvatarChange"
-      />
+      <input ref="fileInputRef" type="file" accept="image/*" style="display: none" @change="handleAvatarChange" />
       <h2 class="profile-name">学员档案</h2>
       <div class="profile-level">
         <span class="level-badge">Lv.{{ characterData.角色基础?._等级 || 1 }}</span>
@@ -130,7 +133,10 @@
 
     <!-- 可加点属性 -->
     <div class="detail-card" v-if="availablePoints > 0">
-      <h3 class="detail-title"><i class="fas fa-plus-circle"></i> 属性加点 <span class="points-remaining">(剩余 {{ availablePoints }} 点)</span></h3>
+      <h3 class="detail-title">
+        <i class="fas fa-plus-circle"></i> 属性加点
+        <span class="points-remaining">(剩余 {{ availablePoints }} 点)</span>
+      </h3>
       <div class="attribute-upgrade-grid">
         <div class="upgrade-item" v-for="attr in upgradeableAttributes" :key="attr.key">
           <div class="upgrade-info">
@@ -138,7 +144,7 @@
             <span class="upgrade-label">{{ attr.label }}</span>
             <span class="upgrade-value">{{ getAttributeValue(attr.key) }}</span>
           </div>
-          <button 
+          <button
             class="upgrade-btn"
             @click="upgradeAttribute(attr.key, attr.increment)"
             :disabled="availablePoints <= 0"
@@ -194,9 +200,11 @@
             </span>
           </div>
           <div class="progress-bar">
-            <div 
-              class="progress-fill stamina" 
-              :style="{ width: `${getPercentage(characterData.核心状态?.$耐力 || 100, characterData.核心状态?.$最大耐力 || 100)}%` }"
+            <div
+              class="progress-fill stamina"
+              :style="{
+                width: `${getPercentage(characterData.核心状态?.$耐力 || 100, characterData.核心状态?.$最大耐力 || 100)}%`,
+              }"
             ></div>
           </div>
         </div>
@@ -209,9 +217,11 @@
             </span>
           </div>
           <div class="progress-bar">
-            <div 
-              class="progress-fill lust" 
-              :style="{ width: `${getPercentage(characterData.核心状态?.$快感 || 0, characterData.核心状态?.$最大快感 || 100)}%` }"
+            <div
+              class="progress-fill lust"
+              :style="{
+                width: `${getPercentage(characterData.核心状态?.$快感 || 0, characterData.核心状态?.$最大快感 || 100)}%`,
+              }"
             ></div>
           </div>
         </div>
@@ -219,13 +229,11 @@
         <div class="progress-item">
           <div class="progress-header">
             <span><i class="fas fa-star"></i> 经验值</span>
-            <span class="progress-value">
-              {{ characterData.角色基础?.经验值 || 0 }} / {{ expNeeded }}
-            </span>
+            <span class="progress-value"> {{ characterData.角色基础?.经验值 || 0 }} / {{ expNeeded }} </span>
           </div>
           <div class="progress-bar">
-            <div 
-              class="progress-fill exp" 
+            <div
+              class="progress-fill exp"
               :style="{ width: `${getExpPercentage(characterData.角色基础?.经验值 || 0)}%` }"
             ></div>
           </div>
@@ -260,11 +268,7 @@
     <div class="detail-card" v-if="permanentStates && permanentStates.length > 0">
       <h3 class="detail-title"><i class="fas fa-gem"></i> 永久状态</h3>
       <div class="states-list">
-        <span 
-          v-for="(state, index) in permanentStates" 
-          :key="index" 
-          class="state-tag permanent"
-        >
+        <span v-for="(state, index) in permanentStates" :key="index" class="state-tag permanent">
           <i class="fas fa-sparkles"></i> {{ state }}
         </span>
       </div>
@@ -272,12 +276,7 @@
       <div v-if="hasPermanentBonuses" class="bonus-section">
         <div class="bonus-header">加成效果</div>
         <div class="bonus-grid">
-          <div 
-            v-for="(value, key) in permanentBonuses" 
-            :key="key" 
-            class="bonus-item"
-            v-show="value !== 0"
-          >
+          <div v-for="(value, key) in permanentBonuses" :key="key" class="bonus-item" v-show="value !== 0">
             <span class="bonus-label">{{ formatBonusLabel(String(key)) }}</span>
             <span class="bonus-value" :class="getBonusClass(Number(value))">
               {{ formatBonusValue(Number(value)) }}
@@ -291,11 +290,7 @@
     <div class="detail-card" v-if="hasTempStates">
       <h3 class="detail-title"><i class="fas fa-clock"></i> 临时状态</h3>
       <div class="states-list">
-        <span 
-          v-for="(turns, state) in tempStates" 
-          :key="state" 
-          class="state-tag temp"
-        >
+        <span v-for="(turns, state) in tempStates" :key="state" class="state-tag temp">
           <i class="fas fa-hourglass-half"></i> {{ state }}
           <span class="turns-badge">{{ turns }}回合</span>
         </span>
@@ -304,12 +299,7 @@
       <div v-if="hasTempBonuses" class="bonus-section">
         <div class="bonus-header">临时加成</div>
         <div class="bonus-grid">
-          <div 
-            v-for="(value, key) in tempBonuses" 
-            :key="key" 
-            class="bonus-item"
-            v-show="value !== 0"
-          >
+          <div v-for="(value, key) in tempBonuses" :key="key" class="bonus-item" v-show="value !== 0">
             <span class="bonus-label">{{ formatBonusLabel(String(key)) }}</span>
             <span class="bonus-value" :class="getBonusClass(Number(value))">
               {{ formatBonusValue(Number(value)) }}
@@ -364,30 +354,30 @@ async function upgradeAttribute(key: string, increment: number) {
   // 防抖：如果正在升级中，直接返回
   if (isUpgrading.value) return;
   if (availablePoints.value <= 0) return;
-  
+
   // 设置防抖锁
   isUpgrading.value = true;
-  
+
   try {
     const globalAny = window as any;
     if (!globalAny.Mvu) {
       isUpgrading.value = false;
       return;
     }
-    
+
     const mvuData = globalAny.Mvu.getMvuData({ type: 'message', message_id: 'latest' });
     if (!mvuData || !mvuData.stat_data) {
       isUpgrading.value = false;
       return;
     }
-    
+
     // 二次检查：从MVU数据中获取实际属性点数量
     const actualPoints = mvuData.stat_data.核心状态?.$属性点 || 0;
     if (actualPoints <= 0) {
       isUpgrading.value = false;
       return;
     }
-    
+
     // 获取当前值
     const parts = key.split('.');
     let currentValue = mvuData.stat_data;
@@ -397,17 +387,17 @@ async function upgradeAttribute(key: string, increment: number) {
     }
     const lastKey = parts[parts.length - 1];
     const oldValue = currentValue[lastKey] || 0;
-    
+
     // 更新属性值
     currentValue[lastKey] = oldValue + increment;
-    
+
     // 减少属性点（确保不会变成负数）
     if (!mvuData.stat_data.核心状态) mvuData.stat_data.核心状态 = {};
     mvuData.stat_data.核心状态.$属性点 = Math.max(0, actualPoints - 1);
-    
+
     // 写回MVU
     await globalAny.Mvu.replaceMvuData(mvuData, { type: 'message', message_id: 'latest' });
-    
+
     // 显示成功提示
     if (typeof toastr !== 'undefined') {
       toastr.success(`属性提升成功！`, '成功', { timeOut: 1500 });
@@ -461,7 +451,7 @@ const hasTempBonuses = computed(() => {
 function loadAvatarUrl() {
   try {
     const globalAny = window as any;
-    
+
     // 从MVU变量读取
     if (globalAny.Mvu) {
       const mvuData = globalAny.Mvu.getMvuData({ type: 'message', message_id: 'latest' });
@@ -481,7 +471,7 @@ function loadAvatarUrl() {
 async function saveAvatarUrl(url: string) {
   try {
     const globalAny = window as any;
-    
+
     if (globalAny.Mvu) {
       const mvuData = globalAny.Mvu.getMvuData({ type: 'message', message_id: 'latest' });
       if (mvuData && mvuData.stat_data) {
@@ -492,7 +482,7 @@ async function saveAvatarUrl(url: string) {
         await globalAny.Mvu.replaceMvuData(mvuData, { type: 'message', message_id: 'latest' });
       }
     }
-    
+
     avatarUrl.value = url;
     toastr.success('头像上传成功', '成功', { timeOut: 2000 });
   } catch (err) {
@@ -509,19 +499,19 @@ function handleAvatarChange(event: Event) {
   const target = event.target as HTMLInputElement;
   const file = target.files?.[0];
   if (!file) return;
-  
+
   // 检查文件类型
   if (!file.type.startsWith('image/')) {
     toastr.error('请选择图片文件', '错误', { timeOut: 3000 });
     return;
   }
-  
+
   // 检查文件大小（限制为5MB）
   if (file.size > 5 * 1024 * 1024) {
     toastr.error('图片大小不能超过5MB', '错误', { timeOut: 3000 });
     return;
   }
-  
+
   const reader = new FileReader();
   reader.onload = () => {
     if (typeof reader.result === 'string') {
@@ -529,7 +519,7 @@ function handleAvatarChange(event: Event) {
     }
   };
   reader.readAsDataURL(file);
-  
+
   // 清空input，允许重复选择同一文件
   target.value = '';
 }
@@ -541,15 +531,15 @@ function handleImageError() {
 // 格式化加成标签
 function formatBonusLabel(key: string): string {
   const labelMap: Record<string, string> = {
-    '魅力加成': '魅力',
-    '幸运加成': '幸运',
-    '基础性斗力加成': '性斗力+',
-    '基础性斗力成算': '性斗力%',
-    '基础忍耐力加成': '忍耐力+',
-    '基础忍耐力成算': '忍耐力%',
-    '闪避率加成': '闪避率',
-    '暴击率加成': '暴击率',
-    '意志力加成': '意志力',
+    魅力加成: '魅力',
+    幸运加成: '幸运',
+    基础性斗力加成: '性斗力+',
+    基础性斗力成算: '性斗力%',
+    基础忍耐力加成: '忍耐力+',
+    基础忍耐力成算: '忍耐力%',
+    闪避率加成: '闪避率',
+    暴击率加成: '暴击率',
+    意志力加成: '意志力',
   };
   return labelMap[key] || key;
 }
@@ -597,7 +587,7 @@ function getExpPercentage(exp: number): number {
 
 onMounted(() => {
   loadAvatarUrl();
-  
+
   // 监听MVU变量更新，同步头像
   const globalAny = window as any;
   if (globalAny.eventOn && globalAny.Mvu) {
@@ -761,16 +751,16 @@ onMounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  
+
   &:hover {
     transform: scale(1.05);
     box-shadow: 0 12px 40px rgba(102, 126, 234, 0.5);
-    
+
     .avatar-upload-hint {
       opacity: 1;
     }
   }
-  
+
   .avatar-inner {
     width: 100%;
     height: 100%;
@@ -781,19 +771,19 @@ onMounted(() => {
     justify-content: center;
     overflow: hidden;
   }
-  
+
   .avatar-image {
     width: 100%;
     height: 100%;
     object-fit: cover;
     border-radius: 50%;
   }
-  
+
   i {
     font-size: 36px;
     color: rgba(255, 255, 255, 0.6);
   }
-  
+
   .avatar-upload-hint {
     position: absolute;
     bottom: 0;
@@ -809,7 +799,7 @@ onMounted(() => {
     transition: opacity 0.2s;
     border: 2px solid #1a1f35;
     z-index: 10;
-    
+
     i {
       font-size: 12px;
       color: white;
@@ -829,19 +819,20 @@ onMounted(() => {
   display: flex;
   gap: 8px;
   margin-top: 8px;
-  
-  .level-badge, .potential-badge {
+
+  .level-badge,
+  .potential-badge {
     padding: 4px 12px;
     border-radius: 20px;
     font-size: 12px;
     font-weight: 600;
   }
-  
+
   .level-badge {
     background: linear-gradient(135deg, #667eea, #764ba2);
     color: white;
   }
-  
+
   .potential-badge {
     background: rgba(255, 255, 255, 0.1);
     color: rgba(255, 255, 255, 0.8);
@@ -863,40 +854,48 @@ onMounted(() => {
   padding: 14px 16px;
   border-radius: 14px;
   backdrop-filter: blur(10px);
-  
+
   i {
     font-size: 20px;
   }
-  
+
   &.attribute-points {
     background: linear-gradient(135deg, rgba(251, 191, 36, 0.2), rgba(251, 191, 36, 0.05));
     border: 1px solid rgba(251, 191, 36, 0.3);
-    
-    i { color: #fbbf24; }
-    .points-value { color: #fcd34d; }
+
+    i {
+      color: #fbbf24;
+    }
+    .points-value {
+      color: #fcd34d;
+    }
   }
-  
+
   &.skill-points {
     background: linear-gradient(135deg, rgba(139, 92, 246, 0.2), rgba(139, 92, 246, 0.05));
     border: 1px solid rgba(139, 92, 246, 0.3);
-    
-    i { color: #8b5cf6; }
-    .points-value { color: #a78bfa; }
+
+    i {
+      color: #8b5cf6;
+    }
+    .points-value {
+      color: #a78bfa;
+    }
   }
-  
+
   .points-info {
     display: flex;
     flex-direction: column;
     gap: 2px;
   }
-  
+
   .points-label {
     font-size: 11px;
     color: rgba(255, 255, 255, 0.5);
     text-transform: uppercase;
     letter-spacing: 0.5px;
   }
-  
+
   .points-value {
     font-size: 20px;
     font-weight: 700;
@@ -923,19 +922,19 @@ onMounted(() => {
   display: flex;
   align-items: center;
   gap: 10px;
-  
+
   i {
     font-size: 14px;
     color: #667eea;
     width: 20px;
     text-align: center;
   }
-  
+
   .upgrade-label {
     font-size: 13px;
     color: rgba(255, 255, 255, 0.8);
   }
-  
+
   .upgrade-value {
     font-size: 14px;
     font-weight: 600;
@@ -959,12 +958,12 @@ onMounted(() => {
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s;
-  
+
   &:hover:not(:disabled) {
     transform: scale(1.05);
     box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
   }
-  
+
   &:disabled {
     opacity: 0.5;
     cursor: not-allowed;
@@ -994,36 +993,52 @@ onMounted(() => {
   backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.1);
   transition: all 0.2s ease;
-  
+
   &:hover {
     transform: translateY(-2px);
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
   }
-  
+
   &.charm {
     background: linear-gradient(135deg, rgba(236, 72, 153, 0.2), rgba(236, 72, 153, 0.05));
-    .stat-icon { color: #ec4899; }
-    .stat-value { color: #f472b6; }
+    .stat-icon {
+      color: #ec4899;
+    }
+    .stat-value {
+      color: #f472b6;
+    }
   }
-  
+
   &.luck {
     background: linear-gradient(135deg, rgba(251, 191, 36, 0.2), rgba(251, 191, 36, 0.05));
-    .stat-icon { color: #fbbf24; }
-    .stat-value { color: #fcd34d; }
+    .stat-icon {
+      color: #fbbf24;
+    }
+    .stat-value {
+      color: #fcd34d;
+    }
   }
-  
+
   &.combat {
     background: linear-gradient(135deg, rgba(239, 68, 68, 0.2), rgba(239, 68, 68, 0.05));
-    .stat-icon { color: #ef4444; }
-    .stat-value { color: #f87171; }
+    .stat-icon {
+      color: #ef4444;
+    }
+    .stat-value {
+      color: #f87171;
+    }
   }
-  
+
   &.endurance {
     background: linear-gradient(135deg, rgba(52, 211, 153, 0.2), rgba(52, 211, 153, 0.05));
-    .stat-icon { color: #34d399; }
-    .stat-value { color: #6ee7b7; }
+    .stat-icon {
+      color: #34d399;
+    }
+    .stat-value {
+      color: #6ee7b7;
+    }
   }
-  
+
   .stat-icon {
     font-size: 20px;
     width: 32px;
@@ -1032,18 +1047,18 @@ onMounted(() => {
     align-items: center;
     justify-content: center;
   }
-  
+
   .stat-info {
     flex: 1;
   }
-  
+
   .stat-label {
     font-size: 11px;
     color: rgba(255, 255, 255, 0.5);
     text-transform: uppercase;
     letter-spacing: 0.5px;
   }
-  
+
   .stat-value {
     font-size: 20px;
     font-weight: 700;
@@ -1067,7 +1082,7 @@ onMounted(() => {
   display: flex;
   align-items: center;
   gap: 8px;
-  
+
   i {
     font-size: 14px;
     color: #667eea;
@@ -1091,18 +1106,18 @@ onMounted(() => {
   justify-content: space-between;
   font-size: 12px;
   color: white;
-  
+
   span:first-child {
     display: flex;
     align-items: center;
     gap: 6px;
-    
+
     i {
       font-size: 12px;
       opacity: 0.7;
     }
   }
-  
+
   .progress-value {
     color: rgba(255, 255, 255, 0.5);
     font-family: 'JetBrains Mono', monospace;
@@ -1121,19 +1136,19 @@ onMounted(() => {
   height: 100%;
   border-radius: 3px;
   transition: width 0.4s ease;
-  
+
   &.stamina {
     background: linear-gradient(90deg, #34d399, #10b981);
   }
-  
+
   &.lust {
     background: linear-gradient(90deg, #f472b6, #ec4899);
   }
-  
+
   &.willpower {
     background: linear-gradient(90deg, #60a5fa, #3b82f6);
   }
-  
+
   &.exp {
     background: linear-gradient(90deg, #fbbf24, #f59e0b);
   }
@@ -1163,11 +1178,19 @@ onMounted(() => {
 .attribute-value {
   font-size: 14px;
   font-weight: 600;
-  
-  &.dodge { color: #60a5fa; }
-  &.crit { color: #f87171; }
-  &.corruption { color: #a78bfa; }
-  &.rank { color: #fbbf24; }
+
+  &.dodge {
+    color: #60a5fa;
+  }
+  &.crit {
+    color: #f87171;
+  }
+  &.corruption {
+    color: #a78bfa;
+  }
+  &.rank {
+    color: #fbbf24;
+  }
 }
 
 .states-list {
@@ -1185,23 +1208,23 @@ onMounted(() => {
   border-radius: 20px;
   font-size: 12px;
   font-weight: 500;
-  
+
   i {
     font-size: 10px;
   }
-  
+
   &.permanent {
     background: linear-gradient(135deg, rgba(167, 139, 250, 0.3), rgba(139, 92, 246, 0.1));
     color: #c4b5fd;
     border: 1px solid rgba(167, 139, 250, 0.3);
   }
-  
+
   &.temp {
     background: linear-gradient(135deg, rgba(96, 165, 250, 0.3), rgba(59, 130, 246, 0.1));
     color: #93c5fd;
     border: 1px solid rgba(96, 165, 250, 0.3);
   }
-  
+
   .turns-badge {
     background: rgba(0, 0, 0, 0.3);
     padding: 2px 6px;
@@ -1248,15 +1271,15 @@ onMounted(() => {
 .bonus-value {
   font-weight: 600;
   font-family: 'JetBrains Mono', monospace;
-  
+
   &.positive {
     color: #34d399;
   }
-  
+
   &.negative {
     color: #f87171;
   }
-  
+
   &.neutral {
     color: rgba(255, 255, 255, 0.4);
   }
