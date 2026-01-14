@@ -2274,6 +2274,60 @@ async function handlePlayerItem(item: Item) {
     );
   }
 
+  // ==================== 特殊道具：意志奇点（清除自身所有buff/debuff并回复行动） ====================
+  if (item.id === '意志奇点') {
+    try {
+      // 清除束缚状态（束缚属于负面控制，也应被清除）
+      playerBoundTurns.value = 0;
+      playerBindSource.value = null;
+
+      // 清空玩家临时状态（buff/debuff）
+      if (typeof Mvu !== 'undefined') {
+        const mvuData = Mvu.getMvuData({ type: 'message', message_id: 'latest' });
+        if (mvuData?.stat_data) {
+          _.set(mvuData.stat_data, '临时状态.状态列表', {});
+          _.set(mvuData.stat_data, '临时状态.加成统计', {
+            魅力加成: 0,
+            幸运加成: 0,
+            基础性斗力加成: 0,
+            基础性斗力成算: 0,
+            基础忍耐力加成: 0,
+            基础忍耐力成算: 0,
+            闪避率加成: 0,
+            暴击率加成: 0,
+          });
+          await Mvu.replaceMvuData(mvuData, { type: 'message', message_id: 'latest' });
+        }
+      }
+
+      addLog('意志奇点发动：已清除自身所有buff与debuff，并恢复行动。', 'system', 'critical');
+
+      // 更新状态（物品数量已扣除）
+      player.value = nextPlayer;
+      enemy.value = nextEnemy;
+      activeMenu.value = 'main';
+
+      // 回复行动：确保仍处于玩家回合可输入状态
+      turnState.phase = 'playerInput';
+
+      // 同步MVU与UI（会把最新物品数量与状态写回，并重新计算实时属性）
+      await saveToMvu();
+      await reloadStatusFromMvu();
+      addLog(`--- 继续 ${nextPlayer.name} 的回合 ---`, 'system', 'info');
+      return;
+    } catch (e) {
+      console.error('[战斗界面] 意志奇点处理失败', e);
+      addLog('意志奇点使用失败', 'system', 'error');
+      // 失败也至少把物品扣除后的数量同步
+      player.value = nextPlayer;
+      enemy.value = nextEnemy;
+      activeMenu.value = 'main';
+      await saveToMvu();
+      await reloadStatusFromMvu();
+      return;
+    }
+  }
+
   // ==================== 特殊道具：三好学生勋章（跳过沐芯兰第二阶段） ====================
   if (item.id === 'honor_medal_muxinlan') {
     if (!BossSystem.bossState.isBossFight || BossSystem.bossState.bossId !== 'muxinlan') {

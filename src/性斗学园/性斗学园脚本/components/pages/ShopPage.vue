@@ -481,6 +481,7 @@ const consumableSubCategories = [
       { id: 'con_r_3', name: '冷静剂', icon: 'fas fa-snowflake', price: 300, category: 'consumable', combatOnly: true, effectText: '快感-25', effect: { pleasureReduce: 25 }, description: '降低25点快感' },
       { id: 'con_r_4', name: '高级冷静剂', icon: 'fas fa-temperature-low', price: 550, category: 'consumable', combatOnly: true, effectText: '快感-50', effect: { pleasureReduce: 50 }, description: '降低50点快感' },
       { id: 'con_r_5', name: '全恢复药剂', icon: 'fas fa-prescription-bottle-medical', price: 888, category: 'consumable', combatOnly: true, effectText: '耐力+100 快感-50', effect: { staminaRestore: 100, pleasureReduce: 50 }, description: '恢复100耐力并降低50快感' },
+      { id: 'con_s_1', name: '意志奇点', icon: 'fas fa-infinity', price: 2000, category: 'consumable', combatOnly: true, effectText: '清除自身所有状态并回复行动', effect: {}, description: '立即清除自己身上的所有buff与debuff并在当前回合回复行动' },
     ]
   },
   {
