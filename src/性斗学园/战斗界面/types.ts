@@ -129,6 +129,7 @@ export interface Item {
   // 物品数值信息（用于显示）
   staminaRestore?: number;
   pleasureReduce?: number;
+  pleasureIncrease?: number;
   bonuses?: Record<string, number>; // 临时buff的加成属性
 }
 

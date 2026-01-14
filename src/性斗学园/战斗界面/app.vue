@@ -632,8 +632,13 @@ async function loadFromMvu() {
     const userName = getUserName();
     player.value.name = userName;
 
-    // 获取统一的高潮次数上限 (双方共享)
-    const maxClimaxCount = _.get(data, '性斗系统.胜负规则.高潮次数上限', 3);
+    // 获取统一的高潮次数上限 (双方共享) - 至少为1
+    const maxClimaxCountRaw = _.get(data, '性斗系统.胜负规则.高潮次数上限', 1);
+    const maxClimaxCount = Math.max(1, Number(maxClimaxCountRaw) || 0);
+    if (maxClimaxCountRaw !== maxClimaxCount) {
+      _.set(mvuData.stat_data, '性斗系统.胜负规则.高潮次数上限', maxClimaxCount);
+      await Mvu.replaceMvuData(mvuData, { type: 'message', message_id: 'latest' });
+    }
 
     // 同步玩家数据 - 核心状态
     player.value.stats.maxEndurance = _.get(data, '核心状态.$最大耐力', 100);
@@ -795,17 +800,9 @@ async function loadFromMvu() {
         // 获取数量
         const quantity = itemData?.数量 || combatItems[itemId] || 0;
         if (quantity > 0) {
-          // 提取物品名称：优先使用描述的第一部分，或使用ID
-          let itemName = itemId;
-          if (itemData?.描述) {
-            // 尝试从描述中提取名称（描述格式可能是"名称：效果"或"名称 效果"）
-            const nameMatch = itemData.描述.match(/^([^：:]+)/);
-            if (nameMatch) {
-              itemName = nameMatch[1].trim();
-            } else {
-              itemName = itemData.描述;
-            }
-          }
+          // 物品名严格使用背包key(itemId)，对齐 mvuSchema.ts 的结构
+          // 物品描述仅用于显示/说明，不能反向推断为物品名
+          const itemName = itemId;
 
           // 调试日志
           if (itemData?.加成属性) {
@@ -821,10 +818,11 @@ async function loadFromMvu() {
             quantity: quantity,
             staminaRestore: itemData?.耐力增加,
             pleasureReduce: itemData?.快感降低,
+            pleasureIncrease: itemData?.快感增加,
             bonuses: itemData?.加成属性, // 添加加成属性
             effect: (user, _target) => {
               // 根据物品属性应用效果
-              let message = `${user.name} 使用了 ${item.name}`;
+              let message = `${user.name} 使用了 ${itemId}`;
 
               // 恢复耐力
               if (itemData?.耐力增加) {
@@ -841,11 +839,25 @@ async function loadFromMvu() {
 
               // 降低快感
               if (itemData?.快感降低) {
+                const delta = Number(itemData.快感降低) || 0;
                 const oldPleasure = user.stats.currentPleasure;
-                user.stats.currentPleasure = Math.max(0, user.stats.currentPleasure - itemData.快感降低);
-                const actualReduce = oldPleasure - user.stats.currentPleasure;
-                if (actualReduce > 0) {
-                  message += `，快感降低了 ${actualReduce} 点`;
+                const nextPleasure = Math.min(user.stats.maxPleasure, Math.max(0, user.stats.currentPleasure - delta));
+                user.stats.currentPleasure = nextPleasure;
+                const actualChange = user.stats.currentPleasure - oldPleasure;
+                if (actualChange > 0) {
+                  message += `，快感增加了 ${actualChange} 点`;
+                } else if (actualChange < 0) {
+                  message += `，快感降低了 ${-actualChange} 点`;
+                }
+              }
+
+              // 增加快感
+              if (itemData?.快感增加) {
+                const oldPleasure = user.stats.currentPleasure;
+                user.stats.currentPleasure = Math.min(user.stats.maxPleasure, user.stats.currentPleasure + itemData.快感增加);
+                const actualIncrease = user.stats.currentPleasure - oldPleasure;
+                if (actualIncrease > 0) {
+                  message += `，快感增加了 ${actualIncrease} 点`;
                 }
               }
 
@@ -2274,6 +2286,27 @@ async function handlePlayerItem(item: Item) {
     );
   }
 
+  const isSpecialNegativeItem = item.id === '意志崩解液' || item.id === '迷情之露' || item.id === '缠梦香';
+  if (isSpecialNegativeItem) {
+    const parts: string[] = [];
+    if (typeof item.pleasureReduce === 'number' && item.pleasureReduce !== 0) {
+      const delta = -item.pleasureReduce;
+      if (delta > 0) parts.push(`快感+${delta}`);
+      else parts.push(`快感${delta}`);
+    }
+    if (typeof item.pleasureIncrease === 'number' && item.pleasureIncrease !== 0) {
+      parts.push(`快感+${item.pleasureIncrease}`);
+    }
+    if (item.bonuses && Object.keys(item.bonuses).length > 0) {
+      const bonusDesc = Object.entries(item.bonuses)
+        .map(([k, v]) => `${k}${(v as number) >= 0 ? '+' : ''}${v}`)
+        .join('、');
+      parts.push(bonusDesc);
+    }
+    const summary = parts.length > 0 ? parts.join('；') : '（效果未知）';
+    addLog(`记录：第 ${turnState.currentTurn} 回合使用了【${item.name}】 -> ${summary}`, 'system', 'info');
+  }
+
   // ==================== 特殊道具：意志奇点（清除自身所有buff/debuff并回复行动） ====================
   if (item.id === '意志奇点') {
     try {
@@ -2392,7 +2425,7 @@ async function handlePlayerItem(item: Item) {
       'info',
     );
   }
-  if (item.pleasureReduce) {
+  if (item.pleasureReduce || item.pleasureIncrease) {
     addLog(
       `${nextPlayer.name} 的快感变化：${player.value.stats.currentPleasure} → ${nextPlayer.stats.currentPleasure}`,
       'system',
@@ -2440,7 +2473,7 @@ async function handlePlayerItem(item: Item) {
       // 保存到MVU
       await Mvu.replaceMvuData(mvuData, { type: 'message', message_id: 'latest' });
       
-      addLog(`${item.name} 的增益效果已生效，持续 ${duration} 回合`, 'system', 'info');
+      addLog(`${item.name} 的状态效果已生效，持续 ${duration} 回合`, 'system', 'info');
     }
   }
 

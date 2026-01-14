@@ -482,6 +482,10 @@ const consumableSubCategories = [
       { id: 'con_r_4', name: '高级冷静剂', icon: 'fas fa-temperature-low', price: 550, category: 'consumable', combatOnly: true, effectText: '快感-50', effect: { pleasureReduce: 50 }, description: '降低50点快感' },
       { id: 'con_r_5', name: '全恢复药剂', icon: 'fas fa-prescription-bottle-medical', price: 888, category: 'consumable', combatOnly: true, effectText: '耐力+100 快感-50', effect: { staminaRestore: 100, pleasureReduce: 50 }, description: '恢复100耐力并降低50快感' },
       { id: 'con_s_1', name: '意志奇点', icon: 'fas fa-infinity', price: 2000, category: 'consumable', combatOnly: true, effectText: '清除自身所有状态并回复行动', effect: {}, description: '立即清除自己身上的所有buff与debuff并在当前回合回复行动' },
+
+      { id: 'con_neg_1', name: '中枢神经兴奋剂', icon: 'fas fa-vial', price: 10, category: 'consumable', combatOnly: true, effectText: '快感+80', effect: { pleasureReduce: -80 }, description: '直接增加玩家80的快感' },
+      { id: 'con_neg_2', name: '强力媚药', icon: 'fas fa-droplet', price: 50, category: 'consumable', combatOnly: true, effectText: '忍耐力成算-80 (3回合)', effect: { buff: { '基础忍耐力成算': -80 }, duration: 3 }, description: '直接减少玩家80的忍耐力成算（持续3回合）' },
+      { id: 'con_neg_3', name: '致幻剂', icon: 'fas fa-smog', price: 100, category: 'consumable', combatOnly: true, effectText: '全属性-90 (3回合)', effect: { buff: { '魅力加成': -90, '幸运加成': -90, '基础性斗力成算': -90, '基础忍耐力成算': -90, '闪避率加成': -90, '暴击率加成': -90 }, duration: 3 }, description: '直接减少玩家全属性90（持续3回合）' },
     ]
   },
   {
@@ -648,6 +652,7 @@ async function purchaseItem() {
         if (item.effect) {
           if (item.effect.staminaRestore) consumableData.耐力增加 = item.effect.staminaRestore;
           if (item.effect.pleasureReduce) consumableData.快感降低 = item.effect.pleasureReduce;
+          if (item.effect.pleasureIncrease) consumableData.快感增加 = item.effect.pleasureIncrease;
           // 临时buff：存入背包的加成属性，在战斗中使用时才写入临时状态
           if (item.effect.buff) consumableData.加成属性 = item.effect.buff;
           
