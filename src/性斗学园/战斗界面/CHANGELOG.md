@@ -46,11 +46,10 @@
   ```
 
 #### 5. 完整Buff/Debuff系统
-- **支持17种状态效果**：
-  - **增益**：ATK_UP, DEF_UP, CRIT_UP, FOCUS, REGEN, ENDURANCE_UP
-  - **减益**：ATK_DOWN, DEF_DOWN, SENSITIVE, WILLPOWER_DOWN, DODGE_DOWN
-  - **控制**：SILENCE, BIND, FEAR
-  - **持续效果**：DOT_LUST, SHAME, HEAT
+- **支持状态效果**：
+  - **增益**：ATK_UP, DEF_UP, CRIT_UP，DODGE_UP，LUCK_UP, CHARM_UP
+  - **减益**：ATK_DOWN, DEF_DOWN, CRIT_DOWN, DODGE_DOWN, LUCK_DOWN, CHARM_DOWN
+  - **控制** BIND
 - **特性**：
   - 可叠加buff支持最大层数限制
   - 自动持续时间管理（每回合递减）

@@ -1357,7 +1357,7 @@ async function loadEnemyFromMvuData(data: any, maxClimaxCount: number) {
           data: skillData,
         };
       })
-      .filter((skill: any) => skill !== null);
+      .filter((skill): skill is NonNullable<typeof skill> => skill !== null);
 
     console.info(
       '[战斗界面] 已加载敌人技能:',
@@ -2241,7 +2241,7 @@ function handlePlayerSkill(skill: Skill) {
       let talentAttackResult: TalentSystem.TalentEffectResult = {};
       let critDamageBoost = 0;
       if (playerTalent.value) {
-        const hasBindEffect = skill.data.effects?.some((e: any) => e.type === 'bind') || false;
+        const hasBindEffect = skill.data.buffs?.some((e: any) => e.type === 'bind') || false;
         const talentContext = createTalentEffectContext();
         talentAttackResult = TalentSystem.processTalentOnAttack(playerTalent.value, talentContext, hasBindEffect);
         
