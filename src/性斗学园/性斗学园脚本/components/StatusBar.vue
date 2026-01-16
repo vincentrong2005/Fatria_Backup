@@ -119,6 +119,7 @@
 
 <script setup lang="ts">
 import { onMounted, onUnmounted, ref } from 'vue';
+import { getDailyTalentEffect } from '../data/talentDatabase';
 import DashboardPage from './pages/DashboardPage.vue';
 import InventoryPage from './pages/InventoryPage.vue';
 import MapPage from './pages/MapPage.vue';
@@ -170,14 +171,6 @@ async function loadMvuData() {
 
     characterData.value = mvuData.stat_data;
     combatData.value = mvuData.stat_data;
-    
-    // 调试：检查背包数据
-    console.log('[状态栏] 物品系统:', mvuData.stat_data?.物品系统);
-    console.log('[状态栏] 背包数据:', mvuData.stat_data?.物品系统?.背包);
-    console.log('[状态栏] 背包类型:', typeof mvuData.stat_data?.物品系统?.背包);
-    if (mvuData.stat_data?.物品系统?.背包) {
-      console.log('[状态栏] 背包键值:', Object.keys(mvuData.stat_data.物品系统.背包));
-    }
 
     // 检查是否需要自动升级
     await checkAutoLevelUp(mvuData);
@@ -198,8 +191,13 @@ async function checkAutoLevelUp(mvuData: any) {
     const potential = statData.核心状态?._潜力 || 5.0; // 潜力值 (5.0-10.0)
     const difficulty = statData.角色基础?.难度 || '普通';
 
-    // 每100经验值升一级
-    const expNeeded = (() => {
+    // 检查天赋：经验降低效果
+    const talents = statData.技能系统?.$天赋;
+    const currentTalentId = talents && Object.keys(talents).length > 0 ? Object.keys(talents)[0] : undefined;
+    const expReduction = getDailyTalentEffect(currentTalentId, 'exp_reduce'); // 百分比
+
+    // 每100经验值升一级（根据难度和天赋调整）
+    const baseExpNeeded = (() => {
       switch (difficulty) {
         case '简单':
           return 100;
@@ -215,6 +213,9 @@ async function checkAutoLevelUp(mvuData: any) {
           return 125;
       }
     })();
+    
+    // 应用经验降低天赋效果
+    const expNeeded = Math.max(50, Math.floor(baseExpNeeded * (100 - expReduction) / 100));
 
     // 检查是否可以升级（最高100级）
     if (currentExp >= expNeeded && currentLevel < 100) {
@@ -227,8 +228,16 @@ async function checkAutoLevelUp(mvuData: any) {
       if (actualLevelsGained > 0) {
         // 升级奖励：根据潜力计算，每级获得 floor(潜力/2) 点（属性点和技能点相同）
         const pointsPerLevel = Math.floor(potential / 2);
-        const attributePointsGained = actualLevelsGained * pointsPerLevel;
-        const skillPointsGained = actualLevelsGained * pointsPerLevel;
+        let attributePointsGained = actualLevelsGained * pointsPerLevel;
+        let skillPointsGained = actualLevelsGained * pointsPerLevel;
+        
+        // 天赋：升级时额外获得属性点（使用之前已获取的currentTalentId）
+        const extraStatPoints = getDailyTalentEffect(currentTalentId, 'extra_stat_point') * actualLevelsGained;
+        attributePointsGained += extraStatPoints;
+        
+        // 天赋：升级时额外获得技能点
+        const extraSkillPoints = getDailyTalentEffect(currentTalentId, 'extra_skill_point') * actualLevelsGained;
+        skillPointsGained += extraSkillPoints;
 
         // 更新 MVU 数据
         if (!statData.角色基础) statData.角色基础 = {};
@@ -249,17 +258,17 @@ async function checkAutoLevelUp(mvuData: any) {
         combatData.value = statData;
 
         // 显示升级提示
+        const bonusText = (extraStatPoints > 0 || extraSkillPoints > 0) 
+          ? `（含天赋加成：+${extraStatPoints}属性点、+${extraSkillPoints}技能点）`
+          : '';
         if (typeof toastr !== 'undefined') {
           toastr.success(
-            `等级提升至 ${newLevel}！获得 ${attributePointsGained} 属性点、${skillPointsGained} 技能点`,
+            `等级提升至 ${newLevel}！获得 ${attributePointsGained} 属性点、${skillPointsGained} 技能点${bonusText}`,
             '🎉 升级！',
             { timeOut: 3000 },
           );
         }
 
-        console.log(
-          `[状态栏] 自动升级: ${currentLevel} -> ${newLevel}, 潜力=${potential}, 每级获得 ${pointsPerLevel} 点, 共获得 ${attributePointsGained} 属性点, ${skillPointsGained} 技能点`,
-        );
       }
     }
   } catch (error) {

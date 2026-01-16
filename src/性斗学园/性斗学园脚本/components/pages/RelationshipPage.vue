@@ -840,7 +840,7 @@ function handleModalImageError(event: Event) {
   display: flex;
   align-items: flex-start;
   justify-content: center;
-  padding: max(70px, env(safe-area-inset-top, 0px) + 40px) 20px calc(20px + env(safe-area-inset-bottom, 0px)) 20px;
+  padding: max(50px, env(safe-area-inset-top, 0px) + 20px) 20px calc(20px + env(safe-area-inset-bottom, 0px)) 20px;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
 }
@@ -864,11 +864,11 @@ function handleModalImageError(event: Event) {
   max-width: 95vw;
   overflow: hidden;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
-  margin-top: 20px;
+  margin-top: 8px;
   margin-bottom: 20px;
   
   @media (min-height: 600px) {
-    margin-top: max(40px, 10vh);
+    margin-top: max(20px, 5vh);
   }
 }
 

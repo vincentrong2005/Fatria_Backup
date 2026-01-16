@@ -107,7 +107,13 @@
             </div>
             <div class="item-price">
               <i class="fas fa-coins"></i>
-              {{ item.price }}
+              <template v-if="getItemDiscount(item) > 0">
+                <span class="original-price">{{ item.price }}</span>
+                <span class="discounted-price">{{ getDiscountedPrice(item) }}</span>
+              </template>
+              <template v-else>
+                {{ item.price }}
+              </template>
             </div>
           </div>
         </div>
@@ -141,7 +147,13 @@
               </div>
               <div class="item-price">
                 <i class="fas fa-coins"></i>
-                {{ item.price }}
+                <template v-if="getItemDiscount(item) > 0">
+                  <span class="original-price">{{ item.price }}</span>
+                  <span class="discounted-price">{{ getDiscountedPrice(item) }}</span>
+                </template>
+                <template v-else>
+                  {{ item.price }}
+                </template>
               </div>
               <span v-if="item.combatOnly" class="combat-tag">战斗用</span>
             </div>
@@ -194,7 +206,14 @@
             <span>总价:</span>
             <span class="total-price">
               <i class="fas fa-coins"></i>
-              {{ selectedItem.price * purchaseQuantity }}
+              <template v-if="getItemDiscount(selectedItem) > 0">
+                <span class="original-price">{{ selectedItem.price * purchaseQuantity }}</span>
+                <span class="discounted-price">{{ getDiscountedPrice(selectedItem) * purchaseQuantity }}</span>
+                <span class="discount-tag">-{{ getItemDiscount(selectedItem) }}%</span>
+              </template>
+              <template v-else>
+                {{ selectedItem.price * purchaseQuantity }}
+              </template>
             </span>
           </div>
         </div>
@@ -202,7 +221,7 @@
           <button class="cancel-btn" @click="selectedItem = null">取消</button>
           <button 
             class="confirm-btn" 
-            :disabled="goldCoins < selectedItem.price * purchaseQuantity"
+            :disabled="goldCoins < getDiscountedPrice(selectedItem) * purchaseQuantity"
             @click="purchaseItem"
           >
             <i class="fas fa-shopping-cart"></i>
@@ -216,10 +235,53 @@
 
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
+import { getDailyTalentEffect } from '../../data/talentDatabase';
 
 const props = defineProps<{
   characterData: any;
 }>();
+
+// 获取当前天赋ID
+const currentTalentId = computed(() => {
+  const talents = props.characterData.技能系统?.$天赋;
+  if (!talents || Object.keys(talents).length === 0) return undefined;
+  // 返回第一个天赋的ID（玩家只能拥有一个天赋）
+  return Object.keys(talents)[0];
+});
+
+// 计算商店折扣
+function getItemDiscount(item: any): number {
+  const talentId = currentTalentId.value;
+  if (!talentId) return 0;
+  
+  let discount = 0;
+  
+  // 全局折扣
+  discount += getDailyTalentEffect(talentId, 'shop_discount_all');
+  
+  // 回复类折扣
+  if (item.category === 'consumable' && (item.effect?.staminaRestore || item.effect?.pleasureReduce)) {
+    discount += getDailyTalentEffect(talentId, 'shop_discount_recovery');
+  }
+  
+  // 装备折扣
+  if (item.category === 'equipment') {
+    discount += getDailyTalentEffect(talentId, 'shop_discount_equipment');
+  }
+  
+  // 永久提升类折扣
+  if (item.category === 'consumable' && item.effect?.permanent) {
+    discount += getDailyTalentEffect(talentId, 'shop_discount_permanent');
+  }
+  
+  return Math.min(discount, 50); // 最大50%折扣
+}
+
+// 获取折扣后价格
+function getDiscountedPrice(item: any): number {
+  const discount = getItemDiscount(item);
+  return Math.floor(item.price * (100 - discount) / 100);
+}
 
 // 金币
 const goldCoins = computed(() => {
@@ -483,8 +545,8 @@ const consumableSubCategories = [
       { id: 'con_r_5', name: '全恢复药剂', icon: 'fas fa-prescription-bottle-medical', price: 888, category: 'consumable', combatOnly: true, effectText: '耐力+100 快感-50', effect: { staminaRestore: 100, pleasureReduce: 50 }, description: '恢复100耐力并降低50快感' },
       { id: 'con_s_1', name: '意志奇点', icon: 'fas fa-infinity', price: 2000, category: 'consumable', combatOnly: true, effectText: '清除自身所有状态并回复行动', effect: {}, description: '立即清除自己身上的所有buff与debuff并在当前回合回复行动' },
 
-      { id: 'con_neg_1', name: '中枢神经兴奋剂', icon: 'fas fa-vial', price: 10, category: 'consumable', combatOnly: true, effectText: '快感+80', effect: { pleasureReduce: -80 }, description: '直接增加玩家80的快感' },
-      { id: 'con_neg_2', name: '强力媚药', icon: 'fas fa-droplet', price: 50, category: 'consumable', combatOnly: true, effectText: '忍耐力成算-80 (3回合)', effect: { buff: { '基础忍耐力成算': -80 }, duration: 3 }, description: '直接减少玩家80的忍耐力成算（持续3回合）' },
+      { id: 'con_neg_1', name: '中枢神经兴奋剂', icon: 'fas fa-vial', price: 100, category: 'consumable', combatOnly: true, effectText: '快感+80', effect: { pleasureReduce: -80 }, description: '直接增加玩家80的快感' },
+      { id: 'con_neg_2', name: '强力媚药', icon: 'fas fa-droplet', price: 100, category: 'consumable', combatOnly: true, effectText: '忍耐力成算-80 (3回合)', effect: { buff: { '基础忍耐力成算': -80 }, duration: 3 }, description: '直接减少玩家80的忍耐力成算（持续3回合）' },
       { id: 'con_neg_3', name: '致幻剂', icon: 'fas fa-smog', price: 100, category: 'consumable', combatOnly: true, effectText: '全属性-90 (3回合)', effect: { buff: { '魅力加成': -90, '幸运加成': -90, '基础性斗力成算': -90, '基础忍耐力成算': -90, '闪避率加成': -90, '暴击率加成': -90 }, duration: 3 }, description: '直接减少玩家全属性90（持续3回合）' },
     ]
   },
@@ -595,7 +657,8 @@ async function purchaseItem() {
       }
     }
 
-    const totalPrice = item.price * quantity;
+    const discountedUnitPrice = getDiscountedPrice(item);
+    const totalPrice = discountedUnitPrice * quantity;
     if (goldCoins.value < totalPrice) {
       if (typeof toastr !== 'undefined') {
         toastr.error('金币不足！', '购买失败');
@@ -603,7 +666,7 @@ async function purchaseItem() {
       return;
     }
 
-    // 扣除金币（按实际生效数量扣费）
+    // 扣除金币（按折扣后价格扣费）
     mvuData.stat_data.物品系统.学园金币 = (mvuData.stat_data.物品系统.学园金币 || 0) - totalPrice;
     
     // 根据物品类型处理
@@ -1033,6 +1096,28 @@ function getSlotType(slot: string): "主装备" | "副装备" | "饰品" | "特�
   color: #fcd34d;
   
   i { font-size: 11px; }
+  
+  .original-price {
+    text-decoration: line-through;
+    opacity: 0.5;
+    font-size: 11px;
+    color: #9ca3af;
+  }
+  
+  .discounted-price {
+    color: #4ade80;
+    font-weight: 700;
+  }
+  
+  .discount-tag {
+    background: linear-gradient(135deg, #22c55e, #16a34a);
+    color: white;
+    font-size: 9px;
+    padding: 2px 5px;
+    border-radius: 4px;
+    font-weight: 700;
+    margin-left: 4px;
+  }
 }
 
 .combat-tag {

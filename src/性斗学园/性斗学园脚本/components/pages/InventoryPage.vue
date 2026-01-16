@@ -575,7 +575,7 @@ async function equipItem(itemKey: string, item: any) {
 }
 
 async function discardItem(itemKey: string) {
-  const ok = confirm(`确认售卖「${itemKey}」吗？每件固定 100 金币`);
+  const ok = confirm(`确认售卖「${itemKey}」吗？每件固定 50 金币`);
   if (!ok) return;
 
   const globalAny = window as any;
@@ -605,15 +605,15 @@ async function discardItem(itemKey: string) {
       delete statData.物品系统.背包[itemKey];
     }
 
-    // 增加金币（每件固定100）
+    // 增加金币（每件固定50）
     if (!statData.物品系统) statData.物品系统 = {};
     const currentCoins = Number(statData.物品系统.学园金币 ?? 0) || 0;
-    statData.物品系统.学园金币 = currentCoins + 100;
+    statData.物品系统.学园金币 = currentCoins + 50;
 
     await globalAny.Mvu.replaceMvuData(mvuData, { type: 'message', message_id: 'latest' });
 
     if (typeof toastr !== 'undefined') {
-      toastr.success(`已售卖 ${itemKey}，获得 100 金币`);
+      toastr.success(`已售卖 ${itemKey}，获得 50 金币`);
     }
 
     window.dispatchEvent(new CustomEvent('mvu-data-updated'));

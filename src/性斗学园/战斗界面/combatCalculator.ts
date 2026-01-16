@@ -195,7 +195,17 @@ export function applyBuffModifiers(damage: number, attacker: Character, target: 
  * @param isPlayerAttacking 是否是玩家在攻击（用于等级压制计算）
  * @returns 战斗结果
  */
-export function executeAttack(attacker: Character, target: Character, skill: SkillData, isPlayerAttacking: boolean = false): CombatResult {
+export function executeAttack(
+  attacker: Character, 
+  target: Character, 
+  skill: SkillData, 
+  isPlayerAttacking: boolean = false,
+  talentModifiers?: {
+    guaranteedHit?: boolean;
+    damageMultiplier?: number;
+    critDamageBoost?: number;
+  }
+): CombatResult {
   const logs: string[] = [];
   const hits: { damage: number; isCritical: boolean; isDodged: boolean }[] = [];
   
@@ -220,8 +230,8 @@ export function executeAttack(attacker: Character, target: Character, skill: Ski
       hitLog.push(`--- 第${i + 1}击 ---`);
     }
 
-    // 2. 判定闪避（每次攻击独立判定）
-    const dodged = checkDodge(attacker.stats.luck, target.stats.evasion, skill.accuracy);
+    // 2. 判定闪避（每次攻击独立判定，天赋可保证命中）
+    const dodged = talentModifiers?.guaranteedHit ? false : checkDodge(attacker.stats.luck, target.stats.evasion, skill.accuracy);
     if (dodged) {
       hits.push({ damage: 0, isCritical: false, isDodged: true });
       hitLog.push(`${target.name} 闪避了攻击!`);
@@ -242,11 +252,23 @@ export function executeAttack(attacker: Character, target: Character, skill: Ski
     let damageBeforeCap = baseDamage;
     
     if (critical) {
-      finalDamage = Math.floor(baseDamage * 1.5);
+      // 基础暴击倍率1.5，天赋可额外增加
+      const critMultiplier = 1.5 + (talentModifiers?.critDamageBoost || 0) / 100;
+      finalDamage = Math.floor(baseDamage * critMultiplier);
       damageBeforeCap = finalDamage;
-      hitLog.push(`暴击! 伤害提升50%`);
+      if (talentModifiers?.critDamageBoost) {
+        hitLog.push(`暴击! 伤害提升${Math.floor(critMultiplier * 100)}%（含天赋加成）`);
+      } else {
+        hitLog.push(`暴击! 伤害提升50%`);
+      }
     } else {
       hitLog.push(`普通命中`);
+    }
+    
+    // 应用天赋伤害倍率（如先发制人）
+    if (talentModifiers?.damageMultiplier && talentModifiers.damageMultiplier > 1) {
+      finalDamage = Math.floor(finalDamage * talentModifiers.damageMultiplier);
+      hitLog.push(`天赋伤害倍率: x${talentModifiers.damageMultiplier}`);
     }
 
     // 4. 应用防御减伤（玩家攻击时应用等级压制）
@@ -416,8 +438,11 @@ function getBuffName(type: BuffType): string {
     [BuffType.SENSITIVE]: '敏感',
     [BuffType.SILENCE]: '沉默',
     [BuffType.BIND]: '束缚',
+    [BuffType.DODGE_UP]: '闪避提升',
     [BuffType.DODGE_DOWN]: '闪避下降',
     [BuffType.CRIT_UP]: '暴击提升',
+    [BuffType.LUCK_DOWN]: '幸运下降',
+    [BuffType.CHARM_DOWN]: '魅力下降',
     [BuffType.FOCUS]: '集中',
     [BuffType.SHAME]: '羞耻',
     [BuffType.HEAT]: '发情',
@@ -440,6 +465,8 @@ function isDebuff(type: BuffType): boolean {
     BuffType.SILENCE,
     BuffType.BIND,
     BuffType.DODGE_DOWN,
+    BuffType.LUCK_DOWN,
+    BuffType.CHARM_DOWN,
     BuffType.SHAME,
     BuffType.HEAT,
     BuffType.FEAR,

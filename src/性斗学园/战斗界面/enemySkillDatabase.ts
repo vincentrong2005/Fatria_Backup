@@ -4826,13 +4826,13 @@ export const ENEMY_SKILLS: Record<string, SkillData> = {
     id: '望月静_12',
     name: '极道连击·瞬杀',
     description: '在一回合内连续释放所有快速手法，以透支体力为代价，造成毁灭性的快感伤害',
-    effectDescription: '造成350%性斗力伤害，5连击',
+    effectDescription: '造成70%性斗力伤害，5连击',
     icon: 'Ultimate',
     type: SkillType.PHYSICAL,
-    staminaCost: 45,
+    staminaCost: 100,
     cooldown: 8,
     castTime: 0,
-    damageFormula: [{ source: DamageSource.SEX_POWER, coefficient: 3.50, baseValue: 25 }],
+    damageFormula: [{ source: DamageSource.SEX_POWER, coefficient: 0.70, baseValue: 25 }],
     accuracy: 80,
     critModifier: 45,
     buffs: [],
@@ -12885,7 +12885,7 @@ export const ENEMY_SKILLS: Record<string, SkillData> = {
     id: '沐芯兰_茉莉_1',
     name: '嘲讽闪避',
     description: '"哎呀呀，前辈的攻击是开了自动避让模式吗？真是让人发笑呢~♡"',
-    effectDescription: '闪避率+40%，持续2回合',
+    effectDescription: '闪避率+40%，持续2回合；幸运-30、魅力-30，持续3回合',
     icon: 'Wind',
     type: SkillType.SUPPORT,
     staminaCost: 10,
@@ -12894,7 +12894,11 @@ export const ENEMY_SKILLS: Record<string, SkillData> = {
     damageFormula: [],
     accuracy: 100,
     critModifier: 0,
-    buffs: [{ type: BuffType.DODGE_DOWN, value: -40, isPercent: true, duration: 2, stackable: false }],
+    buffs: [
+      { type: BuffType.DODGE_UP, value: 40, isPercent: true, duration: 2, stackable: false },
+      { type: BuffType.LUCK_DOWN, value: 30, isPercent: false, duration: 3, stackable: false },
+      { type: BuffType.CHARM_DOWN, value: 30, isPercent: false, duration: 3, stackable: false }
+    ],
     canBeReflected: false,
     hitCount: 0,
   },
@@ -12940,7 +12944,7 @@ export const ENEMY_SKILLS: Record<string, SkillData> = {
     id: '沐芯兰_茉莉_4',
     name: '意识同步',
     description: '"利息已经滚到你付不起的程度了。现在，把你的胜算全部清零吧。"',
-    effectDescription: '自身性斗力+100%，暴击率+30%，持续3回合',
+    effectDescription: '自身性斗力+30%，忍耐力+30%，暴击率+30%，持续3回合',
     icon: 'Zap',
     type: SkillType.SUPPORT,
     staminaCost: 20,
@@ -12950,7 +12954,8 @@ export const ENEMY_SKILLS: Record<string, SkillData> = {
     accuracy: 100,
     critModifier: 0,
     buffs: [
-      { type: BuffType.ATK_UP, value: 100, isPercent: true, duration: 3, stackable: false },
+      { type: BuffType.ATK_UP, value: 30, isPercent: true, duration: 3, stackable: false },
+      { type: BuffType.DEF_UP, value: 30, isPercent: true, duration: 3, stackable: false },
       { type: BuffType.CRIT_UP, value: 30, isPercent: false, duration: 3, stackable: false }
     ],
     canBeReflected: false,
@@ -12960,13 +12965,13 @@ export const ENEMY_SKILLS: Record<string, SkillData> = {
     id: '沐芯兰_茉莉_5',
     name: '意识劫持，快感赋予',
     description: '"感受到了吗？这就是被完全支配的感觉。"',
-    effectDescription: '造成250%性斗力伤害，降低目标幸运150点（3回合）',
+    effectDescription: '造成200%性斗力伤害，降低目标幸运150点（3回合）',
     icon: 'Brain',
     type: SkillType.MENTAL,
     staminaCost: 25,
     cooldown: 3,
     castTime: 0,
-    damageFormula: [{ source: DamageSource.SEX_POWER, coefficient: 2.50, baseValue: 20 }],
+    damageFormula: [{ source: DamageSource.SEX_POWER, coefficient: 2.00, baseValue: 20 }],
     accuracy: 88,
     critModifier: 25,
     buffs: [{ type: BuffType.LUCK_DOWN, value: 150, isPercent: false, duration: 3, stackable: false }],
@@ -12977,13 +12982,13 @@ export const ENEMY_SKILLS: Record<string, SkillData> = {
     id: '沐芯兰_茉莉_6',
     name: '心智劫持，防御剥离',
     description: '"你的意识...现在归我所有了。"',
-    effectDescription: '造成500%魅力伤害，降低目标防御50%（2回合）',
+    effectDescription: '造成400%魅力伤害，降低目标防御50%（2回合）',
     icon: 'Ghost',
     type: SkillType.CHARM,
     staminaCost: 22,
     cooldown: 4,
     castTime: 0,
-    damageFormula: [{ source: DamageSource.CHARM, coefficient: 1.20, baseValue: 15 }],
+    damageFormula: [{ source: DamageSource.CHARM, coefficient: 4.00, baseValue: 15 }],
     accuracy: 85,
     critModifier: 20,
     buffs: [{ type: BuffType.DEF_DOWN, value: 50, isPercent: true, duration: 2, stackable: false }],
@@ -12994,13 +12999,13 @@ export const ENEMY_SKILLS: Record<string, SkillData> = {
     id: '沐芯兰_茉莉_7',
     name: '持续敏感点打击',
     description: '"让我的傀儡们...把你撕碎，高潮吧杂鱼！"',
-    effectDescription: '造成50%性斗力伤害，6连击',
+    effectDescription: '造成40%性斗力伤害，6连击',
     icon: 'Tornado',
     type: SkillType.PHYSICAL,
     staminaCost: 35,
     cooldown: 5,
     castTime: 0,
-    damageFormula: [{ source: DamageSource.SEX_POWER, coefficient: 0.50, baseValue: 10 }],
+    damageFormula: [{ source: DamageSource.SEX_POWER, coefficient: 0.40, baseValue: 10 }],
     accuracy: 80,
     critModifier: 30,
     buffs: [],
@@ -13862,14 +13867,31 @@ export function convertToMvuSkillFormat(skill: SkillData) {
   const effectList: Record<string, any> = {};
   if (skill.buffs && skill.buffs.length > 0) {
     skill.buffs.forEach((buff, index) => {
+      const enemyDebuffTypes = new Set<BuffType>([
+        BuffType.BIND,
+        BuffType.SENSITIVE,
+        BuffType.SILENCE,
+        BuffType.ATK_DOWN,
+        BuffType.DEF_DOWN,
+        BuffType.DODGE_DOWN,
+        BuffType.LUCK_DOWN,
+        BuffType.CHARM_DOWN,
+        BuffType.SHAME,
+        BuffType.HEAT,
+        BuffType.FEAR,
+        BuffType.DOT_LUST,
+      ]);
+
       const buffTypeMap: Record<string, '性斗力' | '忍耐力' | '魅力' | '幸运' | '闪避率' | '暴击率' | '束缚'> = {
         [BuffType.BIND]: '束缚',
         [BuffType.SENSITIVE]: '性斗力', // 敏感状态影响性斗力
+        [BuffType.DODGE_UP]: '闪避率',
         [BuffType.DODGE_DOWN]: '闪避率',
         [BuffType.ATK_UP]: '性斗力',
         [BuffType.ATK_DOWN]: '性斗力',
         [BuffType.CRIT_UP]: '暴击率',
         [BuffType.LUCK_DOWN]: '幸运',
+        [BuffType.CHARM_DOWN]: '魅力',
       };
       const effectType = buffTypeMap[buff.type] || '性斗力';
       let effectValue = buff.value;
@@ -13877,17 +13899,18 @@ export function convertToMvuSkillFormat(skill: SkillData) {
       // 束缚效果值为0，持续回合数决定束缚时长；debuff使用负值
       if (buff.type === BuffType.BIND) {
         effectValue = 0; // 束缚效果值为0，通过持续回合数来控制
-      } else if (buff.type === BuffType.SENSITIVE || buff.type === BuffType.DODGE_DOWN || buff.type === BuffType.ATK_DOWN || buff.type === BuffType.LUCK_DOWN) {
+      } else if (buff.type === BuffType.SENSITIVE || buff.type === BuffType.DODGE_DOWN || buff.type === BuffType.ATK_DOWN || buff.type === BuffType.LUCK_DOWN || buff.type === BuffType.CHARM_DOWN) {
         effectValue = -Math.abs(buff.value);
       }
       
-      // 敌人技能的效果默认作用于玩家（即targetEnemy=true从敌人视角看是作用于"敌人"即玩家）
+      // 敌人技能：debuff 默认作用于玩家；buff 默认作用于敌人自身
+      const isEnemyDebuff = enemyDebuffTypes.has(buff.type);
       effectList[`效果${index + 1}_${effectType}`] = {
         效果类型: effectType,
         效果值: effectValue,
         是否为百分比: buff.isPercent,
         持续回合数: buff.duration,
-        是否作用敌人: true, // 敌人技能的debuff作用于玩家
+        是否作用敌人: isEnemyDebuff,
       };
     });
   }

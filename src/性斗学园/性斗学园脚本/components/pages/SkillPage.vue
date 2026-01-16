@@ -69,13 +69,100 @@
         </button>
         <button 
           class="gacha-btn ten"
-          :disabled="skillPoints < 20"
+          :disabled="skillPoints < tenPullCost"
           @click="performGacha(10)"
         >
           <i class="fas fa-dice-d20"></i>
           <span class="btn-text">十连抽</span>
-          <span class="btn-cost">20 技能点</span>
+          <span class="btn-cost">
+            <span class="discount-price">{{ tenPullCost }} 技能点</span>
+            <span class="original-price">20 技能点</span>
+          </span>
         </button>
+      </div>
+
+      <!-- 天赋抽取区域 -->
+      <div class="talent-gacha-section">
+        <h3><i class="fas fa-star"></i> 天赋抽取</h3>
+        <div class="rate-list">
+          <span class="rate-item rarity-c">C级 30%</span>
+          <span class="rate-item rarity-b">B级 35%</span>
+          <span class="rate-item rarity-a">A级 25%</span>
+          <span class="rate-item rarity-s">S级 7.5%</span>
+          <span class="rate-item rarity-ss">SS级 2.5%</span>
+        </div>
+        <p class="talent-gacha-note">消耗10技能点抽取一个天赋，天赋仅能拥有一个</p>
+        
+        <button 
+          class="talent-gacha-btn"
+          :disabled="skillPoints < 10"
+          @click="performTalentGachaAction"
+        >
+          <i class="fas fa-sparkles"></i>
+          <span class="btn-text">抽取天赋</span>
+          <span class="btn-cost">10 技能点</span>
+        </button>
+
+        <!-- 当前天赋显示 -->
+        <div class="current-talent-display">
+          <span class="talent-label">当前天赋：</span>
+          <div 
+            v-if="currentTalent" 
+            class="talent-badge"
+            :class="getRarityClass(getTalentRarity(currentTalent.id))"
+            @mouseenter="showTalentInfo('current')"
+            @mouseleave="hideTalentInfo"
+            @touchstart.prevent="onTalentTouchStart('current')"
+            @touchend.prevent="onTalentTouchEnd"
+          >
+            <i class="fas fa-gem"></i>
+            <span>{{ currentTalent.name }}</span>
+          </div>
+          <span v-else class="no-talent">无</span>
+        </div>
+
+        <!-- 抽取结果展示 -->
+        <div v-if="drawnTalent" class="talent-result">
+          <h4><i class="fas fa-gift"></i> 抽取到的天赋</h4>
+          <div 
+            class="talent-card"
+            :class="getRarityClass(drawnTalent.rarity)"
+            @mouseenter="showTalentInfo('drawn')"
+            @mouseleave="hideTalentInfo"
+            @touchstart.prevent="onTalentTouchStart('drawn')"
+            @touchend.prevent="onTalentTouchEnd"
+          >
+            <div class="talent-rarity">{{ drawnTalent.rarity }}</div>
+            <div class="talent-name">{{ drawnTalent.name }}</div>
+            <div class="talent-desc">{{ drawnTalent.description }}</div>
+            <div class="talent-bonus">
+              <span class="bonus-label">属性加成：</span>
+              <span class="bonus-value">{{ formatTalentBonus(drawnTalent.bonus) }}</span>
+            </div>
+          </div>
+          <div class="talent-actions">
+            <button class="discard-btn" @click="discardDrawnTalent">
+              <i class="fas fa-times"></i> 舍弃
+            </button>
+            <button class="replace-btn" @click="confirmReplaceTalent">
+              <i class="fas fa-check"></i> {{ currentTalent ? '替换' : '获得' }}
+            </button>
+          </div>
+        </div>
+
+        <!-- 天赋详情提示框 -->
+        <div v-if="showTalentTooltip" class="talent-tooltip">
+          <template v-if="talentTooltipTarget === 'current' && currentTalent">
+            <div class="tooltip-title">{{ currentTalent.name }}</div>
+            <div class="tooltip-desc">{{ currentTalent.description }}</div>
+            <div class="tooltip-bonus">属性：{{ formatTalentBonus(currentTalent.bonus) }}</div>
+          </template>
+          <template v-else-if="talentTooltipTarget === 'drawn' && drawnTalent">
+            <div class="tooltip-title">{{ drawnTalent.name }}</div>
+            <div class="tooltip-desc">{{ drawnTalent.description }}</div>
+            <div class="tooltip-bonus">属性：{{ formatTalentBonus(drawnTalent.bonus) }}</div>
+          </template>
+        </div>
       </div>
 
       <!-- 抽取结果展示 -->
@@ -142,6 +229,32 @@
           </button>
         </div>
       </div>
+
+      <!-- 作者测试区域 -->
+      <div class="author-test-section">
+        <div class="author-test-header" @click="toggleAuthorTest">
+          <i class="fas fa-flask"></i>
+          <span>作者测试（已锁定）</span>
+          <i :class="showAuthorTest ? 'fas fa-chevron-up' : 'fas fa-chevron-down'"></i>
+        </div>
+        <div v-if="showAuthorTest" class="author-test-content">
+          <div class="talent-select-panel">
+            <h4><i class="fas fa-star"></i> 自选天赋</h4>
+            <div class="talent-list-scroll">
+              <div 
+                v-for="talent in allTalents" 
+                :key="talent.id"
+                class="talent-select-item"
+                :class="getRarityClass(talent.rarity)"
+                @click="selectTalentForTest(talent)"
+              >
+                <span class="talent-name">{{ talent.name }}</span>
+                <span class="talent-rarity">{{ talent.rarity }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- 技能列表页面 -->
@@ -151,6 +264,44 @@
         主动技能 
         <span class="skill-count">({{ skillCount }} 个)</span>
       </h3>
+
+      <!-- 当前天赋显示（技能页面顶部） -->
+      <div class="my-talent-section">
+        <div class="talent-header">
+          <i class="fas fa-star"></i>
+          <span>我的天赋</span>
+        </div>
+        <div 
+          v-if="currentTalent" 
+          class="my-talent-card"
+          :class="getRarityClass(getTalentRarity(currentTalent.id))"
+          @mouseenter="showTalentInfo('current')"
+          @mouseleave="hideTalentInfo"
+          @touchstart.prevent="onTalentTouchStart('current')"
+          @touchend.prevent="onTalentTouchEnd"
+        >
+          <div class="talent-icon">
+            <i class="fas fa-gem"></i>
+          </div>
+          <div class="talent-info">
+            <div class="talent-name-row">
+              <span class="talent-name">{{ currentTalent.name }}</span>
+              <span class="talent-rarity-badge" :class="getRarityClass(getTalentRarity(currentTalent.id))">
+                {{ getTalentRarity(currentTalent.id) }}
+              </span>
+            </div>
+            <div class="talent-desc">{{ currentTalent.description }}</div>
+            <div class="talent-bonus-row">
+              <span class="bonus-label">属性：</span>
+              <span class="bonus-value">{{ formatTalentBonus(currentTalent.bonus) }}</span>
+            </div>
+          </div>
+        </div>
+        <div v-else class="no-talent-card">
+          <i class="fas fa-question-circle"></i>
+          <span>暂无天赋，可在「技能抽取」页面获取</span>
+        </div>
+      </div>
 
       <div v-if="skillCount === 0" class="empty-state">
         <i class="fas fa-inbox"></i>
@@ -246,10 +397,25 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
 import { performSingleGacha, performTenGacha, type GachaSkillData } from '../../data/skillGachaPool';
+import { getDailyTalentEffect, getTalentById, performTalentGacha, TALENT_DATABASE, type TalentData } from '../../data/talentDatabase';
 
 const props = defineProps<{
   characterData: any;
 }>();
+
+// 获取当前天赋ID
+const currentTalentId = computed(() => {
+  const talents = props.characterData.技能系统?.$天赋;
+  if (!talents || Object.keys(talents).length === 0) return undefined;
+  return Object.keys(talents)[0];
+});
+
+// 计算十连抽折扣价格
+const tenPullCost = computed(() => {
+  const baseCost = 18;
+  const discount = getDailyTalentEffect(currentTalentId.value, 'gacha_discount');
+  return Math.max(10, baseCost - discount); // 最低10点
+});
 
 // 当前标签页
 const currentTab = ref<'skills' | 'gacha' | 'exchange'>('skills');
@@ -265,6 +431,16 @@ const exchangeAmount = ref(1);
 
 // 升级锁（防止连点导致并发升级）
 const upgradingSkillIds = ref<Set<string>>(new Set());
+
+// 天赋相关状态
+const drawnTalent = ref<TalentData | null>(null);
+const showTalentTooltip = ref(false);
+const talentTooltipTarget = ref<'current' | 'drawn'>('current');
+let talentTooltipTimer: ReturnType<typeof setTimeout> | null = null;
+
+// 作者测试功能状态（使用localStorage持久化解锁状态）
+const showAuthorTest = ref(false);
+const allTalents = TALENT_DATABASE;
 
 // 技能点
 const skillPoints = computed(() => {
@@ -289,6 +465,22 @@ const activeSkills = computed(() => {
 // 技能数量
 const skillCount = computed(() => {
   return Object.keys(activeSkills.value).length;
+});
+
+// 当前天赋
+const currentTalent = computed(() => {
+  const talents = props.characterData.技能系统?.$天赋 || {};
+  const talentKeys = Object.keys(talents);
+  if (talentKeys.length === 0) return null;
+  const talentData = talents[talentKeys[0]];
+  const talentId = talentKeys[0];
+  const dbTalent = getTalentById(talentId);
+  return {
+    id: talentId,
+    name: dbTalent?.name || talentData?.天赋名称 || '未知天赋',
+    description: dbTalent?.description || talentData?.天赋描述 || '',
+    bonus: dbTalent?.bonus || talentData?.天赋效果 || {},
+  };
 });
 
 // 获取稀有度样式类
@@ -411,7 +603,7 @@ async function upgradeSkill(skillId: string, skill: any) {
 
 // 执行抽取
 async function performGacha(count: number) {
-  const cost = count === 1 ? 2 : 20;
+  const cost = count === 1 ? 2 : tenPullCost.value;
   if (skillPoints.value < cost) return;
   
   try {
@@ -595,6 +787,182 @@ async function performExchange() {
       toastr.error('兑换失败', '错误', { timeOut: 2000 });
     }
   }
+}
+
+// 执行天赋抽取
+async function performTalentGachaAction() {
+  const cost = 10;
+  if (skillPoints.value < cost) {
+    if (typeof toastr !== 'undefined') {
+      toastr.warning('技能点不足，需要10点', '提示', { timeOut: 2000 });
+    }
+    return;
+  }
+  
+  try {
+    const globalAny = window as any;
+    if (!globalAny.Mvu) return;
+    
+    const mvuData = globalAny.Mvu.getMvuData({ type: 'message', message_id: 'latest' });
+    if (!mvuData || !mvuData.stat_data) return;
+    
+    // 扣除技能点
+    if (!mvuData.stat_data.核心状态) mvuData.stat_data.核心状态 = {};
+    const currentSkillPoints = Number(mvuData.stat_data.核心状态.$技能点 || 0);
+    if (currentSkillPoints < cost) {
+      if (typeof toastr !== 'undefined') {
+        toastr.warning('技能点不足', '提示', { timeOut: 2000 });
+      }
+      return;
+    }
+    mvuData.stat_data.核心状态.$技能点 = Math.max(0, currentSkillPoints - cost);
+    
+    // 写回MVU
+    await globalAny.Mvu.replaceMvuData(mvuData, { type: 'message', message_id: 'latest' });
+    
+    // 执行天赋抽取
+    drawnTalent.value = performTalentGacha();
+    
+    if (typeof toastr !== 'undefined') {
+      toastr.info(`抽取完成！消耗${cost}技能点`, '天赋抽取', { timeOut: 1500 });
+    }
+  } catch (error) {
+    console.error('[天赋] 抽取失败:', error);
+    if (typeof toastr !== 'undefined') {
+      toastr.error('抽取失败', '错误', { timeOut: 2000 });
+    }
+  }
+}
+
+// 确认替换天赋
+async function confirmReplaceTalent() {
+  if (!drawnTalent.value) return;
+  
+  try {
+    const globalAny = window as any;
+    if (!globalAny.Mvu) return;
+    
+    const mvuData = globalAny.Mvu.getMvuData({ type: 'message', message_id: 'latest' });
+    if (!mvuData || !mvuData.stat_data) return;
+    
+    // 确保技能系统存在
+    if (!mvuData.stat_data.技能系统) mvuData.stat_data.技能系统 = {};
+    
+    // 清空现有天赋，写入新天赋
+    mvuData.stat_data.技能系统.$天赋 = {
+      [drawnTalent.value.id]: {
+        天赋名称: drawnTalent.value.name,
+        天赋描述: drawnTalent.value.description,
+        天赋效果: drawnTalent.value.bonus,
+      }
+    };
+    
+    // 写回MVU
+    await globalAny.Mvu.replaceMvuData(mvuData, { type: 'message', message_id: 'latest' });
+    
+    if (typeof toastr !== 'undefined') {
+      toastr.success(`成功获得天赋【${drawnTalent.value.name}】！`, '成功', { timeOut: 2000 });
+    }
+    
+    // 清空抽取结果
+    drawnTalent.value = null;
+  } catch (error) {
+    console.error('[天赋] 替换失败:', error);
+    if (typeof toastr !== 'undefined') {
+      toastr.error('替换失败', '错误', { timeOut: 2000 });
+    }
+  }
+}
+
+// 舍弃抽取的天赋
+function discardDrawnTalent() {
+  drawnTalent.value = null;
+  if (typeof toastr !== 'undefined') {
+    toastr.info('已舍弃抽取的天赋', '提示', { timeOut: 1500 });
+  }
+}
+
+// 显示天赋提示（用于长按/悬浮）
+function showTalentInfo(target: 'current' | 'drawn') {
+  talentTooltipTarget.value = target;
+  showTalentTooltip.value = true;
+}
+
+// 隐藏天赋提示
+function hideTalentInfo() {
+  showTalentTooltip.value = false;
+}
+
+// 长按开始
+function onTalentTouchStart(target: 'current' | 'drawn') {
+  talentTooltipTimer = setTimeout(() => {
+    showTalentInfo(target);
+  }, 500);
+}
+
+// 长按结束
+function onTalentTouchEnd() {
+  if (talentTooltipTimer) {
+    clearTimeout(talentTooltipTimer);
+    talentTooltipTimer = null;
+  }
+  hideTalentInfo();
+}
+
+// 格式化天赋属性加成
+function formatTalentBonus(bonus: Record<string, number>): string {
+  if (!bonus || Object.keys(bonus).length === 0) return '无';
+  return Object.entries(bonus)
+    .filter(([_, v]) => v !== 0)
+    .map(([k, v]) => `${k}${v > 0 ? '+' : ''}${v}`)
+    .join('、');
+}
+
+// 切换作者测试面板（已锁定）
+function toggleAuthorTest() {
+  showAuthorTest.value = false;
+}
+
+// 选择天赋进行测试
+async function selectTalentForTest(talent: TalentData) {
+  try {
+    const globalAny = window as any;
+    if (typeof globalAny.Mvu === 'undefined') {
+      console.error('[作者测试] Mvu未定义');
+      return;
+    }
+    
+    const mvuData = globalAny.Mvu.getMvuData({ type: 'message', message_id: 'latest' });
+    if (!mvuData?.stat_data) return;
+    
+    if (!mvuData.stat_data.技能系统) mvuData.stat_data.技能系统 = {};
+    
+    // 写入选择的天赋
+    mvuData.stat_data.技能系统.$天赋 = {
+      [talent.id]: {
+        天赋名称: talent.name,
+        天赋描述: talent.description,
+        天赋效果: talent.bonus,
+      }
+    };
+    
+    await globalAny.Mvu.replaceMvuData(mvuData, { type: 'message', message_id: 'latest' });
+    
+    if (typeof toastr !== 'undefined') {
+      toastr.success(`已设置天赋【${talent.name}】`, '成功', { timeOut: 2000 });
+    }
+  } catch (error) {
+    console.error('[作者测试] 设置天赋失败:', error);
+    if (typeof toastr !== 'undefined') {
+      toastr.error('设置失败', '错误', { timeOut: 2000 });
+    }
+  }
+}
+
+// 根据天赋ID获取稀有度
+function getTalentRarity(talentId: string): string {
+  const talent = getTalentById(talentId);
+  return talent?.rarity || 'C';
 }
 
 // 遗忘技能（带确认对话框）
@@ -1126,6 +1494,21 @@ async function forgetSkill(skillId: string) {
   .btn-cost {
     font-size: 11px;
     opacity: 0.7;
+    display: flex;
+    gap: 4px;
+    align-items: center;
+    
+    .discount-price {
+      color: #fbbf24;
+      font-weight: 600;
+      font-size: 12px;
+    }
+    
+    .original-price {
+      text-decoration: line-through;
+      opacity: 0.5;
+      font-size: 10px;
+    }
   }
   
   &.single {
@@ -1422,6 +1805,538 @@ async function forgetSkill(skillId: string) {
   &:disabled {
     opacity: 0.5;
     cursor: not-allowed;
+  }
+}
+
+// 天赋抽取区域
+.talent-gacha-section {
+  margin-top: 24px;
+  padding: 16px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 12px;
+  border: 1px solid rgba(139, 92, 246, 0.2);
+  
+  h3 {
+    font-size: 14px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.8);
+    margin: 0 0 8px 0;
+    
+    i { margin-right: 6px; color: #fbbf24; }
+  }
+}
+
+.talent-gacha-note {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.5);
+  margin: 0 0 12px 0;
+}
+
+.talent-gacha-btn {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 16px;
+  background: linear-gradient(135deg, rgba(251, 191, 36, 0.3), rgba(245, 158, 11, 0.1));
+  border: 1px solid rgba(251, 191, 36, 0.4);
+  border-radius: 12px;
+  color: #fcd34d;
+  cursor: pointer;
+  transition: all 0.2s;
+  
+  i { font-size: 24px; }
+  
+  .btn-text {
+    font-size: 14px;
+    font-weight: 600;
+  }
+  
+  .btn-cost {
+    font-size: 11px;
+    opacity: 0.7;
+  }
+  
+  &:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(251, 191, 36, 0.3);
+  }
+  
+  &:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+}
+
+.current-talent-display {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+  padding: 10px 12px;
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 8px;
+  
+  .talent-label {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.5);
+  }
+  
+  .no-talent {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.3);
+    font-style: italic;
+  }
+}
+
+.talent-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  
+  i { font-size: 10px; }
+  
+  &.rarity-c { background: rgba(156, 163, 175, 0.2); color: #d1d5db; border: 1px solid rgba(156, 163, 175, 0.3); }
+  &.rarity-b { background: rgba(96, 165, 250, 0.2); color: #93c5fd; border: 1px solid rgba(96, 165, 250, 0.3); }
+  &.rarity-a { background: rgba(167, 139, 250, 0.2); color: #c4b5fd; border: 1px solid rgba(167, 139, 250, 0.3); }
+  &.rarity-s { background: rgba(251, 191, 36, 0.2); color: #fcd34d; border: 1px solid rgba(251, 191, 36, 0.3); }
+  &.rarity-ss { background: rgba(244, 114, 182, 0.2); color: #f9a8d4; border: 1px solid rgba(244, 114, 182, 0.3); }
+  
+  &:hover {
+    transform: scale(1.05);
+  }
+}
+
+.talent-result {
+  margin-top: 16px;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 10px;
+  
+  h4 {
+    font-size: 13px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.7);
+    margin: 0 0 10px 0;
+    
+    i { margin-right: 6px; color: #34d399; }
+  }
+}
+
+.talent-card {
+  padding: 14px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  cursor: pointer;
+  transition: all 0.2s;
+  
+  &:hover {
+    background: rgba(255, 255, 255, 0.06);
+  }
+  
+  &.rarity-c { border-left: 3px solid #9ca3af; }
+  &.rarity-b { border-left: 3px solid #60a5fa; }
+  &.rarity-a { border-left: 3px solid #a78bfa; }
+  &.rarity-s { border-left: 3px solid #fbbf24; }
+  &.rarity-ss { border-left: 3px solid #f472b6; }
+  
+  .talent-rarity {
+    font-size: 10px;
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+  
+  .talent-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: white;
+    margin-bottom: 6px;
+  }
+  
+  .talent-desc {
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.6);
+    line-height: 1.5;
+    margin-bottom: 8px;
+  }
+  
+  .talent-bonus {
+    display: flex;
+    gap: 6px;
+    font-size: 10px;
+    
+    .bonus-label { color: rgba(255, 255, 255, 0.4); }
+    .bonus-value { color: #6ee7b7; }
+  }
+  
+  &.rarity-c .talent-rarity { color: #d1d5db; }
+  &.rarity-b .talent-rarity { color: #93c5fd; }
+  &.rarity-a .talent-rarity { color: #c4b5fd; }
+  &.rarity-s .talent-rarity { color: #fcd34d; }
+  &.rarity-ss .talent-rarity { color: #f9a8d4; }
+}
+
+.talent-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.discard-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px;
+  background: rgba(239, 68, 68, 0.2);
+  border: 1px solid rgba(239, 68, 68, 0.4);
+  border-radius: 8px;
+  color: #f87171;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  
+  &:hover {
+    background: rgba(239, 68, 68, 0.3);
+    transform: scale(1.02);
+  }
+}
+
+.replace-btn {
+  flex: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px;
+  background: linear-gradient(135deg, #34d399, #10b981);
+  border: none;
+  border-radius: 8px;
+  color: white;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  
+  &:hover {
+    transform: scale(1.02);
+    box-shadow: 0 4px 16px rgba(52, 211, 153, 0.4);
+  }
+}
+
+.talent-tooltip {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  padding: 16px;
+  background: rgba(30, 30, 40, 0.98);
+  border: 1px solid rgba(139, 92, 246, 0.5);
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+  max-width: 300px;
+  
+  .tooltip-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: white;
+    margin-bottom: 8px;
+  }
+  
+  .tooltip-desc {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.7);
+    line-height: 1.5;
+    margin-bottom: 8px;
+  }
+  
+  .tooltip-bonus {
+    font-size: 11px;
+    color: #6ee7b7;
+  }
+}
+
+// 我的天赋区域（技能页面）
+.my-talent-section {
+  margin-bottom: 20px;
+  padding: 14px;
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 12px;
+  border: 1px solid rgba(139, 92, 246, 0.15);
+  
+  .talent-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.7);
+    margin-bottom: 12px;
+    
+    i { color: #fbbf24; }
+  }
+}
+
+.my-talent-card {
+  display: flex;
+  gap: 12px;
+  padding: 12px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  cursor: pointer;
+  transition: all 0.2s;
+  
+  &:hover {
+    background: rgba(255, 255, 255, 0.06);
+    transform: translateY(-2px);
+  }
+  
+  &.rarity-c { border-left: 3px solid #9ca3af; }
+  &.rarity-b { border-left: 3px solid #60a5fa; }
+  &.rarity-a { border-left: 3px solid #a78bfa; }
+  &.rarity-s { border-left: 3px solid #fbbf24; }
+  &.rarity-ss { border-left: 3px solid #f472b6; }
+  
+  .talent-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    background: rgba(139, 92, 246, 0.2);
+    
+    i { font-size: 18px; color: #a78bfa; }
+  }
+  
+  .talent-info {
+    flex: 1;
+    min-width: 0;
+  }
+  
+  .talent-name-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 4px;
+  }
+  
+  .talent-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: white;
+  }
+  
+  .talent-rarity-badge {
+    font-size: 9px;
+    font-weight: 600;
+    padding: 2px 6px;
+    border-radius: 4px;
+    
+    &.rarity-c { background: rgba(156, 163, 175, 0.3); color: #d1d5db; }
+    &.rarity-b { background: rgba(96, 165, 250, 0.3); color: #93c5fd; }
+    &.rarity-a { background: rgba(167, 139, 250, 0.3); color: #c4b5fd; }
+    &.rarity-s { background: rgba(251, 191, 36, 0.3); color: #fcd34d; }
+    &.rarity-ss { background: rgba(244, 114, 182, 0.3); color: #f9a8d4; }
+  }
+  
+  .talent-desc {
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.5);
+    line-height: 1.4;
+    margin-bottom: 6px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  
+  .talent-bonus-row {
+    display: flex;
+    gap: 4px;
+    font-size: 10px;
+    
+    .bonus-label { color: rgba(255, 255, 255, 0.4); }
+    .bonus-value { color: #6ee7b7; }
+  }
+}
+
+.no-talent-card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 16px;
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 10px;
+  border: 1px dashed rgba(255, 255, 255, 0.1);
+  
+  i {
+    font-size: 20px;
+    color: rgba(255, 255, 255, 0.2);
+  }
+  
+  span {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.4);
+  }
+}
+
+// 作者测试区域
+.author-test-section {
+  margin-top: 20px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 100, 100, 0.15);
+  overflow: hidden;
+  
+  .author-test-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    cursor: pointer;
+    transition: background 0.2s;
+    
+    &:hover {
+      background: rgba(255, 255, 255, 0.03);
+    }
+    
+    i:first-child {
+      color: #f87171;
+      margin-right: 8px;
+    }
+    
+    span {
+      flex: 1;
+      font-size: 13px;
+      font-weight: 600;
+      color: rgba(255, 255, 255, 0.7);
+    }
+  }
+  
+  .author-test-content {
+    padding: 16px;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+  }
+  
+  .password-input {
+    display: flex;
+    gap: 10px;
+    
+    input {
+      flex: 1;
+      padding: 10px 14px;
+      border-radius: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: rgba(0, 0, 0, 0.3);
+      color: white;
+      font-size: 13px;
+      
+      &::placeholder {
+        color: rgba(255, 255, 255, 0.3);
+      }
+      
+      &:focus {
+        outline: none;
+        border-color: rgba(139, 92, 246, 0.5);
+      }
+    }
+    
+    .unlock-btn {
+      padding: 10px 16px;
+      border-radius: 8px;
+      border: none;
+      background: linear-gradient(135deg, #f87171, #ef4444);
+      color: white;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      
+      &:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(248, 113, 113, 0.3);
+      }
+    }
+  }
+  
+  .talent-select-panel {
+    h4 {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      color: rgba(255, 255, 255, 0.8);
+      margin-bottom: 12px;
+      
+      i { color: #fbbf24; }
+    }
+  }
+  
+  .talent-list-scroll {
+    max-height: 300px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    
+    &::-webkit-scrollbar {
+      width: 4px;
+    }
+    
+    &::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 2px;
+    }
+  }
+  
+  .talent-select-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 14px;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    cursor: pointer;
+    transition: all 0.2s;
+    
+    &:hover {
+      background: rgba(255, 255, 255, 0.08);
+      transform: translateX(4px);
+    }
+    
+    .talent-name {
+      font-size: 12px;
+      color: white;
+    }
+    
+    .talent-rarity {
+      font-size: 11px;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 4px;
+      background: rgba(255, 255, 255, 0.1);
+    }
+    
+    &.rarity-c .talent-rarity { color: #9ca3af; }
+    &.rarity-b .talent-rarity { color: #60a5fa; }
+    &.rarity-a .talent-rarity { color: #a78bfa; }
+    &.rarity-s .talent-rarity { color: #fbbf24; }
+    &.rarity-ss .talent-rarity { color: #f87171; }
   }
 }
 </style>

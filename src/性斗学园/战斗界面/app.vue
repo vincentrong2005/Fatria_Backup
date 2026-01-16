@@ -357,6 +357,9 @@ import { resolveEnemyName } from './enemyDatabase';
 import type { Character, CombatLogEntry, Item, Skill, TurnState } from './types';
 // BOSS系统
 import * as BossSystem from './bossSystem';
+// 天赋系统
+import { getTalentById, type TalentData } from '../性斗学园脚本/data/talentDatabase';
+import * as TalentSystem from './talentSystem';
 
 // 延迟加载数据库模块的辅助函数
 let enemyDbModule: any = null;
@@ -416,6 +419,10 @@ const playerPortraitInput = ref<HTMLInputElement | null>(null);
 // CG相关状态
 const cgImageUrl = ref<string | null>(null);
 const cgDescription = ref<string>('');
+
+// 天赋系统状态
+const playerTalent = ref<TalentData | null>(null);
+const playerTalentState = ref<TalentSystem.TalentState>(TalentSystem.createDefaultTalentState());
 
 // ================= BOSS对话显示系统 =================
 // 点击跳过当前对话
@@ -657,6 +664,44 @@ async function loadFromMvu() {
     player.value.stats.baseEndurance = _.get(data, '性斗系统.实时忍耐力', 15);
     player.value.stats.climaxCount = _.get(data, '性斗系统.高潮次数', 0);
     player.value.stats.maxClimaxCount = maxClimaxCount;
+
+    // 加载玩家天赋 - 从技能系统.$天赋读取
+    const talents = _.get(data, '技能系统.$天赋', {});
+    const talentIds = Object.keys(talents);
+    if (talentIds.length > 0) {
+      const talentId = talentIds[0]; // 只取第一个天赋
+      const talentData = getTalentById(talentId);
+      if (talentData) {
+        playerTalent.value = talentData;
+        playerTalentState.value = TalentSystem.createDefaultTalentState();
+        
+        // 应用天赋属性加成
+        if (talentData.bonus) {
+          const bonus = talentData.bonus;
+          player.value.stats.sexPower += (bonus.基础性斗力加成 || 0);
+          player.value.stats.baseEndurance += (bonus.基础忍耐力加成 || 0);
+          player.value.stats.charm += (bonus.魅力加成 || 0);
+          player.value.stats.luck += (bonus.幸运加成 || 0);
+          player.value.stats.evasion += (bonus.闪避率加成 || 0);
+          player.value.stats.crit += (bonus.暴击率加成 || 0);
+        }
+      } else {
+        // 如果数据库中没有，尝试从MVU数据读取
+        const mvuTalent = talents[talentId];
+        if (mvuTalent) {
+          playerTalent.value = {
+            id: talentId,
+            name: mvuTalent.天赋名称 || '未知天赋',
+            description: mvuTalent.天赋描述 || '',
+            rarity: 'C',
+            bonus: mvuTalent.天赋效果 || {},
+            effects: [],
+          };
+        }
+      }
+    } else {
+      playerTalent.value = null;
+    }
 
     // 加载玩家技能 - 从技能系统.主动技能读取
     const availableSkills = _.get(data, '技能系统.主动技能', {});
@@ -1507,6 +1552,22 @@ async function applySkillEffectsFromMvu(skillId: string, isPlayerSkill: boolean)
         const targetIsPlayer = isPlayerSkill ? !targetEnemy : targetEnemy;
         console.info(`[束缚] 束缚目标计算: targetIsPlayer=${targetIsPlayer}, isPlayerSkill=${isPlayerSkill}, targetEnemy=${targetEnemy}`);
         if (targetIsPlayer) {
+          // 检查天赋束缚免疫
+          let immuneToBind = false;
+          if (playerTalent.value) {
+            const talentContext = createTalentEffectContext();
+            const debuffResult = TalentSystem.processTalentOnDebuffReceived(playerTalent.value, talentContext, 'bind');
+            if (debuffResult.preventBind) {
+              immuneToBind = true;
+              logs.push(`【${playerTalent.value.name}】免疫了束缚效果！`);
+              console.info(`[束缚] 天赋免疫束缚效果`);
+            }
+          }
+          
+          if (immuneToBind) {
+            continue; // 跳过束缚设置
+          }
+          
           playerBoundTurns.value = duration;
           playerBindSource.value = isPlayerSkill ? 'player' : 'enemy';
           logs.push(`${player.value.name} 被束缚了 ${duration} 回合，无法行动！`);
@@ -1792,20 +1853,34 @@ async function reloadStatusFromMvu() {
     const playerPermBonus = _.get(data, '永久状态.加成统计', {});
     const playerEquipBonus = _.get(data, '物品系统.装备总加成', {});
     
+    // 获取天赋加成
+    const playerTalentBonus: Record<string, number> = {};
+    if (playerTalent.value?.bonus) {
+      const tb = playerTalent.value.bonus;
+      if (tb.基础性斗力加成) playerTalentBonus['基础性斗力加成'] = tb.基础性斗力加成;
+      if (tb.基础性斗力成算) playerTalentBonus['基础性斗力成算'] = tb.基础性斗力成算;
+      if (tb.基础忍耐力加成) playerTalentBonus['基础忍耐力加成'] = tb.基础忍耐力加成;
+      if (tb.基础忍耐力成算) playerTalentBonus['基础忍耐力成算'] = tb.基础忍耐力成算;
+      if (tb.魅力加成) playerTalentBonus['魅力加成'] = tb.魅力加成;
+      if (tb.幸运加成) playerTalentBonus['幸运加成'] = tb.幸运加成;
+      if (tb.闪避率加成) playerTalentBonus['闪避率加成'] = tb.闪避率加成;
+      if (tb.暴击率加成) playerTalentBonus['暴击率加成'] = tb.暴击率加成;
+    }
+    
     // 写入玩家的临时状态加成统计
     _.set(data, '临时状态.加成统计', playerTempBonus);
 
-    // 玩家性斗力
+    // 玩家性斗力（加入天赋加成）
     const playerBaseSexPower = _.get(data, '核心状态.$基础性斗力', 10);
-    const playerSexPowerBonus = (playerTempBonus.基础性斗力加成 || 0) + (playerPermBonus.基础性斗力加成 || 0) + (playerEquipBonus.基础性斗力加成 || 0);
-    const playerSexPowerMultiplier = ((playerTempBonus.基础性斗力成算 || 0) + (playerPermBonus.基础性斗力成算 || 0) + (playerEquipBonus.基础性斗力成算 || 0)) / 100;
+    const playerSexPowerBonus = (playerTempBonus.基础性斗力加成 || 0) + (playerPermBonus.基础性斗力加成 || 0) + (playerEquipBonus.基础性斗力加成 || 0) + (playerTalentBonus['基础性斗力加成'] || 0);
+    const playerSexPowerMultiplier = ((playerTempBonus.基础性斗力成算 || 0) + (playerPermBonus.基础性斗力成算 || 0) + (playerEquipBonus.基础性斗力成算 || 0) + (playerTalentBonus['基础性斗力成算'] || 0)) / 100;
     const calculatedSexPower = Math.max(0, Math.round((playerBaseSexPower + playerSexPowerBonus) * (1 + playerSexPowerMultiplier)));
     player.value.stats.sexPower = calculatedSexPower;
     
-    // 玩家忍耐力
+    // 玩家忍耐力（加入天赋加成）
     const playerBaseEndurance = _.get(data, '核心状态.$基础忍耐力', 10);
-    const playerEnduranceBonus = (playerTempBonus.基础忍耐力加成 || 0) + (playerPermBonus.基础忍耐力加成 || 0) + (playerEquipBonus.基础忍耐力加成 || 0);
-    const playerEnduranceMultiplier = ((playerTempBonus.基础忍耐力成算 || 0) + (playerPermBonus.基础忍耐力成算 || 0) + (playerEquipBonus.基础忍耐力成算 || 0)) / 100;
+    const playerEnduranceBonus = (playerTempBonus.基础忍耐力加成 || 0) + (playerPermBonus.基础忍耐力加成 || 0) + (playerEquipBonus.基础忍耐力加成 || 0) + (playerTalentBonus['基础忍耐力加成'] || 0);
+    const playerEnduranceMultiplier = ((playerTempBonus.基础忍耐力成算 || 0) + (playerPermBonus.基础忍耐力成算 || 0) + (playerEquipBonus.基础忍耐力成算 || 0) + (playerTalentBonus['基础忍耐力成算'] || 0)) / 100;
     const calculatedEndurance = Math.max(0, Math.round((playerBaseEndurance + playerEnduranceBonus) * (1 + playerEnduranceMultiplier)));
     player.value.stats.baseEndurance = calculatedEndurance;
     
@@ -1813,11 +1888,11 @@ async function reloadStatusFromMvu() {
     _.set(data, '性斗系统.实时性斗力', calculatedSexPower);
     _.set(data, '性斗系统.实时忍耐力', calculatedEndurance);
 
-    // 玩家其他属性
-    player.value.stats.charm = _.get(data, '核心状态.$基础魅力', 10) + (playerTempBonus.魅力加成 || 0) + (playerPermBonus.魅力加成 || 0) + (playerEquipBonus.魅力加成 || 0);
-    player.value.stats.luck = _.get(data, '核心状态.$基础幸运', 10) + (playerTempBonus.幸运加成 || 0) + (playerPermBonus.幸运加成 || 0) + (playerEquipBonus.幸运加成 || 0);
-    player.value.stats.evasion = Math.min(60, Math.max(0, _.get(data, '核心状态.$基础闪避率', 0) + (playerTempBonus.闪避率加成 || 0) + (playerPermBonus.闪避率加成 || 0) + (playerEquipBonus.闪避率加成 || 0)));
-    player.value.stats.crit = Math.min(100, Math.max(0, _.get(data, '核心状态.$基础暴击率', 0) + (playerTempBonus.暴击率加成 || 0) + (playerPermBonus.暴击率加成 || 0) + (playerEquipBonus.暴击率加成 || 0)));
+    // 玩家其他属性（加入天赋加成）
+    player.value.stats.charm = _.get(data, '核心状态.$基础魅力', 10) + (playerTempBonus.魅力加成 || 0) + (playerPermBonus.魅力加成 || 0) + (playerEquipBonus.魅力加成 || 0) + (playerTalentBonus['魅力加成'] || 0);
+    player.value.stats.luck = _.get(data, '核心状态.$基础幸运', 10) + (playerTempBonus.幸运加成 || 0) + (playerPermBonus.幸运加成 || 0) + (playerEquipBonus.幸运加成 || 0) + (playerTalentBonus['幸运加成'] || 0);
+    player.value.stats.evasion = Math.min(60, Math.max(0, _.get(data, '核心状态.$基础闪避率', 0) + (playerTempBonus.闪避率加成 || 0) + (playerPermBonus.闪避率加成 || 0) + (playerEquipBonus.闪避率加成 || 0) + (playerTalentBonus['闪避率加成'] || 0)));
+    player.value.stats.crit = Math.min(100, Math.max(0, _.get(data, '核心状态.$基础暴击率', 0) + (playerTempBonus.暴击率加成 || 0) + (playerPermBonus.暴击率加成 || 0) + (playerEquipBonus.暴击率加成 || 0) + (playerTalentBonus['暴击率加成'] || 0)));
 
     // 快感和高潮次数
     player.value.stats.currentPleasure = _.get(data, '核心状态.$快感', 0);
@@ -2131,9 +2206,17 @@ function handlePlayerSkill(skill: Skill) {
   const nextPlayer = cloneCharacter(player.value);
   const nextEnemy = cloneCharacter(enemy.value);
 
-  // 消耗体力
-  nextPlayer.stats.currentEndurance -= skill.cost;
-  addLog(`${nextPlayer.name} 消耗了 ${skill.cost} 点体力`, 'system', 'info');
+  // 消耗体力（检查耐力稳定天赋限制）
+  let actualCost = skill.cost;
+  if (playerTalent.value) {
+    const staminaCap = TalentSystem.getTalentStaminaChangeCap(playerTalent.value);
+    if (staminaCap !== null && actualCost > staminaCap) {
+      addLog(`【${playerTalent.value.name}】触发：耐力消耗限制为${staminaCap}点`, 'system', 'info');
+      actualCost = staminaCap;
+    }
+  }
+  nextPlayer.stats.currentEndurance -= actualCost;
+  addLog(`${nextPlayer.name} 消耗了 ${actualCost} 点体力`, 'system', 'info');
 
   // 设置冷却
   const skillIndex = nextPlayer.skills.findIndex(s => s.id === skill.id);
@@ -2154,7 +2237,53 @@ function handlePlayerSkill(skill: Skill) {
         return;
       }
 
-      const result = executeAttack(nextPlayer, nextEnemy, skill.data, true); // 玩家攻击敌人，启用等级压制
+      // ========== 天赋攻击效果：先发制人、精准打击、束缚先手 ==========
+      let talentAttackResult: TalentSystem.TalentEffectResult = {};
+      let critDamageBoost = 0;
+      if (playerTalent.value) {
+        const hasBindEffect = skill.data.effects?.some((e: any) => e.type === 'bind') || false;
+        const talentContext = createTalentEffectContext();
+        talentAttackResult = TalentSystem.processTalentOnAttack(playerTalent.value, talentContext, hasBindEffect);
+        
+        // 检查暴击大师效果（on_crit触发器）
+        for (const effect of playerTalent.value.effects) {
+          if (effect.trigger === 'on_crit' && effect.effect === 'boost_crit_damage') {
+            critDamageBoost = effect.params.value || 25;
+          }
+        }
+      }
+
+      const result = executeAttack(nextPlayer, nextEnemy, skill.data, true, {
+        guaranteedHit: talentAttackResult.guaranteedHit,
+        damageMultiplier: talentAttackResult.damageMultiplier,
+        critDamageBoost: critDamageBoost,
+      }); // 玩家攻击敌人，启用等级压制
+
+      // ========== 天赋被动效果：应用伤害加成 ==========
+      if (playerTalent.value && result.totalDamage > 0 && !result.isDodged) {
+        const passiveModifiers = TalentSystem.getTalentPassiveModifiers(playerTalent.value, {
+          playerPleasure: nextPlayer.stats.currentPleasure,
+          playerMaxPleasure: nextPlayer.stats.maxPleasure,
+          playerStamina: nextPlayer.stats.currentEndurance,
+          playerMaxStamina: nextPlayer.stats.maxEndurance,
+          enemyPleasure: nextEnemy.stats.currentPleasure,
+          enemyMaxPleasure: nextEnemy.stats.maxPleasure,
+        });
+        
+        console.info(`[天赋系统] 被动效果检查: 玩家快感=${nextPlayer.stats.currentPleasure}/${nextPlayer.stats.maxPleasure}, 耐力=${nextPlayer.stats.currentEndurance}/${nextPlayer.stats.maxEndurance}`);
+        console.info(`[天赋系统] 被动修正: damageBoostPercent=${passiveModifiers.damageBoostPercent}, powerCoeffBoost=${passiveModifiers.powerCoeffBoost}`);
+        
+        // 应用伤害加成（极限爆发的powerCoeffBoost或其他伤害加成）
+        if (passiveModifiers.damageBoostPercent > 0 || passiveModifiers.powerCoeffBoost > 0) {
+          const boostPercent = passiveModifiers.damageBoostPercent + passiveModifiers.powerCoeffBoost;
+          const boostedDamage = Math.floor(result.totalDamage * (1 + boostPercent / 100));
+          const extraDamage = boostedDamage - result.totalDamage;
+          if (extraDamage > 0) {
+            result.totalDamage = boostedDamage;
+            addLog(`【${playerTalent.value.name}】触发：伤害提升${boostPercent}%（+${extraDamage}）`, 'system', 'info');
+          }
+        }
+      }
 
       // 记录战斗日志
       addLog(`${nextPlayer.name} 使用了 ${skill.name}！`, 'player', 'info');
@@ -2189,48 +2318,30 @@ function handlePlayerSkill(skill: Skill) {
         );
         addLog(`${nextEnemy.name} 的快感从 ${oldPleasure} 增加到 ${nextEnemy.stats.currentPleasure}`, 'system', 'info');
 
-        // ========== 简化的束缚效果处理 ==========
-        // 直接从MVU读取技能效果，检查是否有束缚
-        try {
-          if (typeof Mvu !== 'undefined') {
-            const mvuData = Mvu.getMvuData({ type: 'message', message_id: 'latest' });
-            if (mvuData?.stat_data) {
-              const effectList = _.get(mvuData.stat_data, `技能系统.主动技能.${skill.id}.伤害与效果.效果列表`, {});
-              for (const [, effect] of Object.entries(effectList)) {
-                if (effect && typeof effect === 'object') {
-                  const type = (effect as any)['效果类型'];
-                  const dur = (effect as any)['持续回合数'] || 0;
-                  const targetEnemy = (effect as any)['是否作用敌人'] !== false; // 默认true
-                  if (type === '束缚' && dur > 0 && targetEnemy) {
-                    // 检查是否是沐芯兰BOSS战，如果是则免疫束缚
-                    if (BossSystem.bossState.isBossFight && BossSystem.bossState.bossId === 'muxinlan') {
-                      const immuneDialogue = BossSystem.getBindImmuneDialogue(BossSystem.bossState.currentPhase);
-                      if (immuneDialogue) {
-                        BossSystem.queueDialogues([immuneDialogue]);
-                      }
-                      addLog(`${nextEnemy.name} 免疫了束缚效果！`, 'system', 'info');
-                      console.info(`[束缚] 沐芯兰BOSS免疫束缚（玩家技能）`);
-                    } else {
-                      // 玩家使用技能，效果作用于敌人 -> 设置敌人束缚
-                      enemyBoundTurns.value = dur;
-                      enemyBindSource.value = 'player';
-                      addLog(`${nextEnemy.name} 被束缚了 ${dur} 回合！`, 'system', 'info');
-                    }
-                  }
-                }
-              }
-            }
-          }
-        } catch (e) {
-          console.error('束缚效果处理失败', e);
+        // ========== 天赋效果：造成伤害时触发 ==========
+        if (playerTalent.value && result.totalDamage > 0) {
+          const talentContext = createTalentEffectContext();
+          TalentSystem.processTalentOnDamageDealt(playerTalent.value, talentContext, result.totalDamage);
         }
 
-        // 应用其他buff/debuff效果（从MVU读取并写入状态列表）
+        // 应用buff/debuff效果（包括束缚，统一由applySkillEffectsFromMvu处理）
         try {
           const effectLogs = await applySkillEffectsFromMvu(skill.id, true);
           effectLogs.forEach(log => addLog(log, 'system', 'info'));
         } catch (e) {
           console.error('[战斗界面] 应用技能效果失败', e);
+        }
+        
+        // ========== 天赋束缚先手效果 ==========
+        if (talentAttackResult.addBind && talentAttackResult.bindDuration && enemyBoundTurns.value === 0) {
+          // 检查是否是BOSS免疫束缚
+          if (BossSystem.bossState.isBossFight && BossSystem.bossState.bossId === 'muxinlan') {
+            addLog(`${nextEnemy.name} 免疫了天赋束缚效果！`, 'system', 'info');
+          } else {
+            enemyBoundTurns.value = talentAttackResult.bindDuration;
+            enemyBindSource.value = 'player';
+            addLog(`【天赋】${nextEnemy.name} 被束缚了 ${talentAttackResult.bindDuration} 回合！`, 'system', 'info');
+          }
         }
       }
 
@@ -2253,7 +2364,7 @@ function handlePlayerSkill(skill: Skill) {
         await reloadStatusFromMvu();
         
         // 使用技能后，轮到对方结算快感
-        addLog(`--- 轮到 ${nextEnemy.name} 行动 ---`, 'system', 'info');
+        addLog(`--- 第 ${turnState.currentTurn} 回合 ---`, 'system', 'info');
         setTimeout(handleEnemyTurn, 1000);
       }
     } catch (e) {
@@ -2346,7 +2457,7 @@ async function handlePlayerItem(item: Item) {
       // 同步MVU与UI（会把最新物品数量与状态写回，并重新计算实时属性）
       await saveToMvu();
       await reloadStatusFromMvu();
-      addLog(`--- 继续 ${nextPlayer.name} 的回合 ---`, 'system', 'info');
+      addLog(`--- 第 ${turnState.currentTurn} 回合 ---`, 'system', 'info');
       return;
     } catch (e) {
       console.error('[战斗界面] 意志奇点处理失败', e);
@@ -2409,7 +2520,7 @@ async function handlePlayerItem(item: Item) {
     activeMenu.value = 'main';
     await saveToMvu();
     await reloadStatusFromMvu();
-    addLog(`--- 继续 ${nextPlayer.name} 的回合 ---`, 'system', 'info');
+    addLog(`--- 第 ${turnState.currentTurn} 回合 ---`, 'system', 'info');
     return;
   }
 
@@ -2486,7 +2597,7 @@ async function handlePlayerItem(item: Item) {
   // 然后重新读取MVU中的临时状态加成，更新UI显示
   await reloadStatusFromMvu();
 
-  addLog(`--- 继续 ${nextPlayer.name} 的回合 ---`, 'system', 'info');
+  addLog(`--- 第 ${turnState.currentTurn} 回合 ---`, 'system', 'info');
 
   // 注意：使用物品不结束回合，玩家可以继续操作
   // 只有使用技能才会结束回合并轮到对方行动
@@ -2706,11 +2817,29 @@ function handleEnemyTurn() {
             addLog(`总计造成 ${result.totalDamage} 点快感伤害`, 'enemy', 'damage');
           }
 
-          // 应用伤害（结算快感）- 使用totalDamage
+          // ========== 天赋效果：受到伤害时触发（在应用伤害前处理，可能减免伤害） ==========
+          let finalDamage = result.totalDamage;
+          if (playerTalent.value && result.totalDamage > 0) {
+            const talentContext = createTalentEffectContext();
+            const talentResult = TalentSystem.processTalentOnDamageReceived(playerTalent.value, talentContext, result.totalDamage);
+            
+            // 应用伤害减免
+            if (talentResult.damageReduction) {
+              finalDamage = Math.max(0, finalDamage - talentResult.damageReduction);
+            }
+            if (talentResult.damageReductionPercent) {
+              finalDamage = Math.max(0, Math.floor(finalDamage * (1 - talentResult.damageReductionPercent / 100)));
+            }
+            if (talentResult.skipEffect) {
+              finalDamage = 0;
+            }
+          }
+
+          // 应用伤害（结算快感）- 使用处理后的finalDamage
           const oldPleasure = nextPlayer.stats.currentPleasure;
           nextPlayer.stats.currentPleasure = Math.min(
             nextPlayer.stats.maxPleasure,
-            nextPlayer.stats.currentPleasure + result.totalDamage,
+            nextPlayer.stats.currentPleasure + finalDamage,
           );
           addLog(
             `${nextPlayer.name} 的快感从 ${oldPleasure} 增加到 ${nextPlayer.stats.currentPleasure}`,
@@ -2718,32 +2847,7 @@ function handleEnemyTurn() {
             'info',
           );
 
-          // ========== 简化的束缚效果处理（敌人技能） ==========
-          try {
-            if (typeof Mvu !== 'undefined') {
-              const mvuData = Mvu.getMvuData({ type: 'message', message_id: 'latest' });
-              if (mvuData?.stat_data) {
-                const effectList = _.get(mvuData.stat_data, `性斗系统.对手可用技能.${skill.id}.伤害与效果.效果列表`, {});
-                for (const [, effect] of Object.entries(effectList)) {
-                  if (effect && typeof effect === 'object') {
-                    const type = (effect as any)['效果类型'];
-                    const dur = (effect as any)['持续回合数'] || 0;
-                    const targetEnemy = (effect as any)['是否作用敌人'] !== false;
-                    if (type === '束缚' && dur > 0 && targetEnemy) {
-                      // 敌人使用技能，效果作用于"敌人"（从敌人视角看是玩家）-> 设置玩家束缚
-                      playerBoundTurns.value = dur;
-                      playerBindSource.value = 'enemy';
-                      addLog(`${nextPlayer.name} 被束缚了 ${dur} 回合！`, 'system', 'info');
-                    }
-                  }
-                }
-              }
-            }
-          } catch (e) {
-            console.error('束缚效果处理失败', e);
-          }
-
-          // 应用其他buff效果（从MVU读取并写入状态列表）
+          // 应用buff/debuff效果（包括束缚，统一由applySkillEffectsFromMvu处理，已包含天赋免疫检查）
           try {
             const effectLogs = await applySkillEffectsFromMvu(skill.id, false);
             effectLogs.forEach(log => addLog(log, 'system', 'info'));
@@ -2787,7 +2891,6 @@ function handleEnemyTurn() {
 
 function startNewTurn() {
   turnState.currentTurn++;
-  addLog(`--- 第 ${turnState.currentTurn} 回合开始 ---`, 'system', 'info');
 
   // 重置高潮目标标记
   turnState.climaxTarget = null;
@@ -2852,13 +2955,144 @@ function startNewTurn() {
 
   // 束缚回合数现在在专门的endTurn函数中处理
 
-  addLog(`--- ${player.value.name} 的回合 ---`, 'system', 'info');
+  // 处理天赋回合开始效果
+  if (playerTalent.value) {
+    const talentContext = createTalentEffectContext();
+    TalentSystem.processTalentOnTurnStart(playerTalent.value, talentContext);
+  }
+
+  addLog(`--- 第 ${turnState.currentTurn} 回合 ---`, 'system', 'info');
   saveToMvu();
+}
+
+// 创建天赋效果上下文
+function createTalentEffectContext(): TalentSystem.TalentEffectContext {
+  return {
+    playerPleasure: player.value.stats.currentPleasure,
+    playerMaxPleasure: player.value.stats.maxPleasure,
+    playerStamina: player.value.stats.currentEndurance,
+    playerMaxStamina: player.value.stats.maxEndurance,
+    enemyPleasure: enemy.value.stats.currentPleasure,
+    enemyMaxPleasure: enemy.value.stats.maxPleasure,
+    enemyStamina: enemy.value.stats.currentEndurance,
+    enemyMaxStamina: enemy.value.stats.maxEndurance,
+    currentTurn: turnState.currentTurn,
+    talentState: playerTalentState.value,
+    modifyPlayerPleasure: (delta: number) => {
+      const oldPleasure = player.value.stats.currentPleasure;
+      player.value.stats.currentPleasure = Math.max(0, Math.min(player.value.stats.maxPleasure, oldPleasure + delta));
+      // 同步到MVU
+      syncPlayerPleasureToMvu(player.value.stats.currentPleasure);
+    },
+    modifyPlayerStamina: (delta: number) => {
+      const oldStamina = player.value.stats.currentEndurance;
+      player.value.stats.currentEndurance = Math.max(0, Math.min(player.value.stats.maxEndurance, oldStamina + delta));
+      // 同步到MVU
+      syncPlayerStaminaToMvu(player.value.stats.currentEndurance);
+    },
+    modifyEnemyPleasure: (delta: number) => {
+      const oldPleasure = enemy.value.stats.currentPleasure;
+      enemy.value.stats.currentPleasure = Math.max(0, Math.min(enemy.value.stats.maxPleasure, oldPleasure + delta));
+      // 同步到MVU
+      syncEnemyPleasureToMvu(enemy.value.stats.currentPleasure);
+    },
+    modifyEnemyStamina: (delta: number) => {
+      const oldStamina = enemy.value.stats.currentEndurance;
+      enemy.value.stats.currentEndurance = Math.max(0, Math.min(enemy.value.stats.maxEndurance, oldStamina + delta));
+    },
+    addLog: (message: string, source: string, type: string) => {
+      addLog(message, source as any, type as any);
+    },
+    applyBuff: (target: 'player' | 'enemy', buffName: string, bonus: Record<string, number>, duration: number) => {
+      // 简化的buff应用，将buff写入临时状态
+      applyTalentBuff(target, buffName, bonus, duration);
+    },
+  };
+}
+
+// 同步玩家快感到MVU
+async function syncPlayerPleasureToMvu(value: number) {
+  try {
+    if (typeof Mvu === 'undefined') return;
+    const mvuData = Mvu.getMvuData({ type: 'message', message_id: 'latest' });
+    if (!mvuData?.stat_data) return;
+    _.set(mvuData.stat_data, '核心状态.$快感', value);
+    await Mvu.replaceMvuData(mvuData, { type: 'message', message_id: 'latest' });
+  } catch (e) {
+    console.error('[天赋系统] 同步玩家快感失败', e);
+  }
+}
+
+// 同步玩家耐力到MVU
+async function syncPlayerStaminaToMvu(value: number) {
+  try {
+    if (typeof Mvu === 'undefined') return;
+    const mvuData = Mvu.getMvuData({ type: 'message', message_id: 'latest' });
+    if (!mvuData?.stat_data) return;
+    _.set(mvuData.stat_data, '核心状态.$耐力', value);
+    await Mvu.replaceMvuData(mvuData, { type: 'message', message_id: 'latest' });
+  } catch (e) {
+    console.error('[天赋系统] 同步玩家耐力失败', e);
+  }
+}
+
+// 同步敌人快感到MVU
+async function syncEnemyPleasureToMvu(value: number) {
+  try {
+    if (typeof Mvu === 'undefined') return;
+    const mvuData = Mvu.getMvuData({ type: 'message', message_id: 'latest' });
+    if (!mvuData?.stat_data) return;
+    _.set(mvuData.stat_data, '性斗系统.对手快感', value);
+    await Mvu.replaceMvuData(mvuData, { type: 'message', message_id: 'latest' });
+  } catch (e) {
+    console.error('[天赋系统] 同步敌人快感失败', e);
+  }
+}
+
+// 应用天赋buff到临时状态
+async function applyTalentBuff(target: 'player' | 'enemy', buffName: string, bonus: Record<string, number>, duration: number) {
+  try {
+    if (typeof Mvu === 'undefined') return;
+    const mvuData = Mvu.getMvuData({ type: 'message', message_id: 'latest' });
+    if (!mvuData?.stat_data) return;
+    
+    const statusListPath = target === 'player' ? '临时状态.状态列表' : '性斗系统.对手临时状态.状态列表';
+    const bonusPath = target === 'player' ? '临时状态.加成统计' : '性斗系统.对手临时状态.加成统计';
+    
+    const statusList = _.get(mvuData.stat_data, statusListPath, {});
+    const currentBonus = _.get(mvuData.stat_data, bonusPath, {});
+    
+    // 添加状态到状态列表（正确格式：状态名: { 加成: {...}, 剩余回合: 回合数 }）
+    statusList[buffName] = {
+      加成: bonus,
+      剩余回合: duration,
+    };
+    
+    // 累加加成到加成统计
+    for (const [key, value] of Object.entries(bonus)) {
+      currentBonus[key] = (currentBonus[key] || 0) + value;
+    }
+    
+    _.set(mvuData.stat_data, statusListPath, statusList);
+    _.set(mvuData.stat_data, bonusPath, currentBonus);
+    await Mvu.replaceMvuData(mvuData, { type: 'message', message_id: 'latest' });
+    
+    // 重新计算属性
+    await reloadStatusFromMvu();
+  } catch (e) {
+    console.error('[天赋系统] 应用buff失败', e);
+  }
 }
 
 // 处理回合结束时的事务
 function endTurn() {
   // 束缚回合数在尝试行动时递减，不在这里处理
+  
+  // 处理天赋回合结束效果
+  if (playerTalent.value) {
+    const talentContext = createTalentEffectContext();
+    TalentSystem.processTalentOnTurnEnd(playerTalent.value, talentContext);
+  }
 }
 
 // 收集战斗日志文本（过滤掉冗余信息）
@@ -2891,8 +3125,18 @@ function collectCombatLogs(): string {
       return true;
     }
 
-    // 保留"轮到XX行动"
-    if (message.includes('轮到') && message.includes('行动')) {
+    // 保留回合信息
+    if (message.includes('第') && message.includes('回合')) {
+      return true;
+    }
+
+    // 保留闪避日志
+    if (message.includes('闪避了')) {
+      return true;
+    }
+
+    // 保留道具使用日志
+    if (message.includes('使用了') || message.includes('剩余数量') || message.includes('记录：第') && message.includes('回合使用了')) {
       return true;
     }
 
@@ -3419,8 +3663,21 @@ async function processClimaxAfterLLM(targetIsEnemy: boolean) {
     enemy.value.stats.climaxCount += 1;
     addLog(`${enemy.value.name} 的高潮次数：${enemy.value.stats.climaxCount}/${enemy.value.stats.maxClimaxCount}`, 'system', 'info');
   } else {
+    // 检查坚持天赋效果（高潮时有概率不计入高潮次数）
+    let preventClimaxCount = false;
+    if (playerTalent.value) {
+      const talentContext = createTalentEffectContext();
+      const climaxResult = TalentSystem.processTalentOnClimax(playerTalent.value, talentContext);
+      if (climaxResult.preventClimaxCount) {
+        preventClimaxCount = true;
+        addLog(`【${playerTalent.value.name}】触发：本次高潮不计入高潮次数！`, 'system', 'critical');
+      }
+    }
+    
     player.value.stats.currentPleasure = 0;
-    player.value.stats.climaxCount += 1;
+    if (!preventClimaxCount) {
+      player.value.stats.climaxCount += 1;
+    }
     addLog(`${player.value.name} 的高潮次数：${player.value.stats.climaxCount}/${player.value.stats.maxClimaxCount}`, 'system', 'info');
   }
 
@@ -3620,8 +3877,32 @@ onMounted(async () => {
   }
 
   addLog(`--- 战斗开始 ---`, 'system', 'info');
-  addLog(`--- ${player.value.name} 的回合 ---`, 'system', 'info');
-});
+  
+  // 处理天赋战斗开始效果
+  if (playerTalent.value) {
+    const talentContext = createTalentEffectContext();
+    TalentSystem.processTalentOnBattleStart(playerTalent.value, talentContext);
+    
+    // 应用被动天赋效果到临时状态（如压迫感减少敌人闪避、极限爆发的性斗力加成等）
+    const passiveModifiers = TalentSystem.getTalentPassiveModifiers(playerTalent.value, {
+      playerPleasure: player.value.stats.currentPleasure,
+      playerMaxPleasure: player.value.stats.maxPleasure,
+      playerStamina: player.value.stats.currentEndurance,
+      playerMaxStamina: player.value.stats.maxEndurance,
+      enemyPleasure: enemy.value.stats.currentPleasure,
+      enemyMaxPleasure: enemy.value.stats.maxPleasure,
+    });
+    
+    // 压迫感：降低敌人闪避率
+    if (passiveModifiers.enemyDodgeReduction > 0) {
+      applyTalentBuff('enemy', '天赋_压迫感', { '闪避率加成': -passiveModifiers.enemyDodgeReduction }, 999);
+      addLog(`【${playerTalent.value.name}】敌人闪避率降低${passiveModifiers.enemyDodgeReduction}%`, 'system', 'info');
+    }
+    
+    addLog(`【天赋】${playerTalent.value.name} 已激活`, 'system', 'info');
+  }
+  
+  });
 </script>
 
 <style lang="scss" scoped>

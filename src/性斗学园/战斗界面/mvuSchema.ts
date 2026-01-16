@@ -265,7 +265,7 @@ export const Schema = z.object({
     // 主动技能: 复用 ActiveSkillSchema
     主动技能: z.record(z.string(), ActiveSkillSchema).prefault({}),
     // 天赋系统
-    天赋: z.record(z.string(), TalentSchema).prefault({}),
+    $天赋: z.record(z.string(), TalentSchema).prefault({}),
   }).prefault({}),
 });
 

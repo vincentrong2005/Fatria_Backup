@@ -323,6 +323,7 @@
 
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
+import { getDailyTalentEffect } from '../../data/talentDatabase';
 
 const props = defineProps<{
   characterData: any;
@@ -575,20 +576,33 @@ function getPercentage(current: number, max: number): number {
 
 const expNeeded = computed(() => {
   const difficulty = props.characterData.角色基础?.难度 || '普通';
-  switch (difficulty) {
-    case '简单':
-      return 100;
-    case '普通':
-      return 125;
-    case '困难':
-      return 150;
-    case '抖M':
-      return 200;
-    case '作弊':
-      return 100;
-    default:
-      return 125;
-  }
+  
+  // 获取当前天赋ID
+  const talents = props.characterData.技能系统?.$天赋;
+  const currentTalentId = talents && Object.keys(talents).length > 0 ? Object.keys(talents)[0] : undefined;
+  
+  // 获取天赋经验降低效果
+  const expReduction = getDailyTalentEffect(currentTalentId, 'exp_reduce');
+  
+  const baseExpNeeded = (() => {
+    switch (difficulty) {
+      case '简单':
+        return 100;
+      case '普通':
+        return 125;
+      case '困难':
+        return 150;
+      case '抖M':
+        return 200;
+      case '作弊':
+        return 100;
+      default:
+        return 125;
+    }
+  })();
+  
+  // 应用经验降低天赋效果
+  return Math.max(50, Math.floor(baseExpNeeded * (100 - expReduction) / 100));
 });
 
 function getExpPercentage(exp: number): number {

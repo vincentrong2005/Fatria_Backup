@@ -14,6 +14,7 @@ import { get, isEqual, set } from '@/util/common';
 import { createScriptIdDiv, destroyScriptIdDiv, deteleportStyle, teleportStyle } from '@/util/script';
 import { shouldTriggerOrgasm } from '../开局/utils/combat-calculator';
 import StatusBarWrapper from './components/StatusBarWrapper.vue';
+import { getDailyTalentEffect } from './data/talentDatabase';
 
 // 等待 MVU 初始化
 await waitGlobalInitialized('Mvu');
@@ -189,7 +190,6 @@ async function updateDependentVariables() {
       return;
     }
     
-    console.info('[性斗学园脚本] 开始计算依赖变量');
 
     const statData = mvuData.stat_data;
     const updates: Record<string, any> = {};
@@ -206,6 +206,16 @@ async function updateDependentVariables() {
     // 临时状态加成
     const tempBonuses = statData.临时状态?.加成统计 || {};
     
+    // 天赋加成
+    const talents = statData.技能系统?.$天赋 || {};
+    const talentIds = Object.keys(talents);
+    const currentTalentId = talentIds.length > 0 ? talentIds[0] : undefined;
+    let talentBonuses: Record<string, number> = {};
+    if (talentIds.length > 0) {
+      const talentData = talents[talentIds[0]];
+      talentBonuses = talentData?.天赋效果 || {};
+    }
+    
     // ==================== 步骤2: 计算基础属性最终值 ====================
     // 公式: 最终值 = 基础值 + 永久状态加成 + 装备加成 + 临时状态加成
     
@@ -216,11 +226,11 @@ async function updateDependentVariables() {
     const baseCrit = getValue(mvuData, '核心状态.$基础暴击率', 0);
     // 已移除意志力相关字段
     
-    // 获取各项加成（根据 initvar.yaml，加成统计内的键名无前缀）
-    const charmBonus = (permanentBonuses.魅力加成 || 0) + (equipmentBonuses.魅力加成 || 0) + (tempBonuses.魅力加成 || 0);
-    const luckBonus = (permanentBonuses.幸运加成 || 0) + (equipmentBonuses.幸运加成 || 0) + (tempBonuses.幸运加成 || 0);
-    const dodgeBonus = (permanentBonuses.闪避率加成 || 0) + (equipmentBonuses.闪避率加成 || 0) + (tempBonuses.闪避率加成 || 0);
-    const critBonus = (permanentBonuses.暴击率加成 || 0) + (equipmentBonuses.暴击率加成 || 0) + (tempBonuses.暴击率加成 || 0);
+    // 获取各项加成（根据 initvar.yaml，加成统计内的键名无前缀）+ 天赋加成
+    const charmBonus = (permanentBonuses.魅力加成 || 0) + (equipmentBonuses.魅力加成 || 0) + (tempBonuses.魅力加成 || 0) + (talentBonuses.魅力加成 || 0);
+    const luckBonus = (permanentBonuses.幸运加成 || 0) + (equipmentBonuses.幸运加成 || 0) + (tempBonuses.幸运加成 || 0) + (talentBonuses.幸运加成 || 0);
+    const dodgeBonus = (permanentBonuses.闪避率加成 || 0) + (equipmentBonuses.闪避率加成 || 0) + (tempBonuses.闪避率加成 || 0) + (talentBonuses.闪避率加成 || 0);
+    const critBonus = (permanentBonuses.暴击率加成 || 0) + (equipmentBonuses.暴击率加成 || 0) + (tempBonuses.暴击率加成 || 0) + (talentBonuses.暴击率加成 || 0);
     // 已移除意志力加成
     
     // 计算最终值（带上下限限制）
@@ -240,22 +250,18 @@ async function updateDependentVariables() {
     if (finalCharm !== currentFinalCharm) {
       updates['核心状态._魅力'] = finalCharm;
       hasUpdates = true;
-      console.info(`[性斗学园脚本] 魅力: ${baseCharm}(基础) + ${charmBonus}(加成) = ${finalCharm}`);
     }
     if (finalLuck !== currentFinalLuck) {
       updates['核心状态._幸运'] = finalLuck;
       hasUpdates = true;
-      console.info(`[性斗学园脚本] 幸运: ${baseLuck}(基础) + ${luckBonus}(加成) = ${finalLuck}`);
     }
     if (finalDodge !== currentFinalDodge) {
       updates['核心状态._闪避率'] = finalDodge;
       hasUpdates = true;
-      console.info(`[性斗学园脚本] 闪避率: ${baseDodge}(基础) + ${dodgeBonus}(加成) = ${finalDodge}%`);
     }
     if (finalCrit !== currentFinalCrit) {
       updates['核心状态._暴击率'] = finalCrit;
       hasUpdates = true;
-      console.info(`[性斗学园脚本] 暴击率: ${baseCrit}(基础) + ${critBonus}(加成) = ${finalCrit}%`);
     }
     // 已移除意志力更新逻辑
 
@@ -276,13 +282,11 @@ async function updateDependentVariables() {
     if (baseSexPowerValue !== currentBaseSexPower) {
       updates['核心状态.$基础性斗力'] = baseSexPowerValue;
       hasUpdates = true;
-      console.info(`[性斗学园脚本] 基础性斗力: ${level} × ${potential} = ${baseSexPowerValue}`);
     }
     
     if (baseEnduranceValue !== currentBaseEndurance) {
       updates['核心状态.$基础忍耐力'] = baseEnduranceValue;
       hasUpdates = true;
-      console.info(`[性斗学园脚本] 基础忍耐力: ${level} × ${potential} = ${baseEnduranceValue}`);
     }
 
     // ==================== 步骤3: 计算性斗力 ====================
@@ -292,9 +296,9 @@ async function updateDependentVariables() {
     const tempStates = statData.临时状态?.状态列表 || {};
     const isPostOrgasm = '贤者时间' in tempStates;
     
-    // 性斗力加成和成算
-    const sexPowerBonus = (permanentBonuses.基础性斗力加成 || 0) + (equipmentBonuses.基础性斗力加成 || 0) + (tempBonuses.基础性斗力加成 || 0);
-    const sexPowerMulti = (permanentBonuses.基础性斗力成算 || 0) + (equipmentBonuses.基础性斗力成算 || 0) + (tempBonuses.基础性斗力成算 || 0);
+    // 性斗力加成和成算（包含天赋加成）
+    const sexPowerBonus = (permanentBonuses.基础性斗力加成 || 0) + (equipmentBonuses.基础性斗力加成 || 0) + (tempBonuses.基础性斗力加成 || 0) + (talentBonuses.基础性斗力加成 || 0);
+    const sexPowerMulti = (permanentBonuses.基础性斗力成算 || 0) + (equipmentBonuses.基础性斗力成算 || 0) + (tempBonuses.基础性斗力成算 || 0) + (talentBonuses.基础性斗力成算 || 0);
     
     // 计算性斗力
     const baseSexPower = level * potential;
@@ -312,16 +316,15 @@ async function updateDependentVariables() {
     if (sexPower !== currentSexPower) {
       updates['性斗系统.实时性斗力'] = sexPower;
       hasUpdates = true;
-      console.info(`[性斗学园脚本] 性斗力: (${level}x${potential} + ${sexPowerBonus}) x (1 + ${sexPowerMulti}/100) = ${sexPower}`);
     }
 
     // ==================== 步骤4: 计算忍耐力 ====================
     // 公式: ((等级 x 潜力) + 装备加成 + 状态加成) x (1 + 成算/100)
     // 更新：使用潜力而非意志力，与性斗力公式一致
     
-    // 忍耐力加成和成算
-    const enduranceBonus = (permanentBonuses.基础忍耐力加成 || 0) + (equipmentBonuses.基础忍耐力加成 || 0) + (tempBonuses.基础忍耐力加成 || 0);
-    const enduranceMulti = (permanentBonuses.基础忍耐力成算 || 0) + (equipmentBonuses.基础忍耐力成算 || 0) + (tempBonuses.基础忍耐力成算 || 0);
+    // 忍耐力加成和成算（包含天赋加成）
+    const enduranceBonus = (permanentBonuses.基础忍耐力加成 || 0) + (equipmentBonuses.基础忍耐力加成 || 0) + (tempBonuses.基础忍耐力加成 || 0) + (talentBonuses.基础忍耐力加成 || 0);
+    const enduranceMulti = (permanentBonuses.基础忍耐力成算 || 0) + (equipmentBonuses.基础忍耐力成算 || 0) + (tempBonuses.基础忍耐力成算 || 0) + (talentBonuses.基础忍耐力成算 || 0);
     
     // 检查是否虚脱
     const orgasmCount = getValue(mvuData, '性斗系统.高潮次数', 0);
@@ -349,7 +352,6 @@ async function updateDependentVariables() {
     if (endurance !== currentEndurance) {
       updates['性斗系统.实时忍耐力'] = endurance;
       hasUpdates = true;
-      console.info(`[性斗学园脚本] 忍耐力: (${level}x${potential} + ${enduranceBonus}) x (1 + ${enduranceMulti}/100) = ${endurance}`);
     }
 
     // ==================== 步骤5: 检查快感是否达到上限（触发高潮）====================
@@ -379,7 +381,6 @@ async function updateDependentVariables() {
       updates['性斗系统.高潮次数'] = orgasmCount + 1;
       hasUpdates = true;
       
-      console.info('[性斗学园脚本] 触发高潮！进入贤者时间');
     }
 
     // ==================== 步骤6: 检查是否可以升级 ====================
@@ -387,9 +388,12 @@ async function updateDependentVariables() {
     const currentExp = getValue(mvuData, '角色基础.经验值', 0);
     const difficulty = getValue(mvuData, '角色基础.难度', '普通');
     
+    // 检查天赋：经验降低效果
+    const expReduction = getDailyTalentEffect(currentTalentId, 'exp_reduce'); // 百分比
+    
     let finalLevel = currentLevel; // 用于后续段位计算
     let finalExp = currentExp;
-    const expNeededPerLevel = (() => {
+    const baseExpNeededPerLevel = (() => {
       switch (difficulty) {
         case '简单':
           return 100;
@@ -405,6 +409,9 @@ async function updateDependentVariables() {
           return 125;
       }
     })();
+    
+    // 应用经验降低天赋效果
+    const expNeededPerLevel = Math.max(50, Math.floor(baseExpNeededPerLevel * (100 - expReduction) / 100));
     
     if (finalLevel < 100 && finalExp >= expNeededPerLevel) {
       const levelsGained = Math.min(100 - finalLevel, Math.floor(finalExp / expNeededPerLevel));
@@ -426,7 +433,6 @@ async function updateDependentVariables() {
 
         finalLevel = newLevel;
         finalExp = remainingExp;
-        console.info(`[性斗学园脚本] 升级！${currentLevel} → ${newLevel}，获得 ${pointsGained} 属性点和 ${pointsGained} 技能点`);
       }
     }
 
@@ -434,38 +440,23 @@ async function updateDependentVariables() {
     const expectedRank = calculateRank(finalLevel);
     const currentRank = get(mvuData.stat_data, '角色基础._段位', '无段位');
     
-    console.info(`[性斗学园脚本] 段位检查：当前等级=${finalLevel}, 当前段位="${currentRank}", 期望段位="${expectedRank}"`);
     
     if (expectedRank !== currentRank) {
       updates['角色基础._段位'] = expectedRank;
       hasUpdates = true;
-      console.info(`[性斗学园脚本] 段位需要更新：等级 ${finalLevel} → ${expectedRank}段 (从 "${currentRank}" 更新为 "${expectedRank}")`);
     } else {
-      console.info(`[性斗学园脚本] 段位无需更新：等级 ${finalLevel} 对应段位 "${expectedRank}" 已正确`);
     }
 
     // ==================== 步骤7: 应用所有更新 ====================
     if (hasUpdates) {
-      console.info('[性斗学园脚本] 开始应用变量更新:', Object.keys(updates));
-      
       // 直接使用 set 更新数据，然后一次性写回
       for (const [path, value] of Object.entries(updates)) {
         set(mvuData.stat_data, path, value);
-        console.info(`[性斗学园脚本] 设置变量: ${path} = ${JSON.stringify(value)}`);
       }
       
       // 写回 MVU 数据
       await Mvu.replaceMvuData(mvuData, { type: 'message', message_id: 'latest' });
-      console.info('[性斗学园脚本] 变量更新完成，已写回MVU数据');
       
-      // 验证段位是否已更新
-      if (updates['角色基础._段位']) {
-        const verifyData = Mvu.getMvuData({ type: 'message', message_id: 'latest' });
-        const verifyRank = get(verifyData?.stat_data, '角色基础._段位', '未知');
-        console.info(`[性斗学园脚本] 段位更新验证：写回后的段位值为 "${verifyRank}"`);
-      }
-    } else {
-      console.info('[性斗学园脚本] 无需更新变量（所有值已是最新）');
     }
   } catch (error) {
     console.error('[性斗学园脚本] 更新依赖变量时出错:', error);
@@ -557,15 +548,23 @@ async function handleConversationUpdate() {
 
     const statData = mvuData.stat_data;
     
+    // 获取当前天赋ID
+    const talents = statData.技能系统?.$天赋;
+    const currentTalentId = talents && Object.keys(talents).length > 0 ? Object.keys(talents)[0] : undefined;
+    
+    // 获取天赋效果倍率
+    const staminaMultiplier = getDailyTalentEffect(currentTalentId, 'stamina_recovery_double') || 1;
+    const pleasureMultiplier = getDailyTalentEffect(currentTalentId, 'pleasure_reduce_double') || 1;
+    
     // 获取当前耐力和快感值
     const currentStamina = getValue(mvuData, '核心状态.$耐力', 0);
     const maxStamina = getValue(mvuData, '核心状态.$最大耐力', 100);
     const currentLust = getValue(mvuData, '核心状态.$快感', 0);
     const maxLust = getValue(mvuData, '核心状态.$最大快感', 100);
     
-    // 计算恢复/降低量（10%最大值，向下取整）
-    const staminaRecover = Math.floor(maxStamina * 0.1);
-    const lustReduce = Math.floor(maxLust * 0.1);
+    // 计算恢复/降低量（10%最大值，向下取整，应用天赋倍率）
+    const staminaRecover = Math.floor(maxStamina * 0.1 * staminaMultiplier);
+    const lustReduce = Math.floor(maxLust * 0.1 * pleasureMultiplier);
     
     // 计算新值（带上下限限制）
     const newStamina = Math.min(maxStamina, Math.max(0, currentStamina + staminaRecover));
