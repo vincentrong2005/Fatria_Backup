@@ -2,7 +2,7 @@
   <div class="bg-ambience">
     <!-- 基础渐变 -->
     <div class="bg-gradient"></div>
-    
+
     <!-- 纹理叠加 -->
     <div class="bg-texture"></div>
 
@@ -18,7 +18,7 @@
       :style="{
         left: `${particle.left}%`,
         animationDelay: `${particle.delay}s`,
-        animationDuration: `${particle.duration}s`
+        animationDuration: `${particle.duration}s`,
       }"
     ></div>
 
@@ -31,13 +31,13 @@
         left: `${petal.left}%`,
         transform: `scale(${petal.scale})`,
         animationDelay: `${petal.delay}s`,
-        animationDuration: `${petal.duration}s`
+        animationDuration: `${petal.duration}s`,
       }"
     ></div>
 
     <!-- 闪烁阴影 -->
     <div class="flicker-overlay"></div>
-    
+
     <!-- 暗角 -->
     <div class="vignette"></div>
   </div>
@@ -165,8 +165,15 @@ onMounted(() => {
 }
 
 @keyframes pulseSlow {
-  0%, 100% { opacity: 0.15; transform: scale(1); }
-  50% { opacity: 0.25; transform: scale(1.05); }
+  0%,
+  100% {
+    opacity: 0.15;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.25;
+    transform: scale(1.05);
+  }
 }
 
 @keyframes floatUp {
@@ -174,8 +181,12 @@ onMounted(() => {
     transform: translateY(100vh) translateX(0);
     opacity: 0;
   }
-  10% { opacity: 1; }
-  90% { opacity: 1; }
+  10% {
+    opacity: 1;
+  }
+  90% {
+    opacity: 1;
+  }
   100% {
     transform: translateY(-100vh) translateX(20px);
     opacity: 0;
@@ -187,8 +198,12 @@ onMounted(() => {
     transform: translateY(-100vh) rotate(0deg);
     opacity: 0;
   }
-  10% { opacity: 0.8; }
-  90% { opacity: 0.8; }
+  10% {
+    opacity: 0.8;
+  }
+  90% {
+    opacity: 0.8;
+  }
   100% {
     transform: translateY(100vh) rotate(720deg);
     opacity: 0;
@@ -196,10 +211,18 @@ onMounted(() => {
 }
 
 @keyframes flicker {
-  0%, 100% { opacity: 0; }
-  50% { opacity: 0.02; }
-  55% { opacity: 0.01; }
-  60% { opacity: 0.03; }
+  0%,
+  100% {
+    opacity: 0;
+  }
+  50% {
+    opacity: 0.02;
+  }
+  55% {
+    opacity: 0.01;
+  }
+  60% {
+    opacity: 0.03;
+  }
 }
 </style>
-

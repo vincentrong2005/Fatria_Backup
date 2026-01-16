@@ -191,7 +191,10 @@ import { computed, onMounted, ref } from 'vue';
 // 原生实现的 get 函数
 function get<T = any>(obj: any, path: string, defaultValue?: T): T {
   if (!obj || !path) return defaultValue as T;
-  const keys = path.replace(/\[(\d+)\]/g, '.$1').split('.').filter(Boolean);
+  const keys = path
+    .replace(/\[(\d+)\]/g, '.$1')
+    .split('.')
+    .filter(Boolean);
   let result: any = obj;
   for (const key of keys) {
     if (result == null) return defaultValue as T;

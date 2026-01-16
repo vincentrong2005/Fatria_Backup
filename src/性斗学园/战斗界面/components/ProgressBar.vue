@@ -8,11 +8,7 @@
       <span v-if="showValue" class="progress-value">{{ value }} / {{ max }}</span>
     </div>
     <div class="progress-track" :class="`track-${color}`">
-      <div 
-        class="progress-fill"
-        :class="`fill-${color}`"
-        :style="{ width: `${percentage}%` }"
-      >
+      <div class="progress-fill" :class="`fill-${color}`" :style="{ width: `${percentage}%` }">
         <div class="shimmer"></div>
       </div>
     </div>
@@ -22,20 +18,23 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 
-const props = withDefaults(defineProps<{
-  value: number;
-  max: number;
-  color: 'blue' | 'red' | 'purple' | 'green' | 'pink';
-  label?: string;
-  showValue?: boolean;
-  size?: 'sm' | 'md' | 'lg';
-  icon?: string;
-}>(), {
-  label: '',
-  showValue: true,
-  size: 'md',
-  icon: ''
-});
+const props = withDefaults(
+  defineProps<{
+    value: number;
+    max: number;
+    color: 'blue' | 'red' | 'purple' | 'green' | 'pink';
+    label?: string;
+    showValue?: boolean;
+    size?: 'sm' | 'md' | 'lg';
+    icon?: string;
+  }>(),
+  {
+    label: '',
+    showValue: true,
+    size: 'md',
+    icon: '',
+  },
+);
 
 const percentage = computed(() => {
   return Math.min(Math.max((props.value / props.max) * 100, 0), 100);
@@ -70,7 +69,7 @@ const percentage = computed(() => {
   opacity: 0.8;
   display: flex;
   align-items: center;
-  
+
   :deep(svg) {
     width: 12px;
     height: 12px;
@@ -90,11 +89,21 @@ const percentage = computed(() => {
   border: 1px solid rgba(255, 255, 255, 0.05);
   height: 0.5rem;
 
-  &.track-blue { background-color: rgba(30, 64, 175, 0.4); }
-  &.track-red { background-color: rgba(127, 29, 29, 0.4); }
-  &.track-purple { background-color: rgba(88, 28, 135, 0.4); }
-  &.track-green { background-color: rgba(20, 83, 45, 0.4); }
-  &.track-pink { background-color: rgba(157, 23, 77, 0.4); }
+  &.track-blue {
+    background-color: rgba(30, 64, 175, 0.4);
+  }
+  &.track-red {
+    background-color: rgba(127, 29, 29, 0.4);
+  }
+  &.track-purple {
+    background-color: rgba(88, 28, 135, 0.4);
+  }
+  &.track-green {
+    background-color: rgba(20, 83, 45, 0.4);
+  }
+  &.track-pink {
+    background-color: rgba(157, 23, 77, 0.4);
+  }
 }
 
 .progress-fill {
@@ -132,8 +141,12 @@ const percentage = computed(() => {
 }
 
 @keyframes shimmer {
-  0%, 100% { opacity: 0.2; }
-  50% { opacity: 0.4; }
+  0%,
+  100% {
+    opacity: 0.2;
+  }
+  50% {
+    opacity: 0.4;
+  }
 }
 </style>
-
