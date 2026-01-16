@@ -13871,11 +13871,17 @@ export function convertToMvuSkillFormat(skill: SkillData) {
     skill.buffs.forEach((buff, index) => {
       const enemyDebuffTypes = new Set<BuffType>([
         BuffType.BIND,
+        BuffType.SENSITIVE,
+        BuffType.SILENCE,
         BuffType.ATK_DOWN,
         BuffType.DEF_DOWN,
         BuffType.DODGE_DOWN,
         BuffType.LUCK_DOWN,
         BuffType.CHARM_DOWN,
+        BuffType.SHAME,
+        BuffType.HEAT,
+        BuffType.FEAR,
+        BuffType.DOT_LUST,
       ]);
 
       const buffTypeMap: Record<string, '性斗力' | '忍耐力' | '魅力' | '幸运' | '闪避率' | '暴击率' | '束缚'> = {
