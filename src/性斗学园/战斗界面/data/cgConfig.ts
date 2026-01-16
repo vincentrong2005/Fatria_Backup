@@ -1287,15 +1287,41 @@ export const CG_CONFIGS: CharacterCGConfig[] = [
   xiaoNiaoYouChuZiConfig,
 ];
 
+function normalizeCharacterName(name: string): string {
+  const trimmed = (name || '').trim();
+  if (!trimmed) return '';
+
+  const withoutBrackets = trimmed
+    .replace(/（[^）]*）/g, '')
+    .replace(/\([^)]*\)/g, '')
+    .trim();
+
+  const withoutStageSuffix = withoutBrackets.replace(/_\d+$/g, '').trim();
+
+  if (withoutStageSuffix.includes('沐芯兰') || withoutStageSuffix.includes('茉莉')) {
+    return '沐芯兰';
+  }
+
+  return withoutStageSuffix;
+}
+
 // 根据角色名称获取CG配置
 export function getCGConfigByCharacter(characterName: string): CharacterCGConfig | null {
   console.log('[CG配置] 开始查找角色CG配置，角色名称:', characterName);
   console.log('[CG配置] 可用配置列表:', CG_CONFIGS.map(c => c.characterName));
   
   // 模糊匹配角色名称
+  const normalizedInputName = normalizeCharacterName(characterName);
   const config = CG_CONFIGS.find((cfg) => {
-    const match = characterName.includes(cfg.characterName) || cfg.characterName.includes(characterName);
-    console.log(`[CG配置] 匹配检查: "${characterName}" vs "${cfg.characterName}" = ${match}`);
+    const normalizedCfgName = normalizeCharacterName(cfg.characterName);
+    const match =
+      normalizedInputName.includes(normalizedCfgName) ||
+      normalizedCfgName.includes(normalizedInputName) ||
+      characterName.includes(cfg.characterName) ||
+      cfg.characterName.includes(characterName);
+    console.log(
+      `[CG配置] 匹配检查: "${characterName}"("${normalizedInputName}") vs "${cfg.characterName}"("${normalizedCfgName}") = ${match}`
+    );
     return match;
   });
   

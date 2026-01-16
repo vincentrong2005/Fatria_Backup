@@ -449,7 +449,6 @@ function getBuffName(type: BuffType): string {
     [BuffType.FEAR]: '恐惧',
     [BuffType.DOT_LUST]: '持续快感',
     [BuffType.REGEN]: '持续回复',
-    [BuffType.ENDURANCE_UP]: '忍耐提升',
   };
   return names[type] || '未知效果';
 }

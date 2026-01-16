@@ -2187,13 +2187,13 @@ function handlePlayerSkill(skill: Skill) {
 
   // 检查是否被束缚
   if (playerBoundTurns.value > 0) {
-    addLog(`${player.value.name} 被束缚了，无法使用技能！剩余 ${playerBoundTurns.value} 回合`, 'system', 'warn');
+    addLog(`${player.value.name} 被束缚了，无法使用技能！剩余 ${playerBoundTurns.value} 回合`, 'system', 'info');
     return;
   }
 
   // 检查体力是否足够
   if (player.value.stats.currentEndurance < skill.cost) {
-    addLog('体力不足，无法使用技能！', 'system', 'warn');
+    addLog('体力不足，无法使用技能！', 'system', 'info');
     return;
   }
 
@@ -2232,7 +2232,7 @@ function handlePlayerSkill(skill: Skill) {
     try {
       // 检查技能数据是否存在
       if (!skill.data) {
-        addLog(`技能 ${skill.name} 的数据不存在，无法使用`, 'system', 'error');
+        addLog(`技能 ${skill.name} 的数据不存在，无法使用`, 'system', 'critical');
         turnState.phase = 'playerInput';
         return;
       }
@@ -2369,7 +2369,7 @@ function handlePlayerSkill(skill: Skill) {
       }
     } catch (e) {
       console.error('[战斗界面] 使用技能时出错', e);
-      addLog('使用技能时出错', 'system', 'error');
+      addLog('使用技能时出错', 'system', 'critical');
       turnState.phase = 'playerInput';
     }
   });
@@ -2461,7 +2461,7 @@ async function handlePlayerItem(item: Item) {
       return;
     } catch (e) {
       console.error('[战斗界面] 意志奇点处理失败', e);
-      addLog('意志奇点使用失败', 'system', 'error');
+      addLog('意志奇点使用失败', 'system', 'critical');
       // 失败也至少把物品扣除后的数量同步
       player.value = nextPlayer;
       enemy.value = nextEnemy;
@@ -2673,7 +2673,7 @@ function handleEnemyTurn() {
     // 检查敌人体力是否足够（在构建技能数据之前检查）
     const skillCost = skill.data?.staminaCost || skill.cost || 0;
     if (nextEnemy.stats.currentEndurance < skillCost) {
-      addLog(`${nextEnemy.name} 体力不足，无法使用 ${skill.name}！`, 'system', 'warn');
+      addLog(`${nextEnemy.name} 体力不足，无法使用 ${skill.name}！`, 'system', 'info');
       endTurn();
       setTimeout(startNewTurn, 1000);
       return;
@@ -2772,7 +2772,7 @@ function handleEnemyTurn() {
       try {
         // 检查技能数据是否存在
         if (!skill.data) {
-          addLog(`技能 ${skill.name} 的数据不存在，无法使用`, 'system', 'error');
+          addLog(`技能 ${skill.name} 的数据不存在，无法使用`, 'system', 'critical');
           endTurn();
           setTimeout(startNewTurn, 1000);
           return;
@@ -2881,7 +2881,7 @@ function handleEnemyTurn() {
         }
       } catch (e) {
         console.error('[战斗界面] 敌人使用技能时出错', e);
-        addLog('敌人使用技能时出错', 'system', 'error');
+        addLog('敌人使用技能时出错', 'system', 'critical');
         endTurn();
         setTimeout(startNewTurn, 1000);
       }
@@ -3334,7 +3334,7 @@ async function sendCombatLogToLLM(context: string) {
       }
     } else {
       console.warn('[战斗界面] generate函数不可用');
-      addLog('无法生成过程描述，generate函数不可用', 'system', 'warn');
+      addLog('无法生成过程描述，generate函数不可用', 'system', 'info');
 
       // 如果 generate 不可用，直接触发一次AI回复
       if (typeof triggerSlash === 'function') {
@@ -3343,7 +3343,7 @@ async function sendCombatLogToLLM(context: string) {
     }
   } catch (e) {
     console.error('[战斗界面] 发送日志给LLM失败', e);
-    addLog('发送日志给LLM失败', 'system', 'error');
+    addLog('发送日志给LLM失败', 'system', 'critical');
   }
 }
 
@@ -3384,7 +3384,7 @@ async function handleSendCombatLogToLLM() {
     }
   } catch (e) {
     console.error('[战斗界面] 战斗结算失败', e);
-    addLog('战斗结算时出错，但战斗记录已发送', 'system', 'error');
+    addLog('战斗结算时出错，但战斗记录已发送', 'system', 'critical');
   }
 
   // 清空战斗日志
@@ -3474,6 +3474,9 @@ async function executePhaseTransitionLogic(nextPhase: 1 | 2 | 3) {
       // 更新高潮次数上限（双方共享）
       enemy.value.stats.maxClimaxCount = newClimaxLimit;
       player.value.stats.maxClimaxCount = newClimaxLimit;
+
+      // 阶段切换时同步重置玩家高潮次数，避免出现 2/1 等显示问题
+      player.value.stats.climaxCount = 0;
       
       // 加载新阶段的技能
       const newSkills = enemySkillDbModule.getEnemySkills(newDataKey, newDataKey);
@@ -3520,6 +3523,7 @@ async function executePhaseTransitionLogic(nextPhase: 1 | 2 | 3) {
         if (mvuData?.stat_data) {
           _.set(mvuData.stat_data, '性斗系统.对手名称', newDisplayName);
           _.set(mvuData.stat_data, '性斗系统.胜负规则.高潮次数上限', newClimaxLimit);
+          _.set(mvuData.stat_data, '性斗系统.高潮次数', 0);
           _.set(mvuData.stat_data, '性斗系统.对手等级', newEnemyData.对手等级);
           _.set(mvuData.stat_data, '性斗系统.对手魅力', newEnemyData.对手魅力);
           _.set(mvuData.stat_data, '性斗系统.对手幸运', newEnemyData.对手幸运);
@@ -3747,7 +3751,7 @@ function handleSkipTurn() {
 
   // 被束缚时也可以跳过回合
   if (playerBoundTurns.value > 0) {
-    addLog(`${player.value.name} 被束缚了，跳过回合`, 'system', 'warn');
+    addLog(`${player.value.name} 被束缚了，跳过回合`, 'system', 'info');
   } else {
     addLog(`${player.value.name} 选择了跳过回合`, 'system', 'info');
   }

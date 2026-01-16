@@ -69,7 +69,6 @@ export enum BuffType {
   FEAR = 'fear',
   DOT_LUST = 'dot_lust',
   REGEN = 'regen',
-  ENDURANCE_UP = 'endurance_up',
 }
 
 /** Buff效果 */

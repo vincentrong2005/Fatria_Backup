@@ -12308,14 +12308,14 @@ export const ENEMY_SKILLS: Record<string, SkillData> = {
     description: '只要形势不对(如血量低于50%),会立刻利用路人光环消失在战场,不给对方反击的机会。',
     effectDescription: '闪避率+50%',
     icon: 'Wind',
-    type: SkillType.FIELD,
+    type: SkillType.PHYSICAL,
     staminaCost: 15,
     cooldown: 5,
     castTime: 0,
     damageFormula: [],
     accuracy: 100,
     critModifier: 0,
-    buffs: [{ type: BuffType.DODGE_DOWN, value: -50, isPercent: true, duration: 2, stackable: false }],
+    buffs: [{ type: BuffType.DODGE_UP, value: 50, isPercent: true, duration: 2, stackable: false }],
     canBeReflected: false,
     hitCount: 0,
   },
@@ -12841,7 +12841,7 @@ export const ENEMY_SKILLS: Record<string, SkillData> = {
     damageFormula: [{ source: DamageSource.SEX_POWER, coefficient: 1.50, baseValue: 15 }],
     accuracy: 82,
     critModifier: 20,
-    buffs: [{ type: BuffType.ENDURANCE_UP, value: 25, isPercent: true, duration: 3, stackable: false }],
+    buffs: [{ type: BuffType.DEF_UP, value: 25, isPercent: true, duration: 3, stackable: false }],
     canBeReflected: false,
     hitCount: 1,
   },
@@ -12859,7 +12859,7 @@ export const ENEMY_SKILLS: Record<string, SkillData> = {
     accuracy: 88,
     critModifier: 12,
     buffs: [
-      { type: BuffType.ENDURANCE_UP, value: 20, isPercent: true, duration: 2, stackable: false }
+      { type: BuffType.DEF_UP, value: 20, isPercent: true, duration: 2, stackable: false }
     ],
     canBeReflected: false,
     hitCount: 1,
@@ -12958,7 +12958,7 @@ export const ENEMY_SKILLS: Record<string, SkillData> = {
     buffs: [
       { type: BuffType.ATK_UP, value: 30, isPercent: true, duration: 3, stackable: false },
       { type: BuffType.DEF_UP, value: 30, isPercent: true, duration: 3, stackable: false },
-      { type: BuffType.CRIT_UP, value: 30, isPercent: false, duration: 3, stackable: false }
+      { type: BuffType.CRIT_UP, value: 30, isPercent: true, duration: 3, stackable: false }
     ],
     canBeReflected: false,
     hitCount: 0,
@@ -12967,35 +12967,35 @@ export const ENEMY_SKILLS: Record<string, SkillData> = {
     id: '沐芯兰_茉莉_5',
     name: '意识劫持，快感赋予',
     description: '"感受到了吗？这就是被完全支配的感觉。"',
-    effectDescription: '造成200%性斗力伤害，降低目标幸运150点（3回合）',
+    effectDescription: '造成100%性斗力伤害，2连击；降低目标幸运150点（3回合）',
     icon: 'Brain',
     type: SkillType.MENTAL,
     staminaCost: 25,
     cooldown: 3,
     castTime: 0,
-    damageFormula: [{ source: DamageSource.SEX_POWER, coefficient: 2.00, baseValue: 20 }],
+    damageFormula: [{ source: DamageSource.SEX_POWER, coefficient: 1.00, baseValue: 20 }],
     accuracy: 88,
     critModifier: 25,
     buffs: [{ type: BuffType.LUCK_DOWN, value: 150, isPercent: false, duration: 3, stackable: false }],
     canBeReflected: false,
-    hitCount: 1,
+    hitCount: 2,
   },
   '沐芯兰_茉莉_6': {
     id: '沐芯兰_茉莉_6',
     name: '心智劫持，防御剥离',
     description: '"你的意识...现在归我所有了。"',
-    effectDescription: '造成400%魅力伤害，降低目标防御50%（2回合）',
+    effectDescription: '造成200%魅力伤害，2连击；降低目标防御50%（2回合）',
     icon: 'Ghost',
     type: SkillType.CHARM,
     staminaCost: 22,
     cooldown: 4,
     castTime: 0,
-    damageFormula: [{ source: DamageSource.CHARM, coefficient: 4.00, baseValue: 15 }],
+    damageFormula: [{ source: DamageSource.CHARM, coefficient: 2.00, baseValue: 15 }],
     accuracy: 85,
     critModifier: 20,
     buffs: [{ type: BuffType.DEF_DOWN, value: 50, isPercent: true, duration: 2, stackable: false }],
     canBeReflected: false,
-    hitCount: 1,
+    hitCount: 2,
   },
   '沐芯兰_茉莉_7': {
     id: '沐芯兰_茉莉_7',
@@ -13018,18 +13018,18 @@ export const ENEMY_SKILLS: Record<string, SkillData> = {
     id: '沐芯兰_茉莉_8',
     name: '女王的踩踏',
     description: '"在女王面前...跪下吧，杂鱼。"',
-    effectDescription: '造成250%性斗力伤害，必定暴击',
+    effectDescription: '造成125%性斗力伤害，2连击，必定暴击',
     icon: 'Crown',
     type: SkillType.PHYSICAL,
     staminaCost: 40,
     cooldown: 6,
     castTime: 0,
-    damageFormula: [{ source: DamageSource.SEX_POWER, coefficient: 2.50, baseValue: 30 }],
+    damageFormula: [{ source: DamageSource.SEX_POWER, coefficient: 1.25, baseValue: 30 }],
     accuracy: 90,
     critModifier: 100,
     buffs: [],
     canBeReflected: false,
-    hitCount: 1,
+    hitCount: 2,
   },
   // === 真身形态技能（羸弱） ===
   '沐芯兰_真身_1': {
@@ -13886,7 +13886,7 @@ export function convertToMvuSkillFormat(skill: SkillData) {
 
       const buffTypeMap: Record<string, '性斗力' | '忍耐力' | '魅力' | '幸运' | '闪避率' | '暴击率' | '束缚'> = {
         [BuffType.BIND]: '束缚',
-        [BuffType.SENSITIVE]: '性斗力', // 敏感状态影响性斗力
+        [BuffType.SENSITIVE]: '性斗力',
         [BuffType.DODGE_UP]: '闪避率',
         [BuffType.DODGE_DOWN]: '闪避率',
         [BuffType.ATK_UP]: '性斗力',
@@ -13894,6 +13894,10 @@ export function convertToMvuSkillFormat(skill: SkillData) {
         [BuffType.CRIT_UP]: '暴击率',
         [BuffType.LUCK_DOWN]: '幸运',
         [BuffType.CHARM_DOWN]: '魅力',
+        [BuffType.DEF_UP]: '忍耐力',
+        [BuffType.DEF_DOWN]: '忍耐力',
+        [BuffType.REGEN]: '忍耐力',
+        [BuffType.FOCUS]: '暴击率',
       };
       const effectType = buffTypeMap[buff.type] || '性斗力';
       let effectValue = buff.value;
@@ -13901,7 +13905,7 @@ export function convertToMvuSkillFormat(skill: SkillData) {
       // 束缚效果值为0，持续回合数决定束缚时长；debuff使用负值
       if (buff.type === BuffType.BIND) {
         effectValue = 0; // 束缚效果值为0，通过持续回合数来控制
-      } else if (buff.type === BuffType.SENSITIVE || buff.type === BuffType.DODGE_DOWN || buff.type === BuffType.ATK_DOWN || buff.type === BuffType.LUCK_DOWN || buff.type === BuffType.CHARM_DOWN) {
+      } else if (buff.type === BuffType.SENSITIVE || buff.type === BuffType.DODGE_DOWN || buff.type === BuffType.ATK_DOWN || buff.type === BuffType.DEF_DOWN || buff.type === BuffType.LUCK_DOWN || buff.type === BuffType.CHARM_DOWN) {
         effectValue = -Math.abs(buff.value);
       }
       
