@@ -15,9 +15,9 @@
     <div class="section-card">
       <h3 class="section-title"><i class="fas fa-shield"></i> 装备栏</h3>
       <div class="equipment-grid">
-        <div 
-          class="equipment-slot" 
-          v-for="slot in equipmentSlots" 
+        <div
+          class="equipment-slot"
+          v-for="slot in equipmentSlots"
           :key="slot.key"
           :class="{ empty: !slot.value || !slot.value.名称 }"
           @mouseenter="showEquipmentTooltip(slot.value, $event)"
@@ -35,12 +35,7 @@
               {{ slot.value.等级 }}
             </div>
           </div>
-          <button 
-            v-if="slot.value?.名称" 
-            class="unequip-btn"
-            @click.stop="unequipItem(slot.key)"
-            title="卸下装备"
-          >
+          <button v-if="slot.value?.名称" class="unequip-btn" @click.stop="unequipItem(slot.key)" title="卸下装备">
             <i class="fas fa-times"></i>
           </button>
         </div>
@@ -51,12 +46,7 @@
     <div class="section-card" v-if="hasEquipmentBonuses">
       <h3 class="section-title"><i class="fas fa-chart-line"></i> 装备总加成</h3>
       <div class="bonus-grid">
-        <div 
-          v-for="(value, key) in equipmentBonuses" 
-          :key="key" 
-          class="bonus-item"
-          v-show="value !== 0"
-        >
+        <div v-for="(value, key) in equipmentBonuses" :key="key" class="bonus-item" v-show="value !== 0">
           <span class="bonus-label">{{ formatBonusLabel(String(key)) }}</span>
           <span class="bonus-value" :class="getBonusClass(Number(value))">
             {{ formatBonusValue(Number(value)) }}{{ isPercentBonus(String(key)) ? '%' : '' }}
@@ -72,7 +62,7 @@
           <i class="fas fa-box"></i> 背包
           <span class="item-count">{{ Object.keys(filteredItems).length }} 件物品</span>
         </h3>
-        
+
         <!-- 分类筛选 -->
         <div class="filter-tabs">
           <!-- 类型筛选 -->
@@ -88,7 +78,7 @@
               {{ type }}
             </button>
           </div>
-          
+
           <!-- 等级筛选 -->
           <div class="filter-group">
             <span class="filter-label">等级:</span>
@@ -104,11 +94,11 @@
           </div>
         </div>
       </div>
-      
+
       <div class="inventory-list" v-if="Object.keys(filteredItems).length > 0">
-        <div 
-          class="inventory-item" 
-          v-for="(item, itemKey) in filteredItems" 
+        <div
+          class="inventory-item"
+          v-for="(item, itemKey) in filteredItems"
           :key="itemKey"
           :class="getItemRarityClass(item.等级)"
           @mouseenter="showTooltip(itemKey, item, $event)"
@@ -116,11 +106,7 @@
           @touchstart="showTooltipMobile(itemKey, item, $event)"
           @touchend="hideTooltip"
         >
-          <button 
-            class="discard-btn"
-            @click.stop="discardItem(itemKey)"
-            title="售卖"
-          >
+          <button class="discard-btn" @click.stop="discardItem(itemKey)" title="售卖">
             <i class="fas fa-times"></i>
           </button>
           <div class="item-header">
@@ -137,18 +123,14 @@
           <div class="item-desc" v-if="item.描述">
             {{ item.描述 }}
           </div>
-          
+
           <!-- 装备按钮（仅装备类型显示） -->
-          <button 
-            v-if="item.类型 === '装备' && item.部位"
-            class="equip-btn"
-            @click.stop="equipItem(itemKey, item)"
-          >
+          <button v-if="item.类型 === '装备' && item.部位" class="equip-btn" @click.stop="equipItem(itemKey, item)">
             <i class="fas fa-hand-sparkles"></i> 装备
           </button>
         </div>
       </div>
-      
+
       <div class="empty-state" v-else>
         <i class="fas fa-box-open"></i>
         <p>背包空空如也</p>
@@ -157,22 +139,13 @@
     </div>
 
     <!-- 工具提示 -->
-    <div 
-      v-if="tooltip.visible" 
-      class="tooltip"
-      :style="{ left: tooltip.x + 'px', top: tooltip.y + 'px' }"
-    >
+    <div v-if="tooltip.visible" class="tooltip" :style="{ left: tooltip.x + 'px', top: tooltip.y + 'px' }">
       <div class="tooltip-title">{{ tooltip.name }}</div>
       <div class="tooltip-level" :class="getItemRarityClass(tooltip.level)">
         {{ tooltip.level }}
       </div>
       <div class="tooltip-bonuses" v-if="tooltip.bonuses && Object.keys(tooltip.bonuses).length > 0">
-        <div 
-          v-for="(value, key) in tooltip.bonuses" 
-          :key="key"
-          class="tooltip-bonus-item"
-          v-show="value !== 0"
-        >
+        <div v-for="(value, key) in tooltip.bonuses" :key="key" class="tooltip-bonus-item" v-show="value !== 0">
           <span>{{ formatBonusLabel(String(key)) }}</span>
           <span :class="getBonusClass(Number(value))">
             {{ formatBonusValue(Number(value)) }}{{ isPercentBonus(String(key)) ? '%' : '' }}
@@ -264,7 +237,7 @@ const hasEquipmentBonuses = computed(() => {
 const filteredItems = computed(() => {
   // 确保使用可选链操作符
   const items = props.characterData?.物品系统?.背包 || {};
-  
+
   // 调试日志
   if (Object.keys(items).length > 0) {
     console.log('[背包界面] 原始背包数据:', items);
@@ -277,9 +250,9 @@ const filteredItems = computed(() => {
     console.log('[背包界面] characterData:', props.characterData);
     console.log('[背包界面] 物品系统:', props.characterData?.物品系统);
   }
-  
+
   const entries = Object.entries(items);
-  
+
   const filtered = entries
     .filter(([_, item]: [string, any]) => {
       // 类型筛选
@@ -292,14 +265,17 @@ const filteredItems = computed(() => {
       }
       return true;
     })
-    .reduce((acc, [key, item]) => {
-      acc[key] = item;
-      return acc;
-    }, {} as Record<string, any>);
-  
+    .reduce(
+      (acc, [key, item]) => {
+        acc[key] = item;
+        return acc;
+      },
+      {} as Record<string, any>,
+    );
+
   console.log('[背包界面] 过滤后的物品:', filtered);
   console.log('[背包界面] 过滤后的数量:', Object.keys(filtered).length);
-  
+
   return filtered;
 });
 
@@ -311,15 +287,15 @@ function formatNumber(num: number): string {
 // 格式化加成标签
 function formatBonusLabel(key: string): string {
   const labelMap: Record<string, string> = {
-    '魅力加成': '魅力',
-    '幸运加成': '幸运',
-    '基础性斗力加成': '性斗力+',
-    '基础性斗力成算': '性斗力%',
-    '基础忍耐力加成': '忍耐力+',
-    '基础忍耐力成算': '忍耐力%',
-    '闪避率加成': '闪避率',
-    '暴击率加成': '暴击率',
-    '意志力加成': '意志力',
+    魅力加成: '魅力',
+    幸运加成: '幸运',
+    基础性斗力加成: '性斗力+',
+    基础性斗力成算: '性斗力%',
+    基础忍耐力加成: '忍耐力+',
+    基础忍耐力成算: '忍耐力%',
+    闪避率加成: '闪避率',
+    暴击率加成: '暴击率',
+    意志力加成: '意志力',
   };
   return labelMap[key] || key;
 }
@@ -346,11 +322,11 @@ function getBonusClass(value: number): string {
 // 获取物品稀有度样式
 function getItemRarityClass(level: string): string {
   const rarityMap: Record<string, string> = {
-    'C': 'rarity-c',
-    'B': 'rarity-b',
-    'A': 'rarity-a',
-    'S': 'rarity-s',
-    'SS': 'rarity-ss',
+    C: 'rarity-c',
+    B: 'rarity-b',
+    A: 'rarity-a',
+    S: 'rarity-s',
+    SS: 'rarity-ss',
   };
   return rarityMap[level] || 'rarity-c';
 }
@@ -360,7 +336,7 @@ function showTooltip(itemKey: string, item: any, event: MouseEvent) {
   if (item.类型 !== '装备' || !item.加成属性) {
     return;
   }
-  
+
   tooltip.value = {
     visible: true,
     name: itemKey,
@@ -377,7 +353,7 @@ function showTooltipMobile(itemKey: string, item: any, event: TouchEvent) {
   if (item.类型 !== '装备' || !item.加成属性) {
     return;
   }
-  
+
   const touch = event.touches[0];
   tooltip.value = {
     visible: true,
@@ -388,7 +364,7 @@ function showTooltipMobile(itemKey: string, item: any, event: TouchEvent) {
     x: touch.clientX + 10,
     y: touch.clientY + 10,
   };
-  
+
   // 3秒后自动隐藏
   setTimeout(() => {
     tooltip.value.visible = false;
@@ -400,7 +376,7 @@ function showEquipmentTooltip(equippedItem: any, event: MouseEvent) {
   if (!equippedItem || !equippedItem.名称 || !equippedItem.加成属性) {
     return;
   }
-  
+
   tooltip.value = {
     visible: true,
     name: equippedItem.名称,
@@ -417,7 +393,7 @@ function showEquipmentTooltipMobile(equippedItem: any, event: TouchEvent) {
   if (!equippedItem || !equippedItem.名称 || !equippedItem.加成属性) {
     return;
   }
-  
+
   const touch = event.touches[0];
   tooltip.value = {
     visible: true,
@@ -428,7 +404,7 @@ function showEquipmentTooltipMobile(equippedItem: any, event: TouchEvent) {
     x: touch.clientX + 10,
     y: touch.clientY + 10,
   };
-  
+
   // 3秒后自动隐藏
   setTimeout(() => {
     tooltip.value.visible = false;
@@ -453,11 +429,11 @@ function createFullBonusAttributes(partial?: any): Record<string, number> {
     暴击率加成: 0,
     意志力加成: 0,
   };
-  
+
   if (!partial || typeof partial !== 'object') {
     return defaultBonuses;
   }
-  
+
   // 合并部分加成属性，确保所有字段都存在
   return {
     ...defaultBonuses,
@@ -470,27 +446,27 @@ async function equipItem(itemKey: string, item: any) {
   if (item.类型 !== '装备' || !item.部位) {
     return;
   }
-  
+
   const globalAny = window as any;
   if (!globalAny.Mvu) {
     console.error('[背包界面] MVU 未初始化');
     return;
   }
-  
+
   try {
     const mvuData = globalAny.Mvu.getMvuData({ type: 'message', message_id: 'latest' });
     if (!mvuData || !mvuData.stat_data) {
       console.error('[背包界面] 无法获取 MVU 数据');
       return;
     }
-    
+
     const statData = mvuData.stat_data;
-    
+
     // 确保物品系统结构存在
     if (!statData.物品系统) {
       statData.物品系统 = {};
     }
-    
+
     // 确定装备槽位
     let slotKey = '';
     if (item.部位 === '主装备') {
@@ -512,7 +488,7 @@ async function equipItem(itemKey: string, item: any) {
       console.error('[背包界面] 未知的装备部位:', item.部位);
       return;
     }
-    
+
     // 如果目标槽位已有装备，先卸下到背包
     const currentEquipped = statData.物品系统._装备栏?.[slotKey];
     if (currentEquipped?.名称) {
@@ -529,12 +505,12 @@ async function equipItem(itemKey: string, item: any) {
         描述: currentEquipped.描述 || '',
       };
     }
-    
+
     // 从背包移除
     if (statData.物品系统.背包 && statData.物品系统.背包[itemKey]) {
       delete statData.物品系统.背包[itemKey];
     }
-    
+
     // 装备到槽位
     if (!statData.物品系统._装备栏) {
       statData.物品系统._装备栏 = {
@@ -545,25 +521,25 @@ async function equipItem(itemKey: string, item: any) {
         特殊装备: { 名称: '', 等级: 'C', 加成属性: createFullBonusAttributes({}), 描述: '' },
       };
     }
-    
+
     statData.物品系统._装备栏[slotKey] = {
       名称: itemKey,
       等级: item.等级 || 'C',
       加成属性: createFullBonusAttributes(item.加成属性),
       描述: item.描述 || '',
     };
-    
+
     // 重新计算装备总加成
     calculateEquipmentBonuses(statData);
-    
+
     // 更新 MVU
     await globalAny.Mvu.replaceMvuData(mvuData, { type: 'message', message_id: 'latest' });
-    
+
     // 显示成功提示
     if (typeof toastr !== 'undefined') {
       toastr.success(`已装备 ${itemKey}`);
     }
-    
+
     // 触发页面更新（通过父组件）
     window.dispatchEvent(new CustomEvent('mvu-data-updated'));
   } catch (error) {
@@ -632,18 +608,18 @@ async function unequipItem(slotKey: string) {
     console.error('[背包界面] MVU 未初始化');
     return;
   }
-  
+
   try {
     console.log('[背包界面] 开始卸下装备，槽位:', slotKey);
-    
+
     const mvuData = globalAny.Mvu.getMvuData({ type: 'message', message_id: 'latest' });
     if (!mvuData || !mvuData.stat_data) {
       console.error('[背包界面] 无法获取 MVU 数据');
       return;
     }
-    
+
     const statData = mvuData.stat_data;
-    
+
     // 确保物品系统结构存在
     if (!statData.物品系统) {
       statData.物品系统 = {};
@@ -652,27 +628,27 @@ async function unequipItem(slotKey: string) {
       console.error('[背包界面] 装备栏不存在');
       return;
     }
-    
+
     const equippedItem = statData.物品系统._装备栏[slotKey];
-    
+
     console.log('[背包界面] 当前装备:', equippedItem);
-    
+
     if (!equippedItem || !equippedItem.名称) {
       console.warn('[背包界面] 该槽位没有装备');
       return;
     }
-    
+
     // 添加到背包
     if (!statData.物品系统.背包) {
       statData.物品系统.背包 = {};
     }
-    
+
     // 确定装备部位（用于背包中的装备）
     let itemSlot = '主装备';
     if (slotKey === '副装备') itemSlot = '副装备';
     else if (slotKey === '饰品1' || slotKey === '饰品2') itemSlot = '饰品';
     else if (slotKey === '特殊装备') itemSlot = '特殊装备';
-    
+
     // 创建完整的背包物品对象
     const backpackItem = {
       类型: '装备' as const,
@@ -682,11 +658,11 @@ async function unequipItem(slotKey: string) {
       数量: 1 as const,
       描述: equippedItem.描述 || '',
     };
-    
+
     console.log('[背包界面] 添加到背包的物品:', backpackItem);
-    
+
     statData.物品系统.背包[equippedItem.名称] = backpackItem;
-    
+
     // 清空装备槽位（使用完整的结构）
     statData.物品系统._装备栏[slotKey] = {
       名称: '',
@@ -694,24 +670,24 @@ async function unequipItem(slotKey: string) {
       加成属性: createFullBonusAttributes({}),
       描述: '',
     };
-    
+
     console.log('[背包界面] 装备槽位已清空');
-    
+
     // 重新计算装备总加成
     calculateEquipmentBonuses(statData);
-    
+
     console.log('[背包界面] 装备总加成已重新计算:', statData.物品系统.装备总加成);
-    
+
     // 更新 MVU
     await globalAny.Mvu.replaceMvuData(mvuData, { type: 'message', message_id: 'latest' });
-    
+
     console.log('[背包界面] MVU 数据已更新');
-    
+
     // 显示成功提示
     if (typeof toastr !== 'undefined') {
       toastr.success(`已卸下 ${equippedItem.名称}`);
     }
-    
+
     // 触发页面更新
     window.dispatchEvent(new CustomEvent('mvu-data-updated'));
   } catch (error) {
@@ -737,7 +713,7 @@ function calculateEquipmentBonuses(statData: any) {
     暴击率加成: 0,
     意志力加成: 0,
   };
-  
+
   equipmentSlots.forEach(slotKey => {
     const item = statData.物品系统?._装备栏?.[slotKey];
     if (item && item.加成属性) {
@@ -746,7 +722,7 @@ function calculateEquipmentBonuses(statData: any) {
       });
     }
   });
-  
+
   // 更新装备总加成
   if (!statData.物品系统) {
     statData.物品系统 = {};
@@ -772,7 +748,7 @@ function calculateEquipmentBonuses(statData: any) {
   border-radius: 16px;
   border: 1px solid rgba(251, 191, 36, 0.3);
   margin-bottom: 20px;
-  
+
   .coins-icon {
     width: 48px;
     height: 48px;
@@ -781,25 +757,25 @@ function calculateEquipmentBonuses(statData: any) {
     display: flex;
     align-items: center;
     justify-content: center;
-    
+
     i {
       font-size: 24px;
       color: white;
     }
   }
-  
+
   .coins-info {
     display: flex;
     flex-direction: column;
   }
-  
+
   .coins-label {
     font-size: 12px;
     color: rgba(255, 255, 255, 0.6);
     text-transform: uppercase;
     letter-spacing: 0.5px;
   }
-  
+
   .coins-amount {
     font-size: 28px;
     font-weight: 700;
@@ -828,12 +804,12 @@ function calculateEquipmentBonuses(statData: any) {
   display: flex;
   align-items: center;
   gap: 8px;
-  
+
   i {
     font-size: 14px;
     color: #667eea;
   }
-  
+
   .item-count {
     margin-left: auto;
     font-size: 11px;
@@ -873,12 +849,12 @@ function calculateEquipmentBonuses(statData: any) {
   color: rgba(255, 255, 255, 0.6);
   cursor: pointer;
   transition: all 0.2s ease;
-  
+
   &:hover {
     background: rgba(255, 255, 255, 0.1);
     color: rgba(255, 255, 255, 0.8);
   }
-  
+
   &.active {
     background: linear-gradient(135deg, #667eea, #764ba2);
     border-color: #667eea;
@@ -902,15 +878,15 @@ function calculateEquipmentBonuses(statData: any) {
   border: 1px solid rgba(255, 255, 255, 0.08);
   transition: all 0.2s ease;
   position: relative;
-  
+
   &:hover {
     background: rgba(255, 255, 255, 0.05);
   }
-  
+
   &.empty {
     opacity: 0.5;
   }
-  
+
   .slot-icon {
     width: 36px;
     height: 36px;
@@ -920,25 +896,25 @@ function calculateEquipmentBonuses(statData: any) {
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
-    
+
     i {
       font-size: 16px;
       color: #a78bfa;
     }
   }
-  
+
   .slot-info {
     flex: 1;
     min-width: 0;
   }
-  
+
   .slot-label {
     font-size: 10px;
     color: rgba(255, 255, 255, 0.4);
     text-transform: uppercase;
     letter-spacing: 0.5px;
   }
-  
+
   .slot-value {
     font-size: 14px;
     color: white;
@@ -948,7 +924,7 @@ function calculateEquipmentBonuses(statData: any) {
     overflow: hidden;
     text-overflow: ellipsis;
   }
-  
+
   .slot-level {
     font-size: 10px;
     padding: 2px 6px;
@@ -956,33 +932,33 @@ function calculateEquipmentBonuses(statData: any) {
     margin-top: 4px;
     display: inline-block;
     font-weight: 600;
-    
+
     &.rarity-c {
       background: rgba(156, 163, 175, 0.2);
       color: #d1d5db;
     }
-    
+
     &.rarity-b {
       background: rgba(96, 165, 250, 0.2);
       color: #93c5fd;
     }
-    
+
     &.rarity-a {
       background: rgba(167, 139, 250, 0.2);
       color: #c4b5fd;
     }
-    
+
     &.rarity-s {
       background: rgba(251, 191, 36, 0.2);
       color: #fcd34d;
     }
-    
+
     &.rarity-ss {
       background: rgba(248, 113, 113, 0.2);
       color: #fca5a5;
     }
   }
-  
+
   .unequip-btn {
     width: 28px;
     height: 28px;
@@ -996,12 +972,12 @@ function calculateEquipmentBonuses(statData: any) {
     justify-content: center;
     transition: all 0.2s ease;
     flex-shrink: 0;
-    
+
     &:hover {
       background: rgba(248, 113, 113, 0.3);
       transform: scale(1.1);
     }
-    
+
     i {
       font-size: 12px;
     }
@@ -1033,15 +1009,15 @@ function calculateEquipmentBonuses(statData: any) {
   font-size: 14px;
   font-weight: 600;
   font-family: 'JetBrains Mono', monospace;
-  
+
   &.positive {
     color: #34d399;
   }
-  
+
   &.negative {
     color: #f87171;
   }
-  
+
   &.neutral {
     color: rgba(255, 255, 255, 0.4);
   }
@@ -1060,39 +1036,39 @@ function calculateEquipmentBonuses(statData: any) {
   border-left: 3px solid;
   transition: all 0.2s ease;
   position: relative;
-  
+
   &:hover {
     background: rgba(255, 255, 255, 0.05);
     transform: translateX(4px);
   }
-  
+
   &.rarity-c {
     border-left-color: #9ca3af;
   }
-  
+
   &.rarity-b {
     border-left-color: #60a5fa;
   }
-  
+
   &.rarity-a {
     border-left-color: #a78bfa;
   }
-  
+
   &.rarity-s {
     border-left-color: #fbbf24;
   }
-  
+
   &.rarity-ss {
     border-left-color: #f87171;
   }
-  
+
   .item-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
     margin-bottom: 6px;
   }
-  
+
   .item-name {
     font-size: 14px;
     font-weight: 600;
@@ -1103,7 +1079,7 @@ function calculateEquipmentBonuses(statData: any) {
     text-overflow: ellipsis;
     white-space: nowrap;
   }
-  
+
   .item-badges {
     display: flex;
     gap: 6px;
@@ -1143,45 +1119,45 @@ function calculateEquipmentBonuses(statData: any) {
       line-height: 1;
     }
   }
-  
+
   .item-level {
     padding: 2px 8px;
     border-radius: 10px;
     font-size: 10px;
     font-weight: 600;
-    
+
     &.rarity-c {
       background: rgba(156, 163, 175, 0.2);
       color: #d1d5db;
     }
-    
+
     &.rarity-b {
       background: rgba(96, 165, 250, 0.2);
       color: #93c5fd;
     }
-    
+
     &.rarity-a {
       background: rgba(167, 139, 250, 0.2);
       color: #c4b5fd;
     }
-    
+
     &.rarity-s {
       background: rgba(251, 191, 36, 0.2);
       color: #fcd34d;
     }
-    
+
     &.rarity-ss {
       background: rgba(248, 113, 113, 0.2);
       color: #fca5a5;
     }
   }
-  
+
   .item-count {
     font-size: 12px;
     color: rgba(255, 255, 255, 0.5);
     font-family: 'JetBrains Mono', monospace;
   }
-  
+
   .item-meta {
     display: flex;
     align-items: center;
@@ -1189,12 +1165,12 @@ function calculateEquipmentBonuses(statData: any) {
     margin-bottom: 6px;
     flex-wrap: wrap;
   }
-  
+
   .item-type {
     font-size: 11px;
     color: rgba(255, 255, 255, 0.4);
   }
-  
+
   .item-slot {
     font-size: 11px;
     padding: 2px 8px;
@@ -1203,14 +1179,14 @@ function calculateEquipmentBonuses(statData: any) {
     color: #a78bfa;
     font-weight: 500;
   }
-  
+
   .item-desc {
     font-size: 12px;
     color: rgba(255, 255, 255, 0.6);
     line-height: 1.5;
     margin-bottom: 8px;
   }
-  
+
   .equip-btn {
     margin-top: 8px;
     padding: 6px 12px;
@@ -1225,16 +1201,16 @@ function calculateEquipmentBonuses(statData: any) {
     align-items: center;
     gap: 6px;
     transition: all 0.2s ease;
-    
+
     &:hover {
       transform: translateY(-2px);
       box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
     }
-    
+
     &:active {
       transform: translateY(0);
     }
-    
+
     i {
       font-size: 11px;
     }
@@ -1244,19 +1220,19 @@ function calculateEquipmentBonuses(statData: any) {
 .empty-state {
   padding: 40px 20px;
   text-align: center;
-  
+
   i {
     font-size: 48px;
     color: rgba(255, 255, 255, 0.1);
     margin-bottom: 16px;
   }
-  
+
   p {
     font-size: 14px;
     color: rgba(255, 255, 255, 0.5);
     margin-bottom: 4px;
   }
-  
+
   span {
     font-size: 12px;
     color: rgba(255, 255, 255, 0.3);
@@ -1275,14 +1251,14 @@ function calculateEquipmentBonuses(statData: any) {
   max-width: 300px;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
   pointer-events: none;
-  
+
   .tooltip-title {
     font-size: 14px;
     font-weight: 600;
     color: white;
     margin-bottom: 6px;
   }
-  
+
   .tooltip-level {
     display: inline-block;
     padding: 2px 8px;
@@ -1290,57 +1266,57 @@ function calculateEquipmentBonuses(statData: any) {
     font-size: 10px;
     font-weight: 600;
     margin-bottom: 8px;
-    
+
     &.rarity-c {
       background: rgba(156, 163, 175, 0.2);
       color: #d1d5db;
     }
-    
+
     &.rarity-b {
       background: rgba(96, 165, 250, 0.2);
       color: #93c5fd;
     }
-    
+
     &.rarity-a {
       background: rgba(167, 139, 250, 0.2);
       color: #c4b5fd;
     }
-    
+
     &.rarity-s {
       background: rgba(251, 191, 36, 0.2);
       color: #fcd34d;
     }
-    
+
     &.rarity-ss {
       background: rgba(248, 113, 113, 0.2);
       color: #fca5a5;
     }
   }
-  
+
   .tooltip-bonuses {
     display: flex;
     flex-direction: column;
     gap: 4px;
     margin-bottom: 8px;
   }
-  
+
   .tooltip-bonus-item {
     display: flex;
     justify-content: space-between;
     font-size: 12px;
     color: rgba(255, 255, 255, 0.7);
-    
+
     .positive {
       color: #34d399;
       font-weight: 600;
     }
-    
+
     .negative {
       color: #f87171;
       font-weight: 600;
     }
   }
-  
+
   .tooltip-desc {
     font-size: 11px;
     color: rgba(255, 255, 255, 0.5);

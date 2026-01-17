@@ -31,7 +31,6 @@ export const LUCK_RANGE = {
   MAX: 100,
 } as const;
 
-
 /** 最大耐力范围 */
 export const MAX_STAMINA_RANGE = {
   MIN: 1,
@@ -96,25 +95,25 @@ export const EXHAUSTION_STATE = {
 export const EXP_GAINS = {
   /** 战斗中每轮对抗 */
   PER_ROUND: { min: 10, max: 20 },
-  
+
   /** 性斗胜利基础经验 */
   VICTORY_BASE: 25,
-  
+
   /** 性斗胜利等级差加成（每级差5点） */
   VICTORY_LEVEL_BONUS: 5,
-  
+
   /** 性斗胜利最低经验 */
   VICTORY_MIN: 30,
-  
+
   /** 性斗失败经验 */
   DEFEAT: { min: 10, max: 25 },
-  
+
   /** 调教中每次高潮 */
   ORGASM: { min: 20, max: 40 },
-  
+
   /** 探索经验 */
   EXPLORATION: { min: 5, max: 15 },
-  
+
   /** 观战和练习 */
   SPECTATE: { min: 10, max: 30 },
 } as const;
@@ -127,7 +126,7 @@ export const EXP_GAINS = {
  */
 export function calculateVictoryExp(userLevel: number, enemyLevel: number): number {
   const levelDiff = enemyLevel - userLevel;
-  const exp = EXP_GAINS.VICTORY_BASE + (levelDiff * EXP_GAINS.VICTORY_LEVEL_BONUS);
+  const exp = EXP_GAINS.VICTORY_BASE + levelDiff * EXP_GAINS.VICTORY_LEVEL_BONUS;
   return Math.max(EXP_GAINS.VICTORY_MIN, exp);
 }
 
@@ -139,4 +138,3 @@ export function calculateVictoryExp(userLevel: number, enemyLevel: number): numb
 export function getRandomExp(range: { min: number; max: number }): number {
   return Math.floor(Math.random() * (range.max - range.min + 1)) + range.min;
 }
-

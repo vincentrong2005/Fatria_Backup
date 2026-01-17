@@ -10,12 +10,7 @@
       <div class="present-list">
         <div class="present-item" v-for="(name, index) in presentCharacters" :key="index">
           <div class="present-avatar" @click="showAvatarModal(name)">
-            <img 
-              :src="getAvatarUrl(name)" 
-              :alt="name"
-              @error="handleImageError($event)"
-              class="avatar-img"
-            />
+            <img :src="getAvatarUrl(name)" :alt="name" @error="handleImageError($event)" class="avatar-img" />
           </div>
           <span class="present-name">{{ name }}</span>
         </div>
@@ -33,22 +28,14 @@
       </div>
 
       <div class="relationship-list" v-if="Object.keys(relationships).length > 0">
-        <div 
-          class="relationship-card" 
-          v-for="(rel, name) in relationships" 
-          :key="name"
-        >
-          <button 
-            class="discard-btn"
-            @click.stop="forgetRelationship(String(name))"
-            title="遗忘"
-          >
+        <div class="relationship-card" v-for="(rel, name) in relationships" :key="name">
+          <button class="discard-btn" @click.stop="forgetRelationship(String(name))" title="遗忘">
             <i class="fas fa-times"></i>
           </button>
           <div class="rel-header">
             <div class="rel-avatar" @click="showAvatarModal(String(name))">
-              <img 
-                :src="getAvatarUrl(String(name))" 
+              <img
+                :src="getAvatarUrl(String(name))"
                 :alt="String(name)"
                 @error="handleImageError($event)"
                 class="avatar-img"
@@ -56,11 +43,7 @@
             </div>
             <div class="rel-info">
               <div class="rel-name">{{ name }}</div>
-              <div 
-                v-if="rel.关系类型" 
-                class="rel-type" 
-                :class="getRelationTypeClass(rel.关系类型)"
-              >
+              <div v-if="rel.关系类型" class="rel-type" :class="getRelationTypeClass(rel.关系类型)">
                 <i :class="getRelationIcon(rel.关系类型)"></i>
                 {{ rel.关系类型 }}
               </div>
@@ -81,8 +64,8 @@
                 </span>
               </div>
               <div class="stat-bar">
-                <div 
-                  class="stat-fill affection" 
+                <div
+                  class="stat-fill affection"
                   :class="getAffectionClass(rel.好感度)"
                   :style="{ width: `${rel.好感度 || 0}%` }"
                 ></div>
@@ -95,10 +78,7 @@
                 <span class="stat-value training">{{ rel.调教进度 || 0 }}%</span>
               </div>
               <div class="stat-bar">
-                <div 
-                  class="stat-fill training" 
-                  :style="{ width: `${rel.调教进度 || 0}%` }"
-                ></div>
+                <div class="stat-fill training" :style="{ width: `${rel.调教进度 || 0}%` }"></div>
               </div>
             </div>
 
@@ -110,8 +90,8 @@
                 </span>
               </div>
               <div class="stat-bar">
-                <div 
-                  class="stat-fill submission" 
+                <div
+                  class="stat-fill submission"
                   :class="getSubmissionClass(rel.臣服度)"
                   :style="{ width: `${rel.臣服度 || 0}%` }"
                 ></div>
@@ -139,11 +119,7 @@
       </div>
 
       <div class="reputation-list" v-if="Object.keys(reputations).length > 0">
-        <div 
-          class="reputation-card" 
-          v-for="(value, name) in reputations" 
-          :key="name"
-        >
+        <div class="reputation-card" v-for="(value, name) in reputations" :key="name">
           <div class="rep-header">
             <div class="rep-icon">
               <i :class="getReputationIcon(String(name))"></i>
@@ -156,8 +132,8 @@
             </div>
           </div>
           <div class="rep-bar">
-            <div 
-              class="rep-fill" 
+            <div
+              class="rep-fill"
               :class="getReputationClass(Number(value))"
               :style="{ width: `${getReputationPercentage(Number(value))}%` }"
             ></div>
@@ -187,12 +163,7 @@
         <h3>{{ modalCharacterName }}</h3>
       </div>
       <div class="modal-body">
-        <img 
-          :src="modalAvatarUrl" 
-          :alt="modalCharacterName"
-          @error="handleModalImageError"
-          class="modal-avatar-img"
-        />
+        <img :src="modalAvatarUrl" :alt="modalCharacterName" @error="handleModalImageError" class="modal-avatar-img" />
       </div>
     </div>
   </div>
@@ -213,13 +184,13 @@ const presentCharacters = computed(() => {
 const relationships = computed(() => {
   const relSystem = props.characterData.关系系统 || {};
   const result: Record<string, any> = {};
-  
+
   for (const [key, value] of Object.entries(relSystem)) {
     if (key !== '在场人物' && typeof value === 'object' && value !== null) {
       result[key] = value;
     }
   }
-  
+
   return result;
 });
 
@@ -331,13 +302,13 @@ async function forgetRelationship(name: string) {
 function getRelationTypeClass(type: string | undefined): string {
   if (!type) return 'type-unknown';
   const map: Record<string, string> = {
-    '陌生人': 'type-stranger',
-    '同学': 'type-classmate',
-    '朋友': 'type-friend',
-    '恋人': 'type-lover',
-    '主仆': 'type-master',
-    '完全臣服': 'type-submissive',
-    '仇敌': 'type-enemy'
+    陌生人: 'type-stranger',
+    同学: 'type-classmate',
+    朋友: 'type-friend',
+    恋人: 'type-lover',
+    主仆: 'type-master',
+    完全臣服: 'type-submissive',
+    仇敌: 'type-enemy',
   };
   return map[type] || 'type-unknown';
 }
@@ -345,13 +316,13 @@ function getRelationTypeClass(type: string | undefined): string {
 function getRelationIcon(type: string | undefined): string {
   if (!type) return 'fas fa-user-circle';
   const map: Record<string, string> = {
-    '陌生人': 'fas fa-question',
-    '同学': 'fas fa-graduation-cap',
-    '朋友': 'fas fa-handshake',
-    '恋人': 'fas fa-heart',
-    '主仆': 'fas fa-crown',
-    '完全臣服': 'fas fa-link',
-    '仇敌': 'fas fa-skull'
+    陌生人: 'fas fa-question',
+    同学: 'fas fa-graduation-cap',
+    朋友: 'fas fa-handshake',
+    恋人: 'fas fa-heart',
+    主仆: 'fas fa-crown',
+    完全臣服: 'fas fa-link',
+    仇敌: 'fas fa-skull',
   };
   return map[type] || 'fas fa-user-circle';
 }
@@ -374,14 +345,14 @@ function getSubmissionClass(value: number): string {
 
 function getReputationIcon(name: string): string {
   const map: Record<string, string> = {
-    '学生会': 'fas fa-crown',
-    '女权协会': 'fas fa-venus',
-    'BF社': 'fas fa-flask',
-    '体育联盟': 'fas fa-dumbbell',
-    '研究会': 'fas fa-book',
-    '地下联盟': 'fas fa-mask',
-    '男性自保联盟': 'fas fa-shield-alt',
-    '雌堕会': 'fas fa-feather'
+    学生会: 'fas fa-crown',
+    女权协会: 'fas fa-venus',
+    BF社: 'fas fa-flask',
+    体育联盟: 'fas fa-dumbbell',
+    研究会: 'fas fa-book',
+    地下联盟: 'fas fa-mask',
+    男性自保联盟: 'fas fa-shield-alt',
+    雌堕会: 'fas fa-feather',
   };
   return map[name] || 'fas fa-flag';
 }
@@ -396,7 +367,7 @@ function getReputationClass(value: number): string {
 
 function getReputationPercentage(value: number): number {
   // 将 -100 到 100 的范围映射到 0 到 100
-  return Math.max(0, Math.min(100, ((value + 100) / 2)));
+  return Math.max(0, Math.min(100, (value + 100) / 2));
 }
 
 // 处理模态框图片加载失败
@@ -432,11 +403,11 @@ function handleModalImageError(event: Event) {
   font-weight: 600;
   color: rgba(255, 255, 255, 0.8);
   margin-bottom: 14px;
-  
+
   i:first-child {
     color: #667eea;
   }
-  
+
   .count-badge {
     margin-left: auto;
     padding: 2px 8px;
@@ -462,7 +433,7 @@ function handleModalImageError(event: Event) {
   background: linear-gradient(135deg, rgba(102, 126, 234, 0.15), rgba(102, 126, 234, 0.05));
   border: 1px solid rgba(102, 126, 234, 0.2);
   border-radius: 12px;
-  
+
   .present-avatar {
     width: 32px;
     height: 32px;
@@ -474,23 +445,24 @@ function handleModalImageError(event: Event) {
     overflow: hidden;
     cursor: pointer;
     transition: transform 0.2s ease;
-    
+
     &:hover {
       transform: scale(1.1);
     }
-    
+
     .avatar-img {
       width: 100%;
       height: 100%;
       object-fit: cover;
     }
-    
-    i, .fallback-icon {
+
+    i,
+    .fallback-icon {
       font-size: 14px;
       color: #a5b4fc;
     }
   }
-  
+
   .present-name {
     font-size: 13px;
     font-weight: 500;
@@ -562,18 +534,19 @@ function handleModalImageError(event: Event) {
   overflow: hidden;
   cursor: pointer;
   transition: transform 0.2s ease;
-  
+
   &:hover {
     transform: scale(1.1);
   }
-  
+
   .avatar-img {
     width: 100%;
     height: 100%;
     object-fit: cover;
   }
-  
-  i, .fallback-icon {
+
+  i,
+  .fallback-icon {
     font-size: 20px;
     color: rgba(255, 255, 255, 0.6);
   }
@@ -598,46 +571,46 @@ function handleModalImageError(event: Event) {
   border-radius: 12px;
   font-size: 11px;
   font-weight: 500;
-  
+
   i {
     font-size: 10px;
   }
-  
+
   &.type-stranger {
     background: rgba(156, 163, 175, 0.15);
     color: #d1d5db;
   }
-  
+
   &.type-classmate {
     background: rgba(96, 165, 250, 0.15);
     color: #93c5fd;
   }
-  
+
   &.type-friend {
     background: rgba(52, 211, 153, 0.15);
     color: #6ee7b7;
   }
-  
+
   &.type-lover {
     background: rgba(244, 114, 182, 0.15);
     color: #f9a8d4;
   }
-  
+
   &.type-master {
     background: rgba(251, 191, 36, 0.15);
     color: #fcd34d;
   }
-  
+
   &.type-submissive {
     background: rgba(167, 139, 250, 0.15);
     color: #c4b5fd;
   }
-  
+
   &.type-enemy {
     background: rgba(248, 113, 113, 0.15);
     color: #fca5a5;
   }
-  
+
   &.type-unknown {
     background: rgba(156, 163, 175, 0.1);
     color: rgba(255, 255, 255, 0.4);
@@ -671,13 +644,25 @@ function handleModalImageError(event: Event) {
   font-size: 13px;
   font-weight: 600;
   font-family: 'JetBrains Mono', monospace;
-  
-  &.very-high { color: #f472b6; }
-  &.high { color: #34d399; }
-  &.medium { color: #60a5fa; }
-  &.low { color: #fbbf24; }
-  &.very-low { color: rgba(255, 255, 255, 0.4); }
-  &.training { color: #a78bfa; }
+
+  &.very-high {
+    color: #f472b6;
+  }
+  &.high {
+    color: #34d399;
+  }
+  &.medium {
+    color: #60a5fa;
+  }
+  &.low {
+    color: #fbbf24;
+  }
+  &.very-low {
+    color: rgba(255, 255, 255, 0.4);
+  }
+  &.training {
+    color: #a78bfa;
+  }
 }
 
 .stat-bar {
@@ -691,25 +676,45 @@ function handleModalImageError(event: Event) {
   height: 100%;
   border-radius: 3px;
   transition: width 0.4s ease;
-  
+
   &.affection {
-    &.very-high { background: linear-gradient(90deg, #ec4899, #f472b6); }
-    &.high { background: linear-gradient(90deg, #10b981, #34d399); }
-    &.medium { background: linear-gradient(90deg, #3b82f6, #60a5fa); }
-    &.low { background: linear-gradient(90deg, #f59e0b, #fbbf24); }
-    &.very-low { background: rgba(255, 255, 255, 0.2); }
+    &.very-high {
+      background: linear-gradient(90deg, #ec4899, #f472b6);
+    }
+    &.high {
+      background: linear-gradient(90deg, #10b981, #34d399);
+    }
+    &.medium {
+      background: linear-gradient(90deg, #3b82f6, #60a5fa);
+    }
+    &.low {
+      background: linear-gradient(90deg, #f59e0b, #fbbf24);
+    }
+    &.very-low {
+      background: rgba(255, 255, 255, 0.2);
+    }
   }
-  
+
   &.training {
     background: linear-gradient(90deg, #8b5cf6, #a78bfa);
   }
-  
+
   &.submission {
-    &.very-high { background: linear-gradient(90deg, #ec4899, #f472b6); }
-    &.high { background: linear-gradient(90deg, #f59e0b, #fbbf24); }
-    &.medium { background: linear-gradient(90deg, #3b82f6, #60a5fa); }
-    &.low { background: linear-gradient(90deg, #10b981, #34d399); }
-    &.very-low { background: rgba(255, 255, 255, 0.2); }
+    &.very-high {
+      background: linear-gradient(90deg, #ec4899, #f472b6);
+    }
+    &.high {
+      background: linear-gradient(90deg, #f59e0b, #fbbf24);
+    }
+    &.medium {
+      background: linear-gradient(90deg, #3b82f6, #60a5fa);
+    }
+    &.low {
+      background: linear-gradient(90deg, #10b981, #34d399);
+    }
+    &.very-low {
+      background: rgba(255, 255, 255, 0.2);
+    }
   }
 }
 
@@ -720,7 +725,7 @@ function handleModalImageError(event: Event) {
   justify-content: center;
   padding: 60px 20px;
   text-align: center;
-  
+
   .empty-icon {
     width: 80px;
     height: 80px;
@@ -730,20 +735,20 @@ function handleModalImageError(event: Event) {
     align-items: center;
     justify-content: center;
     margin-bottom: 20px;
-    
+
     i {
       font-size: 32px;
       color: rgba(255, 255, 255, 0.15);
     }
   }
-  
+
   .empty-title {
     font-size: 16px;
     font-weight: 600;
     color: rgba(255, 255, 255, 0.5);
     margin-bottom: 6px;
   }
-  
+
   .empty-desc {
     font-size: 13px;
     color: rgba(255, 255, 255, 0.3);
@@ -778,7 +783,7 @@ function handleModalImageError(event: Event) {
   display: flex;
   align-items: center;
   justify-content: center;
-  
+
   i {
     font-size: 16px;
     color: rgba(255, 255, 255, 0.7);
@@ -802,12 +807,22 @@ function handleModalImageError(event: Event) {
   font-size: 14px;
   font-weight: 600;
   font-family: 'JetBrains Mono', monospace;
-  
-  &.very-high { color: #34d399; }
-  &.high { color: #60a5fa; }
-  &.medium { color: rgba(255, 255, 255, 0.6); }
-  &.low { color: #fbbf24; }
-  &.very-low { color: #f87171; }
+
+  &.very-high {
+    color: #34d399;
+  }
+  &.high {
+    color: #60a5fa;
+  }
+  &.medium {
+    color: rgba(255, 255, 255, 0.6);
+  }
+  &.low {
+    color: #fbbf24;
+  }
+  &.very-low {
+    color: #f87171;
+  }
 }
 
 .rep-bar {
@@ -821,12 +836,22 @@ function handleModalImageError(event: Event) {
   height: 100%;
   border-radius: 2px;
   transition: width 0.4s ease;
-  
-  &.very-high { background: linear-gradient(90deg, #10b981, #34d399); }
-  &.high { background: linear-gradient(90deg, #3b82f6, #60a5fa); }
-  &.medium { background: rgba(255, 255, 255, 0.3); }
-  &.low { background: linear-gradient(90deg, #f59e0b, #fbbf24); }
-  &.very-low { background: linear-gradient(90deg, #ef4444, #f87171); }
+
+  &.very-high {
+    background: linear-gradient(90deg, #10b981, #34d399);
+  }
+  &.high {
+    background: linear-gradient(90deg, #3b82f6, #60a5fa);
+  }
+  &.medium {
+    background: rgba(255, 255, 255, 0.3);
+  }
+  &.low {
+    background: linear-gradient(90deg, #f59e0b, #fbbf24);
+  }
+  &.very-low {
+    background: linear-gradient(90deg, #ef4444, #f87171);
+  }
 }
 
 // 头像放大模态框样式
@@ -866,7 +891,7 @@ function handleModalImageError(event: Event) {
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
   margin-top: 8px;
   margin-bottom: 20px;
-  
+
   @media (min-height: 600px) {
     margin-top: max(20px, 5vh);
   }
@@ -888,12 +913,12 @@ function handleModalImageError(event: Event) {
   justify-content: center;
   z-index: 10;
   transition: all 0.2s ease;
-  
+
   &:hover {
     transform: scale(1.1);
     background: rgba(248, 113, 113, 1);
   }
-  
+
   i {
     font-size: 14px;
   }
@@ -902,7 +927,7 @@ function handleModalImageError(event: Event) {
 .modal-header {
   padding: 20px 24px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  
+
   h3 {
     margin: 0;
     font-size: 18px;
@@ -932,11 +957,11 @@ function handleModalImageError(event: Event) {
   align-items: center;
   gap: 12px;
   color: rgba(255, 255, 255, 0.4);
-  
+
   i {
     font-size: 48px;
   }
-  
+
   p {
     margin: 0;
     font-size: 14px;
