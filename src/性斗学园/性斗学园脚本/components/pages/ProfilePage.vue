@@ -335,6 +335,8 @@ const avatarUrl = ref<string>('');
 const showHelp = ref(false);
 const isUpgrading = ref(false); // 防抖锁，防止快速点击
 
+const AVATAR_STORAGE_KEY = 'xuedou_profile_avatar_url';
+
 // 可用属性点
 const availablePoints = computed(() => {
   return props.characterData.核心状态?.$属性点 || 0;
@@ -472,6 +474,25 @@ function loadAvatarUrl() {
         return;
       }
     }
+
+    // MVU 中未找到：降级从 localStorage 恢复（避免换楼层后丢失）
+    const localSaved = localStorage.getItem(AVATAR_STORAGE_KEY);
+    if (localSaved && localSaved.trim()) {
+      avatarUrl.value = localSaved;
+
+      // 尝试把 localStorage 的头像回写到 MVU，后续同步逻辑就能继续工作
+      if (globalAny.Mvu) {
+        const mvuData = globalAny.Mvu.getMvuData({ type: 'message', message_id: 'latest' });
+        if (mvuData && mvuData.stat_data) {
+          if (!mvuData.stat_data.角色基础) {
+            mvuData.stat_data.角色基础 = {};
+          }
+          mvuData.stat_data.角色基础.$头像URL = localSaved;
+          void globalAny.Mvu.replaceMvuData(mvuData, { type: 'message', message_id: 'latest' });
+        }
+      }
+      return;
+    }
   } catch (err) {
     console.warn('[状态栏] 读取头像失败:', err);
   }
@@ -482,6 +503,12 @@ function loadAvatarUrl() {
 async function saveAvatarUrl(url: string) {
   try {
     const globalAny = window as any;
+
+    try {
+      localStorage.setItem(AVATAR_STORAGE_KEY, url);
+    } catch (e) {
+      console.warn('[状态栏] 保存头像到 localStorage 失败:', e);
+    }
     
     if (globalAny.Mvu) {
       const mvuData = globalAny.Mvu.getMvuData({ type: 'message', message_id: 'latest' });

@@ -1640,9 +1640,30 @@ export function getCGConfigByCharacter(characterName: string): CharacterCGConfig
   console.log('[CG配置] 开始查找角色CG配置，角色名称:', characterName);
   console.log('[CG配置] 可用配置列表:', CG_CONFIGS.map(c => c.characterName));
   
-  // 模糊匹配角色名称
   const normalizedInputName = normalizeCharacterName(characterName);
-  const config = CG_CONFIGS.find((cfg) => {
+  
+  // 步骤1：优先尝试精确匹配（避免短名称被长名称包含时误匹配）
+  const exactMatch = CG_CONFIGS.find((cfg) => {
+    const normalizedCfgName = normalizeCharacterName(cfg.characterName);
+    const isExact = 
+      normalizedInputName === normalizedCfgName ||
+      characterName === cfg.characterName;
+    if (isExact) {
+      console.log(`[CG配置] ✓ 精确匹配: "${characterName}" === "${cfg.characterName}"`);
+    }
+    return isExact;
+  });
+  
+  if (exactMatch) {
+    console.log('[CG配置] 找到精确匹配的配置:', exactMatch.characterName);
+    return exactMatch;
+  }
+  
+  // 步骤2：如果精确匹配失败，使用包含匹配（按配置名称长度降序排序，优先匹配长名称）
+  console.log('[CG配置] 精确匹配失败，尝试包含匹配（按名称长度降序）');
+  const sortedConfigs = [...CG_CONFIGS].sort((a, b) => b.characterName.length - a.characterName.length);
+  
+  const fuzzyMatch = sortedConfigs.find((cfg) => {
     const normalizedCfgName = normalizeCharacterName(cfg.characterName);
     const match =
       normalizedInputName.includes(normalizedCfgName) ||
@@ -1650,18 +1671,18 @@ export function getCGConfigByCharacter(characterName: string): CharacterCGConfig
       characterName.includes(cfg.characterName) ||
       cfg.characterName.includes(characterName);
     console.log(
-      `[CG配置] 匹配检查: "${characterName}"("${normalizedInputName}") vs "${cfg.characterName}"("${normalizedCfgName}") = ${match}`
+      `[CG配置] 包含匹配检查: "${characterName}"("${normalizedInputName}") vs "${cfg.characterName}"("${normalizedCfgName}") = ${match}`
     );
     return match;
   });
   
-  if (config) {
-    console.log('[CG配置] 找到匹配的配置:', config.characterName);
+  if (fuzzyMatch) {
+    console.log('[CG配置] 找到包含匹配的配置:', fuzzyMatch.characterName);
   } else {
     console.warn('[CG配置] 未找到匹配的配置');
   }
   
-  return config || null;
+  return fuzzyMatch || null;
 }
 
 // 选择CG事件

@@ -176,7 +176,8 @@
                     :hover="!allowSurrender && !isBossSurrenderDisabled"
                     class="menu-card"
                     :class="{ disabled: allowSurrender || isBossSurrenderDisabled }"
-                    @click="handleSurrender"
+                    data-action="surrender-menu"
+                    @click="toggleSurrenderMenu"
                   >
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
@@ -191,8 +192,14 @@
                       <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z" />
                       <line x1="4" y1="22" x2="4" y2="15" />
                     </svg>
-                    <span>{{ isBossSurrenderDisabled ? '已封印' : (allowSurrender ? '不可投降' : '投降') }}</span>
+                    <span>{{ isBossSurrenderDisabled ? '已封印' : (allowSurrender ? '不可投降' : (showSurrenderMenu ? '收起' : '投降')) }}</span>
                   </Card>
+                  <div v-if="showSurrenderMenu" class="surrender-submenu">
+                    <button class="tab-btn surrender-sub-btn" :disabled="allowSurrender || isBossSurrenderDisabled" @click="handleSurrender">投降</button>
+                    <button class="tab-btn surrender-sub-btn" :disabled="isBossSurrenderDisabled" @click="handleSelfPleasure">自慰</button>
+                    <button class="tab-btn surrender-sub-btn" :disabled="isBossSurrenderDisabled" @click="handleTempted">被诱惑</button>
+                    <button class="tab-btn surrender-sub-btn" :disabled="isBossSurrenderDisabled" @click="handleTribute">上贡</button>
+                  </div>
                   <input
                     ref="playerPortraitInput"
                     class="hidden-file-input"
@@ -391,6 +398,7 @@ const turnState = reactive<TurnState>({
 const logs = ref<CombatLogEntry[]>([]);
 const activeMenu = ref<'main' | 'skills' | 'items'>('main');
 const allowSurrender = ref<boolean>(true); // 允许认输：true时不可认输，false时允许认输
+const showSurrenderMenu = ref<boolean>(false);
 const playerBoundTurns = ref<number>(0); // 玩家被束缚的回合数
 const enemyBoundTurns = ref<number>(0); // 敌人被束缚的回合数
 const playerBindSource = ref<'player' | 'enemy' | null>(null); // 玩家束缚的施加者
@@ -2364,7 +2372,6 @@ function handlePlayerSkill(skill: Skill) {
         await reloadStatusFromMvu();
         
         // 使用技能后，轮到对方结算快感
-        addLog(`--- 第 ${turnState.currentTurn} 回合 ---`, 'system', 'info');
         setTimeout(handleEnemyTurn, 1000);
       }
     } catch (e) {
@@ -2596,8 +2603,6 @@ async function handlePlayerItem(item: Item) {
 
   // 然后重新读取MVU中的临时状态加成，更新UI显示
   await reloadStatusFromMvu();
-
-  addLog(`--- 第 ${turnState.currentTurn} 回合 ---`, 'system', 'info');
 
   // 注意：使用物品不结束回合，玩家可以继续操作
   // 只有使用技能才会结束回合并轮到对方行动
@@ -3150,6 +3155,15 @@ function collectCombatLogs(): string {
       return true;
     }
 
+    // 保留玩家主动结束类行为（子菜单）
+    if (
+      message.includes('自慰') ||
+      message.includes('上贡') ||
+      message.includes('诱惑')
+    ) {
+      return true;
+    }
+
     // 保留达到快感上限
     if (message.includes('达到快感上限')) {
       return true;
@@ -3170,10 +3184,7 @@ function collectCombatLogs(): string {
       return true;
     }
 
-    // 过滤掉预告技能
-    if (message.includes('预告')) {
-      return false;
-    }
+
 
     // 过滤掉状态变化
     if (message.includes('进入了贤者时间状态') || message.includes('进入虚脱状态') ||
@@ -3188,16 +3199,28 @@ function collectCombatLogs(): string {
   });
 
   // 格式化日志，去掉回合号和"系统："前缀
-  const logTexts = filteredLogs.map(log => {
+  const logTexts: string[] = [];
+  let lastTurnHeader: string | null = null;
+  for (const log of filteredLogs) {
     if (log.source === 'player') {
-      return `${player.value.name}: ${log.message}`;
+      logTexts.push(`${player.value.name}: ${log.message}`);
     } else if (log.source === 'enemy') {
-      return `${enemy.value.name}: ${log.message}`;
+      logTexts.push(`${enemy.value.name}: ${log.message}`);
     } else {
       // 系统消息，直接显示消息内容，不显示"系统："
-      return log.message;
+      const msg = log.message;
+      // 去重：同一回合头连续出现时，只保留一次
+      if (/^---\s*第\s*\d+\s*回合\s*---$/.test(msg)) {
+        if (lastTurnHeader === msg) {
+          continue;
+        }
+        lastTurnHeader = msg;
+      } else {
+        lastTurnHeader = null;
+      }
+      logTexts.push(msg);
     }
-  });
+  }
 
   return logTexts.join('\n');
 }
@@ -3553,14 +3576,14 @@ async function executePhaseTransitionLogic(nextPhase: 1 | 2 | 3) {
         isBossSurrenderDisabled.value = true;
         // 延迟执行封印动画
         setTimeout(() => {
-          castSealEffect(['.menu-card:has(svg[data-icon="package"])', 'button:has-text("投降")']);
+          castSealEffect(['.menu-card:has(svg[data-icon="package"])', '[data-action="surrender-menu"]']);
         }, 500);
         addLog(`【警告】物品背包和投降按钮已被禁用！`, 'system', 'critical');
       } else if (nextPhase === 3) {
         // 第三阶段：解除禁用和封印效果
         isBossItemsDisabled.value = false;
         isBossSurrenderDisabled.value = false;
-        removeSealEffect(['.menu-card:has(svg[data-icon="package"])', 'button:has-text("投降")']);
+        removeSealEffect(['.menu-card:has(svg[data-icon="package"])', '[data-action="surrender-menu"]']);
         addLog(`【提示】禁用效果已解除，可以正常使用物品和投降（啊你真的会在这个阶段投降吗？）`, 'system', 'info');
       }
     }
@@ -3749,6 +3772,8 @@ function handleSkipTurn() {
     return;
   }
 
+  showSurrenderMenu.value = false;
+
   // 被束缚时也可以跳过回合
   if (playerBoundTurns.value > 0) {
     addLog(`${player.value.name} 被束缚了，跳过回合`, 'system', 'info');
@@ -3799,6 +3824,8 @@ function handlePlayerPortraitSelected(event: Event) {
 }
 
 async function handleSurrender() {
+  showSurrenderMenu.value = false;
+
   // BOSS第二阶段禁用投降
   if (isBossSurrenderDisabled.value) {
     addLog('「逃跑？在女王面前...你以为你有这个资格吗？」', 'enemy', 'critical');
@@ -3821,6 +3848,120 @@ async function handleSurrender() {
   await clearTemporaryStatus();
   await initializeCombatSystem();
   saveToMvu();
+}
+
+function toggleSurrenderMenu() {
+  if (turnState.phase !== 'playerInput') {
+    return;
+  }
+
+  if (isBossSurrenderDisabled.value) {
+    addLog('「逃跑？在女王面前...你以为你有这个资格吗？」', 'enemy', 'critical');
+    return;
+  }
+
+  showSurrenderMenu.value = !showSurrenderMenu.value;
+}
+
+async function handleSelfPleasure() {
+  if (turnState.phase !== 'playerInput') {
+    return;
+  }
+
+  showSurrenderMenu.value = false;
+
+  const before = player.value.stats.currentPleasure;
+  const increase = Math.floor(player.value.stats.maxPleasure * 0.3);
+  const after = Math.min(player.value.stats.maxPleasure, before + increase);
+  player.value.stats.currentPleasure = after;
+
+  addLog(`${player.value.name} 选择了在对手前自慰，快感从 ${before} 上升到 ${after}（+${after - before}）。`, 'system', 'info');
+
+  saveToMvu();
+
+  if (turnState.phase === 'playerInput') {
+    turnState.phase = 'processing';
+    setTimeout(() => {
+      if (turnState.phase === 'processing') {
+        handleEnemyTurn();
+      }
+    }, 1000);
+  }
+}
+
+async function handleTempted() {
+  if (turnState.phase !== 'playerInput') {
+    return;
+  }
+
+  showSurrenderMenu.value = false;
+
+  const charmPenalty = -Math.floor(player.value.stats.charm * 0.5);
+  const luckPenalty = -Math.floor(player.value.stats.luck * 0.5);
+  const evasionPenalty = -Math.floor(player.value.stats.evasion * 0.5);
+  const critPenalty = -Math.floor(player.value.stats.crit * 0.5);
+
+  await applyTalentBuff(
+    'player',
+    '被诱惑',
+    {
+      魅力加成: charmPenalty,
+      幸运加成: luckPenalty,
+      闪避率加成: evasionPenalty,
+      暴击率加成: critPenalty,
+      基础性斗力成算: -50,
+      基础忍耐力成算: -50,
+    },
+    2,
+  );
+
+  addLog(`${player.value.name} 被对手诱惑，意识一阵恍惚，身心都被压制了一截（全属性降低）。`, 'system', 'critical');
+
+  saveToMvu();
+  turnState.phase = 'processing';
+  setTimeout(() => {
+    if (turnState.phase === 'processing') {
+      handleEnemyTurn();
+    }
+  }, 1000);
+}
+
+async function handleTribute() {
+  if (turnState.phase !== 'playerInput') {
+    return;
+  }
+
+  showSurrenderMenu.value = false;
+
+  const expLoss = 20 + Math.floor(Math.random() * 61);
+  const coinLoss = 100 + Math.floor(Math.random() * 901);
+
+  try {
+    if (typeof Mvu !== 'undefined') {
+      const mvuData = Mvu.getMvuData({ type: 'message', message_id: 'latest' });
+      if (mvuData?.stat_data) {
+        const currentExp = _.get(mvuData.stat_data, '角色基础.经验值', 0);
+        const currentCoins = _.get(mvuData.stat_data, '物品系统.学园金币', 0);
+
+        _.set(mvuData.stat_data, '角色基础.经验值', Math.max(0, currentExp - expLoss));
+        _.set(mvuData.stat_data, '物品系统.学园金币', Math.max(0, currentCoins - coinLoss));
+
+        await Mvu.replaceMvuData(mvuData, { type: 'message', message_id: 'latest' });
+      }
+    }
+  } catch (e) {
+    console.warn('[战斗界面] 上贡扣除经验/金币失败', e);
+  }
+
+  addLog(`${player.value.name} 选择了给对手上贡，经验 -${expLoss}，金币 -${coinLoss}。`, 'system', 'info');
+
+  saveToMvu();
+  turnState.phase = 'processing';
+  setTimeout(() => {
+    if (turnState.phase === 'processing') {
+      handleEnemyTurn();
+    }
+  }, 1000);
 }
 
 // ================= 状态监听 =================
@@ -4172,6 +4313,19 @@ onMounted(async () => {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
+}
+
+.surrender-submenu {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.surrender-sub-btn {
+  width: 100%;
+  padding: 0.55rem 0.75rem;
+  font-size: 0.95rem;
+  border-radius: 0.75rem;
 }
 
 .portrait-upload-btn {
