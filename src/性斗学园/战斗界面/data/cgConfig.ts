@@ -3,6 +3,8 @@
  * 用于战斗结束后显示对应的CG图片
  */
 
+ import { resolveEnemyName } from '../enemyDatabase';
+
 export interface CGEvent {
   id: string;
   name: string;
@@ -1617,72 +1619,36 @@ export const CG_CONFIGS: CharacterCGConfig[] = [
   lingYinConfig,
 ];
 
-function normalizeCharacterName(name: string): string {
-  const trimmed = (name || '').trim();
-  if (!trimmed) return '';
-
-  const withoutBrackets = trimmed
-    .replace(/（[^）]*）/g, '')
-    .replace(/\([^)]*\)/g, '')
-    .trim();
-
-  const withoutStageSuffix = withoutBrackets.replace(/_\d+$/g, '').trim();
-
-  if (withoutStageSuffix.includes('沐芯兰') || withoutStageSuffix.includes('茉莉')) {
-    return '沐芯兰';
-  }
-
-  return withoutStageSuffix;
-}
-
 // 根据角色名称获取CG配置
 export function getCGConfigByCharacter(characterName: string): CharacterCGConfig | null {
   console.log('[CG配置] 开始查找角色CG配置，角色名称:', characterName);
   console.log('[CG配置] 可用配置列表:', CG_CONFIGS.map(c => c.characterName));
-  
-  const normalizedInputName = normalizeCharacterName(characterName);
-  
-  // 步骤1：优先尝试精确匹配（避免短名称被长名称包含时误匹配）
-  const exactMatch = CG_CONFIGS.find((cfg) => {
-    const normalizedCfgName = normalizeCharacterName(cfg.characterName);
-    const isExact = 
-      normalizedInputName === normalizedCfgName ||
-      characterName === cfg.characterName;
-    if (isExact) {
-      console.log(`[CG配置] ✓ 精确匹配: "${characterName}" === "${cfg.characterName}"`);
+
+  // 与战斗界面对手解析逻辑保持一致：先解析为标准敌人名，再做精确匹配
+  const resolvedName = resolveEnemyName(characterName);
+  console.log('[CG配置] resolveEnemyName 解析结果:', resolvedName);
+
+  // 1) 先按解析后的标准名精确匹配
+  const exact = CG_CONFIGS.find((cfg) => cfg.characterName === resolvedName) || null;
+  if (exact) {
+    console.log('[CG配置] 找到匹配的配置:', exact.characterName);
+    return exact;
+  }
+
+  // 2) CG素材目录可能不带阶段后缀（例如“沐芯兰_1/_2”目录不存在，只有“沐芯兰”）
+  //    这里仅做一次“去掉末尾 _数字” 的精确回退匹配，不使用任何 includes 模糊匹配。
+  const withoutStageSuffix = resolvedName.replace(/_\d+$/g, '');
+  if (withoutStageSuffix !== resolvedName) {
+    console.log('[CG配置] 尝试去阶段后缀匹配:', withoutStageSuffix);
+    const fallback = CG_CONFIGS.find((cfg) => cfg.characterName === withoutStageSuffix) || null;
+    if (fallback) {
+      console.log('[CG配置] 找到去后缀匹配的配置:', fallback.characterName);
+      return fallback;
     }
-    return isExact;
-  });
-  
-  if (exactMatch) {
-    console.log('[CG配置] 找到精确匹配的配置:', exactMatch.characterName);
-    return exactMatch;
   }
-  
-  // 步骤2：如果精确匹配失败，使用包含匹配（按配置名称长度降序排序，优先匹配长名称）
-  console.log('[CG配置] 精确匹配失败，尝试包含匹配（按名称长度降序）');
-  const sortedConfigs = [...CG_CONFIGS].sort((a, b) => b.characterName.length - a.characterName.length);
-  
-  const fuzzyMatch = sortedConfigs.find((cfg) => {
-    const normalizedCfgName = normalizeCharacterName(cfg.characterName);
-    const match =
-      normalizedInputName.includes(normalizedCfgName) ||
-      normalizedCfgName.includes(normalizedInputName) ||
-      characterName.includes(cfg.characterName) ||
-      cfg.characterName.includes(characterName);
-    console.log(
-      `[CG配置] 包含匹配检查: "${characterName}"("${normalizedInputName}") vs "${cfg.characterName}"("${normalizedCfgName}") = ${match}`
-    );
-    return match;
-  });
-  
-  if (fuzzyMatch) {
-    console.log('[CG配置] 找到包含匹配的配置:', fuzzyMatch.characterName);
-  } else {
-    console.warn('[CG配置] 未找到匹配的配置');
-  }
-  
-  return fuzzyMatch || null;
+
+  console.warn('[CG配置] 未找到匹配的配置');
+  return null;
 }
 
 // 选择CG事件
