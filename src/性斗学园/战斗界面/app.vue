@@ -3375,6 +3375,35 @@ async function handleSendCombatLogToLLM() {
   const context = turnState.phase === 'victory' ? '获得胜利' : turnState.phase === 'defeat' ? '败北' : '战斗结束';
   await sendCombatLogToLLM(context);
 
+  // 特殊战利品：沐芯兰胜利后发放“沐芯兰的权限卡”（仅发放一次）
+  try {
+    if (turnState.phase === 'victory' && typeof Mvu !== 'undefined') {
+      const resolvedEnemyName = resolveEnemyName(enemy.value.name).replace(/_\d+$/g, '');
+      if (resolvedEnemyName === '沐芯兰') {
+        const mvuData = Mvu.getMvuData({ type: 'message', message_id: 'latest' });
+        if (mvuData?.stat_data) {
+          if (!mvuData.stat_data.物品系统) mvuData.stat_data.物品系统 = {};
+          if (!mvuData.stat_data.物品系统.背包) mvuData.stat_data.物品系统.背包 = {};
+
+          const backpack = mvuData.stat_data.物品系统.背包;
+          const itemKey = '沐芯兰的权限卡';
+          if (!backpack[itemKey]) {
+            backpack[itemKey] = {
+              等级: 'SS',
+              描述: '沐芯兰战败后获得的战利品，作用未知',
+              类型: '其他',
+              数量: 1,
+            };
+            await Mvu.replaceMvuData(mvuData, { type: 'message', message_id: 'latest' });
+            addLog('获得道具：沐芯兰的权限卡 ×1', 'system', 'info');
+          }
+        }
+      }
+    }
+  } catch (e) {
+    console.warn('[战斗界面] 发放沐芯兰权限卡失败', e);
+  }
+
   // 战斗结算机制：玩家当前快感减半，耐力增加最大耐力的20%
   try {
     if (typeof Mvu !== 'undefined') {
@@ -3773,6 +3802,20 @@ function handleSkipTurn() {
   }
 
   showSurrenderMenu.value = false;
+
+  const extraRecovery = Math.ceil(3 + player.value.stats.maxEndurance * 0.03);
+  const oldPlayerEndurance = player.value.stats.currentEndurance;
+  player.value.stats.currentEndurance = Math.min(
+    player.value.stats.maxEndurance,
+    player.value.stats.currentEndurance + extraRecovery,
+  );
+  if (player.value.stats.currentEndurance > oldPlayerEndurance) {
+    addLog(
+      `${player.value.name} 因跳过回合额外回复了 ${player.value.stats.currentEndurance - oldPlayerEndurance} 点体力`,
+      'system',
+      'info',
+    );
+  }
 
   // 被束缚时也可以跳过回合
   if (playerBoundTurns.value > 0) {

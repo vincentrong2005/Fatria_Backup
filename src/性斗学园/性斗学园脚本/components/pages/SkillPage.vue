@@ -234,7 +234,7 @@
       <div class="author-test-section">
         <div class="author-test-header" @click="toggleAuthorTest">
           <i class="fas fa-flask"></i>
-          <span>作者测试（已锁定）</span>
+          <span>{{ hasMuxinlanAccessCard ? 'GM界面' : 'GM界面（已锁定）' }}</span>
           <i :class="showAuthorTest ? 'fas fa-chevron-up' : 'fas fa-chevron-down'"></i>
         </div>
         <div v-if="showAuthorTest" class="author-test-content">
@@ -441,6 +441,13 @@ let talentTooltipTimer: ReturnType<typeof setTimeout> | null = null;
 // 作者测试功能状态（使用localStorage持久化解锁状态）
 const showAuthorTest = ref(false);
 const allTalents = TALENT_DATABASE;
+
+const hasMuxinlanAccessCard = computed(() => {
+  const backpack = props.characterData?.物品系统?.背包 || {};
+  const item = backpack['沐芯兰的权限卡'];
+  const qty = Number(item?.数量 || 0);
+  return qty > 0;
+});
 
 // 技能点
 const skillPoints = computed(() => {
@@ -920,7 +927,14 @@ function formatTalentBonus(bonus: Record<string, number>): string {
 
 // 切换作者测试面板（已锁定）
 function toggleAuthorTest() {
-  showAuthorTest.value = false;
+  if (!hasMuxinlanAccessCard.value) {
+    showAuthorTest.value = false;
+    if (typeof toastr !== 'undefined') {
+      toastr.warning('需要持有「▓▒░█▇」才能解锁GM界面', '▒▓░');
+    }
+    return;
+  }
+  showAuthorTest.value = !showAuthorTest.value;
 }
 
 // 选择天赋进行测试

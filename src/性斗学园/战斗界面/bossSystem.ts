@@ -62,7 +62,6 @@ export const MUXINLAN_DIALOGUES = {
   
   // 第一阶段到第二阶段转换
   phase1_to_2: [
-    { speaker: '???', text: '"...够了。"', emotion: 'angry' as const },
     { speaker: '祸星茉莉', text: '"那么...就让你见识一下真正的力量吧。"', emotion: 'angry' as const },
     { speaker: '꧁༺茉莉༻꧂', text: '"利息已经滚到你付不起的程度了。现在，把你的胜算全部清零吧。"', emotion: 'angry' as const },
   ],
@@ -95,7 +94,6 @@ export const MUXINLAN_DIALOGUES = {
   // 第二阶段到第三阶段转换
   phase2_to_3: [
     { speaker: '꧁༺茉莉༻꧂', text: '"不...不要...！（茉莉跪倒在地，不再行动）"', emotion: 'weak' as const },
-    { speaker: '???', text: '"啊啊啊啊——！！！"', emotion: 'weak' as const },
     { speaker: '系统', text: '【"茉莉"已被击败，意识强制弹回本体】', emotion: 'weak' as const },
     { speaker: '沐芯兰（真身）', text: '"咳...咳咳...（瘫坐在地，浑身颤抖）"', emotion: 'weak' as const },
     { speaker: '沐芯兰（真身）', text: '"茉莉...竟然被你这种杂鱼...（咬牙）"', emotion: 'tsundere' as const },
