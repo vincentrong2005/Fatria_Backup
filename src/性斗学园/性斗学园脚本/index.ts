@@ -115,7 +115,7 @@ let statusBarVisible = false;
 /**
  * 从 MVU 数据中获取变量值（安全获取）
  */
-function getValue(data: any, path: string, defaultValue: number = 0): number {
+function getValue(data: any, path: string, defaultValue: any = 0): any {
   return get(data, `stat_data.${path}`, defaultValue);
 }
 
@@ -384,9 +384,9 @@ async function updateDependentVariables() {
     }
 
     // ==================== 步骤6: 检查是否可以升级 ====================
-    const currentLevel = getValue(mvuData, '角色基础._等级', 1);
-    const currentExp = getValue(mvuData, '角色基础.经验值', 0);
-    const difficulty = getValue(mvuData, '角色基础.难度', '普通');
+    const currentLevel = Number(getValue(mvuData, '角色基础._等级', 1) as any);
+    const currentExp = Number(getValue(mvuData, '角色基础.经验值', 0) as any);
+    const difficulty = String(getValue(mvuData, '角色基础.难度', '普通') as any);
     
     // 检查天赋：经验降低效果
     const expReduction = getDailyTalentEffect(currentTalentId, 'exp_reduce'); // 百分比
@@ -419,16 +419,18 @@ async function updateDependentVariables() {
         const newLevel = finalLevel + levelsGained;
         const remainingExp = finalExp - levelsGained * expNeededPerLevel;
 
-        // 计算升级奖励：根据潜力计算，每级获得 floor(潜力/2) 点（属性点和技能点相同）
-        const pointsPerLevel = Math.floor(potential / 2);
+        // 计算升级奖励：属性点每级 floor(潜力/2)，技能点每级 floor(潜力)
+        const attributePointsPerLevel = Math.floor(potential / 2);
+        const skillPointsPerLevel = Math.floor(potential);
         const currentAttributePoints = getValue(mvuData, '核心状态.$属性点', 0);
         const currentSkillPoints = getValue(mvuData, '核心状态.$技能点', 0);
-        const pointsGained = levelsGained * pointsPerLevel;
+        const attributePointsGained = levelsGained * attributePointsPerLevel;
+        const skillPointsGained = levelsGained * skillPointsPerLevel;
 
         updates['角色基础._等级'] = newLevel;
         updates['角色基础.经验值'] = remainingExp;
-        updates['核心状态.$属性点'] = currentAttributePoints + pointsGained;
-        updates['核心状态.$技能点'] = currentSkillPoints + pointsGained;
+        updates['核心状态.$属性点'] = currentAttributePoints + attributePointsGained;
+        updates['核心状态.$技能点'] = currentSkillPoints + skillPointsGained;
         hasUpdates = true;
 
         finalLevel = newLevel;

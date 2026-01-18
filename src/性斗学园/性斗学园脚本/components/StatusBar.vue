@@ -227,9 +227,10 @@ async function checkAutoLevelUp(mvuData: any) {
 
       if (actualLevelsGained > 0) {
         // 升级奖励：根据潜力计算，每级获得 floor(潜力/2) 点（属性点和技能点相同）
-        const pointsPerLevel = Math.floor(potential / 2);
-        let attributePointsGained = actualLevelsGained * pointsPerLevel;
-        let skillPointsGained = actualLevelsGained * pointsPerLevel;
+        const attributePointsPerLevel = Math.floor(potential / 2);
+        const skillPointsPerLevel = Math.floor(potential);
+        let attributePointsGained = actualLevelsGained * attributePointsPerLevel;
+        let skillPointsGained = actualLevelsGained * skillPointsPerLevel;
         
         // 天赋：升级时额外获得属性点（使用之前已获取的currentTalentId）
         const extraStatPoints = getDailyTalentEffect(currentTalentId, 'extra_stat_point') * actualLevelsGained;
