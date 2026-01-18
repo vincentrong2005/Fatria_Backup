@@ -202,15 +202,23 @@ export function executeAttack(
   isPlayerAttacking: boolean = false,
   talentModifiers?: {
     guaranteedHit?: boolean;
+    guaranteedCrit?: boolean;
     damageMultiplier?: number;
     critDamageBoost?: number;
+    extraHitCount?: number;
   }
 ): CombatResult {
   const logs: string[] = [];
   const hits: { damage: number; isCritical: boolean; isDodged: boolean }[] = [];
   
-  // 获取连击次数，默认为1
-  const hitCount = skill.hitCount || 1;
+  // 获取连击次数，默认为1，加上天赋额外连击
+  const baseHitCount = skill.hitCount || 1;
+  const extraHits = talentModifiers?.extraHitCount || 0;
+  const hitCount = baseHitCount + extraHits;
+  
+  if (extraHits > 0) {
+    logs.push(`【天赋效果】连击+${extraHits}`);
+  }
   let totalActualDamage = 0;
   let anyHit = false;
   let anyCrit = false;
@@ -244,8 +252,8 @@ export function executeAttack(
     
     anyHit = true;
 
-    // 3. 判定暴击（每次攻击独立判定）
-    const critical = checkCritical(attacker.stats.crit, attacker.stats.luck, skill.critModifier);
+    // 3. 判定暴击（每次攻击独立判定，天赋可保证暴击）
+    const critical = talentModifiers?.guaranteedCrit ? true : checkCritical(attacker.stats.crit, attacker.stats.luck, skill.critModifier);
     if (critical) anyCrit = true;
     
     let finalDamage = baseDamage;

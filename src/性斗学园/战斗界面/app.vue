@@ -134,10 +134,10 @@
                   <span>战斗技能</span>
                 </Card>
                 <Card 
-                  :hover="!isBossItemsDisabled"
+                  :hover="!isItemsDisabled"
                   class="menu-card"
-                  :class="{ disabled: isBossItemsDisabled }"
-                  @click="!isBossItemsDisabled && (activeMenu = 'items')"
+                  :class="{ disabled: isItemsDisabled }"
+                  @click="!isItemsDisabled && (activeMenu = 'items')"
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -152,7 +152,7 @@
                     <path d="M4 20V10a4 4 0 0 1 4-4h8a4 4 0 0 1 4 4v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2Z" />
                     <path d="M9 6V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2" />
                   </svg>
-                  <span>{{ isBossItemsDisabled ? '已封印' : '物品背包' }}</span>
+                  <span>{{ isItemsDisabled ? (isSinItemsDisabled ? '七宗罪封印' : '已封印') : '物品背包' }}</span>
                 </Card>
                 <Card hover class="menu-card" @click="handleSkipTurn">
                   <svg
@@ -173,9 +173,9 @@
                 <div class="surrender-stack">
                   <button class="tab-btn portrait-upload-btn" @click="openPlayerPortraitPicker">更换立绘</button>
                   <Card
-                    :hover="!allowSurrender && !isBossSurrenderDisabled"
+                    :hover="!allowSurrender && !isSurrenderDisabled"
                     class="menu-card"
-                    :class="{ disabled: allowSurrender || isBossSurrenderDisabled }"
+                    :class="{ disabled: allowSurrender || isSurrenderDisabled }"
                     data-action="surrender-menu"
                     @click="toggleSurrenderMenu"
                   >
@@ -187,18 +187,18 @@
                       fill="none"
                       stroke="currentColor"
                       stroke-width="2"
-                      class="icon-red"
+                      class="icon-gray"
                     >
                       <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z" />
                       <line x1="4" y1="22" x2="4" y2="15" />
                     </svg>
-                    <span>{{ isBossSurrenderDisabled ? '已封印' : (allowSurrender ? '不可投降' : (showSurrenderMenu ? '收起' : '投降')) }}</span>
+                    <span>{{ isSurrenderDisabled ? (isSinSurrenderDisabled ? '七宗罪封印' : '已封印') : (allowSurrender ? '不可投降' : (showSurrenderMenu ? '收起' : '投降')) }}</span>
                   </Card>
                   <div v-if="showSurrenderMenu" class="surrender-submenu">
-                    <button class="tab-btn surrender-sub-btn" :disabled="allowSurrender || isBossSurrenderDisabled" @click="handleSurrender">投降</button>
-                    <button class="tab-btn surrender-sub-btn" :disabled="isBossSurrenderDisabled" @click="handleSelfPleasure">自慰</button>
-                    <button class="tab-btn surrender-sub-btn" :disabled="isBossSurrenderDisabled" @click="handleTempted">被诱惑</button>
-                    <button class="tab-btn surrender-sub-btn" :disabled="isBossSurrenderDisabled" @click="handleTribute">上贡</button>
+                    <button class="tab-btn surrender-sub-btn" :disabled="allowSurrender || isSurrenderDisabled" @click="handleSurrender">投降</button>
+                    <button class="tab-btn surrender-sub-btn" :disabled="isSurrenderDisabled" @click="handleSelfPleasure">自慰</button>
+                    <button class="tab-btn surrender-sub-btn" :disabled="isSurrenderDisabled" @click="handleTempted">被诱惑</button>
+                    <button class="tab-btn surrender-sub-btn" :disabled="isSurrenderDisabled" @click="handleTribute">上贡</button>
                   </div>
                   <input
                     ref="playerPortraitInput"
@@ -407,6 +407,17 @@ const enemyBindSource = ref<'player' | 'enemy' | null>(null); // 敌人束缚的
 // BOSS禁用状态（第二阶段禁用物品和投降）
 const isBossItemsDisabled = ref<boolean>(false);
 const isBossSurrenderDisabled = ref<boolean>(false);
+
+// 七宗罪禁用状态（计算属性）
+const isSinItemsDisabled = computed(() => {
+  return TalentSystem.sinTalentDisablesItems(playerTalent.value);
+});
+const isSinSurrenderDisabled = computed(() => {
+  return TalentSystem.sinTalentDisablesSurrender(playerTalent.value);
+});
+// 综合禁用状态（BOSS或七宗罪任一禁用则禁用）
+const isItemsDisabled = computed(() => isBossItemsDisabled.value || isSinItemsDisabled.value);
+const isSurrenderDisabled = computed(() => isBossSurrenderDisabled.value || isSinSurrenderDisabled.value);
 
 // BOSS对话显示状态
 const bossOverlayText = ref<string>('');
@@ -1576,9 +1587,17 @@ async function applySkillEffectsFromMvu(skillId: string, isPlayerSkill: boolean)
             continue; // 跳过束缚设置
           }
           
-          playerBoundTurns.value = duration;
+          // 贪婪：被束缚时持续时间+2回合
+          let finalDuration = duration;
+          const sinTypeForBind = TalentSystem.getSinTalentType(playerTalent.value);
+          if (sinTypeForBind === 'greed') {
+            finalDuration += 2;
+            logs.push(`【七宗罪·贪婪】被束缚时持续时间+2回合！`);
+          }
+          
+          playerBoundTurns.value = finalDuration;
           playerBindSource.value = isPlayerSkill ? 'player' : 'enemy';
-          logs.push(`${player.value.name} 被束缚了 ${duration} 回合，无法行动！`);
+          logs.push(`${player.value.name} 被束缚了 ${finalDuration} 回合，无法行动！`);
           console.info(`[束缚] ★★★ 设置玩家束缚: playerBoundTurns=${playerBoundTurns.value}`);
         } else {
           // 检查是否是沐芯兰BOSS战，如果是则免疫束缚
@@ -1896,9 +1915,9 @@ async function reloadStatusFromMvu() {
     _.set(data, '性斗系统.实时性斗力', calculatedSexPower);
     _.set(data, '性斗系统.实时忍耐力', calculatedEndurance);
 
-    // 玩家其他属性（加入天赋加成）
-    player.value.stats.charm = _.get(data, '核心状态.$基础魅力', 10) + (playerTempBonus.魅力加成 || 0) + (playerPermBonus.魅力加成 || 0) + (playerEquipBonus.魅力加成 || 0) + (playerTalentBonus['魅力加成'] || 0);
-    player.value.stats.luck = _.get(data, '核心状态.$基础幸运', 10) + (playerTempBonus.幸运加成 || 0) + (playerPermBonus.幸运加成 || 0) + (playerEquipBonus.幸运加成 || 0) + (playerTalentBonus['幸运加成'] || 0);
+    // 玩家其他属性（加入天赋加成，确保不小于0）
+    player.value.stats.charm = Math.max(0, _.get(data, '核心状态.$基础魅力', 10) + (playerTempBonus.魅力加成 || 0) + (playerPermBonus.魅力加成 || 0) + (playerEquipBonus.魅力加成 || 0) + (playerTalentBonus['魅力加成'] || 0));
+    player.value.stats.luck = Math.max(0, _.get(data, '核心状态.$基础幸运', 10) + (playerTempBonus.幸运加成 || 0) + (playerPermBonus.幸运加成 || 0) + (playerEquipBonus.幸运加成 || 0) + (playerTalentBonus['幸运加成'] || 0));
     player.value.stats.evasion = Math.min(60, Math.max(0, _.get(data, '核心状态.$基础闪避率', 0) + (playerTempBonus.闪避率加成 || 0) + (playerPermBonus.闪避率加成 || 0) + (playerEquipBonus.闪避率加成 || 0) + (playerTalentBonus['闪避率加成'] || 0)));
     player.value.stats.crit = Math.min(100, Math.max(0, _.get(data, '核心状态.$基础暴击率', 0) + (playerTempBonus.暴击率加成 || 0) + (playerPermBonus.暴击率加成 || 0) + (playerEquipBonus.暴击率加成 || 0) + (playerTalentBonus['暴击率加成'] || 0)));
 
@@ -2199,6 +2218,13 @@ function handlePlayerSkill(skill: Skill) {
     return;
   }
 
+  // ========== 七宗罪-懒惰：前3回合无法攻击 ==========
+  const sinType = TalentSystem.getSinTalentType(playerTalent.value);
+  if (sinType === 'sloth' && playerTalentState.value.slothCannotAttackTurns > 0) {
+    addLog(`【七宗罪·懒惰】前3回合无法攻击！剩余${playerTalentState.value.slothCannotAttackTurns}回合`, 'system', 'critical');
+    return;
+  }
+
   // 检查体力是否足够
   if (player.value.stats.currentEndurance < skill.cost) {
     addLog('体力不足，无法使用技能！', 'system', 'info');
@@ -2248,6 +2274,10 @@ function handlePlayerSkill(skill: Skill) {
       // ========== 天赋攻击效果：先发制人、精准打击、束缚先手 ==========
       let talentAttackResult: TalentSystem.TalentEffectResult = {};
       let critDamageBoost = 0;
+      let sinExtraHits = 0;
+      let sinGuaranteedCrit = false;
+      let sinGuaranteedHit = false;
+      
       if (playerTalent.value) {
         const hasBindEffect = skill.data.buffs?.some((e: any) => e.type === 'bind') || false;
         const talentContext = createTalentEffectContext();
@@ -2259,12 +2289,76 @@ function handlePlayerSkill(skill: Skill) {
             critDamageBoost = effect.params.value || 25;
           }
         }
+        
+        // ========== 七宗罪攻击效果 ==========
+        const sinType = TalentSystem.getSinTalentType(playerTalent.value);
+        if (sinType) {
+          switch (sinType) {
+            case 'wrath': {
+              // 暴怒：所有攻击连击+1
+              const wrathMods = TalentSystem.getWrathModifiers(playerTalentState.value);
+              if (wrathMods.extraHitCount) {
+                sinExtraHits = wrathMods.extraHitCount;
+                addLog(`【七宗罪·暴怒】连击+${sinExtraHits}`, 'system', 'critical');
+              }
+              break;
+            }
+            case 'sloth': {
+              // 懒惰：消耗积蓄获得效果
+              const slothMods = TalentSystem.getSlothAttackModifiers(playerTalentState.value, turnState.currentTurn);
+              if (slothMods.guaranteedCrit) sinGuaranteedCrit = true;
+              if (slothMods.guaranteedHit) sinGuaranteedHit = true;
+              if (slothMods.extraHitCount) sinExtraHits = slothMods.extraHitCount;
+              
+              // 消耗积蓄
+              if (playerTalentState.value.slothStacks > 0) {
+                const stacks = playerTalentState.value.slothStacks;
+                addLog(`【七宗罪·懒惰】消耗${stacks}层积蓄：${stacks >= 1 ? '必定暴击' : ''}${stacks >= 2 ? '、必定命中' : ''}${stacks >= 3 ? '、连击+2' : ''}`, 'system', 'info');
+                playerTalentState.value.slothStacks = 0;
+                // 移除积蓄buff
+                removeTalentBuff('player', '天赋_懒惰_积蓄');
+              }
+              
+              // 使用任何技能后都进入懒散状态（2回合性斗力成算-20%、闪避率-15%）
+              playerTalentState.value.slothDebuffTurns = 2;
+              applyTalentBuff('player', '天赋_懒惰_懒散', { '基础性斗力成算': -20, '闪避率加成': -15 }, 2);
+              addLog(`【七宗罪·懒惰】使用技能后进入懒散状态（2回合性斗力成算-20%、闪避率-15%）`, 'system', 'critical');
+              break;
+            }
+            case 'gluttony': {
+              // 暴食：标记本回合造成伤害
+              playerTalentState.value.gluttonyDealtDamageThisTurn = true;
+              break;
+            }
+            case 'pride': {
+              // 傲慢：绝对自信状态（连续2回合暴击后）
+              if (playerTalentState.value.prideAbsoluteConfidence) {
+                sinGuaranteedHit = true;
+                sinExtraHits = 2;
+                addLog(`【七宗罪·傲慢】绝对自信！必定命中，连击+2`, 'system', 'buff');
+                playerTalentState.value.prideAbsoluteConfidence = false;
+                playerTalentState.value.prideConsecutiveCrits = 0;
+              }
+              break;
+            }
+            case 'greed': {
+              // 贪婪：3层以上时暴击伤害从150%提升至300%
+              if (playerTalentState.value.greedStacks >= 3) {
+                critDamageBoost = 150; // 从150%提升到300%，即额外+150%
+                addLog(`【七宗罪·贪婪】贪婪层数≥3，暴击伤害提升至300%！`, 'system', 'buff');
+              }
+              break;
+            }
+          }
+        }
       }
 
       const result = executeAttack(nextPlayer, nextEnemy, skill.data, true, {
-        guaranteedHit: talentAttackResult.guaranteedHit,
+        guaranteedHit: talentAttackResult.guaranteedHit || sinGuaranteedHit,
+        guaranteedCrit: sinGuaranteedCrit,
         damageMultiplier: talentAttackResult.damageMultiplier,
         critDamageBoost: critDamageBoost,
+        extraHitCount: sinExtraHits,
       }); // 玩家攻击敌人，启用等级压制
 
       // ========== 天赋被动效果：应用伤害加成 ==========
@@ -2299,6 +2393,11 @@ function handlePlayerSkill(skill: Skill) {
       if (result.isDodged) {
         addLog(`${nextEnemy.name} 闪避了所有攻击！`, 'system', 'info');
         triggerEffect('dodge');
+        // 暴食：被闪避也算未造成伤害，需要重置gluttonyDealtDamageThisTurn为false
+        const sinTypeOnDodge = TalentSystem.getSinTalentType(playerTalent.value);
+        if (sinTypeOnDodge === 'gluttony') {
+          playerTalentState.value.gluttonyDealtDamageThisTurn = false;
+        }
       } else {
         // 输出详细的伤害计算过程（包括连击日志）
         console.info('[战斗界面] 玩家攻击 - result.logs:', result.logs);
@@ -2314,6 +2413,12 @@ function handlePlayerSkill(skill: Skill) {
         if (result.isCritical) {
           addLog(`暴击！总计造成 ${result.totalDamage} 点快感伤害！`, 'player', 'critical');
           triggerEffect('critical');
+          
+          // ========== 七宗罪-傲慢：标记本回合暴击 ==========
+          const sinTypeForCrit = TalentSystem.getSinTalentType(playerTalent.value);
+          if (sinTypeForCrit === 'pride') {
+            playerTalentState.value.prideCritThisTurn = true;
+          }
         } else {
           addLog(`总计造成 ${result.totalDamage} 点快感伤害`, 'player', 'damage');
         }
@@ -2330,6 +2435,49 @@ function handlePlayerSkill(skill: Skill) {
         if (playerTalent.value && result.totalDamage > 0) {
           const talentContext = createTalentEffectContext();
           TalentSystem.processTalentOnDamageDealt(playerTalent.value, talentContext, result.totalDamage);
+          
+          // ========== 七宗罪效果：造成伤害时 ==========
+          const sinType = TalentSystem.getSinTalentType(playerTalent.value);
+          
+          // 暴食：造成伤害时减少自身20%最大快感的快感
+          if (sinType === 'gluttony') {
+            const pleasureReduce = Math.floor(nextPlayer.stats.maxPleasure * 0.2);
+            nextPlayer.stats.currentPleasure = Math.max(0, nextPlayer.stats.currentPleasure - pleasureReduce);
+            playerTalentState.value.gluttonyDealtDamageThisTurn = true;
+            addLog(`【七宗罪·暴食】造成伤害，自身快感-${pleasureReduce}`, 'system', 'buff');
+          }
+          
+          // 色欲：击中后魅惑效果
+          if (sinType === 'lust') {
+            const charmResult = TalentSystem.processLustCharm(
+              talentContext,
+              nextPlayer.stats.charm,
+              nextEnemy.stats.charm
+            );
+            playerTalentState.value = { ...talentContext.talentState };
+            addLog(`【七宗罪·色欲】${charmResult.message}`, 'system', charmResult.success ? 'info' : 'critical');
+            
+            if (charmResult.success && charmResult.bindEnemy) {
+              // 魅惑成功：束缚敌人1回合
+              if (BossSystem.bossState.isBossFight && BossSystem.bossState.bossId === 'muxinlan') {
+                addLog(`${nextEnemy.name} 免疫了魅惑束缚效果！`, 'system', 'info');
+              } else if (enemyBoundTurns.value === 0) {
+                enemyBoundTurns.value = charmResult.bindDuration || 1;
+                enemyBindSource.value = 'player';
+                addLog(`${nextEnemy.name} 被魅惑束缚了 ${charmResult.bindDuration || 1} 回合！`, 'system', 'info');
+              }
+              
+              // 自身忍耐力成算-12%（可叠加）- 写入MVU
+              if (charmResult.selfEnduranceDebuff) {
+                applyTalentBuff('player', '天赋_色欲_魅惑代价', { '基础忍耐力成算': charmResult.selfEnduranceDebuff }, 999);
+              }
+            }
+            
+            // 魅惑连续失败2次：标记敌人下次攻击必中必暴
+            if (charmResult.enemyGuaranteedHitCrit) {
+              playerTalentState.value.lustEnemyGuaranteedCrit = true;
+            }
+          }
         }
 
         // 应用buff/debuff效果（包括束缚，统一由applySkillEffectsFromMvu处理）
@@ -2634,12 +2782,15 @@ function handleEnemyTurn() {
       enemyBindSource.value = null;
       addLog(`${enemy.value.name} 的束缚效果消失了`, 'system', 'info');
     }
-    endTurn();
-    setTimeout(startNewTurn, 1000);
+    endTurn().then((climaxTriggered) => {
+      if (!climaxTriggered) {
+        setTimeout(startNewTurn, 1000);
+      }
+    });
     return;
   }
 
-  addLog(`${enemy.value.name} 开始行动...`, 'system', 'info');
+  addLog(`${enemy.value.name} 开始行动...`, 'system', 'info')
 
   setTimeout(() => {
     // 使用预告的技能（如果预告存在且可用），否则随机选择
@@ -2670,8 +2821,11 @@ function handleEnemyTurn() {
 
     if (!skill) {
       addLog(`${nextEnemy.name} 没有可用技能`, 'system', 'info');
-      endTurn();
-      setTimeout(startNewTurn, 1000);
+      endTurn().then((climaxTriggered) => {
+        if (!climaxTriggered) {
+          setTimeout(startNewTurn, 1000);
+        }
+      });
       return;
     }
 
@@ -2679,8 +2833,11 @@ function handleEnemyTurn() {
     const skillCost = skill.data?.staminaCost || skill.cost || 0;
     if (nextEnemy.stats.currentEndurance < skillCost) {
       addLog(`${nextEnemy.name} 体力不足，无法使用 ${skill.name}！`, 'system', 'info');
-      endTurn();
-      setTimeout(startNewTurn, 1000);
+      endTurn().then((climaxTriggered) => {
+        if (!climaxTriggered) {
+          setTimeout(startNewTurn, 1000);
+        }
+      });
       return;
     }
 
@@ -2778,12 +2935,29 @@ function handleEnemyTurn() {
         // 检查技能数据是否存在
         if (!skill.data) {
           addLog(`技能 ${skill.name} 的数据不存在，无法使用`, 'system', 'critical');
-          endTurn();
-          setTimeout(startNewTurn, 1000);
+          endTurn().then((climaxTriggered) => {
+            if (!climaxTriggered) {
+              setTimeout(startNewTurn, 1000);
+            }
+          });
           return;
         }
 
-        const result = executeAttack(nextEnemy, nextPlayer, skill.data);
+        // ========== 七宗罪-色欲：检查敌人是否必中必暴 ==========
+        let lustGuaranteedHit = false;
+        let lustGuaranteedCrit = false;
+        const sinType = TalentSystem.getSinTalentType(playerTalent.value);
+        if (sinType === 'lust' && playerTalentState.value.lustEnemyGuaranteedCrit) {
+          lustGuaranteedHit = true;
+          lustGuaranteedCrit = true;
+          playerTalentState.value.lustEnemyGuaranteedCrit = false; // 使用后清除
+          addLog(`【七宗罪·色欲】魅惑连续失败的代价！敌人本次攻击必定命中且暴击！`, 'system', 'critical');
+        }
+        
+        const result = executeAttack(nextEnemy, nextPlayer, skill.data, false, {
+          guaranteedHit: lustGuaranteedHit,
+          guaranteedCrit: lustGuaranteedCrit,
+        });
         
         // 调试日志：检查40%伤害上限是否生效
         const maxDamageCap = Math.floor(nextPlayer.stats.maxPleasure * 0.4);
@@ -2818,6 +2992,25 @@ function handleEnemyTurn() {
           if (result.isCritical) {
             addLog(`暴击！总计造成 ${result.totalDamage} 点快感伤害！`, 'enemy', 'critical');
             triggerEffect('critical');
+            
+            // ========== 七宗罪-懒惰：被暴击时若有3层积蓄则清空并束缚1回合 ==========
+            const sinType = TalentSystem.getSinTalentType(playerTalent.value);
+            if (sinType === 'sloth' && playerTalentState.value.slothStacks >= 3) {
+              playerTalentState.value.slothStacks = 0;
+              playerBoundTurns.value = 1;
+              playerBindSource.value = 'player';
+              addLog(`【七宗罪·懒惰】被暴击！3层积蓄全部清空，被束缚1回合！`, 'system', 'critical');
+              removeTalentBuff('player', '天赋_懒惰_积蓄');
+              saveSinTalentStateToMvu();
+            }
+            
+            // ========== 七宗罪-傲慢：被暴击时进入动摇状态 ==========
+            if (sinType === 'pride' && !playerTalentState.value.prideShaken) {
+              playerTalentState.value.prideShaken = true;
+              playerTalentState.value.prideShakenTurns = 2;
+              addLog(`【七宗罪·傲慢】被暴击！进入"动摇"状态（2回合暴击率/闪避率-30%）`, 'system', 'critical');
+              applyTalentBuff('player', '天赋_傲慢_动摇', { '暴击率加成': -30, '闪避率加成': -30 }, 2);
+            }
           } else {
             addLog(`总计造成 ${result.totalDamage} 点快感伤害`, 'enemy', 'damage');
           }
@@ -2851,6 +3044,31 @@ function handleEnemyTurn() {
             'system',
             'info',
           );
+          
+          // ========== 七宗罪-暴食：受到伤害时获得饕餮层数 ==========
+          const sinTypeOnDamage = TalentSystem.getSinTalentType(playerTalent.value);
+          if (sinTypeOnDamage === 'gluttony' && finalDamage > 0) {
+            const oldStacks = playerTalentState.value.gluttonyStacks;
+            playerTalentState.value.gluttonyStacks = Math.min(5, oldStacks + 1);
+            const newStacks = playerTalentState.value.gluttonyStacks;
+            
+            if (newStacks > oldStacks) {
+              addLog(`【七宗罪·暴食】受到伤害，获得1层「饕餮」（当前${newStacks}层）`, 'system', 'buff');
+              // 应用饕餮层数效果
+              applyTalentBuff('player', '天赋_暴食_饕餮', { 
+                '基础性斗力成算': newStacks * 10, 
+                '基础忍耐力成算': newStacks * 10,
+                '暴击率加成': newStacks * 5 
+              }, 999);
+              saveSinTalentStateToMvu();
+              
+              // 5层饕餮时标记下回合过食
+              if (newStacks >= 5) {
+                playerTalentState.value.gluttonyOvereatNext = true;
+                addLog(`【七宗罪·暴食】饕餮达到5层！下回合将进入「过食」状态`, 'system', 'critical');
+              }
+            }
+          }
 
           // 应用buff/debuff效果（包括束缚，统一由applySkillEffectsFromMvu处理，已包含天赋免疫检查）
           try {
@@ -2881,14 +3099,18 @@ function handleEnemyTurn() {
           await reloadStatusFromMvu();
           
           // 对方执行完技能后，处理回合结束事务，然后进入下一回合
-          endTurn();
-          setTimeout(startNewTurn, 1000);
+          const climaxTriggered = await endTurn();
+          if (!climaxTriggered) {
+            setTimeout(startNewTurn, 1000);
+          }
         }
       } catch (e) {
         console.error('[战斗界面] 敌人使用技能时出错', e);
         addLog('敌人使用技能时出错', 'system', 'critical');
-        endTurn();
-        setTimeout(startNewTurn, 1000);
+        const climaxTriggered = await endTurn();
+        if (!climaxTriggered) {
+          setTimeout(startNewTurn, 1000);
+        }
       }
     });
   }, 1000);
@@ -2964,6 +3186,86 @@ function startNewTurn() {
   if (playerTalent.value) {
     const talentContext = createTalentEffectContext();
     TalentSystem.processTalentOnTurnStart(playerTalent.value, talentContext);
+    
+    // ========== 七宗罪回合开始效果 ==========
+    const sinType = TalentSystem.getSinTalentType(playerTalent.value);
+    if (sinType) {
+      switch (sinType) {
+        case 'wrath': {
+          // 暴怒：激活暴怒状态
+          playerTalentState.value.wrathActive = true;
+          break;
+        }
+        case 'sloth': {
+          // 懒惰：前3回合（1,2,3）无法攻击
+          if (turnState.currentTurn >= 1 && turnState.currentTurn <= 3) {
+            playerTalentState.value.slothCannotAttackTurns = 4 - turnState.currentTurn;
+            addLog(`【七宗罪·懒惰】前3回合无法攻击（剩余${playerTalentState.value.slothCannotAttackTurns}回合）`, 'system', 'info');
+          } else {
+            playerTalentState.value.slothCannotAttackTurns = 0;
+          }
+          // 懒散状态回合递减
+          if (playerTalentState.value.slothDebuffTurns > 0) {
+            playerTalentState.value.slothDebuffTurns--;
+            if (playerTalentState.value.slothDebuffTurns === 0) {
+              addLog(`【七宗罪·懒惰】懒散状态解除`, 'system', 'info');
+              // 移除懒散debuff
+              removeTalentBuff('player', '天赋_懒惰_懒散');
+            }
+          }
+          // 将积蓄层数写入MVU临时状态
+          saveSinTalentStateToMvu();
+          break;
+        }
+        case 'gluttony': {
+          // 暴食：重置本回合造成伤害标记
+          playerTalentState.value.gluttonyDealtDamageThisTurn = false;
+          // 检查过食状态
+          if (playerTalentState.value.gluttonyOvereatNext) {
+            playerTalentState.value.gluttonyOvereatNext = false;
+            playerTalentState.value.gluttonyStacks = 0;
+            playerBoundTurns.value = 1;
+            playerBindSource.value = 'player';
+            addLog(`【七宗罪·暴食】进入「过食」状态！被束缚1回合，饕餮层数清空`, 'system', 'critical');
+          }
+          break;
+        }
+        case 'greed': {
+          // 贪婪：消耗10%当前耐力获得1层
+          const result = TalentSystem.processGreedOnTurnStart(talentContext, player.value.stats.currentEndurance);
+          if (result.staminaCost > 0) {
+            player.value.stats.currentEndurance = Math.max(0, player.value.stats.currentEndurance - result.staminaCost);
+          }
+          playerTalentState.value = { ...talentContext.talentState };
+          addLog(result.message, 'system', 'buff');
+          
+          // 应用贪婪层数效果到MVU（每层：暴击率+10%、魅力+30、幸运+30、性斗力成算+15%、闪避率-10%）
+          const greedStacks = playerTalentState.value.greedStacks;
+          if (greedStacks > 0) {
+            applyTalentBuff('player', '天赋_贪婪_层数', { 
+              '暴击率加成': greedStacks * 10,
+              '魅力加成': greedStacks * 30,
+              '幸运加成': greedStacks * 30,
+              '基础性斗力成算': greedStacks * 15,
+              '闪避率加成': greedStacks * -10
+            }, 999);
+          }
+          saveSinTalentStateToMvu();
+          break;
+        }
+        case 'pride': {
+          // 傲慢：动摇状态回合递减
+          if (playerTalentState.value.prideShakenTurns > 0) {
+            playerTalentState.value.prideShakenTurns--;
+            if (playerTalentState.value.prideShakenTurns === 0) {
+              playerTalentState.value.prideShaken = false;
+              addLog(`【七宗罪·傲慢】动摇状态解除`, 'system', 'info');
+            }
+          }
+          break;
+        }
+      }
+    }
   }
 
   addLog(`--- 第 ${turnState.currentTurn} 回合 ---`, 'system', 'info');
@@ -3054,6 +3356,69 @@ async function syncEnemyPleasureToMvu(value: number) {
   }
 }
 
+// 移除天赋buff
+async function removeTalentBuff(target: 'player' | 'enemy', buffName: string) {
+  try {
+    if (typeof Mvu === 'undefined') return;
+    const mvuData = Mvu.getMvuData({ type: 'message', message_id: 'latest' });
+    if (!mvuData?.stat_data) return;
+    
+    const statusListPath = target === 'player' ? '临时状态.状态列表' : '性斗系统.对手临时状态.状态列表';
+    const bonusPath = target === 'player' ? '临时状态.加成统计' : '性斗系统.对手临时状态.加成统计';
+    
+    const statusList = _.get(mvuData.stat_data, statusListPath, {});
+    const currentBonus = _.get(mvuData.stat_data, bonusPath, {});
+    
+    // 如果状态存在，移除其加成
+    if (statusList[buffName]) {
+      const buffBonus = statusList[buffName].加成 || {};
+      for (const [key, value] of Object.entries(buffBonus)) {
+        currentBonus[key] = (currentBonus[key] || 0) - (value as number);
+        if (currentBonus[key] === 0) delete currentBonus[key];
+      }
+      delete statusList[buffName];
+    }
+    
+    _.set(mvuData.stat_data, statusListPath, statusList);
+    _.set(mvuData.stat_data, bonusPath, currentBonus);
+    await Mvu.replaceMvuData(mvuData, { type: 'message', message_id: 'latest' });
+    
+    await reloadStatusFromMvu();
+  } catch (e) {
+    console.error('[天赋系统] 移除buff失败', e);
+  }
+}
+
+// 保存七宗罪天赋状态到MVU
+async function saveSinTalentStateToMvu() {
+  try {
+    if (typeof Mvu === 'undefined') return;
+    const mvuData = Mvu.getMvuData({ type: 'message', message_id: 'latest' });
+    if (!mvuData?.stat_data) return;
+    
+    // 保存七宗罪状态到临时状态
+    const sinState: Record<string, any> = {};
+    
+    // 懒惰积蓄
+    if (playerTalentState.value.slothStacks > 0) {
+      sinState['懒惰积蓄'] = playerTalentState.value.slothStacks;
+    }
+    // 暴食饕餮层数
+    if (playerTalentState.value.gluttonyStacks > 0) {
+      sinState['饕餮层数'] = playerTalentState.value.gluttonyStacks;
+    }
+    // 贪婪层数
+    if (playerTalentState.value.greedStacks > 0) {
+      sinState['贪婪层数'] = playerTalentState.value.greedStacks;
+    }
+    
+    _.set(mvuData.stat_data, '临时状态.七宗罪状态', sinState);
+    await Mvu.replaceMvuData(mvuData, { type: 'message', message_id: 'latest' });
+  } catch (e) {
+    console.error('[天赋系统] 保存七宗罪状态失败', e);
+  }
+}
+
 // 应用天赋buff到临时状态
 async function applyTalentBuff(target: 'player' | 'enemy', buffName: string, bonus: Record<string, number>, duration: number) {
   try {
@@ -3067,13 +3432,22 @@ async function applyTalentBuff(target: 'player' | 'enemy', buffName: string, bon
     const statusList = _.get(mvuData.stat_data, statusListPath, {});
     const currentBonus = _.get(mvuData.stat_data, bonusPath, {});
     
+    // 如果状态已存在，先移除旧的加成
+    if (statusList[buffName]) {
+      const oldBonus = statusList[buffName].加成 || {};
+      for (const [key, value] of Object.entries(oldBonus)) {
+        currentBonus[key] = (currentBonus[key] || 0) - (value as number);
+        if (currentBonus[key] === 0) delete currentBonus[key];
+      }
+    }
+    
     // 添加状态到状态列表（正确格式：状态名: { 加成: {...}, 剩余回合: 回合数 }）
     statusList[buffName] = {
       加成: bonus,
       剩余回合: duration,
     };
     
-    // 累加加成到加成统计
+    // 累加新的加成到加成统计
     for (const [key, value] of Object.entries(bonus)) {
       currentBonus[key] = (currentBonus[key] || 0) + value;
     }
@@ -3089,15 +3463,56 @@ async function applyTalentBuff(target: 'player' | 'enemy', buffName: string, bon
   }
 }
 
-// 处理回合结束时的事务
-function endTurn() {
+// 处理回合结束时的事务，返回true表示触发了高潮（不应继续startNewTurn）
+async function endTurn(): Promise<boolean> {
   // 束缚回合数在尝试行动时递减，不在这里处理
   
   // 处理天赋回合结束效果
   if (playerTalent.value) {
     const talentContext = createTalentEffectContext();
     TalentSystem.processTalentOnTurnEnd(playerTalent.value, talentContext);
+    
+    const sinType = TalentSystem.getSinTalentType(playerTalent.value);
+    
+    // ========== 七宗罪-傲慢：回合结束检查连续暴击 ==========
+    if (sinType === 'pride') {
+      if (playerTalentState.value.prideCritThisTurn) {
+        // 本回合暴击了，增加连续暴击计数
+        playerTalentState.value.prideConsecutiveCrits++;
+        if (playerTalentState.value.prideConsecutiveCrits >= 2) {
+          playerTalentState.value.prideAbsoluteConfidence = true;
+          addLog(`【七宗罪·傲慢】连续${playerTalentState.value.prideConsecutiveCrits}回合暴击！下回合攻击必中且连击+2`, 'system', 'buff');
+        }
+      } else {
+        // 本回合没有暴击，重置连续暴击计数
+        if (playerTalentState.value.prideConsecutiveCrits > 0) {
+          playerTalentState.value.prideConsecutiveCrits = 0;
+        }
+      }
+      // 重置本回合暴击标记
+      playerTalentState.value.prideCritThisTurn = false;
+    }
+    
+    // ========== 七宗罪-暴食：回合结束未造成伤害时快感+20%最大快感 ==========
+    if (sinType === 'gluttony' && !playerTalentState.value.gluttonyDealtDamageThisTurn) {
+      const pleasureIncrease = Math.floor(player.value.stats.maxPleasure * 0.2);
+      player.value.stats.currentPleasure = Math.min(
+        player.value.stats.maxPleasure,
+        player.value.stats.currentPleasure + pleasureIncrease
+      );
+      addLog(`【七宗罪·暴食】本回合未造成伤害，快感+${pleasureIncrease}`, 'system', 'critical');
+      
+      // 检查是否因暴食效果达到高潮
+      if (player.value.stats.currentPleasure >= player.value.stats.maxPleasure && turnState.climaxTarget === null) {
+        addLog(`${player.value.name} 因暴食效果达到了快感上限！`, 'system', 'critical');
+        addLog(`${player.value.name} 达到了高潮！ (过程略)`, 'system', 'info');
+        triggerEffect('climax');
+        await processClimaxAfterLLM(false);
+        return true; // 高潮处理会接管后续流程
+      }
+    }
   }
+  return false; // 没有触发高潮
 }
 
 // 收集战斗日志文本（过滤掉冗余信息）
@@ -3789,10 +4204,12 @@ async function processClimaxAfterLLM(targetIsEnemy: boolean) {
 
   // 高潮后继续战斗，进入下一回合
   addLog(`高潮结束，战斗继续...`, 'system', 'info');
-  setTimeout(() => {
+  setTimeout(async () => {
     turnState.climaxTarget = null;
-    endTurn();
-    startNewTurn();
+    const climaxTriggered = await endTurn();
+    if (!climaxTriggered) {
+      startNewTurn();
+    }
   }, 1500);
 }
 
@@ -3822,6 +4239,85 @@ function handleSkipTurn() {
     addLog(`${player.value.name} 被束缚了，跳过回合`, 'system', 'info');
   } else {
     addLog(`${player.value.name} 选择了跳过回合`, 'system', 'info');
+  }
+
+  // ========== 七宗罪跳过回合效果 ==========
+  const sinType = TalentSystem.getSinTalentType(playerTalent.value);
+  if (sinType) {
+    const talentContext = createTalentEffectContext();
+    
+    switch (sinType) {
+      case 'wrath': {
+        // 暴怒：跳过回合时自身快感+20%最大快感
+        const pleasureIncrease = Math.floor(player.value.stats.maxPleasure * 0.2);
+        const newPleasure = Math.min(
+          player.value.stats.maxPleasure,
+          player.value.stats.currentPleasure + pleasureIncrease
+        );
+        player.value.stats.currentPleasure = newPleasure;
+        addLog(`【七宗罪·暴怒】跳过回合，快感+${pleasureIncrease}（当前${newPleasure}/${player.value.stats.maxPleasure}）`, 'system', 'critical');
+        break;
+      }
+      case 'sloth': {
+        // 懒惰：获得怠惰积蓄
+        const result = TalentSystem.processSlothSkipTurn(talentContext);
+        playerTalentState.value = { ...talentContext.talentState };
+        addLog(result.message, 'system', 'buff');
+        
+        // 应用积蓄效果到MVU
+        const stacks = playerTalentState.value.slothStacks;
+        if (stacks > 0) {
+          applyTalentBuff('player', '天赋_懒惰_积蓄', { 
+            '基础性斗力成算': stacks * 10, 
+            '基础忍耐力成算': stacks * 10,
+            '闪避率加成': stacks * 5 
+          }, 999);
+        }
+        saveSinTalentStateToMvu();
+        break;
+      }
+      case 'greed': {
+        // 贪婪：失去1层并增加快感
+        const result = TalentSystem.processGreedSkipTurn(talentContext, player.value.stats.maxPleasure);
+        playerTalentState.value = { ...talentContext.talentState };
+        if (result.message) {
+          const newPleasure = Math.min(
+            player.value.stats.maxPleasure,
+            player.value.stats.currentPleasure + result.pleasureIncrease
+          );
+          player.value.stats.currentPleasure = newPleasure;
+          addLog(result.message, 'system', 'critical');
+          
+          // 更新贪婪层数效果（每层：暴击率+10%、魅力+30、幸运+30、性斗力成算+15%、闪避率-10%）
+          const greedStacks = playerTalentState.value.greedStacks;
+          if (greedStacks > 0) {
+            applyTalentBuff('player', '天赋_贪婪_层数', { 
+              '暴击率加成': greedStacks * 10,
+              '魅力加成': greedStacks * 30,
+              '幸运加成': greedStacks * 30,
+              '基础性斗力成算': greedStacks * 15,
+              '闪避率加成': greedStacks * -10
+            }, 999);
+          } else {
+            removeTalentBuff('player', '天赋_贪婪_层数');
+          }
+          saveSinTalentStateToMvu();
+        }
+        break;
+      }
+    }
+  }
+
+  // 保存状态
+  saveToMvu();
+
+  // 检查玩家是否因七宗罪效果达到高潮
+  if (player.value.stats.currentPleasure >= player.value.stats.maxPleasure && turnState.climaxTarget === null) {
+    addLog(`${player.value.name} 达到了快感上限！`, 'system', 'critical');
+    addLog(`${player.value.name} 达到了高潮！`, 'system', 'info');
+    triggerEffect('climax');
+    processClimaxAfterLLM(false);
+    return; // 高潮处理会负责后续流程
   }
 
   // 跳过回合，直接轮到对方行动
@@ -3872,6 +4368,14 @@ async function handleSurrender() {
   // BOSS第二阶段禁用投降
   if (isBossSurrenderDisabled.value) {
     addLog('「逃跑？在女王面前...你以为你有这个资格吗？」', 'enemy', 'critical');
+    return;
+  }
+
+  // 七宗罪禁用投降
+  if (isSinSurrenderDisabled.value) {
+    const sinType = TalentSystem.getSinTalentType(playerTalent.value);
+    const sinNames: Record<string, string> = { wrath: '暴怒', greed: '贪婪', pride: '傲慢' };
+    addLog(`【七宗罪·${sinNames[sinType || ''] || ''}】无法投降！`, 'system', 'critical');
     return;
   }
   
@@ -4070,6 +4574,88 @@ onMounted(async () => {
   if (playerTalent.value) {
     const talentContext = createTalentEffectContext();
     TalentSystem.processTalentOnBattleStart(playerTalent.value, talentContext);
+    
+    // ========== 七宗罪-嫉妒：战斗开始时属性比较 ==========
+    const sinType = TalentSystem.getSinTalentType(playerTalent.value);
+    if (sinType === 'envy') {
+      const envyResult = TalentSystem.processEnvyOnBattleStart(
+        talentContext,
+        {
+          sexPower: player.value.stats.sexPower,
+          endurance: player.value.stats.baseEndurance,
+          charm: player.value.stats.charm,
+          luck: player.value.stats.luck,
+          evasion: player.value.stats.evasion,
+          crit: player.value.stats.crit,
+        },
+        {
+          sexPower: enemy.value.stats.sexPower,
+          endurance: enemy.value.stats.baseEndurance,
+          charm: enemy.value.stats.charm,
+          luck: enemy.value.stats.luck,
+          evasion: enemy.value.stats.evasion,
+          crit: enemy.value.stats.crit,
+        }
+      );
+      playerTalentState.value = { ...talentContext.talentState };
+      
+      // 应用嫉妒效果
+      for (const effect of envyResult.effects) {
+        addLog(`【七宗罪·嫉妒】${effect.message}`, 'system', effect.isBonus ? 'buff' : 'critical');
+        // 应用属性修改
+        const bonusKey = effect.attribute + '加成';
+        applyTalentBuff('player', `天赋_嫉妒_${effect.attribute}`, { [bonusKey]: effect.value }, 999);
+      }
+    }
+    
+    // ========== 七宗罪-傲慢：战斗开始时全属性比较 ==========
+    if (sinType === 'pride') {
+      const playerStats = {
+        sexPower: player.value.stats.sexPower,
+        endurance: player.value.stats.baseEndurance,
+        charm: player.value.stats.charm,
+        luck: player.value.stats.luck,
+        evasion: player.value.stats.evasion,
+        crit: player.value.stats.crit,
+      };
+      const enemyStats = {
+        sexPower: enemy.value.stats.sexPower,
+        endurance: enemy.value.stats.baseEndurance,
+        charm: enemy.value.stats.charm,
+        luck: enemy.value.stats.luck,
+        evasion: enemy.value.stats.evasion,
+        crit: enemy.value.stats.crit,
+      };
+      const statNames: Record<string, string> = {
+        sexPower: '基础性斗力',
+        endurance: '基础忍耐力',
+        charm: '魅力',
+        luck: '幸运',
+        evasion: '闪避率',
+        crit: '暴击率',
+      };
+      
+      for (const [key, playerVal] of Object.entries(playerStats)) {
+        const enemyVal = enemyStats[key as keyof typeof enemyStats];
+        const displayName = statNames[key];
+        // 只有性斗力和忍耐力使用"成算"，其他使用"加成"
+        const isSexPowerOrEndurance = key === 'sexPower' || key === 'endurance';
+        const bonusSuffix = isSexPowerOrEndurance ? '成算' : '加成';
+        const bonusValue = isSexPowerOrEndurance ? 20 : Math.floor(playerVal * 0.2); // 成算用百分比，加成用实际值
+        
+        if (playerVal > enemyVal) {
+          // 自身属性高于对手，+20%
+          const actualBonus = isSexPowerOrEndurance ? 20 : bonusValue;
+          addLog(`【七宗罪·傲慢】${displayName}：自身(${playerVal}) > 对手(${enemyVal})，${displayName}+${isSexPowerOrEndurance ? '20%' : actualBonus}`, 'system', 'buff');
+          applyTalentBuff('player', `天赋_傲慢_${displayName}`, { [`${displayName}${bonusSuffix}`]: actualBonus }, 999);
+        } else if (playerVal < enemyVal) {
+          // 自身属性低于对手，-20%
+          const actualPenalty = isSexPowerOrEndurance ? -20 : -bonusValue;
+          addLog(`【七宗罪·傲慢】${displayName}：自身(${playerVal}) < 对手(${enemyVal})，${displayName}${isSexPowerOrEndurance ? '-20%' : actualPenalty}`, 'system', 'critical');
+          applyTalentBuff('player', `天赋_傲慢_${displayName}`, { [`${displayName}${bonusSuffix}`]: actualPenalty }, 999);
+        }
+      }
+    }
     
     // 应用被动天赋效果到临时状态（如压迫感减少敌人闪避、极限爆发的性斗力加成等）
     const passiveModifiers = TalentSystem.getTalentPassiveModifiers(playerTalent.value, {

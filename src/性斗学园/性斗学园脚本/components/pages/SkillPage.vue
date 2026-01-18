@@ -85,11 +85,12 @@
       <div class="talent-gacha-section">
         <h3><i class="fas fa-star"></i> 天赋抽取</h3>
         <div class="rate-list">
-          <span class="rate-item rarity-c">C级 30%</span>
-          <span class="rate-item rarity-b">B级 35%</span>
-          <span class="rate-item rarity-a">A级 25%</span>
-          <span class="rate-item rarity-s">S级 7.5%</span>
-          <span class="rate-item rarity-ss">SS级 2.5%</span>
+          <span class="rate-item rarity-c">C级 {{ adjustedRates.C.toFixed(1) }}%</span>
+          <span class="rate-item rarity-b">B级 {{ adjustedRates.B.toFixed(1) }}%</span>
+          <span class="rate-item rarity-a">A级 {{ adjustedRates.A.toFixed(1) }}%</span>
+          <span class="rate-item rarity-s">S级 {{ adjustedRates.S.toFixed(1) }}%</span>
+          <span class="rate-item rarity-ss">SS级 {{ adjustedRates.SS.toFixed(1) }}%</span>
+          <span v-if="adjustedRates.SIN > 0" class="rate-item rarity-sin">罪与罚 {{ adjustedRates.SIN.toFixed(1) }}%</span>
         </div>
         <p class="talent-gacha-note">消耗10技能点抽取一个天赋，天赋仅能拥有一个</p>
         
@@ -121,8 +122,17 @@
           <span v-else class="no-talent">无</span>
         </div>
 
+        <!-- SIN天赋暗黑特效遮罩 -->
+        <div v-if="showSinEffect" class="sin-effect-overlay">
+          <div class="sin-effect-content">
+            <div class="sin-symbol">☠</div>
+            <div class="sin-text">七宗罪降临</div>
+            <div class="sin-particles"></div>
+          </div>
+        </div>
+
         <!-- 抽取结果展示 -->
-        <div v-if="drawnTalent" class="talent-result">
+        <div v-if="drawnTalent" class="talent-result" :class="{ 'sin-glow': drawnTalent.rarity === 'SIN' }">
           <h4><i class="fas fa-gift"></i> 抽取到的天赋</h4>
           <div 
             class="talent-card"
@@ -397,7 +407,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
 import { performSingleGacha, performTenGacha, type GachaSkillData } from '../../data/skillGachaPool';
-import { getDailyTalentEffect, getTalentById, performTalentGacha, TALENT_DATABASE, type TalentData } from '../../data/talentDatabase';
+import { getAdjustedGachaRates, getDailyTalentEffect, getTalentById, performTalentGacha, TALENT_DATABASE, type TalentData } from '../../data/talentDatabase';
 
 const props = defineProps<{
   characterData: any;
@@ -436,7 +446,18 @@ const upgradingSkillIds = ref<Set<string>>(new Set());
 const drawnTalent = ref<TalentData | null>(null);
 const showTalentTooltip = ref(false);
 const talentTooltipTarget = ref<'current' | 'drawn'>('current');
+const showSinEffect = ref(false); // SIN天赋抽取时的暗黑特效
 let talentTooltipTimer: ReturnType<typeof setTimeout> | null = null;
+
+// 堕落度（用于计算七宗罪概率）
+const corruptionLevel = computed(() => {
+  return props.characterData.核心状态?.堕落度 || 0;
+});
+
+// 动态调整后的抽取概率
+const adjustedRates = computed(() => {
+  return getAdjustedGachaRates(corruptionLevel.value);
+});
 
 // 作者测试功能状态（使用localStorage持久化解锁状态）
 const showAuthorTest = ref(false);
@@ -498,6 +519,7 @@ function getRarityClass(rarity: string): string {
     'A': 'rarity-a',
     'S': 'rarity-s',
     'SS': 'rarity-ss',
+    'SIN': 'rarity-sin',
   };
   return rarityMap[rarity] || 'rarity-c';
 }
@@ -827,10 +849,20 @@ async function performTalentGachaAction() {
     // 写回MVU
     await globalAny.Mvu.replaceMvuData(mvuData, { type: 'message', message_id: 'latest' });
     
-    // 执行天赋抽取
-    drawnTalent.value = performTalentGacha();
+    // 执行天赋抽取（传入堕落度）
+    const corruption = mvuData.stat_data.核心状态?.堕落度 || 0;
+    drawnTalent.value = performTalentGacha(corruption);
     
-    if (typeof toastr !== 'undefined') {
+    // 如果抽到SIN天赋，显示特殊暗黑效果
+    if (drawnTalent.value?.rarity === 'SIN') {
+      showSinEffect.value = true;
+      setTimeout(() => {
+        showSinEffect.value = false;
+      }, 3000);
+      if (typeof toastr !== 'undefined') {
+        toastr.error(`七宗罪降临...「${drawnTalent.value.name}」`, '⚠️ 罪与罚', { timeOut: 4000 });
+      }
+    } else if (typeof toastr !== 'undefined') {
       toastr.info(`抽取完成！消耗${cost}技能点`, '天赋抽取', { timeOut: 1500 });
     }
   } catch (error) {
@@ -1472,6 +1504,18 @@ async function forgetSkill(skillId: string) {
   &.rarity-a { background: rgba(167, 139, 250, 0.2); color: #c4b5fd; }
   &.rarity-s { background: rgba(251, 191, 36, 0.2); color: #fcd34d; }
   &.rarity-ss { background: rgba(244, 114, 182, 0.2); color: #f9a8d4; }
+  &.rarity-sin { 
+    background: linear-gradient(135deg, rgba(20, 20, 20, 0.9), rgba(60, 20, 40, 0.8));
+    color: #dc2626;
+    border: 1px solid rgba(139, 0, 0, 0.5);
+    text-shadow: 0 0 6px rgba(220, 38, 38, 0.6);
+    animation: sin-rate-pulse 2s ease-in-out infinite;
+  }
+}
+
+@keyframes sin-rate-pulse {
+  0%, 100% { box-shadow: 0 0 8px rgba(139, 0, 0, 0.3); }
+  50% { box-shadow: 0 0 15px rgba(139, 0, 0, 0.6); }
 }
 
 .gacha-note {
@@ -1922,10 +1966,23 @@ async function forgetSkill(skillId: string) {
   &.rarity-a { background: rgba(167, 139, 250, 0.2); color: #c4b5fd; border: 1px solid rgba(167, 139, 250, 0.3); }
   &.rarity-s { background: rgba(251, 191, 36, 0.2); color: #fcd34d; border: 1px solid rgba(251, 191, 36, 0.3); }
   &.rarity-ss { background: rgba(244, 114, 182, 0.2); color: #f9a8d4; border: 1px solid rgba(244, 114, 182, 0.3); }
+  &.rarity-sin { 
+    background: linear-gradient(135deg, rgba(20, 20, 20, 0.9), rgba(60, 20, 40, 0.8));
+    color: #dc2626;
+    border: 1px solid rgba(139, 0, 0, 0.6);
+    box-shadow: 0 0 12px rgba(139, 0, 0, 0.4), inset 0 0 8px rgba(0, 0, 0, 0.5);
+    text-shadow: 0 0 6px rgba(220, 38, 38, 0.6);
+    animation: sin-pulse 2s ease-in-out infinite;
+  }
   
   &:hover {
     transform: scale(1.05);
   }
+}
+
+@keyframes sin-pulse {
+  0%, 100% { box-shadow: 0 0 12px rgba(139, 0, 0, 0.4), inset 0 0 8px rgba(0, 0, 0, 0.5); }
+  50% { box-shadow: 0 0 20px rgba(139, 0, 0, 0.7), inset 0 0 12px rgba(0, 0, 0, 0.6); }
 }
 
 .talent-result {
@@ -1996,6 +2053,109 @@ async function forgetSkill(skillId: string) {
   &.rarity-a .talent-rarity { color: #c4b5fd; }
   &.rarity-s .talent-rarity { color: #fcd34d; }
   &.rarity-ss .talent-rarity { color: #f9a8d4; }
+  
+  &.rarity-sin {
+    border-left: 3px solid #8b0000;
+    background: linear-gradient(135deg, rgba(20, 20, 20, 0.95), rgba(60, 20, 40, 0.9));
+    box-shadow: 0 0 15px rgba(139, 0, 0, 0.3), inset 0 0 20px rgba(0, 0, 0, 0.4);
+    animation: sin-card-pulse 3s ease-in-out infinite;
+    
+    .talent-rarity { color: #dc2626; text-shadow: 0 0 8px rgba(220, 38, 38, 0.8); }
+    .talent-name { color: #ef4444; text-shadow: 0 0 6px rgba(239, 68, 68, 0.5); }
+    .talent-desc { color: rgba(255, 200, 200, 0.8); }
+  }
+}
+
+@keyframes sin-card-pulse {
+  0%, 100% { box-shadow: 0 0 15px rgba(139, 0, 0, 0.3), inset 0 0 20px rgba(0, 0, 0, 0.4); }
+  50% { box-shadow: 0 0 25px rgba(139, 0, 0, 0.5), inset 0 0 25px rgba(0, 0, 0, 0.5); }
+}
+
+// SIN天赋暗黑特效
+.sin-effect-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle at center, rgba(60, 0, 0, 0.9), rgba(0, 0, 0, 0.95));
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: sin-overlay-fade 3s ease-out forwards;
+  pointer-events: none;
+}
+
+.sin-effect-content {
+  text-align: center;
+  animation: sin-content-appear 0.5s ease-out;
+}
+
+.sin-symbol {
+  font-size: 80px;
+  color: #dc2626;
+  text-shadow: 0 0 30px rgba(220, 38, 38, 0.8), 0 0 60px rgba(139, 0, 0, 0.6);
+  animation: sin-symbol-pulse 1s ease-in-out infinite;
+}
+
+.sin-text {
+  font-size: 28px;
+  font-weight: bold;
+  color: #ef4444;
+  text-shadow: 0 0 20px rgba(239, 68, 68, 0.8), 0 0 40px rgba(139, 0, 0, 0.5);
+  margin-top: 20px;
+  letter-spacing: 8px;
+  animation: sin-text-glow 2s ease-in-out infinite;
+}
+
+.sin-particles {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  background-image: 
+    radial-gradient(2px 2px at 20% 30%, rgba(220, 38, 38, 0.8), transparent),
+    radial-gradient(2px 2px at 40% 70%, rgba(139, 0, 0, 0.6), transparent),
+    radial-gradient(2px 2px at 60% 20%, rgba(220, 38, 38, 0.7), transparent),
+    radial-gradient(2px 2px at 80% 60%, rgba(139, 0, 0, 0.5), transparent);
+  animation: sin-particles-float 3s linear infinite;
+}
+
+.sin-glow {
+  animation: sin-result-glow 2s ease-in-out infinite;
+}
+
+@keyframes sin-overlay-fade {
+  0% { opacity: 1; }
+  70% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+@keyframes sin-content-appear {
+  0% { transform: scale(0.5); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes sin-symbol-pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+}
+
+@keyframes sin-text-glow {
+  0%, 100% { text-shadow: 0 0 20px rgba(239, 68, 68, 0.8), 0 0 40px rgba(139, 0, 0, 0.5); }
+  50% { text-shadow: 0 0 30px rgba(239, 68, 68, 1), 0 0 60px rgba(139, 0, 0, 0.8); }
+}
+
+@keyframes sin-particles-float {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(-20px); }
+}
+
+@keyframes sin-result-glow {
+  0%, 100% { box-shadow: 0 0 10px rgba(139, 0, 0, 0.3); }
+  50% { box-shadow: 0 0 25px rgba(139, 0, 0, 0.6), 0 0 40px rgba(220, 38, 38, 0.3); }
 }
 
 .talent-actions {
@@ -2122,6 +2282,18 @@ async function forgetSkill(skillId: string) {
   &.rarity-a { border-left: 3px solid #a78bfa; }
   &.rarity-s { border-left: 3px solid #fbbf24; }
   &.rarity-ss { border-left: 3px solid #f472b6; }
+  &.rarity-sin {
+    border-left: 3px solid #8b0000;
+    background: linear-gradient(135deg, rgba(20, 20, 20, 0.95), rgba(60, 20, 40, 0.9));
+    box-shadow: 0 0 15px rgba(139, 0, 0, 0.3), inset 0 0 20px rgba(0, 0, 0, 0.4);
+    
+    .talent-name { color: #ef4444; text-shadow: 0 0 6px rgba(239, 68, 68, 0.5); }
+    .talent-desc { color: rgba(255, 200, 200, 0.7); }
+    .talent-icon {
+      background: rgba(139, 0, 0, 0.3);
+      i { color: #dc2626; }
+    }
+  }
   
   .talent-icon {
     display: flex;
@@ -2164,6 +2336,11 @@ async function forgetSkill(skillId: string) {
     &.rarity-a { background: rgba(167, 139, 250, 0.3); color: #c4b5fd; }
     &.rarity-s { background: rgba(251, 191, 36, 0.3); color: #fcd34d; }
     &.rarity-ss { background: rgba(244, 114, 182, 0.3); color: #f9a8d4; }
+    &.rarity-sin { 
+      background: rgba(139, 0, 0, 0.4); 
+      color: #dc2626; 
+      text-shadow: 0 0 6px rgba(220, 38, 38, 0.6);
+    }
   }
   
   .talent-desc {
@@ -2351,6 +2528,23 @@ async function forgetSkill(skillId: string) {
     &.rarity-a .talent-rarity { color: #a78bfa; }
     &.rarity-s .talent-rarity { color: #fbbf24; }
     &.rarity-ss .talent-rarity { color: #f87171; }
+    
+    &.rarity-sin {
+      background: linear-gradient(135deg, rgba(20, 20, 20, 0.95), rgba(60, 20, 40, 0.9));
+      border: 1px solid rgba(139, 0, 0, 0.6);
+      box-shadow: 0 0 10px rgba(139, 0, 0, 0.3);
+      
+      .talent-name { color: #ef4444; text-shadow: 0 0 6px rgba(239, 68, 68, 0.5); }
+      .talent-rarity { 
+        color: #dc2626; 
+        background: rgba(139, 0, 0, 0.3);
+        text-shadow: 0 0 8px rgba(220, 38, 38, 0.8);
+      }
+      
+      &:hover {
+        box-shadow: 0 0 15px rgba(139, 0, 0, 0.5);
+      }
+    }
   }
 }
 </style>

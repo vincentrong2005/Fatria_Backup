@@ -162,7 +162,7 @@ export interface CombatLogEntry {
   turn: number;
   message: string;
   source: string;
-  type: 'damage' | 'heal' | 'info' | 'critical';
+  type: 'damage' | 'heal' | 'info' | 'critical' | 'buff';
 }
 
 /** 回合状态 */

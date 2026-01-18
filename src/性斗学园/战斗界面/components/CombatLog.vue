@@ -29,7 +29,8 @@
           'log-critical': log.type === 'critical',
           'log-damage': log.type === 'damage',
           'log-heal': log.type === 'heal',
-          'log-info': log.type === 'info'
+          'log-info': log.type === 'info',
+          'log-buff': log.type === 'buff'
         }"
       >
         <span class="log-turn">[{{ log.turn }}]</span>
@@ -41,7 +42,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, nextTick } from 'vue';
+import { nextTick, ref, watch } from 'vue';
 import type { CombatLogEntry } from '../types';
 
 const props = defineProps<{
@@ -179,6 +180,11 @@ watch(() => props.logs.length, () => {
 
 .log-info {
   color: #cbd5e1;
+}
+
+.log-buff {
+  color: #fbbf24;
+  font-weight: 700;
 }
 
 @keyframes slideUp {

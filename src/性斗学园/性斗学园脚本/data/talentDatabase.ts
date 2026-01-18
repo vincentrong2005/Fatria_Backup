@@ -23,7 +23,8 @@ export type TalentEffectType =
   | 'counter'               // 反击类
   | 'recovery'              // 恢复类
   | 'special'               // 特殊类
-  | 'daily';                // 日常类（非战斗效果）
+  | 'daily'                 // 日常类（非战斗效果）
+  | 'sin';                  // 七宗罪类（特殊机制）
 
 export interface TalentEffect {
   type: TalentEffectType;
@@ -45,10 +46,13 @@ export interface TalentData {
   id: string;
   name: string;
   description: string;      // 完整描述（包含属性和效果）
-  rarity: 'C' | 'B' | 'A' | 'S' | 'SS';
+  rarity: 'C' | 'B' | 'A' | 'S' | 'SS' | 'SIN';
   bonus: TalentBonus;       // 属性加成
   effects: TalentEffect[];  // 战斗效果列表
 }
+
+// 七宗罪天赋效果类型
+export type SinTalentType = 'lust' | 'wrath' | 'envy' | 'sloth' | 'pride' | 'gluttony' | 'greed';
 
 // 天赋库
 export const TALENT_DATABASE: TalentData[] = [
@@ -615,35 +619,169 @@ export const TALENT_DATABASE: TalentData[] = [
       params: { multiplier: 2 }
     }]
   },
+
+  // ==================== 七宗罪天赋 ====================
+  {
+    id: 'talent_sin_lust',
+    name: '色欲',
+    description: '【七宗罪·色欲】魅力+100。每回合攻击被动附带魅惑属性（概率=30%+(自身魅力-对方魅力)/10），魅惑成功则束缚敌人1回合。但魅惑成功会降低自身12%忍耐力成算（可叠加），连续魅惑失败两次则对方下次攻击必定命中且暴击。',
+    rarity: 'SIN',
+    bonus: { 魅力加成: 100 },
+    effects: [{
+      type: 'sin',
+      trigger: 'sin_lust',
+      effect: 'sin_lust_charm',
+      params: { value: 10 }
+    }]
+  },
+  {
+    id: 'talent_sin_wrath',
+    name: '暴怒',
+    description: '【七宗罪·暴怒】所有攻击连击+1，暴击率+999%。但闪避率-999%，无法使用道具和投降，跳过回合时自身快感+20%最大快感。',
+    rarity: 'SIN',
+    bonus: { 暴击率加成: 999 },
+    effects: [{
+      type: 'sin',
+      trigger: 'sin_wrath',
+      effect: 'sin_wrath_rage',
+      params: { value: 20 }
+    }]
+  },
+  {
+    id: 'talent_sin_envy',
+    name: '嫉妒',
+    description: '【七宗罪·嫉妒】战斗开始时从对手属性中随机选取2项进行比较：若对手属性高于自身，则自身该属性+50%对手值；若对手属性低于或等于自身，则自身该属性-100%对手值。',
+    rarity: 'SIN',
+    bonus: {},
+    effects: [{
+      type: 'sin',
+      trigger: 'sin_envy',
+      effect: 'sin_envy_compare',
+      params: { value: 50, count: 2 }
+    }]
+  },
+  {
+    id: 'talent_sin_sloth',
+    name: '懒惰',
+    description: '【七宗罪·懒惰】每跳过回合获得1层"怠惰积蓄"（最多3层），每层提供性斗力/忍耐力成算+10%、闪避率+5%。使用技能时消耗所有积蓄：1层必定暴击，2层必定命中，3层连击+2。但前3回合无法攻击，使用技能后2回合性斗力成算-20%、闪避率-15%，被暴击时若有3层积蓄则全部清空并被束缚1回合。',
+    rarity: 'SIN',
+    bonus: {},
+    effects: [{
+      type: 'sin',
+      trigger: 'sin_sloth',
+      effect: 'sin_sloth_accumulate',
+      params: { maxValue: 3, duration: 3 }
+    }]
+  },
+  {
+    id: 'talent_sin_pride',
+    name: '傲慢',
+    description: '【七宗罪·傲慢】性斗力/忍耐力成算+20%。当自身属性高于对手时额外+20%效果，连续2回合暴击后下回合攻击必中且连击+2。但无法使用消耗品与投降，当对手属性高于自身时该属性-20%，被暴击时进入"动摇"状态（2回合暴击率/闪避率-30%）。',
+    rarity: 'SIN',
+    bonus: { 基础性斗力成算: 20, 基础忍耐力成算: 20 },
+    effects: [{
+      type: 'sin',
+      trigger: 'sin_pride',
+      effect: 'sin_pride_arrogance',
+      params: { value: 20, duration: 2 }
+    }]
+  },
+  {
+    id: 'talent_sin_gluttony',
+    name: '暴食',
+    description: '【七宗罪·暴食】每次造成伤害时减少自身20%最大快感的快感。每次受到伤害获得1层「饕饉」（最多5层），每层提供性斗力/忍耐力成算+10、暴击率+5%。但每回合未造成伤害（包括被闪避）则快感+20%最大快感，5层饕饉时下回合束缚且清空层数，战斗中无法使用背包。',
+    rarity: 'SIN',
+    bonus: {},
+    effects: [{
+      type: 'sin',
+      trigger: 'sin_gluttony',
+      effect: 'sin_gluttony_devour',
+      params: { value: 10, maxValue: 5 }
+    }]
+  },
+  {
+    id: 'talent_sin_greed',
+    name: '贪婪',
+    description: '【七宗罪·贪婪】每回合开始消耗10%当前耐力获得1层「贪婪」（最多5层），每层提供暴击率+10%、魅力+30、幸运+30、性斗力成算+15%。3层以上时暴击伤害从150%提升至300%。但每层闪避率-10%，被束缚时持续时间+2回合，跳过回合失去2层并增加层数×5%最大快感的快感，战斗中无法使用背包和投降。',
+    rarity: 'SIN',
+    bonus: {},
+    effects: [{
+      type: 'sin',
+      trigger: 'sin_greed',
+      effect: 'sin_greed_accumulate',
+      params: { value: 10, maxValue: 5 }
+    }]
+  },
 ];
 
- export const TALENT_GACHA_RATES: Record<TalentData['rarity'], number> = {
-   C: 30,
-   B: 35,
-   A: 25,
-   S: 7.5,
-   SS: 2.5,
- };
+// 基础抽取概率（不含SIN）
+export const TALENT_GACHA_RATES: Record<TalentData['rarity'], number> = {
+  C: 30,
+  B: 35,
+  A: 25,
+  S: 7.5,
+  SS: 2.5,
+  SIN: 0, // SIN概率动态计算，基础为0
+};
 
- function rollTalentRarity(): TalentData['rarity'] {
-   const roll = Math.random() * 100;
-   let cumulative = 0;
- 
-   for (const [rarity, rate] of Object.entries(TALENT_GACHA_RATES)) {
-     cumulative += rate;
-     if (roll < cumulative) {
-       return rarity as TalentData['rarity'];
-     }
-   }
- 
-   return 'C';
- }
+/**
+ * 计算七宗罪天赋的抽取概率
+ * 概率 = 20% * (堕落度/100)^2
+ * @param corruptionLevel 堕落度 (0-100)
+ */
+export function calculateSinProbability(corruptionLevel: number): number {
+  const normalizedCorruption = Math.max(0, Math.min(100, corruptionLevel)) / 100;
+  return 20 * Math.pow(normalizedCorruption, 2);
+}
 
-// 执行天赋抽取
-export function performTalentGacha(): TalentData {
-  const rarity = rollTalentRarity();
+/**
+ * 根据堕落度获取调整后的抽取概率
+ * SIN概率会平均占用C/B/A的概率
+ * @param corruptionLevel 堕落度 (0-100)
+ */
+export function getAdjustedGachaRates(corruptionLevel: number): Record<TalentData['rarity'], number> {
+  const sinProb = calculateSinProbability(corruptionLevel);
+  const deductPerRarity = sinProb / 3; // 从C/B/A各扣除1/3
+  
+  return {
+    C: Math.max(0, TALENT_GACHA_RATES.C - deductPerRarity),
+    B: Math.max(0, TALENT_GACHA_RATES.B - deductPerRarity),
+    A: Math.max(0, TALENT_GACHA_RATES.A - deductPerRarity),
+    S: TALENT_GACHA_RATES.S,
+    SS: TALENT_GACHA_RATES.SS,
+    SIN: sinProb,
+  };
+}
+
+/**
+ * 根据堕落度抽取天赋稀有度
+ * @param corruptionLevel 堕落度 (0-100)
+ */
+function rollTalentRarity(corruptionLevel: number = 0): TalentData['rarity'] {
+  const rates = getAdjustedGachaRates(corruptionLevel);
+  const roll = Math.random() * 100;
+  let cumulative = 0;
+
+  // 按照 SIN -> SS -> S -> A -> B -> C 的顺序判定（优先判定稀有度高的）
+  const order: TalentData['rarity'][] = ['SIN', 'SS', 'S', 'A', 'B', 'C'];
+  for (const rarity of order) {
+    cumulative += rates[rarity];
+    if (roll < cumulative) {
+      return rarity;
+    }
+  }
+
+  return 'C';
+}
+
+/**
+ * 执行天赋抽取
+ * @param corruptionLevel 堕落度 (0-100)，影响七宗罪天赋的抽取概率
+ */
+export function performTalentGacha(corruptionLevel: number = 0): TalentData {
+  const rarity = rollTalentRarity(corruptionLevel);
   const pool = TALENT_DATABASE.filter(t => t.rarity === rarity);
-  const finalPool = pool.length > 0 ? pool : TALENT_DATABASE;
+  const finalPool = pool.length > 0 ? pool : TALENT_DATABASE.filter(t => t.rarity !== 'SIN');
   return finalPool[Math.floor(Math.random() * finalPool.length)];
 }
 

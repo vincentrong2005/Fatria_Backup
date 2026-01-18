@@ -90,7 +90,7 @@
 
         <div>
           <div class="font-semibold text-white">Q: 为什么AI说的和我的状态栏不一样？</div>
-          <div>A: 以状态栏为主，AI回口胡。</div>
+          <div>A: 以状态栏为主，AI会口胡。</div>
         </div>
 
         
