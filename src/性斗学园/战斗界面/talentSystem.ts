@@ -940,9 +940,9 @@ export function processEnvyOnBattleStart(
     luck: '幸运',
   };
   
-  // 随机选择2个属性
+  // 随机选择3个属性
   const shuffled = [...statKeys].sort(() => Math.random() - 0.5);
-  const selectedStats = shuffled.slice(0, 2);
+  const selectedStats = shuffled.slice(0, 3);
   
   const effects: Array<{ attribute: string; value: number; isBonus: boolean; message: string }> = [];
   
@@ -952,8 +952,8 @@ export function processEnvyOnBattleStart(
     const displayName = statNames[stat];
     
     if (enemyValue > playerValue) {
-      // 对手属性高于自身，自身+50%对手值
-      const boost = Math.floor(enemyValue * 0.5);
+      // 对手属性高于自身，自身+80%对手值
+      const boost = Math.floor(enemyValue * 0.8);
       effects.push({ 
         attribute: displayName, 
         value: boost, 

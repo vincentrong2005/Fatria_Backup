@@ -650,14 +650,14 @@ export const TALENT_DATABASE: TalentData[] = [
   {
     id: 'talent_sin_envy',
     name: '嫉妒',
-    description: '【七宗罪·嫉妒】战斗开始时从对手属性中随机选取2项进行比较：若对手属性高于自身，则自身该属性+50%对手值；若对手属性低于或等于自身，则自身该属性-100%对手值。',
+    description: '【七宗罪·嫉妒】战斗开始时从对手属性中随机选取3项进行比较：若对手属性高于自身，则自身该属性+80%对手值；若对手属性低于或等于自身，则自身该属性-100%对手值。',
     rarity: 'SIN',
     bonus: {},
     effects: [{
       type: 'sin',
       trigger: 'sin_envy',
       effect: 'sin_envy_compare',
-      params: { value: 50, count: 2 }
+      params: { value: 80, count: 3 }
     }]
   },
   {

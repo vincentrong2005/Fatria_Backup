@@ -42,13 +42,6 @@
       </div>
       <span class="stat-value">{{ stats.luck }}</span>
     </div>
-    <div class="stat-item stat-full">
-      <div class="stat-info text-purple-400">
-        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a8 8 0 1 0 8 8H4a8 8 0 1 0 8-8z"/><path d="M12 2v8"/><path d="m4.93 10.93 1.41 1.41"/><path d="m2 18 2 2"/><path d="m22 18-2 2"/><path d="m17.66 12.34 1.41-1.41"/></svg>
-        <span class="stat-label">意志力</span>
-      </div>
-      <span class="stat-value">{{ stats.willpower }}</span>
-    </div>
   </div>
 </template>
 
