@@ -119,6 +119,7 @@ export const Schema = z.object({
   // --- 角色基础 ---
   角色基础: z.object({
     _等级: z.coerce.number().transform(n => _.clamp(n, 1, 100)).prefault(1),
+    _姓名: z.string().prefault(""),
     经验值: z.coerce.number().min(0).prefault(0),
     声望: z.coerce.number().transform(n => _.clamp(n, -10000, 10000)).prefault(0),
     _段位: z.enum(["无段位", "D", "C", "B", "A", "S", "SS", "SSS"]).prefault("无段位"),
@@ -173,7 +174,7 @@ export const Schema = z.object({
     对手幸运: z.coerce.number().prefault(0),
     对手闪避率: z.coerce.number().prefault(0),
     对手暴击率: z.coerce.number().prefault(0),
-    对手等级: z.coerce.number().min(1).prefault(1),
+    对手等级: z.coerce.number().min(0).prefault(1),
     对手耐力: z.coerce.number().prefault(100),
     对手最大耐力: z.coerce.number().prefault(100),
     对手快感: z.coerce.number().prefault(0),

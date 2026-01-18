@@ -418,6 +418,7 @@ function handleModalImageError(event: Event) {
   padding: 16px 20px;
   overflow-y: auto;
   flex: 1;
+  position: relative;
 }
 
 .section {
@@ -831,7 +832,7 @@ function handleModalImageError(event: Event) {
 
 // 头像放大模态框样式
 .avatar-modal {
-  position: fixed;
+  position: absolute;
   top: 0;
   left: 0;
   right: 0;
@@ -840,7 +841,7 @@ function handleModalImageError(event: Event) {
   display: flex;
   align-items: flex-start;
   justify-content: center;
-  padding: max(50px, env(safe-area-inset-top, 0px) + 20px) 20px calc(20px + env(safe-area-inset-bottom, 0px)) 20px;
+  padding: 16px;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
 }
@@ -862,10 +863,13 @@ function handleModalImageError(event: Event) {
   border: 1px solid rgba(255, 255, 255, 0.15);
   width: 360px;
   max-width: 95vw;
+  max-height: 100%;
   overflow: hidden;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
   margin-top: 8px;
   margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
   
   @media (min-height: 600px) {
     margin-top: max(20px, 5vh);
@@ -917,11 +921,13 @@ function handleModalImageError(event: Event) {
   align-items: center;
   justify-content: center;
   min-height: 200px;
+  flex: 1;
+  min-height: 0;
 }
 
 .modal-avatar-img {
   width: 100%;
-  max-height: min(60vh, 500px);
+  max-height: 100%;
   border-radius: 12px;
   object-fit: contain;
 }

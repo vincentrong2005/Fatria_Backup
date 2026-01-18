@@ -68,15 +68,16 @@
               </p>
             </div>
 
-            <Step1_Identity v-if="step === 1" :data="characterData" @update-data="updateCharacterData" />
-            <Step2_Archetype v-if="step === 2" :data="characterData" @update-data="updateCharacterData" />
+            <Step0_Welcome v-if="step === 1" />
+            <Step1_Identity v-if="step === 2" :data="characterData" @update-data="updateCharacterData" />
+            <Step2_Archetype v-if="step === 3" :data="characterData" @update-data="updateCharacterData" />
             <Step3_Attributes
-              v-if="step === 3"
+              v-if="step === 4"
               :data="characterData"
               :cheat-mode="isCheatActive"
               @update-data="updateCharacterData"
             />
-            <Step4_Skills v-if="step === 4" :data="characterData" @update-data="updateCharacterData" />
+            <Step4_Skills v-if="step === 5" :data="characterData" @update-data="updateCharacterData" />
           </div>
         </div>
 
@@ -95,7 +96,7 @@
 
           <button
             v-if="step < MAX_STEPS"
-            :disabled="step === 1 && !characterData.name"
+            :disabled="step === 2 && !characterData.name"
             class="group relative flex items-center gap-2 rounded-xl bg-white px-8 py-3 font-bold text-black shadow-lg shadow-white/10 transition-all hover:scale-105 hover:shadow-white/20 active:scale-95 disabled:opacity-50 disabled:hover:scale-100"
             @click="nextStep"
           >
@@ -446,6 +447,7 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
 import FloatingShapes from './components/FloatingShapes.vue';
+import Step0_Welcome from './components/Step0_Welcome.vue';
 import Step1_Identity from './components/Step1_Identity.vue';
 import Step2_Archetype from './components/Step2_Archetype.vue';
 import Step3_Attributes from './components/Step3_Attributes.vue';
@@ -1359,18 +1361,20 @@ const applyCheatCode = async () => {
   }
 };
 
-const MAX_STEPS = 4;
+const MAX_STEPS = 5;
 
 const navItems = [
-  { id: 1, label: '身份档案', icon: 'fa-user' },
-  { id: 2, label: '角色类型', icon: 'fa-wand-magic-sparkles' },
-  { id: 3, label: '天赋分配', icon: 'fa-dice-d20' },
-  { id: 4, label: '初始技能', icon: 'fa-hand-fist' },
+  { id: 1, label: '温馨提示', icon: 'fa-heart' },
+  { id: 2, label: '身份档案', icon: 'fa-user' },
+  { id: 3, label: '角色类型', icon: 'fa-wand-magic-sparkles' },
+  { id: 4, label: '天赋分配', icon: 'fa-dice-d20' },
+  { id: 5, label: '初始技能', icon: 'fa-hand-fist' },
 ];
 
-const stepTitles = ['创建你的学籍档案', '选择你的校园定位', '激活你的天赋潜能', '选择初始技能'];
+const stepTitles = ['温馨提示', '创建你的学籍档案', '选择你的校园定位', '激活你的天赋潜能', '选择初始技能'];
 
 const stepDescriptions = [
+  '请先阅读说明与常见问题，确保你的环境配置正确。',
   '请输入基础信息以办理入学手续。',
   '不同的身份将决定你在学园中的社交圈层与初始加成。',
   '根据游戏难度，你需要合理分配有限的天赋点数。',
@@ -1386,7 +1390,7 @@ const updateCharacterData = (fields: Partial<CharacterData>) => {
 const nextStep = () => {
   if (step.value < MAX_STEPS) {
     // 如果离开步骤3（天赋分配），重置属性到初始值
-    if (step.value === 3) {
+    if (step.value === 4) {
       resetAttributes();
     }
     step.value++;
@@ -1396,7 +1400,7 @@ const nextStep = () => {
 const prevStep = () => {
   if (step.value > 1) {
     // 如果离开步骤3（天赋分配），重置属性到初始值
-    if (step.value === 3) {
+    if (step.value === 4) {
       resetAttributes();
     }
     step.value--;
@@ -1406,7 +1410,7 @@ const prevStep = () => {
 const handleNavClick = (id: number) => {
   if (id < step.value) {
     // 如果离开步骤3（天赋分配），重置属性到初始值
-    if (step.value === 3) {
+    if (step.value === 4) {
       resetAttributes();
     }
     step.value = id;
@@ -1518,6 +1522,7 @@ const handleStartGame = async () => {
       '技能系统.主动技能': activeSkillsRecord,
       '永久状态.状态列表': permanentStateList,
       '永久状态.加成统计': permanentBonusStats,
+      '角色基础._姓名': characterData.value.name,
       '角色基础.难度': mvuDifficulty, // 新增：写入难度
       '角色基础.性别': mvuGender, // 新增：写入性别
     });
@@ -1847,22 +1852,6 @@ const clearMasochistTraitFromWorldbook = async () => {
 
     // 方法2: 如果无法直接访问，尝试通过slash命令执行器
     if (!worldbookUpdated) {
-      // 先获取现有内容
-      let existingContent = '';
-      try {
-        // @ts-ignore - getWorldbook 为全局注入
-        if (typeof getWorldbook === 'function') {
-          // @ts-ignore
-          const worldbook = await getWorldbook('性斗学园 V2.2');
-          const entry = worldbook.find((e: any) => e.uid === '1' || e.uid === 1);
-          if (entry && entry.content) {
-            existingContent = entry.content;
-          }
-        }
-      } catch (e) {
-        // 忽略获取现有内容的错误
-      }
-
       // 清空条目内容
       const finalContent = '';
 
@@ -2018,22 +2007,6 @@ const writeMasochistTraitToWorldbook = async () => {
 
     // 方法2: 如果无法直接访问，尝试通过slash命令执行器
     if (!worldbookUpdated) {
-      // 先获取现有内容
-      let existingContent = '';
-      try {
-        // @ts-ignore - getWorldbook 为全局注入
-        if (typeof getWorldbook === 'function') {
-          // @ts-ignore
-          const worldbook = await getWorldbook('性斗学园 V2.2');
-          const entry = worldbook.find((e: any) => e.uid === '1' || e.uid === 1);
-          if (entry && entry.content) {
-            existingContent = entry.content;
-          }
-        }
-      } catch (e) {
-        // 忽略获取现有内容的错误
-      }
-
       const finalContent = traitContent;
 
       const command = `/setentryfield file=性斗学园 V2.2 uid=1 field=content ${finalContent}`;
