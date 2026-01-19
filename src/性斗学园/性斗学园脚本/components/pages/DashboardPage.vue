@@ -2,6 +2,18 @@
   <div class="dashboard-page">
     <!-- 顶部信息栏 -->
     <div class="top-row">
+      <!-- 日期卡片 -->
+      <div class="date-card">
+        <div class="card-icon">
+          <i class="fas fa-calendar-day"></i>
+        </div>
+        <div class="card-content">
+          <div class="card-label">日期</div>
+          <div class="card-value">{{ timeData.日期 || '' }}</div>
+          <div class="card-sub">{{ weekdayText(timeData.星期) }}</div>
+        </div>
+      </div>
+
       <!-- 位置卡片 -->
       <div class="location-card">
         <div class="card-icon">
@@ -127,9 +139,19 @@ const locationData = computed(() => {
   return props.characterData.位置系统 || {};
 });
 
+const timeData = computed(() => {
+  return props.characterData.时间系统 || {};
+});
+
 const mainQuest = computed(() => {
   return props.characterData.任务系统?.主线任务 || {};
 });
+
+function weekdayText(day: number): string {
+  const map = ['周一', '周二', '周三', '周四', '周五', '周六', '周日'];
+  const idx = Math.min(7, Math.max(1, Number(day || 1))) - 1;
+  return map[idx];
+}
 
 
 function getPercentage(current: number, max: number): number {
@@ -158,7 +180,7 @@ function formatNumber(num: number): string {
   gap: 12px;
 }
 
-.location-card, .coins-card {
+.date-card, .location-card, .coins-card {
   display: flex;
   align-items: center;
   gap: 12px;
@@ -166,6 +188,14 @@ function formatNumber(num: number): string {
   border-radius: 14px;
   backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.date-card {
+  background: linear-gradient(135deg, rgba(96, 165, 250, 0.3), rgba(96, 165, 250, 0.1));
+  
+  .card-icon {
+    color: #60a5fa;
+  }
 }
 
 .location-card {
