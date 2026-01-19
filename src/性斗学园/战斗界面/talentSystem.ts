@@ -64,6 +64,7 @@ export interface TalentState {
   lustEnemyGuaranteedCrit: boolean;    // 敌人下次攻击必中且暴击
   // 暴怒
   wrathActive: boolean;                // 暴怒状态是否激活
+  wrathDealtDamageThisTurn: boolean;   // 本回合是否造成了伤害（与暴食共用逻辑）
   // 嫉妒
   envyApplied: boolean;                // 嫉妒效果是否已应用
   // 懒惰
@@ -104,6 +105,7 @@ export function createDefaultTalentState(): TalentState {
     lustCharmFailCount: 0,
     lustEnemyGuaranteedCrit: false,
     wrathActive: false,
+    wrathDealtDamageThisTurn: false,
     envyApplied: false,
     slothStacks: 0,
     slothCannotAttackTurns: 0,

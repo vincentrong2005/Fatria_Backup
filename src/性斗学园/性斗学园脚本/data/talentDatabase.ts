@@ -637,7 +637,7 @@ export const TALENT_DATABASE: TalentData[] = [
   {
     id: 'talent_sin_wrath',
     name: '暴怒',
-    description: '【七宗罪·暴怒】所有攻击连击+1，暴击率+999%。但闪避率-999%，无法使用道具和投降，跳过回合时自身快感+20%最大快感。',
+    description: '【七宗罪·暴怒】所有攻击连击+1，暴击率+999%。但闪避率-999%，无法使用道具和投降，若本回合没有造成伤害则自身快感+20%最大快感。',
     rarity: 'SIN',
     bonus: { 暴击率加成: 999 },
     effects: [{

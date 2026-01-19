@@ -1048,7 +1048,7 @@ async function loadEnemyFromMvuData(data: any, maxClimaxCount: number) {
     enemy.value.stats.maxClimaxCount = bossClimaxLimit;
     
     // 入场对话已在BossSystem.initChristineBoss()中通过queueDialogues播放
-    addLog(`【特殊战斗】克莉丝汀BOSS战开始！`, 'system', 'critical');
+    // 克莉丝汀是隐藏BOSS，不显示特殊战斗日志
     
     console.info(`[战斗界面] BOSS战初始化完成: ${bossDisplayName}, 高潮次数上限: ${bossClimaxLimit}`);
   }
@@ -2376,6 +2376,11 @@ function handlePlayerSkill(skill: Skill) {
               playerTalentState.value.gluttonyDealtDamageThisTurn = true;
               break;
             }
+            case 'wrath': {
+              // 暴怒：标记本回合造成伤害
+              playerTalentState.value.wrathDealtDamageThisTurn = true;
+              break;
+            }
             case 'pride': {
               // 傲慢：绝对自信状态（连续2回合暴击后）
               if (playerTalentState.value.prideAbsoluteConfidence) {
@@ -2439,10 +2444,13 @@ function handlePlayerSkill(skill: Skill) {
       if (result.isDodged) {
         addLog(`${nextEnemy.name} 闪避了所有攻击！`, 'system', 'info');
         triggerEffect('dodge');
-        // 暴食：被闪避也算未造成伤害，需要重置gluttonyDealtDamageThisTurn为false
+        // 暴食/暴怒：被闪避也算未造成伤害
         const sinTypeOnDodge = TalentSystem.getSinTalentType(playerTalent.value);
         if (sinTypeOnDodge === 'gluttony') {
           playerTalentState.value.gluttonyDealtDamageThisTurn = false;
+        }
+        if (sinTypeOnDodge === 'wrath') {
+          playerTalentState.value.wrathDealtDamageThisTurn = false;
         }
       } else {
         // 输出详细的伤害计算过程（包括连击日志）
@@ -2491,6 +2499,11 @@ function handlePlayerSkill(skill: Skill) {
             nextPlayer.stats.currentPleasure = Math.max(0, nextPlayer.stats.currentPleasure - pleasureReduce);
             playerTalentState.value.gluttonyDealtDamageThisTurn = true;
             addLog(`【七宗罪·暴食】造成伤害，自身快感-${pleasureReduce}`, 'system', 'buff');
+          }
+          
+          // 暴怒：造成伤害时标记已造成伤害
+          if (sinType === 'wrath') {
+            playerTalentState.value.wrathDealtDamageThisTurn = true;
           }
           
           // 色欲：击中后魅惑效果
@@ -2823,14 +2836,14 @@ function handleEnemyTurn() {
   if (enemyBoundTurns.value > 0) {
     addLog(`${enemy.value.name} 被束缚了，无法行动！剩余 ${enemyBoundTurns.value} 回合`, 'system', 'info');
     
-    // ========== 克莉丝汀BOSS第二阶段：暴怒天赋 - 跳过回合时增加快感 ==========
+    // ========== 克莉丝汀BOSS第二阶段：暴怒天赋 - 未造成伤害时增加快感 ==========
     if (BossSystem.bossState.isBossFight && BossSystem.bossState.bossId === 'christine' && BossSystem.bossState.currentPhase === 2) {
       const wrathPleasureGain = Math.floor(enemy.value.stats.maxPleasure * 0.2);
       enemy.value.stats.currentPleasure = Math.min(
         enemy.value.stats.maxPleasure,
         enemy.value.stats.currentPleasure + wrathPleasureGain
       );
-      addLog(`【敌人·暴怒】${enemy.value.name} 因无法行动而暴怒！快感+${wrathPleasureGain}！`, 'system', 'critical');
+      addLog(`【敌人·暴怒】${enemy.value.name} 被束缚无法造成伤害！快感+${wrathPleasureGain}！`, 'system', 'critical');
     }
     
     // 递减束缚回合数
@@ -3051,6 +3064,16 @@ function handleEnemyTurn() {
         if (result.isDodged) {
           addLog(`${nextPlayer.name} 闪避了所有攻击！`, 'system', 'info');
           triggerEffect('dodge');
+          
+          // ========== 克莉丝汀BOSS第二阶段：暴怒天赋 - 攻击被闪避未造成伤害时增加快感 ==========
+          if (BossSystem.bossState.isBossFight && BossSystem.bossState.bossId === 'christine' && BossSystem.bossState.currentPhase === 2) {
+            const wrathPleasureGain = Math.floor(nextEnemy.stats.maxPleasure * 0.2);
+            nextEnemy.stats.currentPleasure = Math.min(
+              nextEnemy.stats.maxPleasure,
+              nextEnemy.stats.currentPleasure + wrathPleasureGain
+            );
+            addLog(`【敌人·暴怒】${nextEnemy.name} 攻击被闪避无法造成伤害！快感+${wrathPleasureGain}！`, 'system', 'critical');
+          }
         } else {
           // 输出详细的伤害计算过程（包括连击日志）
           console.info('[战斗界面] 敌人攻击 - result.logs:', result.logs);
@@ -3266,8 +3289,9 @@ function startNewTurn() {
     if (sinType) {
       switch (sinType) {
         case 'wrath': {
-          // 暴怒：激活暴怒状态
+          // 暴怒：激活暴怒状态，重置本回合造成伤害标记
           playerTalentState.value.wrathActive = true;
+          playerTalentState.value.wrathDealtDamageThisTurn = false;
           break;
         }
         case 'sloth': {
@@ -3579,6 +3603,25 @@ async function endTurn(): Promise<boolean> {
       // 检查是否因暴食效果达到高潮
       if (player.value.stats.currentPleasure >= player.value.stats.maxPleasure && turnState.climaxTarget === null) {
         addLog(`${player.value.name} 因暴食效果达到了快感上限！`, 'system', 'critical');
+        addLog(`${player.value.name} 达到了高潮！ (过程略)`, 'system', 'info');
+        triggerEffect('climax');
+        await processClimaxAfterLLM(false);
+        return true; // 高潮处理会接管后续流程
+      }
+    }
+    
+    // ========== 七宗罪-暴怒：回合结束未造成伤害时快感+20%最大快感 ==========
+    if (sinType === 'wrath' && !playerTalentState.value.wrathDealtDamageThisTurn) {
+      const pleasureIncrease = Math.floor(player.value.stats.maxPleasure * 0.2);
+      player.value.stats.currentPleasure = Math.min(
+        player.value.stats.maxPleasure,
+        player.value.stats.currentPleasure + pleasureIncrease
+      );
+      addLog(`【七宗罪·暴怒】本回合未造成伤害，快感+${pleasureIncrease}`, 'system', 'critical');
+      
+      // 检查是否因暴怒效果达到高潮
+      if (player.value.stats.currentPleasure >= player.value.stats.maxPleasure && turnState.climaxTarget === null) {
+        addLog(`${player.value.name} 因暴怒效果达到了快感上限！`, 'system', 'critical');
         addLog(`${player.value.name} 达到了高潮！ (过程略)`, 'system', 'info');
         triggerEffect('climax');
         await processClimaxAfterLLM(false);
@@ -4367,7 +4410,7 @@ async function executeChristinePhaseTransitionLogic(nextPhase: 1 | 2) {
         // 激活暴怒天赋效果：闪避率归零
         applyTalentBuff('enemy', '敌人天赋_暴怒_闪避归零', { '闪避率加成': -999 }, 999);
         addLog(`【敌人·暴怒】克莉丝汀暴怒觉醒！闪避率归零，所有攻击连击+1，必定暴击！`, 'system', 'critical');
-        addLog(`【敌人·暴怒】若克莉丝汀被束缚无法行动，将因暴怒增加20%最大快感的快感！`, 'system', 'critical');
+        addLog(`【敌人·暴怒】若克莉丝汀本回合没有造成快感伤害，将因暴怒增加自身20%最大快感的快感！`, 'system', 'critical');
       }
     }
   } catch (e) {
@@ -4570,17 +4613,7 @@ function handleSkipTurn() {
     const talentContext = createTalentEffectContext();
     
     switch (sinType) {
-      case 'wrath': {
-        // 暴怒：跳过回合时自身快感+20%最大快感
-        const pleasureIncrease = Math.floor(player.value.stats.maxPleasure * 0.2);
-        const newPleasure = Math.min(
-          player.value.stats.maxPleasure,
-          player.value.stats.currentPleasure + pleasureIncrease
-        );
-        player.value.stats.currentPleasure = newPleasure;
-        addLog(`【七宗罪·暴怒】跳过回合，快感+${pleasureIncrease}（当前${newPleasure}/${player.value.stats.maxPleasure}）`, 'system', 'critical');
-        break;
-      }
+      // 暴怒：现在由回合结束时的未造成伤害检测处理，不再在跳过回合时触发
       case 'sloth': {
         // 懒惰：获得怠惰积蓄
         const result = TalentSystem.processSlothSkipTurn(talentContext);
@@ -5002,7 +5035,11 @@ onMounted(async () => {
   // ========== 敌人七宗罪天赋处理 ==========
   const enemySinType = TalentSystem.getEnemySinTalentType(enemy.value.name);
   if (enemySinType) {
-    addLog(`【敌人天赋】${enemy.value.name} 拥有七宗罪天赋：${getSinTalentDisplayName(enemySinType)}`, 'system', 'critical');
+    // 克莉丝汀是隐藏BOSS，不显示敌人天赋日志
+    const isChristineHiddenBoss = BossSystem.bossState.isBossFight && BossSystem.bossState.bossId === 'christine';
+    if (!isChristineHiddenBoss) {
+      addLog(`【敌人天赋】${enemy.value.name} 拥有七宗罪天赋：${getSinTalentDisplayName(enemySinType)}`, 'system', 'critical');
+    }
     
     // 嫉妒：战斗开始时属性比较（敌人视角：敌人与玩家比较）
     if (enemySinType === 'envy') {
@@ -5039,11 +5076,12 @@ onMounted(async () => {
     
     // 暴怒：克莉丝汀专属（仅第二阶段触发）
     // 第一阶段不触发暴怒效果，第二阶段才激活
+    // 克莉丝汀是隐藏BOSS，第一阶段不显示任何暴怒相关日志
     if (enemySinType === 'wrath') {
       // 克莉丝汀BOSS战：第一阶段不激活暴怒，第二阶段才激活
       if (BossSystem.bossState.isBossFight && BossSystem.bossState.bossId === 'christine') {
         if (BossSystem.bossState.currentPhase === 1) {
-          addLog(`【敌人·暴怒】${enemy.value.name} 的暴怒天赋尚未觉醒...`, 'system', 'info');
+          // 隐藏BOSS第一阶段，不显示任何天赋相关日志
         } else {
           // 第二阶段：激活暴怒效果
           applyTalentBuff('enemy', '敌人天赋_暴怒_闪避归零', { '闪避率加成': -999 }, 999);
