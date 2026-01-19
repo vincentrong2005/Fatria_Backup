@@ -20,25 +20,13 @@
 
     <!-- 标签页切换 -->
     <div class="tab-bar">
-      <button 
-        class="tab-btn" 
-        :class="{ active: currentTab === 'skills' }"
-        @click="currentTab = 'skills'"
-      >
+      <button class="tab-btn" :class="{ active: currentTab === 'skills' }" @click="currentTab = 'skills'">
         <i class="fas fa-hand-fist"></i> 我的技能
       </button>
-      <button 
-        class="tab-btn" 
-        :class="{ active: currentTab === 'gacha' }"
-        @click="currentTab = 'gacha'"
-      >
+      <button class="tab-btn" :class="{ active: currentTab === 'gacha' }" @click="currentTab = 'gacha'">
         <i class="fas fa-dice"></i> 技能抽取
       </button>
-      <button 
-        class="tab-btn" 
-        :class="{ active: currentTab === 'exchange' }"
-        @click="currentTab = 'exchange'"
-      >
+      <button class="tab-btn" :class="{ active: currentTab === 'exchange' }" @click="currentTab = 'exchange'">
         <i class="fas fa-exchange-alt"></i> 兑换
       </button>
     </div>
@@ -58,20 +46,12 @@
       </div>
 
       <div class="gacha-buttons">
-        <button 
-          class="gacha-btn single"
-          :disabled="skillPoints < 2"
-          @click="performGacha(1)"
-        >
+        <button class="gacha-btn single" :disabled="skillPoints < 2" @click="performGacha(1)">
           <i class="fas fa-dice-one"></i>
           <span class="btn-text">单抽</span>
           <span class="btn-cost">2 技能点</span>
         </button>
-        <button 
-          class="gacha-btn ten"
-          :disabled="skillPoints < tenPullCost"
-          @click="performGacha(10)"
-        >
+        <button class="gacha-btn ten" :disabled="skillPoints < tenPullCost" @click="performGacha(10)">
           <i class="fas fa-dice-d20"></i>
           <span class="btn-text">十连抽</span>
           <span class="btn-cost">
@@ -90,15 +70,13 @@
           <span class="rate-item rarity-a">A级 {{ adjustedRates.A.toFixed(1) }}%</span>
           <span class="rate-item rarity-s">S级 {{ adjustedRates.S.toFixed(1) }}%</span>
           <span class="rate-item rarity-ss">SS级 {{ adjustedRates.SS.toFixed(1) }}%</span>
-          <span v-if="adjustedRates.SIN > 0" class="rate-item rarity-sin">罪与罚 {{ adjustedRates.SIN.toFixed(1) }}%</span>
+          <span v-if="adjustedRates.SIN > 0" class="rate-item rarity-sin"
+            >罪与罚 {{ adjustedRates.SIN.toFixed(1) }}%</span
+          >
         </div>
         <p class="talent-gacha-note">消耗10技能点抽取一个天赋，天赋仅能拥有一个</p>
-        
-        <button 
-          class="talent-gacha-btn"
-          :disabled="skillPoints < 10"
-          @click="performTalentGachaAction"
-        >
+
+        <button class="talent-gacha-btn" :disabled="skillPoints < 10" @click="performTalentGachaAction">
           <i class="fas fa-sparkles"></i>
           <span class="btn-text">抽取天赋</span>
           <span class="btn-cost">10 技能点</span>
@@ -107,8 +85,8 @@
         <!-- 当前天赋显示 -->
         <div class="current-talent-display">
           <span class="talent-label">当前天赋：</span>
-          <div 
-            v-if="currentTalent" 
+          <div
+            v-if="currentTalent"
             class="talent-badge"
             :class="getRarityClass(getTalentRarity(currentTalent.id))"
             @mouseenter="showTalentInfo('current')"
@@ -134,7 +112,7 @@
         <!-- 抽取结果展示 -->
         <div v-if="drawnTalent" class="talent-result" :class="{ 'sin-glow': drawnTalent.rarity === 'SIN' }">
           <h4><i class="fas fa-gift"></i> 抽取到的天赋</h4>
-          <div 
+          <div
             class="talent-card"
             :class="getRarityClass(drawnTalent.rarity)"
             @mouseenter="showTalentInfo('drawn')"
@@ -151,9 +129,7 @@
             </div>
           </div>
           <div class="talent-actions">
-            <button class="discard-btn" @click="discardDrawnTalent">
-              <i class="fas fa-times"></i> 舍弃
-            </button>
+            <button class="discard-btn" @click="discardDrawnTalent"><i class="fas fa-times"></i> 舍弃</button>
             <button class="replace-btn" @click="confirmReplaceTalent">
               <i class="fas fa-check"></i> {{ currentTalent ? '替换' : '获得' }}
             </button>
@@ -179,8 +155,8 @@
       <div v-if="gachaResults.length > 0" class="gacha-results">
         <h3><i class="fas fa-gift"></i> 抽取结果（选择你想要的技能）</h3>
         <div class="result-grid">
-          <div 
-            v-for="(skill, index) in gachaResults" 
+          <div
+            v-for="(skill, index) in gachaResults"
             :key="index"
             class="result-card"
             :class="[getRarityClass(skill.rarity), { selected: selectedSkills.has(skill.id) }]"
@@ -195,12 +171,8 @@
           </div>
         </div>
         <div class="result-actions">
-          <button class="select-all-btn" @click="selectAllSkills">
-            <i class="fas fa-check-double"></i> 全选
-          </button>
-          <button class="deselect-all-btn" @click="deselectAllSkills">
-            <i class="fas fa-times"></i> 全不选
-          </button>
+          <button class="select-all-btn" @click="selectAllSkills"><i class="fas fa-check-double"></i> 全选</button>
+          <button class="deselect-all-btn" @click="deselectAllSkills"><i class="fas fa-times"></i> 全不选</button>
           <button class="confirm-btn" @click="confirmGachaResults" :disabled="selectedSkills.size === 0">
             <i class="fas fa-check"></i> 确认获得 ({{ selectedSkills.size }}/{{ gachaResults.length }})
           </button>
@@ -219,7 +191,7 @@
         <h3>金币兑换技能点</h3>
         <p class="exchange-rate">3000 金币 = 1 技能点</p>
         <p class="exchange-note">注意：兑换不可逆，请谨慎操作</p>
-        
+
         <div class="exchange-controls">
           <div class="quantity-control">
             <button class="qty-btn" @click="exchangeAmount = Math.max(1, exchangeAmount - 1)">-</button>
@@ -230,11 +202,7 @@
             <span>消耗: {{ exchangeAmount * 3000 }} 金币</span>
             <span>获得: {{ exchangeAmount }} 技能点</span>
           </div>
-          <button 
-            class="exchange-btn"
-            :disabled="goldCoins < exchangeAmount * 3000"
-            @click="performExchange"
-          >
+          <button class="exchange-btn" :disabled="goldCoins < exchangeAmount * 3000" @click="performExchange">
             <i class="fas fa-exchange-alt"></i> 确认兑换
           </button>
         </div>
@@ -251,8 +219,8 @@
           <div class="talent-select-panel">
             <h4><i class="fas fa-star"></i> 自选天赋</h4>
             <div class="talent-list-scroll">
-              <div 
-                v-for="talent in allTalents" 
+              <div
+                v-for="talent in allTalents"
                 :key="talent.id"
                 class="talent-select-item"
                 :class="getRarityClass(talent.rarity)"
@@ -270,8 +238,8 @@
     <!-- 技能列表页面 -->
     <div v-if="currentTab === 'skills'" class="skills-section">
       <h3 class="section-title">
-        <i class="fas fa-hand-fist"></i> 
-        主动技能 
+        <i class="fas fa-hand-fist"></i>
+        主动技能
         <span class="skill-count">({{ skillCount }} 个)</span>
       </h3>
 
@@ -281,8 +249,8 @@
           <i class="fas fa-star"></i>
           <span>我的天赋</span>
         </div>
-        <div 
-          v-if="currentTalent" 
+        <div
+          v-if="currentTalent"
           class="my-talent-card"
           :class="getRarityClass(getTalentRarity(currentTalent.id))"
           @mouseenter="showTalentInfo('current')"
@@ -320,8 +288,8 @@
       </div>
 
       <div v-else class="skill-list">
-        <div 
-          v-for="(skill, skillId) in activeSkills" 
+        <div
+          v-for="(skill, skillId) in activeSkills"
           :key="skillId"
           class="skill-card"
           :class="getRarityClass(skill.基本信息?.稀有度)"
@@ -334,9 +302,7 @@
                 {{ skill.基本信息?.稀有度 || 'C' }}
               </span>
             </div>
-            <div class="skill-level">
-              Lv.{{ skill.基本信息?.技能等级 || 1 }}
-            </div>
+            <div class="skill-level">Lv.{{ skill.基本信息?.技能等级 || 1 }}</div>
           </div>
 
           <!-- 技能描述 -->
@@ -380,7 +346,7 @@
 
           <!-- 操作按钮 -->
           <div class="skill-actions">
-            <button 
+            <button
               v-if="canUpgrade(skill)"
               class="upgrade-btn"
               @click="upgradeSkill(String(skillId), skill)"
@@ -389,10 +355,7 @@
               <i class="fas fa-arrow-up"></i>
               升级 ({{ getUpgradeCost(skill) }} 点)
             </button>
-            <button 
-              class="forget-btn"
-              @click="forgetSkill(String(skillId))"
-            >
+            <button class="forget-btn" @click="forgetSkill(String(skillId))">
               <i class="fas fa-trash"></i>
               遗忘
             </button>
@@ -400,14 +363,20 @@
         </div>
       </div>
     </div>
-
   </div>
 </template>
 
 <script setup lang="ts">
 import { computed, ref } from 'vue';
 import { performSingleGacha, performTenGacha, type GachaSkillData } from '../../data/skillGachaPool';
-import { getAdjustedGachaRates, getDailyTalentEffect, getTalentById, performTalentGacha, TALENT_DATABASE, type TalentData } from '../../data/talentDatabase';
+import {
+  getAdjustedGachaRates,
+  getDailyTalentEffect,
+  getTalentById,
+  performTalentGacha,
+  TALENT_DATABASE,
+  type TalentData,
+} from '../../data/talentDatabase';
 
 const props = defineProps<{
   characterData: any;
@@ -514,12 +483,12 @@ const currentTalent = computed(() => {
 // 获取稀有度样式类
 function getRarityClass(rarity: string): string {
   const rarityMap: Record<string, string> = {
-    'C': 'rarity-c',
-    'B': 'rarity-b',
-    'A': 'rarity-a',
-    'S': 'rarity-s',
-    'SS': 'rarity-ss',
-    'SIN': 'rarity-sin',
+    C: 'rarity-c',
+    B: 'rarity-b',
+    A: 'rarity-a',
+    S: 'rarity-s',
+    SS: 'rarity-ss',
+    SIN: 'rarity-sin',
   };
   return rarityMap[rarity] || 'rarity-c';
 }
@@ -542,11 +511,11 @@ function getUpgradeCost(skill: any): number {
 function generateSkillDescription(skill: any, originalDesc: string): string {
   const damageInfo = skill.伤害与效果 || {};
   const newCoefficient = damageInfo.系数 || 100;
-  
+
   // 使用正则表达式只替换描述中的伤害数值部分
   // 匹配 "造成XXX%" 格式
   const updatedDesc = originalDesc.replace(/造成(\d+)%/, `造成${newCoefficient}%`);
-  
+
   return updatedDesc;
 }
 
@@ -554,33 +523,33 @@ function generateSkillDescription(skill: any, originalDesc: string): string {
 async function upgradeSkill(skillId: string, skill: any) {
   if (upgradingSkillIds.value.has(skillId)) return;
   upgradingSkillIds.value.add(skillId);
-  
+
   try {
     const globalAny = window as any;
     if (!globalAny.Mvu) return;
-    
+
     const mvuData = globalAny.Mvu.getMvuData({ type: 'message', message_id: 'latest' });
     if (!mvuData || !mvuData.stat_data) return;
-    
+
     // 确保路径存在
     if (!mvuData.stat_data.技能系统) mvuData.stat_data.技能系统 = {};
     if (!mvuData.stat_data.技能系统.主动技能) mvuData.stat_data.技能系统.主动技能 = {};
     if (!mvuData.stat_data.技能系统.主动技能[skillId]) {
       mvuData.stat_data.技能系统.主动技能[skillId] = JSON.parse(JSON.stringify(skill));
     }
-    
+
     const skillData = mvuData.stat_data.技能系统.主动技能[skillId];
-    
+
     // 确保基本信息存在
     if (!skillData.基本信息) skillData.基本信息 = {};
-    
+
     // 保存原始描述用于后续更新
     const originalDesc = skillData.基本信息.技能描述 || '';
-    
+
     // 以 MVU 中的实时等级为准计算本次升级费用（避免连点按旧等级重复计费）
     const currentLevel = skillData.基本信息.技能等级 || 1;
     const cost = currentLevel + 1;
-    
+
     // 二次校验技能点（以 MVU 实际值为准）
     if (!mvuData.stat_data.核心状态) mvuData.stat_data.核心状态 = {};
     const currentSkillPoints = Number(mvuData.stat_data.核心状态.$技能点 || 0);
@@ -590,32 +559,32 @@ async function upgradeSkill(skillId: string, skill: any) {
       }
       return;
     }
-    
+
     // 提升等级
     skillData.基本信息.技能等级 = Math.min(5, currentLevel + 1);
-    
+
     // 根据等级调整属性
     if (!skillData.冷却与消耗) skillData.冷却与消耗 = {};
     if (!skillData.伤害与效果) skillData.伤害与效果 = {};
-    
+
     // 每级增加系数：当前值 × 1.05（向下取整）
     const currentCoefficient = skillData.伤害与效果.系数 || 100;
     skillData.伤害与效果.系数 = Math.floor(currentCoefficient * 1.05);
-    
+
     // 每2级减少消耗1点
     if (currentLevel % 2 === 0) {
       skillData.冷却与消耗.耐力消耗 = Math.max(0, (skillData.冷却与消耗.耐力消耗 || 0) - 1);
     }
-    
+
     // 更新技能描述（只更新数值，保留原有格式）
     skillData.基本信息.技能描述 = generateSkillDescription(skillData, originalDesc);
-    
+
     // 减少技能点（夹紧，防负数）
     mvuData.stat_data.核心状态.$技能点 = Math.max(0, currentSkillPoints - cost);
-    
+
     // 写回MVU
     await globalAny.Mvu.replaceMvuData(mvuData, { type: 'message', message_id: 'latest' });
-    
+
     // 显示成功提示
     if (typeof toastr !== 'undefined') {
       toastr.success(`技能升级成功！等级 ${currentLevel + 1}`, '成功', { timeOut: 1500 });
@@ -634,14 +603,14 @@ async function upgradeSkill(skillId: string, skill: any) {
 async function performGacha(count: number) {
   const cost = count === 1 ? 2 : tenPullCost.value;
   if (skillPoints.value < cost) return;
-  
+
   try {
     const globalAny = window as any;
     if (!globalAny.Mvu) return;
-    
+
     const mvuData = globalAny.Mvu.getMvuData({ type: 'message', message_id: 'latest' });
     if (!mvuData || !mvuData.stat_data) return;
-    
+
     // 扣除技能点
     if (!mvuData.stat_data.核心状态) mvuData.stat_data.核心状态 = {};
     const currentSkillPoints = Number(mvuData.stat_data.核心状态.$技能点 || 0);
@@ -652,20 +621,20 @@ async function performGacha(count: number) {
       return;
     }
     mvuData.stat_data.核心状态.$技能点 = Math.max(0, currentSkillPoints - cost);
-    
+
     // 写回MVU
     await globalAny.Mvu.replaceMvuData(mvuData, { type: 'message', message_id: 'latest' });
-    
+
     // 执行抽取
     if (count === 1) {
       gachaResults.value = [performSingleGacha()];
     } else {
       gachaResults.value = performTenGacha();
     }
-    
+
     // 清空之前的选择
     selectedSkills.value.clear();
-    
+
     if (typeof toastr !== 'undefined') {
       toastr.info(`抽取完成！消耗${cost}技能点`, '抽取', { timeOut: 1500 });
     }
@@ -707,18 +676,18 @@ async function confirmGachaResults() {
     }
     return;
   }
-  
+
   try {
     const globalAny = window as any;
     if (!globalAny.Mvu) return;
-    
+
     const mvuData = globalAny.Mvu.getMvuData({ type: 'message', message_id: 'latest' });
     if (!mvuData || !mvuData.stat_data) return;
-    
+
     // 确保技能系统存在
     if (!mvuData.stat_data.技能系统) mvuData.stat_data.技能系统 = {};
     if (!mvuData.stat_data.技能系统.主动技能) mvuData.stat_data.技能系统.主动技能 = {};
-    
+
     // 只添加选中的技能
     const selectedSkillsList = gachaResults.value.filter(skill => selectedSkills.value.has(skill.id));
     for (const skill of selectedSkillsList) {
@@ -744,7 +713,7 @@ async function confirmGachaResults() {
           效果列表: {},
         },
       };
-      
+
       // 添加buff效果
       if (skill.buffs && skill.buffs.length > 0) {
         skill.buffs.forEach((buff, index) => {
@@ -757,19 +726,19 @@ async function confirmGachaResults() {
           };
         });
       }
-      
+
       // 使用技能ID作为键，如果已存在则覆盖
       mvuData.stat_data.技能系统.主动技能[skill.id] = skillData;
     }
-    
+
     // 写回MVU
     await globalAny.Mvu.replaceMvuData(mvuData, { type: 'message', message_id: 'latest' });
-    
+
     // 清空结果和选择
     const count = selectedSkills.value.size;
     gachaResults.value = [];
     selectedSkills.value.clear();
-    
+
     if (typeof toastr !== 'undefined') {
       toastr.success(`成功获得${count}个技能！`, '成功', { timeOut: 1500 });
     }
@@ -785,29 +754,29 @@ async function confirmGachaResults() {
 async function performExchange() {
   const goldCost = exchangeAmount.value * 3000;
   if (goldCoins.value < goldCost) return;
-  
+
   try {
     const globalAny = window as any;
     if (!globalAny.Mvu) return;
-    
+
     const mvuData = globalAny.Mvu.getMvuData({ type: 'message', message_id: 'latest' });
     if (!mvuData || !mvuData.stat_data) return;
-    
+
     // 扣除金币
     if (!mvuData.stat_data.物品系统) mvuData.stat_data.物品系统 = {};
     mvuData.stat_data.物品系统.学园金币 = (mvuData.stat_data.物品系统.学园金币 || 0) - goldCost;
-    
+
     // 增加技能点
     if (!mvuData.stat_data.核心状态) mvuData.stat_data.核心状态 = {};
     mvuData.stat_data.核心状态.$技能点 = (mvuData.stat_data.核心状态.$技能点 || 0) + exchangeAmount.value;
-    
+
     // 写回MVU
     await globalAny.Mvu.replaceMvuData(mvuData, { type: 'message', message_id: 'latest' });
-    
+
     if (typeof toastr !== 'undefined') {
       toastr.success(`兑换成功！消耗${goldCost}金币，获得${exchangeAmount.value}技能点`, '成功', { timeOut: 1500 });
     }
-    
+
     // 重置兑换数量
     exchangeAmount.value = 1;
   } catch (error) {
@@ -827,14 +796,14 @@ async function performTalentGachaAction() {
     }
     return;
   }
-  
+
   try {
     const globalAny = window as any;
     if (!globalAny.Mvu) return;
-    
+
     const mvuData = globalAny.Mvu.getMvuData({ type: 'message', message_id: 'latest' });
     if (!mvuData || !mvuData.stat_data) return;
-    
+
     // 扣除技能点
     if (!mvuData.stat_data.核心状态) mvuData.stat_data.核心状态 = {};
     const currentSkillPoints = Number(mvuData.stat_data.核心状态.$技能点 || 0);
@@ -845,14 +814,14 @@ async function performTalentGachaAction() {
       return;
     }
     mvuData.stat_data.核心状态.$技能点 = Math.max(0, currentSkillPoints - cost);
-    
+
     // 写回MVU
     await globalAny.Mvu.replaceMvuData(mvuData, { type: 'message', message_id: 'latest' });
-    
+
     // 执行天赋抽取（传入堕落度）
     const corruption = mvuData.stat_data.核心状态?.堕落度 || 0;
     drawnTalent.value = performTalentGacha(corruption);
-    
+
     // 如果抽到SIN天赋，显示特殊暗黑效果
     if (drawnTalent.value?.rarity === 'SIN') {
       showSinEffect.value = true;
@@ -876,33 +845,33 @@ async function performTalentGachaAction() {
 // 确认替换天赋
 async function confirmReplaceTalent() {
   if (!drawnTalent.value) return;
-  
+
   try {
     const globalAny = window as any;
     if (!globalAny.Mvu) return;
-    
+
     const mvuData = globalAny.Mvu.getMvuData({ type: 'message', message_id: 'latest' });
     if (!mvuData || !mvuData.stat_data) return;
-    
+
     // 确保技能系统存在
     if (!mvuData.stat_data.技能系统) mvuData.stat_data.技能系统 = {};
-    
+
     // 清空现有天赋，写入新天赋
     mvuData.stat_data.技能系统.$天赋 = {
       [drawnTalent.value.id]: {
         天赋名称: drawnTalent.value.name,
         天赋描述: drawnTalent.value.description,
         天赋效果: drawnTalent.value.bonus,
-      }
+      },
     };
-    
+
     // 写回MVU
     await globalAny.Mvu.replaceMvuData(mvuData, { type: 'message', message_id: 'latest' });
-    
+
     if (typeof toastr !== 'undefined') {
       toastr.success(`成功获得天赋【${drawnTalent.value.name}】！`, '成功', { timeOut: 2000 });
     }
-    
+
     // 清空抽取结果
     drawnTalent.value = null;
   } catch (error) {
@@ -977,23 +946,23 @@ async function selectTalentForTest(talent: TalentData) {
       console.error('[作者测试] Mvu未定义');
       return;
     }
-    
+
     const mvuData = globalAny.Mvu.getMvuData({ type: 'message', message_id: 'latest' });
     if (!mvuData?.stat_data) return;
-    
+
     if (!mvuData.stat_data.技能系统) mvuData.stat_data.技能系统 = {};
-    
+
     // 写入选择的天赋
     mvuData.stat_data.技能系统.$天赋 = {
       [talent.id]: {
         天赋名称: talent.name,
         天赋描述: talent.description,
         天赋效果: talent.bonus,
-      }
+      },
     };
-    
+
     await globalAny.Mvu.replaceMvuData(mvuData, { type: 'message', message_id: 'latest' });
-    
+
     if (typeof toastr !== 'undefined') {
       toastr.success(`已设置天赋【${talent.name}】`, '成功', { timeOut: 2000 });
     }
@@ -1015,29 +984,29 @@ function getTalentRarity(talentId: string): string {
 async function forgetSkill(skillId: string) {
   const skill = activeSkills.value[skillId];
   const skillName = skill?.基本信息?.技能名称 || '未知技能';
-  
+
   // 使用原生confirm对话框进行确认
   const confirmed = confirm(`确定要遗忘技能「${skillName}」吗？\n\n此操作不可逆！`);
-  
+
   if (!confirmed) {
     return;
   }
-  
+
   try {
     const globalAny = window as any;
     if (!globalAny.Mvu) return;
-    
+
     const mvuData = globalAny.Mvu.getMvuData({ type: 'message', message_id: 'latest' });
     if (!mvuData || !mvuData.stat_data) return;
-    
+
     // 删除技能
     if (mvuData.stat_data.技能系统?.主动技能?.[skillId]) {
       delete mvuData.stat_data.技能系统.主动技能[skillId];
     }
-    
+
     // 写回MVU
     await globalAny.Mvu.replaceMvuData(mvuData, { type: 'message', message_id: 'latest' });
-    
+
     if (typeof toastr !== 'undefined') {
       toastr.success(`技能「${skillName}」已遗忘`, '成功', { timeOut: 1500 });
     }
@@ -1070,25 +1039,25 @@ async function forgetSkill(skillId: string) {
   border: 1px solid rgba(139, 92, 246, 0.4);
   border-radius: 16px;
   backdrop-filter: blur(10px);
-  
+
   > i {
     font-size: 28px;
     color: #a78bfa;
   }
-  
+
   .points-info {
     display: flex;
     flex-direction: column;
     gap: 2px;
   }
-  
+
   .points-label {
     font-size: 12px;
     color: rgba(255, 255, 255, 0.6);
     text-transform: uppercase;
     letter-spacing: 0.5px;
   }
-  
+
   .points-value {
     font-size: 28px;
     font-weight: 700;
@@ -1108,11 +1077,11 @@ async function forgetSkill(skillId: string) {
   font-weight: 600;
   color: rgba(255, 255, 255, 0.8);
   margin-bottom: 16px;
-  
+
   i {
     color: #667eea;
   }
-  
+
   .skill-count {
     font-size: 12px;
     font-weight: normal;
@@ -1129,19 +1098,19 @@ async function forgetSkill(skillId: string) {
   background: rgba(255, 255, 255, 0.02);
   border-radius: 16px;
   border: 1px dashed rgba(255, 255, 255, 0.1);
-  
+
   i {
     font-size: 36px;
     color: rgba(255, 255, 255, 0.2);
     margin-bottom: 12px;
   }
-  
+
   p {
     font-size: 14px;
     color: rgba(255, 255, 255, 0.4);
     margin: 0;
   }
-  
+
   .empty-hint {
     font-size: 12px;
     color: rgba(255, 255, 255, 0.25);
@@ -1161,18 +1130,28 @@ async function forgetSkill(skillId: string) {
   border-radius: 14px;
   border: 1px solid rgba(255, 255, 255, 0.08);
   transition: all 0.2s;
-  
+
   &:hover {
     background: rgba(255, 255, 255, 0.05);
     transform: translateY(-2px);
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
   }
-  
-  &.rarity-c { border-left: 3px solid #9ca3af; }
-  &.rarity-b { border-left: 3px solid #60a5fa; }
-  &.rarity-a { border-left: 3px solid #a78bfa; }
-  &.rarity-s { border-left: 3px solid #fbbf24; }
-  &.rarity-ss { border-left: 3px solid #f472b6; }
+
+  &.rarity-c {
+    border-left: 3px solid #9ca3af;
+  }
+  &.rarity-b {
+    border-left: 3px solid #60a5fa;
+  }
+  &.rarity-a {
+    border-left: 3px solid #a78bfa;
+  }
+  &.rarity-s {
+    border-left: 3px solid #fbbf24;
+  }
+  &.rarity-ss {
+    border-left: 3px solid #f472b6;
+  }
 }
 
 .skill-header-row {
@@ -1199,12 +1178,27 @@ async function forgetSkill(skillId: string) {
   font-weight: 600;
   padding: 2px 6px;
   border-radius: 4px;
-  
-  &.rarity-c { background: rgba(156, 163, 175, 0.3); color: #d1d5db; }
-  &.rarity-b { background: rgba(96, 165, 250, 0.3); color: #93c5fd; }
-  &.rarity-a { background: rgba(167, 139, 250, 0.3); color: #c4b5fd; }
-  &.rarity-s { background: rgba(251, 191, 36, 0.3); color: #fcd34d; }
-  &.rarity-ss { background: rgba(244, 114, 182, 0.3); color: #f9a8d4; }
+
+  &.rarity-c {
+    background: rgba(156, 163, 175, 0.3);
+    color: #d1d5db;
+  }
+  &.rarity-b {
+    background: rgba(96, 165, 250, 0.3);
+    color: #93c5fd;
+  }
+  &.rarity-a {
+    background: rgba(167, 139, 250, 0.3);
+    color: #c4b5fd;
+  }
+  &.rarity-s {
+    background: rgba(251, 191, 36, 0.3);
+    color: #fcd34d;
+  }
+  &.rarity-ss {
+    background: rgba(244, 114, 182, 0.3);
+    color: #f9a8d4;
+  }
 }
 
 .skill-level {
@@ -1237,21 +1231,23 @@ async function forgetSkill(skillId: string) {
   font-size: 11px;
   padding: 4px 8px;
   border-radius: 6px;
-  
-  i { font-size: 10px; }
-  
+
+  i {
+    font-size: 10px;
+  }
+
   &.cost {
     background: rgba(52, 211, 153, 0.2);
     color: #6ee7b7;
     border: 1px solid rgba(52, 211, 153, 0.3);
   }
-  
+
   &.cooldown {
     background: rgba(96, 165, 250, 0.2);
     color: #93c5fd;
     border: 1px solid rgba(96, 165, 250, 0.3);
   }
-  
+
   &.accuracy {
     background: rgba(251, 191, 36, 0.2);
     color: #fcd34d;
@@ -1268,16 +1264,16 @@ async function forgetSkill(skillId: string) {
   padding: 8px 10px;
   background: rgba(239, 68, 68, 0.1);
   border-radius: 8px;
-  
+
   .damage-label {
     color: rgba(255, 255, 255, 0.5);
   }
-  
+
   .damage-source {
     color: #f87171;
     font-weight: 500;
   }
-  
+
   .damage-value {
     color: #fcd34d;
     font-weight: 600;
@@ -1297,21 +1293,23 @@ async function forgetSkill(skillId: string) {
   font-size: 10px;
   padding: 3px 8px;
   border-radius: 4px;
-  
-  i { font-size: 9px; }
-  
+
+  i {
+    font-size: 9px;
+  }
+
   &.ignore-def {
     background: rgba(239, 68, 68, 0.2);
     color: #f87171;
     border: 1px solid rgba(239, 68, 68, 0.3);
   }
-  
+
   &.hit-count {
     background: rgba(251, 146, 60, 0.2);
     color: #fdba74;
     border: 1px solid rgba(251, 146, 60, 0.3);
   }
-  
+
   &.crit-mod {
     background: rgba(167, 139, 250, 0.2);
     color: #c4b5fd;
@@ -1340,12 +1338,12 @@ async function forgetSkill(skillId: string) {
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s;
-  
+
   &:hover:not(:disabled) {
     transform: scale(1.05);
     box-shadow: 0 4px 16px rgba(102, 126, 234, 0.4);
   }
-  
+
   &:disabled {
     opacity: 0.5;
     cursor: not-allowed;
@@ -1365,7 +1363,7 @@ async function forgetSkill(skillId: string) {
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s;
-  
+
   &:hover {
     background: rgba(239, 68, 68, 0.3);
     transform: scale(1.05);
@@ -1387,42 +1385,50 @@ async function forgetSkill(skillId: string) {
   padding: 12px 14px;
   border-radius: 12px;
   backdrop-filter: blur(10px);
-  
+
   > i {
     font-size: 20px;
   }
-  
+
   .resource-info {
     display: flex;
     flex-direction: column;
     gap: 2px;
   }
-  
+
   .resource-label {
     font-size: 10px;
     color: rgba(255, 255, 255, 0.5);
     text-transform: uppercase;
   }
-  
+
   .resource-value {
     font-size: 18px;
     font-weight: 700;
   }
-  
+
   &.skill-points {
     background: linear-gradient(135deg, rgba(139, 92, 246, 0.25), rgba(139, 92, 246, 0.08));
     border: 1px solid rgba(139, 92, 246, 0.3);
-    
-    > i { color: #a78bfa; }
-    .resource-value { color: #c4b5fd; }
+
+    > i {
+      color: #a78bfa;
+    }
+    .resource-value {
+      color: #c4b5fd;
+    }
   }
-  
+
   &.gold {
     background: linear-gradient(135deg, rgba(251, 191, 36, 0.25), rgba(251, 191, 36, 0.08));
     border: 1px solid rgba(251, 191, 36, 0.3);
-    
-    > i { color: #fbbf24; }
-    .resource-value { color: #fcd34d; }
+
+    > i {
+      color: #fbbf24;
+    }
+    .resource-value {
+      color: #fcd34d;
+    }
   }
 }
 
@@ -1451,14 +1457,16 @@ async function forgetSkill(skillId: string) {
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s;
-  
-  i { font-size: 12px; }
-  
+
+  i {
+    font-size: 12px;
+  }
+
   &:hover {
     color: rgba(255, 255, 255, 0.8);
     background: rgba(255, 255, 255, 0.05);
   }
-  
+
   &.active {
     color: white;
     background: linear-gradient(135deg, rgba(139, 92, 246, 0.4), rgba(139, 92, 246, 0.2));
@@ -1475,14 +1483,17 @@ async function forgetSkill(skillId: string) {
   background: rgba(255, 255, 255, 0.03);
   border-radius: 12px;
   margin-bottom: 16px;
-  
+
   h3 {
     font-size: 14px;
     font-weight: 600;
     color: rgba(255, 255, 255, 0.8);
     margin: 0 0 12px 0;
-    
-    i { margin-right: 6px; color: #60a5fa; }
+
+    i {
+      margin-right: 6px;
+      color: #60a5fa;
+    }
   }
 }
 
@@ -1498,13 +1509,28 @@ async function forgetSkill(skillId: string) {
   padding: 4px 10px;
   border-radius: 6px;
   font-weight: 500;
-  
-  &.rarity-c { background: rgba(156, 163, 175, 0.2); color: #d1d5db; }
-  &.rarity-b { background: rgba(96, 165, 250, 0.2); color: #93c5fd; }
-  &.rarity-a { background: rgba(167, 139, 250, 0.2); color: #c4b5fd; }
-  &.rarity-s { background: rgba(251, 191, 36, 0.2); color: #fcd34d; }
-  &.rarity-ss { background: rgba(244, 114, 182, 0.2); color: #f9a8d4; }
-  &.rarity-sin { 
+
+  &.rarity-c {
+    background: rgba(156, 163, 175, 0.2);
+    color: #d1d5db;
+  }
+  &.rarity-b {
+    background: rgba(96, 165, 250, 0.2);
+    color: #93c5fd;
+  }
+  &.rarity-a {
+    background: rgba(167, 139, 250, 0.2);
+    color: #c4b5fd;
+  }
+  &.rarity-s {
+    background: rgba(251, 191, 36, 0.2);
+    color: #fcd34d;
+  }
+  &.rarity-ss {
+    background: rgba(244, 114, 182, 0.2);
+    color: #f9a8d4;
+  }
+  &.rarity-sin {
     background: linear-gradient(135deg, rgba(20, 20, 20, 0.9), rgba(60, 20, 40, 0.8));
     color: #dc2626;
     border: 1px solid rgba(139, 0, 0, 0.5);
@@ -1514,8 +1540,13 @@ async function forgetSkill(skillId: string) {
 }
 
 @keyframes sin-rate-pulse {
-  0%, 100% { box-shadow: 0 0 8px rgba(139, 0, 0, 0.3); }
-  50% { box-shadow: 0 0 15px rgba(139, 0, 0, 0.6); }
+  0%,
+  100% {
+    box-shadow: 0 0 8px rgba(139, 0, 0, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 15px rgba(139, 0, 0, 0.6);
+  }
 }
 
 .gacha-note {
@@ -1541,51 +1572,53 @@ async function forgetSkill(skillId: string) {
   border-radius: 14px;
   cursor: pointer;
   transition: all 0.2s;
-  
-  i { font-size: 28px; }
-  
+
+  i {
+    font-size: 28px;
+  }
+
   .btn-text {
     font-size: 14px;
     font-weight: 600;
   }
-  
+
   .btn-cost {
     font-size: 11px;
     opacity: 0.7;
     display: flex;
     gap: 4px;
     align-items: center;
-    
+
     .discount-price {
       color: #fbbf24;
       font-weight: 600;
       font-size: 12px;
     }
-    
+
     .original-price {
       text-decoration: line-through;
       opacity: 0.5;
       font-size: 10px;
     }
   }
-  
+
   &.single {
     background: linear-gradient(135deg, rgba(96, 165, 250, 0.3), rgba(96, 165, 250, 0.1));
     border: 1px solid rgba(96, 165, 250, 0.4);
     color: #93c5fd;
   }
-  
+
   &.ten {
     background: linear-gradient(135deg, rgba(251, 191, 36, 0.3), rgba(251, 191, 36, 0.1));
     border: 1px solid rgba(251, 191, 36, 0.4);
     color: #fcd34d;
   }
-  
+
   &:hover:not(:disabled) {
     transform: translateY(-2px);
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
   }
-  
+
   &:disabled {
     opacity: 0.4;
     cursor: not-allowed;
@@ -1596,14 +1629,17 @@ async function forgetSkill(skillId: string) {
   padding: 16px;
   background: rgba(255, 255, 255, 0.03);
   border-radius: 12px;
-  
+
   h3 {
     font-size: 14px;
     font-weight: 600;
     color: rgba(255, 255, 255, 0.8);
     margin: 0 0 16px 0;
-    
-    i { margin-right: 6px; color: #34d399; }
+
+    i {
+      margin-right: 6px;
+      color: #34d399;
+    }
   }
 }
 
@@ -1622,18 +1658,18 @@ async function forgetSkill(skillId: string) {
   border: 1px solid rgba(255, 255, 255, 0.08);
   cursor: pointer;
   transition: all 0.2s;
-  
+
   &:hover {
     background: rgba(255, 255, 255, 0.06);
     transform: translateY(-2px);
   }
-  
+
   &.selected {
     background: rgba(139, 92, 246, 0.15);
     border-color: rgba(139, 92, 246, 0.5);
     box-shadow: 0 0 12px rgba(139, 92, 246, 0.3);
   }
-  
+
   .result-checkbox {
     position: absolute;
     top: 8px;
@@ -1641,13 +1677,13 @@ async function forgetSkill(skillId: string) {
     font-size: 16px;
     color: #a78bfa;
   }
-  
+
   .result-rarity {
     font-size: 10px;
     font-weight: 700;
     margin-bottom: 4px;
   }
-  
+
   .result-name {
     font-size: 13px;
     font-weight: 600;
@@ -1655,18 +1691,43 @@ async function forgetSkill(skillId: string) {
     margin-bottom: 4px;
     padding-right: 24px;
   }
-  
+
   .result-desc {
     font-size: 10px;
     color: rgba(255, 255, 255, 0.5);
     line-height: 1.4;
   }
-  
-  &.rarity-c { border-left: 3px solid #9ca3af; .result-rarity { color: #d1d5db; } }
-  &.rarity-b { border-left: 3px solid #60a5fa; .result-rarity { color: #93c5fd; } }
-  &.rarity-a { border-left: 3px solid #a78bfa; .result-rarity { color: #c4b5fd; } }
-  &.rarity-s { border-left: 3px solid #fbbf24; .result-rarity { color: #fcd34d; } }
-  &.rarity-ss { border-left: 3px solid #f472b6; .result-rarity { color: #f9a8d4; } }
+
+  &.rarity-c {
+    border-left: 3px solid #9ca3af;
+    .result-rarity {
+      color: #d1d5db;
+    }
+  }
+  &.rarity-b {
+    border-left: 3px solid #60a5fa;
+    .result-rarity {
+      color: #93c5fd;
+    }
+  }
+  &.rarity-a {
+    border-left: 3px solid #a78bfa;
+    .result-rarity {
+      color: #c4b5fd;
+    }
+  }
+  &.rarity-s {
+    border-left: 3px solid #fbbf24;
+    .result-rarity {
+      color: #fcd34d;
+    }
+  }
+  &.rarity-ss {
+    border-left: 3px solid #f472b6;
+    .result-rarity {
+      color: #f9a8d4;
+    }
+  }
 }
 
 .result-actions {
@@ -1695,7 +1756,7 @@ async function forgetSkill(skillId: string) {
   background: rgba(96, 165, 250, 0.2);
   border: 1px solid rgba(96, 165, 250, 0.4);
   color: #93c5fd;
-  
+
   &:hover {
     background: rgba(96, 165, 250, 0.3);
     transform: scale(1.02);
@@ -1706,7 +1767,7 @@ async function forgetSkill(skillId: string) {
   background: rgba(239, 68, 68, 0.2);
   border: 1px solid rgba(239, 68, 68, 0.4);
   color: #f87171;
-  
+
   &:hover {
     background: rgba(239, 68, 68, 0.3);
     transform: scale(1.02);
@@ -1728,12 +1789,12 @@ async function forgetSkill(skillId: string) {
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s;
-  
+
   &:hover:not(:disabled) {
     transform: scale(1.02);
     box-shadow: 0 4px 16px rgba(52, 211, 153, 0.4);
   }
-  
+
   &:disabled {
     opacity: 0.5;
     cursor: not-allowed;
@@ -1750,7 +1811,7 @@ async function forgetSkill(skillId: string) {
   background: rgba(255, 255, 255, 0.03);
   border-radius: 16px;
   text-align: center;
-  
+
   h3 {
     font-size: 16px;
     font-weight: 600;
@@ -1765,10 +1826,17 @@ async function forgetSkill(skillId: string) {
   justify-content: center;
   gap: 16px;
   font-size: 28px;
-  
-  .fa-coins { color: #fbbf24; }
-  .fa-arrow-right { color: rgba(255, 255, 255, 0.3); font-size: 20px; }
-  .fa-book-sparkles { color: #a78bfa; }
+
+  .fa-coins {
+    color: #fbbf24;
+  }
+  .fa-arrow-right {
+    color: rgba(255, 255, 255, 0.3);
+    font-size: 20px;
+  }
+  .fa-book-sparkles {
+    color: #a78bfa;
+  }
 }
 
 .exchange-rate {
@@ -1794,7 +1862,7 @@ async function forgetSkill(skillId: string) {
   align-items: center;
   justify-content: center;
   gap: 12px;
-  
+
   input {
     width: 80px;
     padding: 10px;
@@ -1805,7 +1873,7 @@ async function forgetSkill(skillId: string) {
     font-size: 16px;
     font-weight: 600;
     text-align: center;
-    
+
     &:focus {
       outline: none;
       border-color: rgba(139, 92, 246, 0.5);
@@ -1826,7 +1894,7 @@ async function forgetSkill(skillId: string) {
   font-size: 18px;
   cursor: pointer;
   transition: all 0.2s;
-  
+
   &:hover {
     background: rgba(255, 255, 255, 0.2);
   }
@@ -1854,12 +1922,12 @@ async function forgetSkill(skillId: string) {
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s;
-  
+
   &:hover:not(:disabled) {
     transform: scale(1.02);
     box-shadow: 0 4px 16px rgba(102, 126, 234, 0.4);
   }
-  
+
   &:disabled {
     opacity: 0.5;
     cursor: not-allowed;
@@ -1873,14 +1941,17 @@ async function forgetSkill(skillId: string) {
   background: rgba(255, 255, 255, 0.03);
   border-radius: 12px;
   border: 1px solid rgba(139, 92, 246, 0.2);
-  
+
   h3 {
     font-size: 14px;
     font-weight: 600;
     color: rgba(255, 255, 255, 0.8);
     margin: 0 0 8px 0;
-    
-    i { margin-right: 6px; color: #fbbf24; }
+
+    i {
+      margin-right: 6px;
+      color: #fbbf24;
+    }
   }
 }
 
@@ -1903,24 +1974,26 @@ async function forgetSkill(skillId: string) {
   color: #fcd34d;
   cursor: pointer;
   transition: all 0.2s;
-  
-  i { font-size: 24px; }
-  
+
+  i {
+    font-size: 24px;
+  }
+
   .btn-text {
     font-size: 14px;
     font-weight: 600;
   }
-  
+
   .btn-cost {
     font-size: 11px;
     opacity: 0.7;
   }
-  
+
   &:hover:not(:disabled) {
     transform: translateY(-2px);
     box-shadow: 0 8px 24px rgba(251, 191, 36, 0.3);
   }
-  
+
   &:disabled {
     opacity: 0.4;
     cursor: not-allowed;
@@ -1935,12 +2008,12 @@ async function forgetSkill(skillId: string) {
   padding: 10px 12px;
   background: rgba(255, 255, 255, 0.02);
   border-radius: 8px;
-  
+
   .talent-label {
     font-size: 12px;
     color: rgba(255, 255, 255, 0.5);
   }
-  
+
   .no-talent {
     font-size: 12px;
     color: rgba(255, 255, 255, 0.3);
@@ -1958,31 +2031,64 @@ async function forgetSkill(skillId: string) {
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s;
-  
-  i { font-size: 10px; }
-  
-  &.rarity-c { background: rgba(156, 163, 175, 0.2); color: #d1d5db; border: 1px solid rgba(156, 163, 175, 0.3); }
-  &.rarity-b { background: rgba(96, 165, 250, 0.2); color: #93c5fd; border: 1px solid rgba(96, 165, 250, 0.3); }
-  &.rarity-a { background: rgba(167, 139, 250, 0.2); color: #c4b5fd; border: 1px solid rgba(167, 139, 250, 0.3); }
-  &.rarity-s { background: rgba(251, 191, 36, 0.2); color: #fcd34d; border: 1px solid rgba(251, 191, 36, 0.3); }
-  &.rarity-ss { background: rgba(244, 114, 182, 0.2); color: #f9a8d4; border: 1px solid rgba(244, 114, 182, 0.3); }
-  &.rarity-sin { 
+
+  i {
+    font-size: 10px;
+  }
+
+  &.rarity-c {
+    background: rgba(156, 163, 175, 0.2);
+    color: #d1d5db;
+    border: 1px solid rgba(156, 163, 175, 0.3);
+  }
+  &.rarity-b {
+    background: rgba(96, 165, 250, 0.2);
+    color: #93c5fd;
+    border: 1px solid rgba(96, 165, 250, 0.3);
+  }
+  &.rarity-a {
+    background: rgba(167, 139, 250, 0.2);
+    color: #c4b5fd;
+    border: 1px solid rgba(167, 139, 250, 0.3);
+  }
+  &.rarity-s {
+    background: rgba(251, 191, 36, 0.2);
+    color: #fcd34d;
+    border: 1px solid rgba(251, 191, 36, 0.3);
+  }
+  &.rarity-ss {
+    background: rgba(244, 114, 182, 0.2);
+    color: #f9a8d4;
+    border: 1px solid rgba(244, 114, 182, 0.3);
+  }
+  &.rarity-sin {
     background: linear-gradient(135deg, rgba(20, 20, 20, 0.9), rgba(60, 20, 40, 0.8));
     color: #dc2626;
     border: 1px solid rgba(139, 0, 0, 0.6);
-    box-shadow: 0 0 12px rgba(139, 0, 0, 0.4), inset 0 0 8px rgba(0, 0, 0, 0.5);
+    box-shadow:
+      0 0 12px rgba(139, 0, 0, 0.4),
+      inset 0 0 8px rgba(0, 0, 0, 0.5);
     text-shadow: 0 0 6px rgba(220, 38, 38, 0.6);
     animation: sin-pulse 2s ease-in-out infinite;
   }
-  
+
   &:hover {
     transform: scale(1.05);
   }
 }
 
 @keyframes sin-pulse {
-  0%, 100% { box-shadow: 0 0 12px rgba(139, 0, 0, 0.4), inset 0 0 8px rgba(0, 0, 0, 0.5); }
-  50% { box-shadow: 0 0 20px rgba(139, 0, 0, 0.7), inset 0 0 12px rgba(0, 0, 0, 0.6); }
+  0%,
+  100% {
+    box-shadow:
+      0 0 12px rgba(139, 0, 0, 0.4),
+      inset 0 0 8px rgba(0, 0, 0, 0.5);
+  }
+  50% {
+    box-shadow:
+      0 0 20px rgba(139, 0, 0, 0.7),
+      inset 0 0 12px rgba(0, 0, 0, 0.6);
+  }
 }
 
 .talent-result {
@@ -1990,14 +2096,17 @@ async function forgetSkill(skillId: string) {
   padding: 12px;
   background: rgba(255, 255, 255, 0.02);
   border-radius: 10px;
-  
+
   h4 {
     font-size: 13px;
     font-weight: 600;
     color: rgba(255, 255, 255, 0.7);
     margin: 0 0 10px 0;
-    
-    i { margin-right: 6px; color: #34d399; }
+
+    i {
+      margin-right: 6px;
+      color: #34d399;
+    }
   }
 }
 
@@ -2008,67 +2117,110 @@ async function forgetSkill(skillId: string) {
   border: 1px solid rgba(255, 255, 255, 0.08);
   cursor: pointer;
   transition: all 0.2s;
-  
+
   &:hover {
     background: rgba(255, 255, 255, 0.06);
   }
-  
-  &.rarity-c { border-left: 3px solid #9ca3af; }
-  &.rarity-b { border-left: 3px solid #60a5fa; }
-  &.rarity-a { border-left: 3px solid #a78bfa; }
-  &.rarity-s { border-left: 3px solid #fbbf24; }
-  &.rarity-ss { border-left: 3px solid #f472b6; }
-  
+
+  &.rarity-c {
+    border-left: 3px solid #9ca3af;
+  }
+  &.rarity-b {
+    border-left: 3px solid #60a5fa;
+  }
+  &.rarity-a {
+    border-left: 3px solid #a78bfa;
+  }
+  &.rarity-s {
+    border-left: 3px solid #fbbf24;
+  }
+  &.rarity-ss {
+    border-left: 3px solid #f472b6;
+  }
+
   .talent-rarity {
     font-size: 10px;
     font-weight: 700;
     margin-bottom: 4px;
   }
-  
+
   .talent-name {
     font-size: 14px;
     font-weight: 600;
     color: white;
     margin-bottom: 6px;
   }
-  
+
   .talent-desc {
     font-size: 11px;
     color: rgba(255, 255, 255, 0.6);
     line-height: 1.5;
     margin-bottom: 8px;
   }
-  
+
   .talent-bonus {
     display: flex;
     gap: 6px;
     font-size: 10px;
-    
-    .bonus-label { color: rgba(255, 255, 255, 0.4); }
-    .bonus-value { color: #6ee7b7; }
+
+    .bonus-label {
+      color: rgba(255, 255, 255, 0.4);
+    }
+    .bonus-value {
+      color: #6ee7b7;
+    }
   }
-  
-  &.rarity-c .talent-rarity { color: #d1d5db; }
-  &.rarity-b .talent-rarity { color: #93c5fd; }
-  &.rarity-a .talent-rarity { color: #c4b5fd; }
-  &.rarity-s .talent-rarity { color: #fcd34d; }
-  &.rarity-ss .talent-rarity { color: #f9a8d4; }
-  
+
+  &.rarity-c .talent-rarity {
+    color: #d1d5db;
+  }
+  &.rarity-b .talent-rarity {
+    color: #93c5fd;
+  }
+  &.rarity-a .talent-rarity {
+    color: #c4b5fd;
+  }
+  &.rarity-s .talent-rarity {
+    color: #fcd34d;
+  }
+  &.rarity-ss .talent-rarity {
+    color: #f9a8d4;
+  }
+
   &.rarity-sin {
     border-left: 3px solid #8b0000;
     background: linear-gradient(135deg, rgba(20, 20, 20, 0.95), rgba(60, 20, 40, 0.9));
-    box-shadow: 0 0 15px rgba(139, 0, 0, 0.3), inset 0 0 20px rgba(0, 0, 0, 0.4);
+    box-shadow:
+      0 0 15px rgba(139, 0, 0, 0.3),
+      inset 0 0 20px rgba(0, 0, 0, 0.4);
     animation: sin-card-pulse 3s ease-in-out infinite;
-    
-    .talent-rarity { color: #dc2626; text-shadow: 0 0 8px rgba(220, 38, 38, 0.8); }
-    .talent-name { color: #ef4444; text-shadow: 0 0 6px rgba(239, 68, 68, 0.5); }
-    .talent-desc { color: rgba(255, 200, 200, 0.8); }
+
+    .talent-rarity {
+      color: #dc2626;
+      text-shadow: 0 0 8px rgba(220, 38, 38, 0.8);
+    }
+    .talent-name {
+      color: #ef4444;
+      text-shadow: 0 0 6px rgba(239, 68, 68, 0.5);
+    }
+    .talent-desc {
+      color: rgba(255, 200, 200, 0.8);
+    }
   }
 }
 
 @keyframes sin-card-pulse {
-  0%, 100% { box-shadow: 0 0 15px rgba(139, 0, 0, 0.3), inset 0 0 20px rgba(0, 0, 0, 0.4); }
-  50% { box-shadow: 0 0 25px rgba(139, 0, 0, 0.5), inset 0 0 25px rgba(0, 0, 0, 0.5); }
+  0%,
+  100% {
+    box-shadow:
+      0 0 15px rgba(139, 0, 0, 0.3),
+      inset 0 0 20px rgba(0, 0, 0, 0.4);
+  }
+  50% {
+    box-shadow:
+      0 0 25px rgba(139, 0, 0, 0.5),
+      inset 0 0 25px rgba(0, 0, 0, 0.5);
+  }
 }
 
 // SIN天赋暗黑特效
@@ -2095,7 +2247,9 @@ async function forgetSkill(skillId: string) {
 .sin-symbol {
   font-size: 80px;
   color: #dc2626;
-  text-shadow: 0 0 30px rgba(220, 38, 38, 0.8), 0 0 60px rgba(139, 0, 0, 0.6);
+  text-shadow:
+    0 0 30px rgba(220, 38, 38, 0.8),
+    0 0 60px rgba(139, 0, 0, 0.6);
   animation: sin-symbol-pulse 1s ease-in-out infinite;
 }
 
@@ -2103,7 +2257,9 @@ async function forgetSkill(skillId: string) {
   font-size: 28px;
   font-weight: bold;
   color: #ef4444;
-  text-shadow: 0 0 20px rgba(239, 68, 68, 0.8), 0 0 40px rgba(139, 0, 0, 0.5);
+  text-shadow:
+    0 0 20px rgba(239, 68, 68, 0.8),
+    0 0 40px rgba(139, 0, 0, 0.5);
   margin-top: 20px;
   letter-spacing: 8px;
   animation: sin-text-glow 2s ease-in-out infinite;
@@ -2115,7 +2271,7 @@ async function forgetSkill(skillId: string) {
   height: 100%;
   top: 0;
   left: 0;
-  background-image: 
+  background-image:
     radial-gradient(2px 2px at 20% 30%, rgba(220, 38, 38, 0.8), transparent),
     radial-gradient(2px 2px at 40% 70%, rgba(139, 0, 0, 0.6), transparent),
     radial-gradient(2px 2px at 60% 20%, rgba(220, 38, 38, 0.7), transparent),
@@ -2128,34 +2284,71 @@ async function forgetSkill(skillId: string) {
 }
 
 @keyframes sin-overlay-fade {
-  0% { opacity: 1; }
-  70% { opacity: 1; }
-  100% { opacity: 0; }
+  0% {
+    opacity: 1;
+  }
+  70% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
 }
 
 @keyframes sin-content-appear {
-  0% { transform: scale(0.5); opacity: 0; }
-  100% { transform: scale(1); opacity: 1; }
+  0% {
+    transform: scale(0.5);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
 }
 
 @keyframes sin-symbol-pulse {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.1); }
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
 }
 
 @keyframes sin-text-glow {
-  0%, 100% { text-shadow: 0 0 20px rgba(239, 68, 68, 0.8), 0 0 40px rgba(139, 0, 0, 0.5); }
-  50% { text-shadow: 0 0 30px rgba(239, 68, 68, 1), 0 0 60px rgba(139, 0, 0, 0.8); }
+  0%,
+  100% {
+    text-shadow:
+      0 0 20px rgba(239, 68, 68, 0.8),
+      0 0 40px rgba(139, 0, 0, 0.5);
+  }
+  50% {
+    text-shadow:
+      0 0 30px rgba(239, 68, 68, 1),
+      0 0 60px rgba(139, 0, 0, 0.8);
+  }
 }
 
 @keyframes sin-particles-float {
-  0% { transform: translateY(0); }
-  100% { transform: translateY(-20px); }
+  0% {
+    transform: translateY(0);
+  }
+  100% {
+    transform: translateY(-20px);
+  }
 }
 
 @keyframes sin-result-glow {
-  0%, 100% { box-shadow: 0 0 10px rgba(139, 0, 0, 0.3); }
-  50% { box-shadow: 0 0 25px rgba(139, 0, 0, 0.6), 0 0 40px rgba(220, 38, 38, 0.3); }
+  0%,
+  100% {
+    box-shadow: 0 0 10px rgba(139, 0, 0, 0.3);
+  }
+  50% {
+    box-shadow:
+      0 0 25px rgba(139, 0, 0, 0.6),
+      0 0 40px rgba(220, 38, 38, 0.3);
+  }
 }
 
 .talent-actions {
@@ -2179,7 +2372,7 @@ async function forgetSkill(skillId: string) {
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s;
-  
+
   &:hover {
     background: rgba(239, 68, 68, 0.3);
     transform: scale(1.02);
@@ -2201,7 +2394,7 @@ async function forgetSkill(skillId: string) {
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s;
-  
+
   &:hover {
     transform: scale(1.02);
     box-shadow: 0 4px 16px rgba(52, 211, 153, 0.4);
@@ -2220,21 +2413,21 @@ async function forgetSkill(skillId: string) {
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
   z-index: 1000;
   max-width: 300px;
-  
+
   .tooltip-title {
     font-size: 14px;
     font-weight: 600;
     color: white;
     margin-bottom: 8px;
   }
-  
+
   .tooltip-desc {
     font-size: 12px;
     color: rgba(255, 255, 255, 0.7);
     line-height: 1.5;
     margin-bottom: 8px;
   }
-  
+
   .tooltip-bonus {
     font-size: 11px;
     color: #6ee7b7;
@@ -2248,7 +2441,7 @@ async function forgetSkill(skillId: string) {
   background: rgba(255, 255, 255, 0.02);
   border-radius: 12px;
   border: 1px solid rgba(139, 92, 246, 0.15);
-  
+
   .talent-header {
     display: flex;
     align-items: center;
@@ -2257,8 +2450,10 @@ async function forgetSkill(skillId: string) {
     font-weight: 600;
     color: rgba(255, 255, 255, 0.7);
     margin-bottom: 12px;
-    
-    i { color: #fbbf24; }
+
+    i {
+      color: #fbbf24;
+    }
   }
 }
 
@@ -2271,30 +2466,49 @@ async function forgetSkill(skillId: string) {
   border: 1px solid rgba(255, 255, 255, 0.08);
   cursor: pointer;
   transition: all 0.2s;
-  
+
   &:hover {
     background: rgba(255, 255, 255, 0.06);
     transform: translateY(-2px);
   }
-  
-  &.rarity-c { border-left: 3px solid #9ca3af; }
-  &.rarity-b { border-left: 3px solid #60a5fa; }
-  &.rarity-a { border-left: 3px solid #a78bfa; }
-  &.rarity-s { border-left: 3px solid #fbbf24; }
-  &.rarity-ss { border-left: 3px solid #f472b6; }
+
+  &.rarity-c {
+    border-left: 3px solid #9ca3af;
+  }
+  &.rarity-b {
+    border-left: 3px solid #60a5fa;
+  }
+  &.rarity-a {
+    border-left: 3px solid #a78bfa;
+  }
+  &.rarity-s {
+    border-left: 3px solid #fbbf24;
+  }
+  &.rarity-ss {
+    border-left: 3px solid #f472b6;
+  }
   &.rarity-sin {
     border-left: 3px solid #8b0000;
     background: linear-gradient(135deg, rgba(20, 20, 20, 0.95), rgba(60, 20, 40, 0.9));
-    box-shadow: 0 0 15px rgba(139, 0, 0, 0.3), inset 0 0 20px rgba(0, 0, 0, 0.4);
-    
-    .talent-name { color: #ef4444; text-shadow: 0 0 6px rgba(239, 68, 68, 0.5); }
-    .talent-desc { color: rgba(255, 200, 200, 0.7); }
+    box-shadow:
+      0 0 15px rgba(139, 0, 0, 0.3),
+      inset 0 0 20px rgba(0, 0, 0, 0.4);
+
+    .talent-name {
+      color: #ef4444;
+      text-shadow: 0 0 6px rgba(239, 68, 68, 0.5);
+    }
+    .talent-desc {
+      color: rgba(255, 200, 200, 0.7);
+    }
     .talent-icon {
       background: rgba(139, 0, 0, 0.3);
-      i { color: #dc2626; }
+      i {
+        color: #dc2626;
+      }
     }
   }
-  
+
   .talent-icon {
     display: flex;
     align-items: center;
@@ -2303,46 +2517,64 @@ async function forgetSkill(skillId: string) {
     height: 40px;
     border-radius: 10px;
     background: rgba(139, 92, 246, 0.2);
-    
-    i { font-size: 18px; color: #a78bfa; }
+
+    i {
+      font-size: 18px;
+      color: #a78bfa;
+    }
   }
-  
+
   .talent-info {
     flex: 1;
     min-width: 0;
   }
-  
+
   .talent-name-row {
     display: flex;
     align-items: center;
     gap: 8px;
     margin-bottom: 4px;
   }
-  
+
   .talent-name {
     font-size: 14px;
     font-weight: 600;
     color: white;
   }
-  
+
   .talent-rarity-badge {
     font-size: 9px;
     font-weight: 600;
     padding: 2px 6px;
     border-radius: 4px;
-    
-    &.rarity-c { background: rgba(156, 163, 175, 0.3); color: #d1d5db; }
-    &.rarity-b { background: rgba(96, 165, 250, 0.3); color: #93c5fd; }
-    &.rarity-a { background: rgba(167, 139, 250, 0.3); color: #c4b5fd; }
-    &.rarity-s { background: rgba(251, 191, 36, 0.3); color: #fcd34d; }
-    &.rarity-ss { background: rgba(244, 114, 182, 0.3); color: #f9a8d4; }
-    &.rarity-sin { 
-      background: rgba(139, 0, 0, 0.4); 
-      color: #dc2626; 
+
+    &.rarity-c {
+      background: rgba(156, 163, 175, 0.3);
+      color: #d1d5db;
+    }
+    &.rarity-b {
+      background: rgba(96, 165, 250, 0.3);
+      color: #93c5fd;
+    }
+    &.rarity-a {
+      background: rgba(167, 139, 250, 0.3);
+      color: #c4b5fd;
+    }
+    &.rarity-s {
+      background: rgba(251, 191, 36, 0.3);
+      color: #fcd34d;
+    }
+    &.rarity-ss {
+      background: rgba(244, 114, 182, 0.3);
+      color: #f9a8d4;
+    }
+    &.rarity-sin {
+      background: rgba(139, 0, 0, 0.4);
+      color: #dc2626;
       text-shadow: 0 0 6px rgba(220, 38, 38, 0.6);
     }
   }
-  
+
   .talent-desc {
     font-size: 11px;
     color: rgba(255, 255, 255, 0.5);
@@ -2353,14 +2585,18 @@ async function forgetSkill(skillId: string) {
     -webkit-box-orient: vertical;
     overflow: hidden;
   }
-  
+
   .talent-bonus-row {
     display: flex;
     gap: 4px;
     font-size: 10px;
-    
-    .bonus-label { color: rgba(255, 255, 255, 0.4); }
-    .bonus-value { color: #6ee7b7; }
+
+    .bonus-label {
+      color: rgba(255, 255, 255, 0.4);
+    }
+    .bonus-value {
+      color: #6ee7b7;
+    }
   }
 }
 
@@ -2372,12 +2608,12 @@ async function forgetSkill(skillId: string) {
   background: rgba(255, 255, 255, 0.02);
   border-radius: 10px;
   border: 1px dashed rgba(255, 255, 255, 0.1);
-  
+
   i {
     font-size: 20px;
     color: rgba(255, 255, 255, 0.2);
   }
-  
+
   span {
     font-size: 12px;
     color: rgba(255, 255, 255, 0.4);
@@ -2391,7 +2627,7 @@ async function forgetSkill(skillId: string) {
   background: rgba(255, 255, 255, 0.02);
   border: 1px solid rgba(255, 100, 100, 0.15);
   overflow: hidden;
-  
+
   .author-test-header {
     display: flex;
     align-items: center;
@@ -2399,16 +2635,16 @@ async function forgetSkill(skillId: string) {
     padding: 12px 16px;
     cursor: pointer;
     transition: background 0.2s;
-    
+
     &:hover {
       background: rgba(255, 255, 255, 0.03);
     }
-    
+
     i:first-child {
       color: #f87171;
       margin-right: 8px;
     }
-    
+
     span {
       flex: 1;
       font-size: 13px;
@@ -2416,16 +2652,16 @@ async function forgetSkill(skillId: string) {
       color: rgba(255, 255, 255, 0.7);
     }
   }
-  
+
   .author-test-content {
     padding: 16px;
     border-top: 1px solid rgba(255, 255, 255, 0.05);
   }
-  
+
   .password-input {
     display: flex;
     gap: 10px;
-    
+
     input {
       flex: 1;
       padding: 10px 14px;
@@ -2434,17 +2670,17 @@ async function forgetSkill(skillId: string) {
       background: rgba(0, 0, 0, 0.3);
       color: white;
       font-size: 13px;
-      
+
       &::placeholder {
         color: rgba(255, 255, 255, 0.3);
       }
-      
+
       &:focus {
         outline: none;
         border-color: rgba(139, 92, 246, 0.5);
       }
     }
-    
+
     .unlock-btn {
       padding: 10px 16px;
       border-radius: 8px;
@@ -2455,14 +2691,14 @@ async function forgetSkill(skillId: string) {
       font-weight: 600;
       cursor: pointer;
       transition: all 0.2s;
-      
+
       &:hover {
         transform: translateY(-1px);
         box-shadow: 0 4px 12px rgba(248, 113, 113, 0.3);
       }
     }
   }
-  
+
   .talent-select-panel {
     h4 {
       display: flex;
@@ -2472,28 +2708,30 @@ async function forgetSkill(skillId: string) {
       font-weight: 600;
       color: rgba(255, 255, 255, 0.8);
       margin-bottom: 12px;
-      
-      i { color: #fbbf24; }
+
+      i {
+        color: #fbbf24;
+      }
     }
   }
-  
+
   .talent-list-scroll {
     max-height: 300px;
     overflow-y: auto;
     display: flex;
     flex-direction: column;
     gap: 6px;
-    
+
     &::-webkit-scrollbar {
       width: 4px;
     }
-    
+
     &::-webkit-scrollbar-thumb {
       background: rgba(255, 255, 255, 0.2);
       border-radius: 2px;
     }
   }
-  
+
   .talent-select-item {
     display: flex;
     justify-content: space-between;
@@ -2504,17 +2742,17 @@ async function forgetSkill(skillId: string) {
     border: 1px solid rgba(255, 255, 255, 0.08);
     cursor: pointer;
     transition: all 0.2s;
-    
+
     &:hover {
       background: rgba(255, 255, 255, 0.08);
       transform: translateX(4px);
     }
-    
+
     .talent-name {
       font-size: 12px;
       color: white;
     }
-    
+
     .talent-rarity {
       font-size: 11px;
       font-weight: 600;
@@ -2522,25 +2760,38 @@ async function forgetSkill(skillId: string) {
       border-radius: 4px;
       background: rgba(255, 255, 255, 0.1);
     }
-    
-    &.rarity-c .talent-rarity { color: #9ca3af; }
-    &.rarity-b .talent-rarity { color: #60a5fa; }
-    &.rarity-a .talent-rarity { color: #a78bfa; }
-    &.rarity-s .talent-rarity { color: #fbbf24; }
-    &.rarity-ss .talent-rarity { color: #f87171; }
-    
+
+    &.rarity-c .talent-rarity {
+      color: #9ca3af;
+    }
+    &.rarity-b .talent-rarity {
+      color: #60a5fa;
+    }
+    &.rarity-a .talent-rarity {
+      color: #a78bfa;
+    }
+    &.rarity-s .talent-rarity {
+      color: #fbbf24;
+    }
+    &.rarity-ss .talent-rarity {
+      color: #f87171;
+    }
+
     &.rarity-sin {
       background: linear-gradient(135deg, rgba(20, 20, 20, 0.95), rgba(60, 20, 40, 0.9));
       border: 1px solid rgba(139, 0, 0, 0.6);
       box-shadow: 0 0 10px rgba(139, 0, 0, 0.3);
-      
-      .talent-name { color: #ef4444; text-shadow: 0 0 6px rgba(239, 68, 68, 0.5); }
-      .talent-rarity { 
-        color: #dc2626; 
+
+      .talent-name {
+        color: #ef4444;
+        text-shadow: 0 0 6px rgba(239, 68, 68, 0.5);
+      }
+      .talent-rarity {
+        color: #dc2626;
         background: rgba(139, 0, 0, 0.3);
         text-shadow: 0 0 8px rgba(220, 38, 38, 0.8);
       }
-      
+
       &:hover {
         box-shadow: 0 0 15px rgba(139, 0, 0, 0.5);
       }
@@ -2548,5 +2799,3 @@ async function forgetSkill(skillId: string) {
   }
 }
 </style>
-
-

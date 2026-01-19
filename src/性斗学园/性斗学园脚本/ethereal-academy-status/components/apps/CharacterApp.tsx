@@ -8,7 +8,6 @@ export const CharacterApp: React.FC<{ state: GameState }> = ({ state }) => {
 
   return (
     <div className="space-y-6">
-
       {/* Profile Header */}
       <div className="flex flex-col items-center pt-4">
         <div className="w-24 h-24 rounded-full bg-gradient-to-tr from-brand-primary to-brand-secondary p-[2px] shadow-xl shadow-brand-primary/20">
@@ -17,7 +16,9 @@ export const CharacterApp: React.FC<{ state: GameState }> = ({ state }) => {
           </div>
         </div>
         <h2 className="mt-3 text-xl font-bold">学员 No.402</h2>
-        <div className="text-sm text-white/50">{角色基础._段位} 级 | 声望 {角色基础._声望}</div>
+        <div className="text-sm text-white/50">
+          {角色基础._段位} 级 | 声望 {角色基础._声望}
+        </div>
       </div>
 
       {/* Stats Grid */}
@@ -48,20 +49,30 @@ export const CharacterApp: React.FC<{ state: GameState }> = ({ state }) => {
           <div>
             <div className="flex justify-between text-xs mb-1">
               <span>耐力</span>
-              <span className="text-white/60">{核心状态.$耐力} / {核心状态.$最大耐力}</span>
+              <span className="text-white/60">
+                {核心状态.$耐力} / {核心状态.$最大耐力}
+              </span>
             </div>
             <div className="h-2 bg-white/10 rounded-full overflow-hidden">
-              <div className="h-full bg-emerald-500" style={{ width: `${(核心状态.$耐力 / 核心状态.$最大耐力) * 100}%` }} />
+              <div
+                className="h-full bg-emerald-500"
+                style={{ width: `${(核心状态.$耐力 / 核心状态.$最大耐力) * 100}%` }}
+              />
             </div>
           </div>
           {/* Pleasure */}
           <div>
             <div className="flex justify-between text-xs mb-1">
               <span>快感积累</span>
-              <span className="text-white/60">{核心状态.$快感} / {核心状态.$最大快感}</span>
+              <span className="text-white/60">
+                {核心状态.$快感} / {核心状态.$最大快感}
+              </span>
             </div>
             <div className="h-2 bg-white/10 rounded-full overflow-hidden">
-              <div className="h-full bg-pink-500" style={{ width: `${(核心状态.$快感 / 核心状态.$最大快感) * 100}%` }} />
+              <div
+                className="h-full bg-pink-500"
+                style={{ width: `${(核心状态.$快感 / 核心状态.$最大快感) * 100}%` }}
+              />
             </div>
           </div>
         </div>
@@ -78,7 +89,6 @@ export const CharacterApp: React.FC<{ state: GameState }> = ({ state }) => {
           ))}
         </div>
       </div>
-
     </div>
   );
 };
