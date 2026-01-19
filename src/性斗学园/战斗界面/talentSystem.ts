@@ -3,6 +3,44 @@
 
 import type { TalentData } from '../性斗学园脚本/data/talentDatabase';
 
+// ==================== 敌人七宗罪天赋配置 ====================
+// 特定敌人拥有的七宗罪天赋（敌人名称 -> 七宗罪类型）
+export const ENEMY_SIN_TALENTS: Record<string, 'lust' | 'wrath' | 'envy' | 'sloth' | 'pride' | 'gluttony' | 'greed'> = {
+  // 沐芯兰BOSS - 嫉妒
+  '沐芯兰_1': 'envy',
+  '沐芯兰_2': 'envy',
+  '沐芯兰_3': 'envy',
+  '茉莉': 'envy',
+  '沐芯兰': 'envy',
+  // 克莉丝汀BOSS - 暴怒（仅第二阶段触发，由bossSystem控制）
+  '克莉丝汀_1': 'wrath',
+  '克莉丝汀_2': 'wrath',
+  '克莉丝汀': 'wrath',
+};
+
+/**
+ * 获取敌人的七宗罪天赋类型
+ * @param enemyName 敌人名称
+ * @returns 七宗罪类型，如果没有则返回null
+ */
+export function getEnemySinTalentType(enemyName: string): 'lust' | 'wrath' | 'envy' | 'sloth' | 'pride' | 'gluttony' | 'greed' | null {
+  if (!enemyName) return null;
+  
+  // 精确匹配
+  if (enemyName in ENEMY_SIN_TALENTS) {
+    return ENEMY_SIN_TALENTS[enemyName];
+  }
+  
+  // 包含匹配
+  for (const [key, value] of Object.entries(ENEMY_SIN_TALENTS)) {
+    if (enemyName.includes(key)) {
+      return value;
+    }
+  }
+  
+  return null;
+}
+
 export interface TalentState {
   // 计数器（用于追踪次数限制的效果）
   attackCount: number;           // 攻击次数

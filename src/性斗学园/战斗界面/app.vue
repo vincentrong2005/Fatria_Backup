@@ -60,7 +60,10 @@
       v-if="bossOverlayText"
       :key="bossDialogueKey"
       class="boss-text-overlay active"
-      :class="{ 'boss-text-muxinlan': BossSystem.bossState.isBossFight && BossSystem.bossState.bossId === 'muxinlan' }"
+      :class="{ 
+        'boss-text-muxinlan': BossSystem.bossState.isBossFight && BossSystem.bossState.bossId === 'muxinlan',
+        'boss-text-christine': BossSystem.bossState.isBossFight && BossSystem.bossState.bossId === 'christine'
+      }"
       @click="handleBossTextClick"
     >
       {{ bossOverlayText }}
@@ -1018,6 +1021,37 @@ async function loadEnemyFromMvuData(data: any, maxClimaxCount: number) {
     
     console.info(`[战斗界面] BOSS战初始化完成: ${bossDisplayName}, 高潮次数上限: ${bossClimaxLimit}`);
   }
+  // 检测是否是克莉丝汀BOSS战
+  else if (BossSystem.isChristineBoss(enemyName)) {
+    console.info('[战斗界面] 检测到克莉丝汀BOSS战！');
+    BossSystem.initChristineBoss();
+    // 强制使用第一阶段数据
+    const bossDisplayName = BossSystem.getChristineDisplayName(1);
+    const bossClimaxLimit = BossSystem.BOSS_CONFIG.christine.climaxLimits[0]; // 第一阶段高潮次数上限
+    enemy.value.name = bossDisplayName;
+    enemy.value.avatarUrl = BossSystem.getChristineAvatarUrl(1);
+    
+    // 更新MVU中的对手名称和胜负规则
+    if (typeof Mvu !== 'undefined') {
+      const mvuData = Mvu.getMvuData({ type: 'message', message_id: 'latest' });
+      if (mvuData?.stat_data) {
+        _.set(mvuData.stat_data, '性斗系统.对手名称', bossDisplayName);
+        // 第一阶段：设置高潮次数上限为1（达到1次高潮即可进入第二阶段）
+        _.set(mvuData.stat_data, '性斗系统.胜负规则.高潮次数上限', bossClimaxLimit);
+        // 对手高潮次数初始为0（记录已高潮次数）
+        _.set(mvuData.stat_data, '性斗系统.对手高潮次数', 0);
+        await Mvu.replaceMvuData(mvuData, { type: 'message', message_id: 'latest' });
+      }
+    }
+    // 同步更新UI中的高潮次数上限（双方共享）
+    player.value.stats.maxClimaxCount = bossClimaxLimit;
+    enemy.value.stats.maxClimaxCount = bossClimaxLimit;
+    
+    // 入场对话已在BossSystem.initChristineBoss()中通过queueDialogues播放
+    addLog(`【特殊战斗】克莉丝汀BOSS战开始！`, 'system', 'critical');
+    
+    console.info(`[战斗界面] BOSS战初始化完成: ${bossDisplayName}, 高潮次数上限: ${bossClimaxLimit}`);
+  }
 
   // 优先从数据库查找对手数据，如果存在则覆盖MVU变量
   if (enemyName) {
@@ -1033,9 +1067,11 @@ async function loadEnemyFromMvuData(data: any, maxClimaxCount: number) {
       
       console.info(`[战斗界面] 名称解析: ${enemyName} -> ${fullEnemyName}`);
       
-      // 设置敌人立绘 URL（沐芯兰BOSS战使用分阶段立绘，其它敌人使用名称生成 GitHub 路径）
+      // 设置敌人立绘 URL（BOSS战使用专用立绘，其它敌人使用名称生成 GitHub 路径）
       if (BossSystem.bossState.isBossFight && BossSystem.bossState.bossId === 'muxinlan') {
         enemy.value.avatarUrl = BossSystem.getMuxinlanAvatarUrl(BossSystem.bossState.currentPhase);
+      } else if (BossSystem.bossState.isBossFight && BossSystem.bossState.bossId === 'christine') {
+        enemy.value.avatarUrl = BossSystem.getChristineAvatarUrl(BossSystem.bossState.currentPhase as 1 | 2);
       } else {
         enemy.value.avatarUrl = getEnemyPortraitUrl(fullEnemyName);
       }
@@ -1047,10 +1083,20 @@ async function loadEnemyFromMvuData(data: any, maxClimaxCount: number) {
         if (typeof Mvu !== 'undefined') {
           const mvuData = Mvu.getMvuData({ type: 'message', message_id: 'latest' });
           if (mvuData?.stat_data) {
-            // 获取当前难度并应用难度系数
+            // 获取用户等级和难度
+            const userLevel = _.get(mvuData.stat_data, '角色基础._等级', 1) as number;
             const difficulty = _.get(mvuData.stat_data, '角色基础.难度', '普通');
-            const adjustedData = enemyDbModule.applyDifficultyCoefficient(presetData, difficulty);
-            console.info(`[战斗界面] 应用难度系数: ${difficulty}, 原始性斗力=${presetData.对手性斗力}, 调整后=${adjustedData.对手性斗力}`);
+            
+            // 先应用等级下限调整（NPC最低等级 = 用户等级 - 8）
+            const levelScaledData = enemyDbModule.applyLevelScaling(presetData, userLevel);
+            const levelDiff = levelScaledData.对手等级 - presetData.对手等级;
+            if (levelDiff > 0) {
+              console.info(`[战斗界面] 应用等级下限: 用户等级=${userLevel}, NPC原等级=${presetData.对手等级}, 调整后=${levelScaledData.对手等级} (+${levelDiff}级)`);
+            }
+            
+            // 再应用难度系数
+            const adjustedData = enemyDbModule.applyDifficultyCoefficient(levelScaledData, difficulty);
+            console.info(`[战斗界面] 应用难度系数: ${difficulty}, 基础性斗力=${levelScaledData.对手性斗力}, 调整后=${adjustedData.对手性斗力}`);
             
             // 确保对手名称被写入（使用完整名称）
             _.set(mvuData.stat_data, '性斗系统.对手名称', fullEnemyName);
@@ -2776,6 +2822,17 @@ function handleEnemyTurn() {
   console.info(`[束缚系统] 检查敌人束缚状态 - enemyBoundTurns=${enemyBoundTurns.value}`);
   if (enemyBoundTurns.value > 0) {
     addLog(`${enemy.value.name} 被束缚了，无法行动！剩余 ${enemyBoundTurns.value} 回合`, 'system', 'info');
+    
+    // ========== 克莉丝汀BOSS第二阶段：暴怒天赋 - 跳过回合时增加快感 ==========
+    if (BossSystem.bossState.isBossFight && BossSystem.bossState.bossId === 'christine' && BossSystem.bossState.currentPhase === 2) {
+      const wrathPleasureGain = Math.floor(enemy.value.stats.maxPleasure * 0.2);
+      enemy.value.stats.currentPleasure = Math.min(
+        enemy.value.stats.maxPleasure,
+        enemy.value.stats.currentPleasure + wrathPleasureGain
+      );
+      addLog(`【敌人·暴怒】${enemy.value.name} 因无法行动而暴怒！快感+${wrathPleasureGain}！`, 'system', 'critical');
+    }
+    
     // 递减束缚回合数
     enemyBoundTurns.value--;
     if (enemyBoundTurns.value === 0) {
@@ -2954,9 +3011,19 @@ function handleEnemyTurn() {
           addLog(`【七宗罪·色欲】魅惑连续失败的代价！敌人本次攻击必定命中且暴击！`, 'system', 'critical');
         }
         
+        // ========== 克莉丝汀BOSS第二阶段：暴怒天赋（必暴击、连击+1） ==========
+        let christineWrathCrit = false;
+        let christineWrathExtraHits = 0;
+        if (BossSystem.bossState.isBossFight && BossSystem.bossState.bossId === 'christine' && BossSystem.bossState.currentPhase === 2) {
+          christineWrathCrit = true;
+          christineWrathExtraHits = 1;
+          addLog(`【敌人·暴怒】克莉丝汀的攻击必定暴击，连击+1！`, 'system', 'critical');
+        }
+        
         const result = executeAttack(nextEnemy, nextPlayer, skill.data, false, {
           guaranteedHit: lustGuaranteedHit,
-          guaranteedCrit: lustGuaranteedCrit,
+          guaranteedCrit: lustGuaranteedCrit || christineWrathCrit,
+          extraHitCount: christineWrathExtraHits,
         });
         
         // 调试日志：检查40%伤害上限是否生效
@@ -2969,6 +3036,13 @@ function handleEnemyTurn() {
         // BOSS战时：敌人使用技能后触发随机战斗对话
         if (BossSystem.bossState.isBossFight && BossSystem.bossState.bossId === 'muxinlan') {
           const battleDialogue = BossSystem.getRandomBattleDialogue(BossSystem.bossState.currentPhase);
+          if (battleDialogue) {
+            BossSystem.queueDialogues([battleDialogue]);
+          }
+        }
+        // 克莉丝汀BOSS战：敌人使用技能后触发随机战斗对话
+        if (BossSystem.bossState.isBossFight && BossSystem.bossState.bossId === 'christine') {
+          const battleDialogue = BossSystem.getChristineRandomBattleDialogue(BossSystem.bossState.currentPhase as 1 | 2);
           if (battleDialogue) {
             BossSystem.queueDialogues([battleDialogue]);
           }
@@ -3872,7 +3946,7 @@ async function handleSendCombatLogToLLM() {
 }
 
 // ==================== BOSS阶段切换处理 ====================
-// 步骤1：锁血并立即换图
+// 步骤1：锁血并立即换图（沐芯兰）
 function lockHealthAndChangeAvatar(nextPhase: 1 | 2 | 3) {
   const currentPhase = BossSystem.bossState.currentPhase;
   console.info(`[战斗界面] BOSS阶段切换开始: ${currentPhase} -> ${nextPhase}`);
@@ -3896,6 +3970,32 @@ function lockHealthAndChangeAvatar(nextPhase: 1 | 2 | 3) {
   }, 1500);
   
   console.info(`[战斗界面] 已锁血并更换立绘: ${newDisplayName}`);
+}
+
+// 克莉丝汀BOSS：锁血并换名换立绘
+function lockHealthAndChangeAvatarChristine(nextPhase: 1 | 2) {
+  const currentPhase = BossSystem.bossState.currentPhase;
+  console.info(`[战斗界面] 克莉丝汀BOSS阶段切换开始: ${currentPhase} -> ${nextPhase}`);
+  
+  // 锁血：快感设为最大值-1，防止触发高潮
+  enemy.value.stats.currentPleasure = enemy.value.stats.maxPleasure - 1;
+  
+  // 立即更换名称和立绘
+  const newDisplayName = BossSystem.getChristineDisplayName(nextPhase);
+  enemy.value.name = newDisplayName;
+  // 更换立绘：克莉丝汀_1 或 克莉丝汀_2
+  enemy.value.avatarUrl = BossSystem.getChristineAvatarUrl(nextPhase);
+  
+  // 设置转换状态
+  isPhaseTransitioning.value = true;
+  phaseTransitionEffect.value = 'phase1to2';
+  
+  // 1.5秒后自动清除特效
+  setTimeout(() => {
+    phaseTransitionEffect.value = null;
+  }, 1500);
+  
+  console.info(`[战斗界面] 克莉丝汀已锁血并更换名称: ${newDisplayName}`);
 }
 
 // 步骤3：执行转阶段逻辑（在文字播放完成后调用）
@@ -4030,6 +4130,41 @@ async function executePhaseTransitionLogic(nextPhase: 1 | 2 | 3) {
         removeSealEffect(['.menu-card:has(svg[data-icon="package"])', '[data-action="surrender-menu"]']);
         addLog(`【提示】禁用效果已解除，可以正常使用物品和投降（啊你真的会在这个阶段投降吗？）`, 'system', 'info');
       }
+      
+      // ========== 沐芯兰嫉妒天赋：每次阶段转换时重新触发 ==========
+      const enemySinType = TalentSystem.getEnemySinTalentType(newDisplayName);
+      if (enemySinType === 'envy') {
+        addLog(`【敌人·嫉妒】${newDisplayName} 的嫉妒天赋再次发动！`, 'system', 'critical');
+        const talentContext = createTalentEffectContext();
+        const envyResult = TalentSystem.processEnvyOnBattleStart(
+          talentContext,
+          // 敌人的新属性（作为"自身"）
+          {
+            sexPower: newEnemyData.对手性斗力,
+            endurance: newEnemyData.对手忍耐力,
+            charm: newEnemyData.对手魅力,
+            luck: newEnemyData.对手幸运,
+            evasion: newEnemyData.对手闪避率,
+            crit: newEnemyData.对手暴击率,
+          },
+          // 玩家的属性（作为"对手"）
+          {
+            sexPower: player.value.stats.sexPower,
+            endurance: player.value.stats.baseEndurance,
+            charm: player.value.stats.charm,
+            luck: player.value.stats.luck,
+            evasion: player.value.stats.evasion,
+            crit: player.value.stats.crit,
+          }
+        );
+        
+        // 应用嫉妒效果到敌人（使用新阶段的buff标识）
+        for (const effect of envyResult.effects) {
+          addLog(`【敌人·嫉妒】${effect.message}`, 'system', effect.isBonus ? 'buff' : 'critical');
+          const bonusKey = effect.attribute + '加成';
+          applyTalentBuff('enemy', `敌人天赋_嫉妒_阶段${nextPhase}_${effect.attribute}`, { [bonusKey]: effect.value }, 999);
+        }
+      }
     }
   } catch (e) {
     console.error('[战斗界面] BOSS阶段切换失败', e);
@@ -4047,7 +4182,7 @@ async function executePhaseTransitionLogic(nextPhase: 1 | 2 | 3) {
   addLog(`阶段切换完成，继续战斗...`, 'system', 'info');
 }
 
-// 完整的阶段转换流程（协调三个步骤）
+// 完整的阶段转换流程（协调三个步骤）- 沐芯兰
 async function handleBossPhaseTransition(nextPhase: 1 | 2 | 3) {
   const currentPhase = BossSystem.bossState.currentPhase;
   
@@ -4082,6 +4217,170 @@ async function handleBossPhaseTransition(nextPhase: 1 | 2 | 3) {
   setTimeout(async () => {
     await executePhaseTransitionLogic(nextPhase);
   }, waitTime);
+}
+
+// 克莉丝汀BOSS阶段转换流程
+async function handleChristinePhaseTransition(nextPhase: 1 | 2) {
+  const currentPhase = BossSystem.bossState.currentPhase;
+  
+  // 步骤1：锁血+换名（不换立绘）
+  lockHealthAndChangeAvatarChristine(nextPhase);
+  
+  // 步骤2：播放锁血对话 + 转阶段对话
+  const allDialogues: BossSystem.BossDialogue[] = [];
+  
+  // 添加锁血对话
+  const lockHpDialogue = BossSystem.getChristineLockHpDialogue(currentPhase as 1 | 2);
+  if (lockHpDialogue) {
+    allDialogues.push(lockHpDialogue);
+  }
+  
+  // 添加转阶段对话（第一阶段到第二阶段）
+  if (currentPhase === 1 && nextPhase === 2) {
+    allDialogues.push(...BossSystem.CHRISTINE_DIALOGUES.phase1_to_2);
+  }
+  
+  // 播放所有对话
+  if (allDialogues.length > 0) {
+    BossSystem.queueDialogues(allDialogues);
+  }
+  
+  // 步骤3：等待对话播放完成后执行转阶段逻辑
+  const waitTime = allDialogues.length * 2500 + 500;
+  
+  setTimeout(async () => {
+    await executeChristinePhaseTransitionLogic(nextPhase);
+  }, waitTime);
+}
+
+// 克莉丝汀BOSS阶段转换逻辑
+async function executeChristinePhaseTransitionLogic(nextPhase: 1 | 2) {
+  const currentPhase = BossSystem.bossState.currentPhase;
+  console.info(`[战斗界面] 克莉丝汀执行阶段转换逻辑: ${currentPhase} -> ${nextPhase}`);
+  
+  // 更新BOSS状态
+  BossSystem.bossState.currentPhase = nextPhase;
+  BossSystem.bossState.phaseTransitioning = false;
+  
+  // 获取新阶段的配置
+  const newDisplayName = BossSystem.getChristineDisplayName(nextPhase);
+  const newClimaxLimit = BossSystem.BOSS_CONFIG.christine.climaxLimits[nextPhase - 1];
+  const newDataKey = BossSystem.getChristineDataKey(nextPhase);
+  
+  // 添加阶段切换日志
+  addLog(`【阶段切换】${enemy.value.name} 人格切换！`, 'system', 'critical');
+  
+  // 从数据库加载新阶段的敌人数据
+  try {
+    const { enemyDbModule, enemySkillDbModule } = await loadDatabaseModules();
+    const newEnemyData = enemyDbModule.getEnemyMvuData(newDataKey);
+    
+    if (newEnemyData) {
+      // 更新敌人显示名称（不换立绘）
+      enemy.value.name = newDisplayName;
+      
+      // 更新敌人属性
+      enemy.value.stats.level = newEnemyData.对手等级;
+      enemy.value.stats.charm = newEnemyData.对手魅力;
+      enemy.value.stats.luck = newEnemyData.对手幸运;
+      enemy.value.stats.evasion = Math.min(60, newEnemyData.对手闪避率);
+      enemy.value.stats.crit = newEnemyData.对手暴击率;
+      enemy.value.stats.maxEndurance = newEnemyData.对手最大耐力;
+      enemy.value.stats.currentEndurance = newEnemyData.对手耐力;
+      enemy.value.stats.maxPleasure = newEnemyData.对手最大快感;
+      enemy.value.stats.currentPleasure = 0; // 新阶段快感重置
+      enemy.value.stats.climaxCount = 0; // 新阶段高潮次数重置
+      enemy.value.stats.sexPower = newEnemyData.对手性斗力;
+      enemy.value.stats.baseEndurance = newEnemyData.对手忍耐力;
+      
+      // 更新高潮次数上限（双方共享）
+      enemy.value.stats.maxClimaxCount = newClimaxLimit;
+      player.value.stats.maxClimaxCount = newClimaxLimit;
+      player.value.stats.climaxCount = 0;
+      
+      // 加载新阶段的技能
+      const newSkills = enemySkillDbModule.getEnemySkills(newDataKey, newDataKey);
+      if (newSkills && newSkills.length > 0) {
+        enemy.value.skills = newSkills.map((skill: any) => ({
+          id: skill.id,
+          name: skill.name,
+          description: skill.effectDescription || skill.description,
+          cost: skill.staminaCost,
+          type: skill.type,
+          cooldown: skill.cooldown,
+          currentCooldown: 0,
+          data: skill,
+        }));
+        console.info(`[战斗界面] 克莉丝汀加载新阶段技能:`, newSkills.map((s: any) => s.name));
+        
+        // 写入MVU
+        if (typeof Mvu !== 'undefined') {
+          const mvuData = Mvu.getMvuData({ type: 'message', message_id: 'latest' });
+          if (mvuData?.stat_data) {
+            _.set(mvuData.stat_data, '性斗系统.对手可用技能', {});
+            const mvuSkills: Record<string, any> = {};
+            newSkills.forEach((skill: any) => {
+              mvuSkills[skill.id] = enemySkillDbModule.convertToMvuSkillFormat(skill);
+            });
+            _.set(mvuData.stat_data, '性斗系统.对手可用技能', mvuSkills);
+            _.set(mvuData.stat_data, '性斗系统.对手技能冷却', {});
+            await Mvu.replaceMvuData(mvuData, { type: 'message', message_id: 'latest' });
+          }
+        }
+      }
+      
+      // 更新MVU数据
+      if (typeof Mvu !== 'undefined') {
+        const mvuData = Mvu.getMvuData({ type: 'message', message_id: 'latest' });
+        if (mvuData?.stat_data) {
+          _.set(mvuData.stat_data, '性斗系统.对手名称', newDisplayName);
+          _.set(mvuData.stat_data, '性斗系统.胜负规则.高潮次数上限', newClimaxLimit);
+          _.set(mvuData.stat_data, '性斗系统.高潮次数', 0);
+          _.set(mvuData.stat_data, '性斗系统.对手等级', newEnemyData.对手等级);
+          _.set(mvuData.stat_data, '性斗系统.对手魅力', newEnemyData.对手魅力);
+          _.set(mvuData.stat_data, '性斗系统.对手幸运', newEnemyData.对手幸运);
+          _.set(mvuData.stat_data, '性斗系统.对手闪避率', newEnemyData.对手闪避率);
+          _.set(mvuData.stat_data, '性斗系统.对手暴击率', newEnemyData.对手暴击率);
+          _.set(mvuData.stat_data, '性斗系统.对手耐力', newEnemyData.对手耐力);
+          _.set(mvuData.stat_data, '性斗系统.对手最大耐力', newEnemyData.对手最大耐力);
+          _.set(mvuData.stat_data, '性斗系统.对手快感', 0);
+          _.set(mvuData.stat_data, '性斗系统.对手最大快感', newEnemyData.对手最大快感);
+          _.set(mvuData.stat_data, '性斗系统.对手高潮次数', 0);
+          _.set(mvuData.stat_data, '性斗系统.对手性斗力', newEnemyData.对手性斗力);
+          _.set(mvuData.stat_data, '性斗系统.对手忍耐力', newEnemyData.对手忍耐力);
+          _.set(mvuData.stat_data, '性斗系统.对手实时性斗力', newEnemyData.对手性斗力);
+          _.set(mvuData.stat_data, '性斗系统.对手实时忍耐力', newEnemyData.对手忍耐力);
+          _.set(mvuData.stat_data, '性斗系统.对手实时魅力', newEnemyData.对手魅力);
+          _.set(mvuData.stat_data, '性斗系统.对手实时幸运', newEnemyData.对手幸运);
+          _.set(mvuData.stat_data, '性斗系统.对手实时闪避率', newEnemyData.对手闪避率);
+          _.set(mvuData.stat_data, '性斗系统.对手实时暴击率', newEnemyData.对手暴击率);
+          await Mvu.replaceMvuData(mvuData, { type: 'message', message_id: 'latest' });
+        }
+      }
+      
+      // 第二阶段：禁用物品和投降，激活暴怒天赋
+      if (nextPhase === 2) {
+        isBossItemsDisabled.value = true;
+        isBossSurrenderDisabled.value = true;
+        addLog(`【女王觉醒】克莉丝汀的里人格觉醒！物品和投降被封印！`, 'system', 'critical');
+        
+        // 激活暴怒天赋效果：闪避率归零
+        applyTalentBuff('enemy', '敌人天赋_暴怒_闪避归零', { '闪避率加成': -999 }, 999);
+        addLog(`【敌人·暴怒】克莉丝汀暴怒觉醒！闪避率归零，所有攻击连击+1，必定暴击！`, 'system', 'critical');
+        addLog(`【敌人·暴怒】若克莉丝汀被束缚无法行动，将因暴怒增加20%最大快感的快感！`, 'system', 'critical');
+      }
+    }
+  } catch (e) {
+    console.error('[战斗界面] 克莉丝汀阶段转换数据加载失败', e);
+  }
+  
+  // 清除转换状态
+  isPhaseTransitioning.value = false;
+  phaseTransitionEffect.value = null;
+  
+  // 重置回合状态，继续战斗
+  turnState.phase = 'playerInput';
+  addLog(`阶段切换完成，继续战斗...`, 'system', 'info');
 }
 
 // 处理高潮后的逻辑（自动继续，不显示按钮）
@@ -4120,6 +4419,30 @@ async function processClimaxAfterLLM(targetIsEnemy: boolean) {
     if (transitionCheck.shouldTransition) {
       // 触发阶段转换（锁血对话和转阶段对话已在handleBossPhaseTransition中统一处理）
       await handleBossPhaseTransition(transitionCheck.nextPhase);
+      // 阶段转换后，重置快感但不增加高潮次数（锁血效果）
+      enemy.value.stats.currentPleasure = 0;
+      turnState.climaxTarget = null;
+      saveToMvu();
+      return;
+    }
+  }
+  
+  // ==================== 克莉丝汀BOSS锁血和阶段切换检测 ====================
+  if (targetIsEnemy && BossSystem.bossState.isBossFight && BossSystem.bossState.bossId === 'christine') {
+    const currentPhase = BossSystem.bossState.currentPhase as 1 | 2;
+    const currentClimaxCount = enemy.value.stats.climaxCount;
+    
+    // 检查是否应该触发阶段转换（第一阶段快感满时转第二阶段）
+    const transitionCheck = BossSystem.shouldChristineTransitionPhase(
+      char.stats.currentPleasure,
+      char.stats.maxPleasure,
+      currentClimaxCount,
+      currentPhase
+    );
+    
+    if (transitionCheck.shouldTransition) {
+      // 触发阶段转换
+      await handleChristinePhaseTransition(transitionCheck.nextPhase);
       // 阶段转换后，重置快感但不增加高潮次数（锁血效果）
       enemy.value.stats.currentPleasure = 0;
       turnState.climaxTarget = null;
@@ -4676,7 +4999,75 @@ onMounted(async () => {
     addLog(`【天赋】${playerTalent.value.name} 已激活`, 'system', 'info');
   }
   
+  // ========== 敌人七宗罪天赋处理 ==========
+  const enemySinType = TalentSystem.getEnemySinTalentType(enemy.value.name);
+  if (enemySinType) {
+    addLog(`【敌人天赋】${enemy.value.name} 拥有七宗罪天赋：${getSinTalentDisplayName(enemySinType)}`, 'system', 'critical');
+    
+    // 嫉妒：战斗开始时属性比较（敌人视角：敌人与玩家比较）
+    if (enemySinType === 'envy') {
+      const talentContext = createTalentEffectContext();
+      const envyResult = TalentSystem.processEnvyOnBattleStart(
+        talentContext,
+        // 敌人的属性（作为"自身"）
+        {
+          sexPower: enemy.value.stats.sexPower,
+          endurance: enemy.value.stats.baseEndurance,
+          charm: enemy.value.stats.charm,
+          luck: enemy.value.stats.luck,
+          evasion: enemy.value.stats.evasion,
+          crit: enemy.value.stats.crit,
+        },
+        // 玩家的属性（作为"对手"）
+        {
+          sexPower: player.value.stats.sexPower,
+          endurance: player.value.stats.baseEndurance,
+          charm: player.value.stats.charm,
+          luck: player.value.stats.luck,
+          evasion: player.value.stats.evasion,
+          crit: player.value.stats.crit,
+        }
+      );
+      
+      // 应用嫉妒效果到敌人
+      for (const effect of envyResult.effects) {
+        addLog(`【敌人·嫉妒】${effect.message}`, 'system', effect.isBonus ? 'buff' : 'critical');
+        const bonusKey = effect.attribute + '加成';
+        applyTalentBuff('enemy', `敌人天赋_嫉妒_${effect.attribute}`, { [bonusKey]: effect.value }, 999);
+      }
+    }
+    
+    // 暴怒：克莉丝汀专属（仅第二阶段触发）
+    // 第一阶段不触发暴怒效果，第二阶段才激活
+    if (enemySinType === 'wrath') {
+      // 克莉丝汀BOSS战：第一阶段不激活暴怒，第二阶段才激活
+      if (BossSystem.bossState.isBossFight && BossSystem.bossState.bossId === 'christine') {
+        if (BossSystem.bossState.currentPhase === 1) {
+          addLog(`【敌人·暴怒】${enemy.value.name} 的暴怒天赋尚未觉醒...`, 'system', 'info');
+        } else {
+          // 第二阶段：激活暴怒效果
+          applyTalentBuff('enemy', '敌人天赋_暴怒_闪避归零', { '闪避率加成': -999 }, 999);
+          addLog(`【敌人·暴怒】${enemy.value.name} 暴怒觉醒！闪避率归零，所有攻击连击+1，必定暴击！`, 'system', 'critical');
+        }
+      }
+    }
+  }
+  
   });
+
+// 获取七宗罪天赋显示名称
+function getSinTalentDisplayName(sinType: string): string {
+  const names: Record<string, string> = {
+    lust: '色欲',
+    wrath: '暴怒',
+    envy: '嫉妒',
+    sloth: '懒惰',
+    pride: '傲慢',
+    gluttony: '暴食',
+    greed: '贪婪',
+  };
+  return names[sinType] || sinType;
+}
 </script>
 
 <style lang="scss" scoped>
@@ -5622,6 +6013,13 @@ onMounted(async () => {
 .boss-text-overlay.boss-text-muxinlan {
   font-size: 44px;
   letter-spacing: 6px;
+}
+
+.boss-text-overlay.boss-text-christine {
+  font-size: 40px;
+  letter-spacing: 4px;
+  color: #c084fc; // 紫色调，符合克莉丝汀的女王形象
+  text-shadow: 0 0 20px rgba(192, 132, 252, 0.8), 0 0 40px rgba(192, 132, 252, 0.4);
 }
 
 @keyframes bossTextSlam {

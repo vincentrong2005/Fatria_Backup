@@ -522,6 +522,215 @@ export function useHonorMedal(): boolean {
   return true;
 }
 
+// ==================== 克莉丝汀 BOSS 对话库 ====================
+export const CHRISTINE_DIALOGUES = {
+  // 第一阶段入场（表人格/弱气）
+  phase1_entry: [
+    { speaker: '克莉丝汀(?)', text: '"那个...这、这位同学...请不要这样盯着我看..."', emotion: 'weak' as const },
+    { speaker: '克莉丝汀(?)', text: '"性、性斗什么的...我真的不擅长...能不能放过我...?"', emotion: 'weak' as const },
+  ],
+  
+  // 第一阶段战斗中（随机）
+  phase1_battle: [
+    { speaker: '克莉丝汀(?)', text: '"对、对不起!我不是故意挡路的...请不要打我..."', emotion: 'weak' as const },
+    { speaker: '克莉丝汀(?)', text: '"呜呜...文件撒了一地...如果不快点收拾好,会被会长骂的..."', emotion: 'weak' as const },
+    { speaker: '克莉丝汀(?)', text: '"请、请不要这样...我真的很害怕..."', emotion: 'weak' as const },
+    { speaker: '克莉丝汀(?)', text: '"能不能...温柔一点..."', emotion: 'weak' as const },
+  ],
+  
+  // 第一阶段锁血时
+  phase1_lockHp: [
+    { speaker: '克莉丝汀(?)', text: '"呜...！（身体微微颤抖）"', emotion: 'weak' as const },
+    { speaker: '克莉丝汀(?)', text: '"不...不要再欺负我了..."', emotion: 'weak' as const },
+  ],
+  
+  // 第一阶段到第二阶段转换（人格切换）
+  phase1_to_2: [
+    { speaker: '克莉丝汀(?)', text: '"......"', emotion: 'weak' as const },
+    { speaker: '???', text: '"（眼神突然变得冰冷锐利）"', emotion: 'angry' as const },
+    { speaker: '꧁༺克莉丝汀༻꧂', text: '"...呵。"', emotion: 'angry' as const },
+    { speaker: '꧁༺克莉丝汀༻꧂', text: '"刚才不是很嚣张吗? 怎么现在像条死狗一样趴在地上?"', emotion: 'angry' as const },
+    { speaker: '꧁༺克莉丝汀༻꧂', text: '"既然你这么喜欢欺负弱小...那就让你体验一下被绝对力量碾碎的感觉。"', emotion: 'angry' as const },
+  ],
+  
+  // 第二阶段战斗中（随机）
+  phase2_battle: [
+    { speaker: '꧁༺克莉丝汀༻꧂', text: '"闭嘴,垃圾。我允许你射了吗?"', emotion: 'angry' as const },
+    { speaker: '꧁༺克莉丝汀༻꧂', text: '"这双丝袜的味道如何? 是不是比你那贫瘠的人生还要丰富?"', emotion: 'angry' as const },
+    { speaker: '꧁༺克莉丝汀༻꧂', text: '"给我想着我的脚去死吧。"', emotion: 'angry' as const },
+    { speaker: '꧁༺克莉丝汀༻꧂', text: '"木马,最大功率。"', emotion: 'angry' as const },
+    { speaker: '꧁༺克莉丝汀༻꧂', text: '"跪下！然后向我忏悔你的愚蠢！"', emotion: 'angry' as const },
+    { speaker: '꧁༺克莉丝汀༻꧂', text: '"挣扎吧...反抗吧...然后绝望吧。"', emotion: 'angry' as const },
+    { speaker: '꧁༺克莉丝汀༻꧂', text: '"不榨干最后一滴精液...我是不会停止的。"', emotion: 'angry' as const },
+    { speaker: '꧁༺克莉丝汀༻꧂', text: '"这就是欺负弱小的代价。好好享受吧。"', emotion: 'angry' as const },
+  ],
+  
+  // 战后（恢复/慌乱）- 战斗结束后触发
+  post_battle: [
+    { speaker: '克莉丝汀', text: '"啊!!! 对、对不起!! 我、我又失控了...呜呜呜..."', emotion: 'tsundere' as const },
+    { speaker: '克莉丝汀', text: '"同、同学你没事吧?! 流了好多白色的东西...我、我这就帮你擦干净!"', emotion: 'tsundere' as const },
+    { speaker: '克莉丝汀', text: '"请、请不要讨厌克莉丝汀...我真的不是故意的..."', emotion: 'weak' as const },
+  ],
+  
+  // 免疫束缚时的嘲笑（第一阶段）
+  bind_immune_phase1: [
+    { speaker: '克莉丝汀(?)', text: '"呜...虽、虽然很害怕，但是这种程度的束缚..."', emotion: 'weak' as const },
+  ],
+  
+  // 免疫束缚时的嘲笑（第二阶段）
+  bind_immune_phase2: [
+    { speaker: '꧁༺克莉丝汀༻꧂', text: '"想困住女王？你配吗？"', emotion: 'angry' as const },
+    { speaker: '꧁༺克莉丝汀༻꧂', text: '"这种低级手段...简直是侮辱。"', emotion: 'angry' as const },
+  ],
+};
+
+// ==================== 克莉丝汀 BOSS 检测函数 ====================
+/**
+ * 检测是否是克莉丝汀BOSS战
+ */
+export function isChristineBoss(enemyName: string): boolean {
+  if (!enemyName) return false;
+  const name = enemyName.toLowerCase();
+  return name.includes('克莉丝汀') || name.includes('christine') || name.includes('书记');
+}
+
+/**
+ * 初始化克莉丝汀BOSS战
+ */
+export function initChristineBoss(): void {
+  bossState.isBossFight = true;
+  bossState.bossId = 'christine';
+  bossState.currentPhase = 1;
+  bossState.phaseTransitioning = false;
+  bossState.dialogueIndex = 0;
+  bossState.buttonsDisabled = false;
+  bossState.hasUsedMedal = false;
+  
+  // 播放入场对话
+  queueDialogues(CHRISTINE_DIALOGUES.phase1_entry);
+}
+
+/**
+ * 获取克莉丝汀当前阶段的敌人数据键名
+ */
+export function getChristineDataKey(phase: 1 | 2): string {
+  return `克莉丝汀_${phase}`;
+}
+
+/**
+ * 获取克莉丝汀当前阶段的显示名称
+ */
+export function getChristineDisplayName(phase: 1 | 2): string {
+  switch (phase) {
+    case 1:
+      return '克莉丝汀(?)';
+    case 2:
+      return '꧁༺克莉丝汀༻꧂';
+    default:
+      return '克莉丝汀';
+  }
+}
+
+/**
+ * 获取克莉丝汀当前阶段的立绘
+ */
+export function getChristineAvatarUrl(phase: 1 | 2): string {
+  // 克莉丝汀分阶段立绘：克莉丝汀_1、克莉丝汀_2
+  return `https://raw.githubusercontent.com/vincentrong2005/Fatria/main/图片素材/性斗学园/立绘/克莉丝汀_${phase}.png`;
+}
+
+/**
+ * 获取克莉丝汀随机战斗对话
+ */
+export function getChristineRandomBattleDialogue(phase: 1 | 2): BossDialogue | null {
+  let dialogues: BossDialogue[];
+  
+  switch (phase) {
+    case 1:
+      dialogues = CHRISTINE_DIALOGUES.phase1_battle;
+      break;
+    case 2:
+      dialogues = CHRISTINE_DIALOGUES.phase2_battle;
+      break;
+    default:
+      return null;
+  }
+  
+  return dialogues[Math.floor(Math.random() * dialogues.length)];
+}
+
+/**
+ * 获取克莉丝汀锁血对话
+ */
+export function getChristineLockHpDialogue(phase: 1 | 2): BossDialogue | null {
+  if (phase === 1) {
+    const dialogues = CHRISTINE_DIALOGUES.phase1_lockHp;
+    return dialogues[Math.floor(Math.random() * dialogues.length)];
+  }
+  return null; // 第二阶段没有锁血
+}
+
+/**
+ * 获取克莉丝汀束缚免疫对话
+ */
+export function getChristineBindImmuneDialogue(phase: 1 | 2): BossDialogue | null {
+  let dialogues: BossDialogue[];
+  
+  switch (phase) {
+    case 1:
+      dialogues = CHRISTINE_DIALOGUES.bind_immune_phase1;
+      break;
+    case 2:
+      dialogues = CHRISTINE_DIALOGUES.bind_immune_phase2;
+      break;
+    default:
+      return null;
+  }
+  
+  return dialogues[Math.floor(Math.random() * dialogues.length)];
+}
+
+/**
+ * 检查克莉丝汀是否应该锁血
+ */
+export function shouldChristineLockPleasure(
+  currentPleasure: number,
+  maxPleasure: number,
+  phase: 1 | 2
+): boolean {
+  if (!bossState.isBossFight || bossState.bossId !== 'christine') {
+    return false;
+  }
+  
+  // 第一阶段：快感达到最大快感-1时锁血
+  if (phase === 1 && currentPleasure >= maxPleasure - 1) {
+    return true;
+  }
+  
+  return false;
+}
+
+/**
+ * 检查克莉丝汀是否应该触发阶段转换
+ */
+export function shouldChristineTransitionPhase(
+  currentPleasure: number,
+  maxPleasure: number,
+  _currentClimaxCount: number,
+  phase: 1 | 2
+): { shouldTransition: boolean; nextPhase: 1 | 2 } {
+  if (!bossState.isBossFight || bossState.bossId !== 'christine') {
+    return { shouldTransition: false, nextPhase: phase };
+  }
+  
+  // 第一阶段：快感达到最大值时，转换到第二阶段
+  if (phase === 1 && currentPleasure >= maxPleasure) {
+    return { shouldTransition: true, nextPhase: 2 };
+  }
+  
+  return { shouldTransition: false, nextPhase: phase };
+}
+
 // ==================== 导出BOSS系统配置 ====================
 export const BOSS_CONFIG = {
   muxinlan: {
@@ -532,5 +741,13 @@ export const BOSS_CONFIG = {
     levels: [50, 88, 11],
     climaxLimits: [1, 3, 1], // 各阶段的高潮次数上限（胜负规则.高潮次数上限）
     specialItem: '刻有沐芯兰名字的三好学生荣誉勋章',
+  },
+  christine: {
+    id: 'christine',
+    phases: 2,
+    dataKeys: ['克莉丝汀_1', '克莉丝汀_2'],
+    displayNames: ['克莉丝汀(?)', '꧁༺克莉丝汀༻꧂'],
+    levels: [55, 88],
+    climaxLimits: [1, 3], // 第一阶段高潮1次转阶段，第二阶段高潮3次结束
   },
 };

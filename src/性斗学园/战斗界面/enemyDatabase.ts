@@ -23,19 +23,57 @@ export interface EnemyMvuData {
 
 /**
  * 难度系数映射
- * 简单: 0.8, 普通: 1.2, 困难: 1.5, 抖M: 2.2, 作弊: 1
+ * 简单: 0.7, 普通: 1.0, 困难: 1.5, 抖M: 2.0, 作弊: 1
  */
 export const DIFFICULTY_COEFFICIENTS: Record<string, number> = {
-  '简单': 0.8,
-  '普通': 1.2,
+  '简单': 0.7,
+  '普通': 1.0,
   '困难': 1.5,
-  '抖M': 2.2,
+  '抖M': 2.0,
   '作弊': 1,
 };
 
 /**
- * 根据难度系数调整敌人属性（等级不受影响）
+ * 根据用户等级调整NPC等级下限
+ * NPC最低等级 = max(原等级, 用户等级 - 8)
+ * 每提升1级：魅力/幸运/闪避率/暴击率+1，最大耐力/最大快感+5，性斗力/忍耐力+10
  * @param baseData 基础敌人数据
+ * @param userLevel 用户等级
+ * @returns 调整后的敌人数据（等级提升后的基础数据）
+ */
+export function applyLevelScaling(baseData: EnemyMvuData, userLevel: number): EnemyMvuData {
+  const minLevel = userLevel - 8;
+  const originalLevel = baseData.对手等级;
+  
+  // 如果原等级已经高于等级下限，不需要调整
+  if (originalLevel >= minLevel) {
+    return { ...baseData };
+  }
+  
+  // 计算需要提升的等级数
+  const levelDiff = minLevel - originalLevel;
+  
+  return {
+    对手等级: minLevel,
+    对手魅力: baseData.对手魅力 + levelDiff,
+    对手幸运: baseData.对手幸运 + levelDiff,
+    对手闪避率: Math.min(60, baseData.对手闪避率 + levelDiff), // 闪避率上限60
+    对手暴击率: Math.min(100, baseData.对手暴击率 + levelDiff), // 暴击率上限100
+    对手耐力: baseData.对手耐力 + levelDiff * 5,
+    对手最大耐力: baseData.对手最大耐力 + levelDiff * 5,
+    对手快感: baseData.对手快感,
+    对手最大快感: baseData.对手最大快感 + levelDiff * 5,
+    对手高潮次数: baseData.对手高潮次数,
+    对手性斗力: baseData.对手性斗力 + levelDiff * 10,
+    对手忍耐力: baseData.对手忍耐力 + levelDiff * 10,
+    对手临时状态: { ...baseData.对手临时状态 },
+    对手技能冷却: { ...baseData.对手技能冷却 },
+  };
+}
+
+/**
+ * 根据难度系数调整敌人属性（在等级调整后应用）
+ * @param baseData 基础敌人数据（已应用等级调整）
  * @param difficulty 难度名称
  * @returns 调整后的敌人数据
  */
@@ -821,7 +859,7 @@ export const ENEMY_DATABASE: Record<string, EnemyMvuData> = {
     对手临时状态: {},
     对手技能冷却: {},
   },
-  '桃乃 爱': {
+  桃乃爱: {
     对手魅力: 27,
     对手幸运: 50,
     对手闪避率: 35,
@@ -1274,11 +1312,30 @@ export const ENEMY_DATABASE: Record<string, EnemyMvuData> = {
     对手临时状态: {},
     对手技能冷却: {},
   },
-  '克莉丝汀': {
+  // ==================== 克莉丝汀 BOSS 双阶段 ====================
+  // 第一阶段：表人格（常态/弱气防守）- 柔弱社恐，极力避免战斗
+  '克莉丝汀_1': {
+    对手等级: 55,
+    对手魅力: 120,
+    对手幸运: 80,
+    对手闪避率: 35, // 较高闪避，弱气躲避
+    对手暴击率: 20,
+    对手耐力: 280,
+    对手最大耐力: 280,
+    对手快感: 0,
+    对手最大快感: 320,
+    对手高潮次数: 0,
+    对手性斗力: 544,
+    对手忍耐力: 500,
+    对手临时状态: {},
+    对手技能冷却: {},
+  },
+  // 第二阶段：里人格（女王觉醒）- 绝对理性的秩序维护者，抖S女王
+  '克莉丝汀_2': {
     对手等级: 88,
     对手魅力: 200,
     对手幸运: 150,
-    对手闪避率: 40,
+    对手闪避率: 25, // 女王不屑于躲避
     对手暴击率: 65,
     对手耐力: 500,
     对手最大耐力: 500,
@@ -1383,8 +1440,8 @@ export const NAME_ALIASES: Record<string, string> = {
   '望月静': '望月静',
   '李小云': '李小云',
   '李强': '李强',
-  '桃乃': '桃乃 爱',
-  '桃乃爱': '桃乃 爱',
+  '桃乃': '桃乃爱',
+  '桃乃爱': '桃乃爱',
   '樱井': '樱井结衣',
   '结衣': '樱井结衣',
   '樱岛': '樱岛麻衣',
@@ -1452,8 +1509,12 @@ export const NAME_ALIASES: Record<string, string> = {
   // 新增人物别名
   '芙宁': '伊甸芙宁',
   '伊甸芙宁': '伊甸芙宁',
-  '克莉丝汀': '克莉丝汀',
-  '书记': '克莉丝汀',
+  // 克莉丝汀 BOSS 别名
+  '克莉丝汀': '克莉丝汀_1',
+  '书记': '克莉丝汀_1',
+  '克莉丝汀(?)': '克莉丝汀_1',
+  '女王克莉丝汀': '克莉丝汀_2',
+  '处刑人克莉丝汀': '克莉丝汀_2',
   '艾格妮丝': '艾格妮丝',
   '鼠族公主': '艾格妮丝',
   '赤蔷薇': '艾格妮丝',
