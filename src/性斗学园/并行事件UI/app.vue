@@ -38,7 +38,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 
 // 正则表达式：匹配 <parallel> 标签包裹的内容
 const PARALLEL_REGEX = /<parallel>([\s\S]*?)<\/parallel>/g;
@@ -248,8 +248,29 @@ const extractParallelEvents = () => {
   }
 };
 
-onMounted(() => {
+// 等待全局函数初始化
+const waitForGlobalFunctions = async (maxRetries = 30, interval = 200): Promise<boolean> => {
+  const globalAny = window as any;
+  for (let i = 0; i < maxRetries; i++) {
+    if (typeof globalAny.getChatMessages === 'function' && typeof globalAny.getCurrentMessageId === 'function') {
+      console.info(`[并行事件UI] 全局函数已就绪 (第 ${i + 1} 次检查)`);
+      return true;
+    }
+    await new Promise(resolve => setTimeout(resolve, interval));
+  }
+  console.error('[并行事件UI] 等待全局函数初始化超时');
+  return false;
+};
+
+onMounted(async () => {
   console.info('[并行事件UI] 组件已加载');
+  
+  // 等待全局函数初始化
+  const functionsReady = await waitForGlobalFunctions();
+  if (!functionsReady) {
+    console.error('[并行事件UI] 全局函数未就绪，无法提取事件');
+    return;
+  }
   
   // 加载折叠状态
   loadCollapseState();

@@ -432,15 +432,48 @@ const selectOption = (optionText: string) => {
   }
 };
 
+// 等待全局函数初始化
+const waitForGlobalFunctions = async (maxRetries = 30, interval = 200): Promise<boolean> => {
+  const globalAny = window as any;
+  for (let i = 0; i < maxRetries; i++) {
+    if (typeof globalAny.getChatMessages === 'function' && typeof globalAny.getCurrentMessageId === 'function') {
+      console.info(`[选项美化] 全局函数已就绪 (第 ${i + 1} 次检查)`);
+      return true;
+    }
+    await new Promise(resolve => setTimeout(resolve, interval));
+  }
+  console.error('[选项美化] 等待全局函数初始化超时');
+  return false;
+};
+
 onMounted(async () => {
   console.info('[选项美化] 组件已加载');
 
+  // 等待全局函数初始化
+  const functionsReady = await waitForGlobalFunctions();
+  if (!functionsReady) {
+    console.error('[选项美化] 全局函数未就绪，无法提取选项');
+    return;
+  }
+
   await loadEnemyNameFromMvu();
 
-  // 延迟提取，确保消息已加载
-  setTimeout(() => {
-    extractOptions();
-  }, 100);
+  // 提取选项并带重试机制
+  const extractWithRetry = async (retries = 5, delay = 200) => {
+    for (let i = 0; i < retries; i++) {
+      await new Promise(resolve => setTimeout(resolve, delay));
+      extractOptions();
+      if (options.value.length > 0) {
+        console.info('[选项美化] 成功提取选项，重试次数:', i);
+        return;
+      }
+      // 逐渐增加延迟
+      delay = Math.min(delay * 1.5, 1000);
+    }
+    console.warn('[选项美化] 多次重试后仍未找到选项');
+  };
+
+  extractWithRetry();
 });
 </script>
 

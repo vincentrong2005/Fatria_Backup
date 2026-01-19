@@ -16,8 +16,24 @@ import { shouldTriggerOrgasm } from '../开局/utils/combat-calculator';
 import StatusBarWrapper from './components/StatusBarWrapper.vue';
 import { getDailyTalentEffect } from './data/talentDatabase';
 
-// 等待 MVU 初始化
-await waitGlobalInitialized('Mvu');
+// 等待 MVU 初始化（带安全检查和超时）
+const globalAny = window as any;
+if (typeof globalAny.waitGlobalInitialized === 'function') {
+  try {
+    // 添加超时保护：最多等待10秒
+    const waitPromise = globalAny.waitGlobalInitialized('Mvu');
+    const timeoutPromise = new Promise((_, reject) => 
+      setTimeout(() => reject(new Error('等待MVU初始化超时')), 10000)
+    );
+    await Promise.race([waitPromise, timeoutPromise]);
+  } catch (error) {
+    console.warn('[性斗学园脚本] 等待MVU初始化失败，继续执行:', error);
+  }
+} else {
+  console.warn('[性斗学园脚本] waitGlobalInitialized 函数不存在，跳过等待');
+  // 等待一小段时间让全局变量初始化
+  await new Promise(resolve => setTimeout(resolve, 500));
+}
 
 /**
  * 启动校验：数值上限保护
@@ -26,6 +42,11 @@ await waitGlobalInitialized('Mvu');
  */
 async function enforcePotentialCapOnStartup() {
   try {
+    // 检查 Mvu 是否存在
+    if (typeof Mvu === 'undefined' || !Mvu) {
+      console.warn('[性斗学园脚本] Mvu 不存在，跳过启动校验');
+      return;
+    }
     const mvuData = Mvu.getMvuData({ type: 'message', message_id: 'latest' });
     if (!mvuData || !mvuData.stat_data) {
       console.warn('[性斗学园脚本] 无法获取 MVU 数据，跳过启动校验');
@@ -146,6 +167,10 @@ function calculateRank(level: number): string {
  */
 async function updateRank() {
   try {
+    // 检查 Mvu 是否存在
+    if (typeof Mvu === 'undefined' || !Mvu) {
+      return;
+    }
     const mvuData = Mvu.getMvuData({ type: 'message', message_id: 'latest' });
     if (!mvuData || !mvuData.stat_data) {
       console.warn('[性斗学园脚本] 无法获取 MVU 数据，跳过段位更新');
@@ -182,6 +207,11 @@ async function updateDependentVariables() {
   
   try {
     isUpdating = true;
+    
+    // 检查 Mvu 是否存在
+    if (typeof Mvu === 'undefined' || !Mvu) {
+      return;
+    }
     
     // 获取当前消息楼层的 MVU 数据
     const mvuData = Mvu.getMvuData({ type: 'message', message_id: 'latest' });
@@ -469,71 +499,92 @@ async function updateDependentVariables() {
 }
 
 /**
- * 监听 MVU 变量更新事件
- * 在变量更新结束后，重新计算所有依赖的变量
+ * 注册 MVU 事件监听器（需要在 MVU 初始化后调用）
  */
-eventOn(Mvu.events.VARIABLE_UPDATE_ENDED, async (variables, variables_before_update) => {
-  console.info('[性斗学园脚本] 检测到 MVU 变量更新事件');
-  
-  // 检查是否有基础变量发生变化（这些变量的变化会影响计算值）
-  const basePaths = [
-    '角色基础._等级',
-    '角色基础.经验值',
-    '角色基础._段位', // 段位变化时也需要重新检查并更新
-    // 核心状态基础值
-    '核心状态._潜力',
-    '核心状态.$基础魅力',
-    '核心状态.$基础幸运',
-    '核心状态.$基础闪避率',
-    '核心状态.$基础暴击率',
-    // 已移除意志力相关路径
-    // 核心状态资源
-    '核心状态.$最大快感',
-    '核心状态.$快感',
-    '核心状态.$最大耐力',
-    '核心状态.$耐力',
-    // 装备和状态
-    '物品系统.装备总加成',
-    '永久状态.加成统计',
-    '永久状态.状态列表',
-    '临时状态.状态列表',
-    '临时状态.加成统计',
-    '性斗系统.高潮次数',
-  ];
-  
-  let hasBaseChange = false;
-  const changedPaths: string[] = [];
-  
-  for (const path of basePaths) {
-    const oldValue = get(variables_before_update, `stat_data.${path}`);
-    const newValue = get(variables, `stat_data.${path}`);
-    
-    // 使用深度比较，因为可能是对象
-    if (!isEqual(oldValue, newValue)) {
-      hasBaseChange = true;
-      changedPaths.push(path);
-      console.info(`[性斗学园脚本] 检测到变量变化: ${path}`, { oldValue, newValue });
-    }
+function registerMvuEventListeners() {
+  if (typeof Mvu === 'undefined' || !Mvu) {
+    console.warn('[性斗学园脚本] Mvu 不存在，无法注册事件监听器');
+    return false;
   }
   
-  // 如果有基础变量变化，更新依赖变量
-  if (hasBaseChange) {
-    console.info(`[性斗学园脚本] 检测到 ${changedPaths.length} 个变量变化，开始更新依赖变量`);
-    // 使用 setTimeout 避免在事件处理中直接更新导致的问题
-    setTimeout(async () => {
-      await updateDependentVariables();
-    }, 100); // 稍微延迟确保数据已完全写入
-  }
-});
+  try {
+    /**
+     * 监听 MVU 变量更新事件
+     * 在变量更新结束后，重新计算所有依赖的变量
+     */
+    eventOn(Mvu.events.VARIABLE_UPDATE_ENDED, async (variables, variables_before_update) => {
+      console.info('[性斗学园脚本] 检测到 MVU 变量更新事件');
+      
+      // 检查是否有基础变量发生变化（这些变量的变化会影响计算值）
+      const basePaths = [
+        '角色基础._等级',
+        '角色基础.经验值',
+        '角色基础._段位', // 段位变化时也需要重新检查并更新
+        // 核心状态基础值
+        '核心状态._潜力',
+        '核心状态.$基础魅力',
+        '核心状态.$基础幸运',
+        '核心状态.$基础闪避率',
+        '核心状态.$基础暴击率',
+        // 已移除意志力相关路径
+        // 核心状态资源
+        '核心状态.$最大快感',
+        '核心状态.$快感',
+        '核心状态.$最大耐力',
+        '核心状态.$耐力',
+        // 装备和状态
+        '物品系统.装备总加成',
+        '永久状态.加成统计',
+        '永久状态.状态列表',
+        '临时状态.状态列表',
+        '临时状态.加成统计',
+        '性斗系统.高潮次数',
+      ];
+      
+      let hasBaseChange = false;
+      const changedPaths: string[] = [];
+      
+      for (const path of basePaths) {
+        const oldValue = get(variables_before_update, `stat_data.${path}`);
+        const newValue = get(variables, `stat_data.${path}`);
+        
+        // 使用深度比较，因为可能是对象
+        if (!isEqual(oldValue, newValue)) {
+          hasBaseChange = true;
+          changedPaths.push(path);
+          console.info(`[性斗学园脚本] 检测到变量变化: ${path}`, { oldValue, newValue });
+        }
+      }
+      
+      // 如果有基础变量变化，更新依赖变量
+      if (hasBaseChange) {
+        console.info(`[性斗学园脚本] 检测到 ${changedPaths.length} 个变量变化，开始更新依赖变量`);
+        // 使用 setTimeout 避免在事件处理中直接更新导致的问题
+        setTimeout(async () => {
+          await updateDependentVariables();
+        }, 100); // 稍微延迟确保数据已完全写入
+      }
+    });
 
-/**
- * 监听变量初始化事件
- * 在变量初始化后，计算初始的依赖变量值
- */
-eventOn(Mvu.events.VARIABLE_INITIALIZED, async () => {
-  await enforcePotentialCapOnStartup();
-  await updateDependentVariables();
-});
+    /**
+     * 监听变量初始化事件
+     * 在变量初始化后，计算初始的依赖变量值
+     */
+    eventOn(Mvu.events.VARIABLE_INITIALIZED, async () => {
+      await enforcePotentialCapOnStartup();
+      await updateDependentVariables();
+    });
+    
+    console.info('[性斗学园脚本] MVU 事件监听器注册成功');
+    return true;
+  } catch (error) {
+    console.error('[性斗学园脚本] 注册 MVU 事件监听器失败:', error);
+    return false;
+  }
+}
+
+// 尝试注册 MVU 事件监听器
+registerMvuEventListeners();
 
 /**
  * 处理对话后的耐力和快感更新
@@ -541,6 +592,11 @@ eventOn(Mvu.events.VARIABLE_INITIALIZED, async () => {
  */
 async function handleConversationUpdate() {
   try {
+    // 检查 Mvu 是否存在
+    if (typeof Mvu === 'undefined' || !Mvu) {
+      console.warn('[性斗学园脚本] Mvu 不存在，跳过对话更新');
+      return;
+    }
     // 获取当前消息楼层的 MVU 数据
     const mvuData = Mvu.getMvuData({ type: 'message', message_id: 'latest' });
     if (!mvuData || !mvuData.stat_data) {
@@ -606,6 +662,21 @@ if (typeof tavern_events !== 'undefined' && tavern_events.MESSAGE_RECEIVED) {
 }
 
 /**
+ * 等待 MVU 初始化完成（带重试机制）
+ */
+async function waitForMvuReady(maxRetries = 20, interval = 500): Promise<boolean> {
+  for (let i = 0; i < maxRetries; i++) {
+    if (typeof Mvu !== 'undefined' && Mvu) {
+      console.info(`[性斗学园脚本] MVU 已就绪 (第 ${i + 1} 次检查)`);
+      return true;
+    }
+    await new Promise(resolve => setTimeout(resolve, interval));
+  }
+  console.error('[性斗学园脚本] 等待 MVU 初始化超时');
+  return false;
+}
+
+/**
  * 初始化时执行一次计算
  */
 $(() => {
@@ -616,8 +687,16 @@ $(() => {
   });
   
   errorCatched(async () => {
-    // 等待一小段时间确保 MVU 数据已加载
-    await new Promise(resolve => setTimeout(resolve, 500));
+    // 等待 MVU 初始化完成
+    const mvuReady = await waitForMvuReady();
+    if (!mvuReady) {
+      toastr.error('MVU 初始化超时，脚本功能可能受限', '初始化警告', { timeOut: 5000 });
+      return;
+    }
+    
+    // MVU 就绪后，重新注册事件监听器（如果之前注册失败）
+    registerMvuEventListeners();
+    
     console.info('[性斗学园脚本] 初始化：开始首次计算');
     await updateDependentVariables();
     // 初始化时也更新段位

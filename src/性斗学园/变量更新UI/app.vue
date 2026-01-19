@@ -34,7 +34,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 
 const updateContent = ref<string>('');
 const isExpanded = ref(false);
@@ -279,8 +279,29 @@ const extractUpdateContent = () => {
   }
 };
 
-onMounted(() => {
+// 等待全局函数初始化
+const waitForGlobalFunctions = async (maxRetries = 30, interval = 200): Promise<boolean> => {
+  const globalAny = window as any;
+  for (let i = 0; i < maxRetries; i++) {
+    if (typeof globalAny.getChatMessages === 'function' && typeof globalAny.getCurrentMessageId === 'function') {
+      console.info(`[变量更新] 全局函数已就绪 (第 ${i + 1} 次检查)`);
+      return true;
+    }
+    await new Promise(resolve => setTimeout(resolve, interval));
+  }
+  console.error('[变量更新] 等待全局函数初始化超时');
+  return false;
+};
+
+onMounted(async () => {
   console.info('[变量更新] 组件已加载');
+
+  // 等待全局函数初始化
+  const functionsReady = await waitForGlobalFunctions();
+  if (!functionsReady) {
+    console.error('[变量更新] 全局函数未就绪，无法提取内容');
+    return;
+  }
 
   // 延迟提取，确保消息已加载
   setTimeout(() => {
