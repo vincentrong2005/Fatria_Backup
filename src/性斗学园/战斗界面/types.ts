@@ -61,6 +61,7 @@ export enum BuffType {
   DODGE_UP = 'dodge_up',
   DODGE_DOWN = 'dodge_down',
   CRIT_UP = 'crit_up',
+  CRIT_DOWN = 'crit_down',
   LUCK_DOWN = 'luck_down',
   CHARM_DOWN = 'charm_down',
   FOCUS = 'focus',

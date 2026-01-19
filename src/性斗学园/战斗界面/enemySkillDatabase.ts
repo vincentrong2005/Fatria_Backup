@@ -13156,7 +13156,7 @@ export const ENEMY_SKILLS: Record<string, SkillData> = {
     damageFormula: [{ source: DamageSource.SEX_POWER, coefficient: 1.50, baseValue: 25 }],
     accuracy: 85,
     critModifier: 30,
-    buffs: [],
+    buffs: [{ type: BuffType.CRIT_DOWN, value: 30, isPercent: true, duration: 3, stackable: false }],
     canBeReflected: false,
     hitCount: 1,
   },
@@ -13215,7 +13215,7 @@ export const ENEMY_SKILLS: Record<string, SkillData> = {
     id: '伊甸芙宁_8',
     name: '强制衣服变化魔法',
     description: '"变！这套羞耻装备更适合你~"',
-    effectDescription: '降低目标性斗力90%和防御90%（3回合）',
+    effectDescription: '降低目标性斗力30%和防御30%（3回合）',
     icon: 'Shirt',
     type: SkillType.CONTROL,
     staminaCost: 35,
@@ -13225,8 +13225,8 @@ export const ENEMY_SKILLS: Record<string, SkillData> = {
     accuracy: 100,
     critModifier: 0,
     buffs: [
-      { type: BuffType.ATK_DOWN, value: 90, isPercent: true, duration: 3, stackable: false },
-      { type: BuffType.DEF_DOWN, value: 90, isPercent: true, duration: 3, stackable: false }
+      { type: BuffType.ATK_DOWN, value: 30, isPercent: true, duration: 3, stackable: false },
+      { type: BuffType.DEF_DOWN, value: 30, isPercent: true, duration: 3, stackable: false }
     ],
     canBeReflected: false,
     hitCount: 0,
@@ -13329,7 +13329,7 @@ export const ENEMY_SKILLS: Record<string, SkillData> = {
     damageFormula: [{ source: DamageSource.SEX_POWER, coefficient: 1.40, baseValue: 22 }],
     accuracy: 95,
     critModifier: 30,
-    buffs: [],
+    buffs: [{ type: BuffType.CRIT_DOWN, value: 30, isPercent: true, duration: 3, stackable: false }],
     canBeReflected: false,
     hitCount: 1,
   },
@@ -13682,6 +13682,7 @@ export function convertToMvuSkillFormat(skill: SkillData) {
         BuffType.ATK_DOWN,
         BuffType.DEF_DOWN,
         BuffType.DODGE_DOWN,
+        BuffType.CRIT_DOWN,
         BuffType.LUCK_DOWN,
         BuffType.CHARM_DOWN,
         BuffType.SHAME,
@@ -13698,6 +13699,7 @@ export function convertToMvuSkillFormat(skill: SkillData) {
         [BuffType.ATK_UP]: '性斗力',
         [BuffType.ATK_DOWN]: '性斗力',
         [BuffType.CRIT_UP]: '暴击率',
+        [BuffType.CRIT_DOWN]: '暴击率',
         [BuffType.LUCK_DOWN]: '幸运',
         [BuffType.CHARM_DOWN]: '魅力',
         [BuffType.DEF_UP]: '忍耐力',
@@ -13709,7 +13711,7 @@ export function convertToMvuSkillFormat(skill: SkillData) {
       // 束缚效果值为0，持续回合数决定束缚时长；debuff使用负值
       if (buff.type === BuffType.BIND) {
         effectValue = 0; // 束缚效果值为0，通过持续回合数来控制
-      } else if (buff.type === BuffType.SENSITIVE || buff.type === BuffType.DODGE_DOWN || buff.type === BuffType.ATK_DOWN || buff.type === BuffType.DEF_DOWN || buff.type === BuffType.LUCK_DOWN || buff.type === BuffType.CHARM_DOWN) {
+      } else if (buff.type === BuffType.SENSITIVE || buff.type === BuffType.DODGE_DOWN || buff.type === BuffType.ATK_DOWN || buff.type === BuffType.DEF_DOWN || buff.type === BuffType.LUCK_DOWN || buff.type === BuffType.CHARM_DOWN || buff.type === BuffType.CRIT_DOWN) {
         effectValue = -Math.abs(buff.value);
       }
       

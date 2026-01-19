@@ -53,6 +53,14 @@
         :turn-state="turnState"
         :enemy-intention="turnState.enemyIntention"
       />
+      
+      <!-- 伊甸芙宁沉睡图标 (只保留zzz图标) -->
+      <div 
+        v-if="BossSystem.bossState.isBossFight && BossSystem.bossState.bossId === 'eden' && BossSystem.bossState.edenSleeping"
+        class="eden-sleep-icon"
+      >
+        <span class="sleep-icon">💤</span>
+      </div>
     </main>
 
     <!-- BOSS文字特效 -->
@@ -62,7 +70,8 @@
       class="boss-text-overlay active"
       :class="{ 
         'boss-text-muxinlan': BossSystem.bossState.isBossFight && BossSystem.bossState.bossId === 'muxinlan',
-        'boss-text-christine': BossSystem.bossState.isBossFight && BossSystem.bossState.bossId === 'christine'
+        'boss-text-christine': BossSystem.bossState.isBossFight && BossSystem.bossState.bossId === 'christine',
+        'boss-text-eden': BossSystem.bossState.isBossFight && BossSystem.bossState.bossId === 'eden'
       }"
       @click="handleBossTextClick"
     >
@@ -1052,6 +1061,50 @@ async function loadEnemyFromMvuData(data: any, maxClimaxCount: number) {
     
     console.info(`[战斗界面] BOSS战初始化完成: ${bossDisplayName}, 高潮次数上限: ${bossClimaxLimit}`);
   }
+  // 检测是否是伊甸芙宁BOSS战
+  else if (BossSystem.isEdenBoss(enemyName)) {
+    console.info('[战斗界面] 检测到伊甸芙宁BOSS战！');
+    BossSystem.initEdenBoss();
+    // Eden只有一个阶段
+    const bossDisplayName = BossSystem.getEdenDisplayName();
+    const bossClimaxLimit = BossSystem.BOSS_CONFIG.eden.climaxLimits[0]; // 初始高潮次数上限为1
+    enemy.value.name = bossDisplayName;
+    enemy.value.avatarUrl = BossSystem.getEdenAvatarUrl();
+    
+    // 更新MVU中的对手名称和胜负规则
+    if (typeof Mvu !== 'undefined') {
+      const mvuData = Mvu.getMvuData({ type: 'message', message_id: 'latest' });
+      if (mvuData?.stat_data) {
+        _.set(mvuData.stat_data, '性斗系统.对手名称', bossDisplayName);
+        // 懒惰天赋：初始高潮次数上限为1
+        _.set(mvuData.stat_data, '性斗系统.胜负规则.高潮次数上限', bossClimaxLimit);
+        // 对手高潮次数初始为0
+        _.set(mvuData.stat_data, '性斗系统.对手高潮次数', 0);
+        
+        // ========== 沉睡状态：写入对手临时状态 - 忍耐力成算-70% ==========
+        _.set(mvuData.stat_data, '性斗系统.对手临时状态.状态列表.懒惰沉睡', {
+          加成: {
+            基础忍耐力成算: -70, // 沉睡时忍耐力成算-70%
+          },
+          剩余回合: 99, // 沉睡期间持续，苏醒时清除
+        });
+        // 更新加成统计
+        _.set(mvuData.stat_data, '性斗系统.对手临时状态.加成统计.基础忍耐力成算', -70);
+        
+        await Mvu.replaceMvuData(mvuData, { type: 'message', message_id: 'latest' });
+      }
+    }
+    // 同步更新UI中的高潮次数上限
+    player.value.stats.maxClimaxCount = bossClimaxLimit;
+    enemy.value.stats.maxClimaxCount = bossClimaxLimit;
+    
+    // 懒惰天赋对玩家的debuff已在bossSystem中定义
+    // 会在executeAttack等地方应用：技能冷却+3，耐力消耗×2
+    addLog(`【七宗罪·懒惰】伊甸芙宁的懒惰天赋正在影响战场...`, 'system', 'critical');
+    addLog(`【懒惰效果】你的技能冷却+3，耐力消耗翻倍`, 'system', 'debuff');
+    
+    console.info(`[战斗界面] 伊甸芙宁BOSS战初始化完成, 高潮次数上限: ${bossClimaxLimit}, 沉睡状态: ${BossSystem.bossState.edenSleeping}`);
+  }
 
   // 优先从数据库查找对手数据，如果存在则覆盖MVU变量
   if (enemyName) {
@@ -1072,6 +1125,8 @@ async function loadEnemyFromMvuData(data: any, maxClimaxCount: number) {
         enemy.value.avatarUrl = BossSystem.getMuxinlanAvatarUrl(BossSystem.bossState.currentPhase);
       } else if (BossSystem.bossState.isBossFight && BossSystem.bossState.bossId === 'christine') {
         enemy.value.avatarUrl = BossSystem.getChristineAvatarUrl(BossSystem.bossState.currentPhase as 1 | 2);
+      } else if (BossSystem.bossState.isBossFight && BossSystem.bossState.bossId === 'eden') {
+        enemy.value.avatarUrl = BossSystem.getEdenAvatarUrl(BossSystem.bossState.edenSleeping);
       } else {
         enemy.value.avatarUrl = getEnemyPortraitUrl(fullEnemyName);
       }
@@ -2271,9 +2326,16 @@ function handlePlayerSkill(skill: Skill) {
     return;
   }
 
-  // 检查体力是否足够
-  if (player.value.stats.currentEndurance < skill.cost) {
-    addLog('体力不足，无法使用技能！', 'system', 'info');
+  // ========== 伊甸芙宁BOSS：检查实际耐力消耗（含懒惰debuff） ==========
+  let requiredCost = skill.cost;
+  if (BossSystem.bossState.isBossFight && BossSystem.bossState.bossId === 'eden') {
+    const slothEffects = BossSystem.getEdenSlothEffects();
+    requiredCost = Math.floor(skill.cost * slothEffects.staminaCostMultiplier);
+  }
+  
+  // 检查体力是否足够（使用计算后的实际消耗）
+  if (player.value.stats.currentEndurance < requiredCost) {
+    addLog(`体力不足，无法使用技能！需要 ${requiredCost} 点体力`, 'system', 'info');
     return;
   }
 
@@ -2288,6 +2350,17 @@ function handlePlayerSkill(skill: Skill) {
 
   // 消耗体力（检查耐力稳定天赋限制）
   let actualCost = skill.cost;
+  
+  // ========== 伊甸芙宁BOSS：懒惰天赋 - 玩家耐力消耗×1.5 ==========
+  if (BossSystem.bossState.isBossFight && BossSystem.bossState.bossId === 'eden') {
+    const slothEffects = BossSystem.getEdenSlothEffects();
+    const originalCost = actualCost;
+    actualCost = Math.floor(actualCost * slothEffects.staminaCostMultiplier);
+    if (actualCost > originalCost) {
+      addLog(`【懒惰·虚弱】耐力消耗增加！${originalCost} → ${actualCost}`, 'system', 'debuff');
+    }
+  }
+  
   if (playerTalent.value) {
     const staminaCap = TalentSystem.getTalentStaminaChangeCap(playerTalent.value);
     if (staminaCap !== null && actualCost > staminaCap) {
@@ -2301,9 +2374,19 @@ function handlePlayerSkill(skill: Skill) {
   // 设置冷却
   const skillIndex = nextPlayer.skills.findIndex(s => s.id === skill.id);
   if (skillIndex !== -1) {
-    nextPlayer.skills[skillIndex].currentCooldown = skill.cooldown;
-    if (skill.cooldown > 0) {
-      addLog(`${skill.name} 进入冷却，冷却时间 ${skill.cooldown} 回合`, 'system', 'info');
+    let finalCooldown = (skill.cooldown || 0);
+    
+    // ========== 伊甸芙宁BOSS：懒惰天赋 - 玩家技能冷却+2（所有技能） ==========
+    if (BossSystem.bossState.isBossFight && BossSystem.bossState.bossId === 'eden') {
+      const slothEffects = BossSystem.getEdenSlothEffects();
+      const originalCooldown = finalCooldown;
+      finalCooldown += slothEffects.cooldownIncrease;
+      addLog(`【懒惰·迟钝】技能冷却时间增加！${originalCooldown} → ${finalCooldown}`, 'system', 'debuff');
+    }
+    
+    nextPlayer.skills[skillIndex].currentCooldown = finalCooldown;
+    if (finalCooldown > 0) {
+      addLog(`${skill.name} 进入冷却，冷却时间 ${finalCooldown} 回合`, 'system', 'info');
     }
   }
 
@@ -2404,11 +2487,19 @@ function handlePlayerSkill(skill: Skill) {
         }
       }
 
+      // ========== 伊甸芙宁BOSS：被暴击时暴击伤害固定300% ==========
+      let edenCritBoost = 0;
+      if (BossSystem.bossState.isBossFight && BossSystem.bossState.bossId === 'eden') {
+        // 300% = 基础150% + 150%额外（critDamageBoost格式为百分比）
+        edenCritBoost = 150;
+        addLog(`【懒惰·脆弱】对伊甸芙宁的暴击伤害固定为300%！`, 'system', 'critical');
+      }
+
       const result = executeAttack(nextPlayer, nextEnemy, skill.data, true, {
         guaranteedHit: talentAttackResult.guaranteedHit || sinGuaranteedHit,
         guaranteedCrit: sinGuaranteedCrit,
         damageMultiplier: talentAttackResult.damageMultiplier,
-        critDamageBoost: critDamageBoost,
+        critDamageBoost: critDamageBoost + edenCritBoost,
         extraHitCount: sinExtraHits,
       }); // 玩家攻击敌人，启用等级压制
 
@@ -2472,6 +2563,50 @@ function handlePlayerSkill(skill: Skill) {
           const sinTypeForCrit = TalentSystem.getSinTalentType(playerTalent.value);
           if (sinTypeForCrit === 'pride') {
             playerTalentState.value.prideCritThisTurn = true;
+          }
+          
+          // ========== 伊甸芙宁BOSS：被暴击时触发debuff (闪避-40, 暴击-40, 倒计时+4) ==========
+          if (BossSystem.bossState.isBossFight && BossSystem.bossState.bossId === 'eden') {
+            const critDebuffResult = BossSystem.processEdenCritReceived();
+            addLog(`【懒惰·脆弱】倒计时+${critDebuffResult.countdownIncrease}！当前倒计时: ${BossSystem.bossState.edenCountdown}`, 'system', 'critical');
+            addLog(`【懒惰·脆弱】闪避率${critDebuffResult.evasionDebuff}%，暴击率${critDebuffResult.critDebuff}%（可叠加）`, 'system', 'debuff');
+            
+            // 写入MVU临时状态：被暴击debuff (闪避-40, 暴击-40)
+            if (typeof Mvu !== 'undefined') {
+              const mvuData = Mvu.getMvuData({ type: 'message', message_id: 'latest' });
+              if (mvuData?.stat_data) {
+                // 获取当前状态
+                const currentEvasionDebuff = _.get(mvuData.stat_data, '性斗系统.对手临时状态.状态列表.被暴击debuff.加成.闪避率加成', 0);
+                const currentCritDebuff = _.get(mvuData.stat_data, '性斗系统.对手临时状态.状态列表.被暴击debuff.加成.暴击率加成', 0);
+                
+                // 叠加debuff
+                _.set(mvuData.stat_data, '性斗系统.对手临时状态.状态列表.被暴击debuff', {
+                  加成: {
+                    闪避率加成: currentEvasionDebuff + critDebuffResult.evasionDebuff,
+                    暴击率加成: currentCritDebuff + critDebuffResult.critDebuff,
+                  },
+                  剩余回合: 999, // 持续整场战斗
+                });
+                
+                // 更新加成统计
+                const totalEvasion = _.get(mvuData.stat_data, '性斗系统.对手临时状态.加成统计.闪避率加成', 0) + critDebuffResult.evasionDebuff;
+                const totalCrit = _.get(mvuData.stat_data, '性斗系统.对手临时状态.加成统计.暴击率加成', 0) + critDebuffResult.critDebuff;
+                _.set(mvuData.stat_data, '性斗系统.对手临时状态.加成统计.闪避率加成', totalEvasion);
+                _.set(mvuData.stat_data, '性斗系统.对手临时状态.加成统计.暴击率加成', totalCrit);
+                
+                // 更新对手实时属性
+                const baseEvasion = _.get(mvuData.stat_data, '性斗系统.对手闪避率', 0);
+                const baseCrit = _.get(mvuData.stat_data, '性斗系统.对手暴击率', 0);
+                _.set(mvuData.stat_data, '性斗系统.对手实时闪避率', Math.max(0, baseEvasion + totalEvasion));
+                _.set(mvuData.stat_data, '性斗系统.对手实时暴击率', Math.max(0, baseCrit + totalCrit));
+                
+                Mvu.replaceMvuData(mvuData, { type: 'message', message_id: 'latest' });
+                
+                // 更新UI显示（使用crit而不是critChance）
+                nextEnemy.stats.evasion = Math.max(0, nextEnemy.stats.evasion + critDebuffResult.evasionDebuff);
+                nextEnemy.stats.crit = Math.max(0, nextEnemy.stats.crit + critDebuffResult.critDebuff);
+              }
+            }
           }
         } else {
           addLog(`总计造成 ${result.totalDamage} 点快感伤害`, 'player', 'damage');
@@ -2846,6 +2981,54 @@ function handleEnemyTurn() {
       addLog(`【敌人·暴怒】${enemy.value.name} 被束缚无法造成伤害！快感+${wrathPleasureGain}！`, 'system', 'critical');
     }
     
+    // ========== 伊甸芙宁BOSS：被束缚时也要处理倒计时（正常-1，束缚额外-1=共-2） ==========
+    if (BossSystem.bossState.isBossFight && BossSystem.bossState.bossId === 'eden') {
+      const countdownResult = BossSystem.processEdenTurnStart(enemyBoundTurns.value);
+      const isUrgent = countdownResult.countdownValue <= 3;
+      addLog(`【懒惰·倒计时】剩余 ${countdownResult.countdownValue} 回合（被束缚额外-1）`, 'system', isUrgent ? 'critical' : 'info');
+      
+      // 苏醒激怒buff衰减
+      if (!BossSystem.bossState.edenSleeping && BossSystem.bossState.edenAwakened) {
+        if (typeof Mvu !== 'undefined') {
+          const mvuData = Mvu.getMvuData({ type: 'message', message_id: 'latest' });
+          if (mvuData?.stat_data) {
+            const tempStates = _.get(mvuData.stat_data, '性斗系统.对手临时状态.状态列表', {});
+            const awakeningBuff = tempStates['苏醒激怒'];
+            if (awakeningBuff && awakeningBuff.加成 && typeof awakeningBuff.加成.基础忍耐力成算 === 'number') {
+              const oldValue = awakeningBuff.加成.基础忍耐力成算;
+              const newValue = oldValue - 15;
+              awakeningBuff.加成.基础忍耐力成算 = newValue;
+              _.set(mvuData.stat_data, '性斗系统.对手临时状态.状态列表.苏醒激怒', awakeningBuff);
+              
+              let totalEnduranceBonus = newValue;
+              Object.entries(tempStates).forEach(([name, state]: [string, any]) => {
+                if (name !== '苏醒激怒' && state?.加成?.基础忍耐力成算) {
+                  totalEnduranceBonus += state.加成.基础忍耐力成算;
+                }
+              });
+              _.set(mvuData.stat_data, '性斗系统.对手临时状态.加成统计.基础忍耐力成算', totalEnduranceBonus);
+              
+              const baseEndurance = _.get(mvuData.stat_data, '性斗系统.对手忍耐力', 0);
+              const realTimeEndurance = Math.floor(baseEndurance * (1 + totalEnduranceBonus / 100));
+              _.set(mvuData.stat_data, '性斗系统.对手实时忍耐力', realTimeEndurance);
+              
+              Mvu.replaceMvuData(mvuData, { type: 'message', message_id: 'latest' });
+              enemy.value.stats.baseEndurance = realTimeEndurance;
+              
+              addLog(`【苏醒·激怒】忍耐力成算衰减：${oldValue}% → ${newValue}%`, 'system', 'info');
+            }
+          }
+        }
+      }
+      
+      // 如果触发Game Over技能
+      if (countdownResult.triggerSkill16) {
+        addLog(`【懒惰】伊甸芙宁的倒计时归零！`, 'system', 'critical');
+        BossSystem.queueDialogues(BossSystem.EDEN_DIALOGUES.countdown_zero);
+        // Game Over处理会在下一回合触发
+      }
+    }
+    
     // 递减束缚回合数
     enemyBoundTurns.value--;
     if (enemyBoundTurns.value === 0) {
@@ -2858,6 +3041,133 @@ function handleEnemyTurn() {
       }
     });
     return;
+  }
+
+  // ========== 伊甸芙宁BOSS：懒惰天赋 - 沉睡状态处理 ==========
+  if (BossSystem.bossState.isBossFight && BossSystem.bossState.bossId === 'eden') {
+    // 处理倒计时（每回合-1，被束缚时额外-1已在上面处理）
+    const countdownResult = BossSystem.processEdenTurnStart(enemyBoundTurns.value);
+    // 倒计时日志高亮显示（红色）
+    const isUrgent = countdownResult.countdownValue <= 3;
+    addLog(`【懒惰·倒计时】剩余 ${countdownResult.countdownValue} 回合`, 'system', isUrgent ? 'danger' : 'critical');
+    
+    // ========== 苏醒激怒buff衰减：每回合-20 ==========
+    if (!BossSystem.bossState.edenSleeping && BossSystem.bossState.edenAwakened) {
+      if (typeof Mvu !== 'undefined') {
+        const mvuData = Mvu.getMvuData({ type: 'message', message_id: 'latest' });
+        if (mvuData?.stat_data) {
+          const tempStates = _.get(mvuData.stat_data, '性斗系统.对手临时状态.状态列表', {});
+          const awakeningBuff = tempStates['苏醒激怒'];
+          if (awakeningBuff && awakeningBuff.加成 && typeof awakeningBuff.加成.基础忍耐力成算 === 'number') {
+            // 衰减15（无下限）
+            const oldValue = awakeningBuff.加成.基础忍耐力成算;
+            const newValue = oldValue - 15;
+            awakeningBuff.加成.基础忍耐力成算 = newValue;
+            _.set(mvuData.stat_data, '性斗系统.对手临时状态.状态列表.苏醒激怒', awakeningBuff);
+            
+            // 重新计算加成统计
+            let totalEnduranceBonus = newValue;
+            // 加上其他debuff的忍耐力加成
+            Object.entries(tempStates).forEach(([name, state]: [string, any]) => {
+              if (name !== '苏醒激怒' && state?.加成?.基础忍耐力成算) {
+                totalEnduranceBonus += state.加成.基础忍耐力成算;
+              }
+            });
+            _.set(mvuData.stat_data, '性斗系统.对手临时状态.加成统计.基础忍耐力成算', totalEnduranceBonus);
+            
+            // 更新对手实时忍耐力
+            const baseEndurance = _.get(mvuData.stat_data, '性斗系统.对手忍耐力', 0);
+            const realTimeEndurance = Math.floor(baseEndurance * (1 + totalEnduranceBonus / 100));
+            _.set(mvuData.stat_data, '性斗系统.对手实时忍耐力', realTimeEndurance);
+            
+            Mvu.replaceMvuData(mvuData, { type: 'message', message_id: 'latest' });
+            
+            // 更新UI显示（使用baseEndurance）
+            enemy.value.stats.baseEndurance = realTimeEndurance;
+            
+            addLog(`【苏醒·激怒】忍耐力成算衰减：${oldValue}% → ${newValue}%`, 'system', 'debuff');
+          }
+        }
+      }
+    }
+    
+    // 如果触发Game Over技能
+    if (countdownResult.triggerSkill16) {
+      addLog(`【懒惰】伊甸芙宁的倒计时归零！`, 'system', 'critical');
+      
+      // Bug 3 Fix: 先显示对话，然后延迟执行伤害
+      BossSystem.queueDialogues(BossSystem.EDEN_DIALOGUES.countdown_zero);
+      
+      // 添加蓝色特效
+      phaseTransitionEffect.value = 'eden-game-over';
+      
+      // 延迟2秒后执行Game Over伤害（等待对话播放）
+      setTimeout(async () => {
+        // 使用Game Over技能（伊甸芙宁_16）
+        addLog(`【Game Over】伊甸芙宁发动了终极技能！`, 'system', 'critical');
+        addLog(`【Game Over】造成500%性斗力伤害，必定暴击，5连击！`, 'system', 'damage');
+        
+        // 计算伤害：500% × 5次 = 2500%
+        const gameOverDamage = Math.floor(enemy.value.stats.sexPower * 5.0 * 5);
+        player.value.stats.currentPleasure = Math.min(
+          player.value.stats.maxPleasure,
+          player.value.stats.currentPleasure + gameOverDamage
+        );
+        addLog(`${player.value.name} 受到了 ${gameOverDamage} 点快感伤害！`, 'system', 'critical');
+        
+        // 清除特效
+        setTimeout(() => { phaseTransitionEffect.value = ''; }, 1500);
+        
+        // Bug 4 Fix: 直接检查玩家是否达到高潮上限，触发游戏结束
+        if (player.value.stats.currentPleasure >= player.value.stats.maxPleasure) {
+          // 玩家达到快感上限，增加高潮次数
+          player.value.stats.climaxCount++;
+          addLog(`${player.value.name} 达到了高潮！(${player.value.stats.climaxCount}/${player.value.stats.maxClimaxCount})`, 'system', 'climax');
+          triggerEffect('climax');
+          
+          // 检查是否达到高潮次数上限
+          if (player.value.stats.climaxCount >= player.value.stats.maxClimaxCount) {
+            // 玩家战败
+            addLog(`${player.value.name} 达到高潮次数上限，战斗结束！`, 'system', 'critical');
+            addLog(`${enemy.value.name} 获得了胜利！`, 'system', 'victory');
+            triggerEffect('defeat');
+            BossSystem.queueDialogues(BossSystem.EDEN_DIALOGUES.victory);
+            turnState.phase = 'gameOver';
+            return; // 直接返回，不继续执行
+          }
+          
+          // 未达到上限，重置快感
+          player.value.stats.currentPleasure = 0;
+        }
+        
+        // 继续游戏
+        endTurn().then((climaxTriggered) => {
+          if (!climaxTriggered) {
+            setTimeout(startNewTurn, 1000);
+          }
+        });
+      }, 2500); // 等待对话播放
+      
+      return;
+    }
+    
+    // 沉睡状态下不使用技能
+    if (BossSystem.bossState.edenSleeping) {
+      addLog(`${enemy.value.name} 正在沉睡中...不会进行攻击`, 'system', 'info');
+      
+      // 随机播放沉睡被攻击对话
+      const sleepDialogue = BossSystem.getEdenRandomBattleDialogue();
+      if (sleepDialogue) {
+        BossSystem.queueDialogues([sleepDialogue], false);
+      }
+      
+      endTurn().then((climaxTriggered) => {
+        if (!climaxTriggered) {
+          setTimeout(startNewTurn, 1000);
+        }
+      });
+      return;
+    }
   }
 
   addLog(`${enemy.value.name} 开始行动...`, 'system', 'info')
@@ -4493,6 +4803,77 @@ async function processClimaxAfterLLM(targetIsEnemy: boolean) {
       return;
     }
   }
+  
+  // ==================== 伊甸芙宁BOSS：沉睡状态高潮触发苏醒 ====================
+  if (targetIsEnemy && BossSystem.bossState.isBossFight && BossSystem.bossState.bossId === 'eden') {
+    // 如果在沉睡状态且快感达到上限，触发苏醒
+    if (BossSystem.bossState.edenSleeping) {
+      addLog(`${enemy.value.name} 被快感唤醒了！`, 'system', 'critical');
+      
+      // 执行苏醒流程
+      const awakeningResult = BossSystem.processEdenAwakening();
+      
+      // 播放苏醒对话（已在processEdenAwakening中处理）
+      
+      // 更新高潮次数上限（从1提升到3）
+      const newClimaxLimit = awakeningResult.newClimaxLimit;
+      player.value.stats.maxClimaxCount = newClimaxLimit;
+      enemy.value.stats.maxClimaxCount = newClimaxLimit;
+      
+      // 清除MVU中的沉睡临时状态（-70%忍耐力成算）并添加苏醒buff (+100忍耐力成算)
+      if (typeof Mvu !== 'undefined') {
+        const mvuData = Mvu.getMvuData({ type: 'message', message_id: 'latest' });
+        if (mvuData?.stat_data) {
+          // 清除懒惰沉睡状态
+          const tempStates = _.get(mvuData.stat_data, '性斗系统.对手临时状态.状态列表', {});
+          if (tempStates['懒惰沉睡']) {
+            delete tempStates['懒惰沉睡'];
+          }
+          
+          // 添加苏醒buff: +100忍耐力成算 (999回合，每回合-20)
+          tempStates['苏醒激怒'] = {
+            加成: {
+              基础忍耐力成算: 100, // 初始+100
+            },
+            剩余回合: 999,
+          };
+          _.set(mvuData.stat_data, '性斗系统.对手临时状态.状态列表', tempStates);
+          
+          // 重新计算加成统计：-70(沉睡) -> +100(苏醒) = +100
+          const otherEnduranceBonus = _.get(mvuData.stat_data, '性斗系统.对手临时状态.状态列表.被暴击debuff.加成.基础忍耐力成算', 0);
+          _.set(mvuData.stat_data, '性斗系统.对手临时状态.加成统计.基础忍耐力成算', 100 + otherEnduranceBonus);
+          
+          // 更新对手实时忍耐力
+          const baseEndurance = _.get(mvuData.stat_data, '性斗系统.对手忍耐力', 0);
+          const totalEnduranceBonus = 100 + otherEnduranceBonus;
+          const realTimeEndurance = Math.floor(baseEndurance * (1 + totalEnduranceBonus / 100));
+          _.set(mvuData.stat_data, '性斗系统.对手实时忍耐力', realTimeEndurance);
+          
+          // 更新高潮次数上限
+          _.set(mvuData.stat_data, '性斗系统.胜负规则.高潮次数上限', newClimaxLimit);
+          await Mvu.replaceMvuData(mvuData, { type: 'message', message_id: 'latest' });
+          
+          // 更新UI显示
+          enemy.value.stats.baseEndurance = realTimeEndurance;
+        }
+      }
+      
+      addLog(`【苏醒】伊甸芙宁从沉睡中醒来，沉睡debuff已消除！`, 'system', 'critical');
+      addLog(`【苏醒·激怒】忍耐力成算+100%（每回合衰减15%）`, 'system', 'buff');
+      addLog(`【规则变更】高潮次数上限提升至 ${newClimaxLimit} 次！`, 'system', 'critical');
+      
+      // 锁血：重置快感但不增加高潮次数
+      enemy.value.stats.currentPleasure = 0;
+      turnState.climaxTarget = null;
+      saveToMvu();
+      
+      // 继续游戏
+      setTimeout(() => {
+        turnState.phase = 'playerInput';
+      }, 2000);
+      return;
+    }
+  }
 
   // 直接修改stats对象，不使用cloneCharacter（确保Vue响应式更新）
   if (targetIsEnemy) {
@@ -6060,6 +6441,14 @@ function getSinTalentDisplayName(sinType: string): string {
   text-shadow: 0 0 20px rgba(192, 132, 252, 0.8), 0 0 40px rgba(192, 132, 252, 0.4);
 }
 
+.boss-text-overlay.boss-text-eden {
+  font-size: 38px;
+  letter-spacing: 5px;
+  color: #60a5fa; // 水蓝色调，符合伊甸芙宁的水系形象
+  text-shadow: 0 0 20px rgba(96, 165, 250, 0.8), 0 0 40px rgba(96, 165, 250, 0.4), 0 0 60px rgba(59, 130, 246, 0.3);
+  font-family: "Comic Sans MS", "Segoe UI", sans-serif; // 符合她的二次元显眼包风格
+}
+
 @keyframes bossTextSlam {
   0% {
     transform: translateX(-50%) scale(3);
@@ -6253,5 +6642,163 @@ function getSinTalentDisplayName(sinType: string): string {
     margin: -1000px 0 0 -1000px;
     opacity: 0;
   }
+}
+
+// ========== 伊甸芙宁沉睡图标 (只显示zzz) ==========
+.eden-sleep-icon {
+  position: absolute;
+  top: 80px;
+  right: 3%;
+  z-index: 30;
+  pointer-events: none;
+  
+  @media (min-width: 1024px) {
+    top: 100px;
+    right: 5%;
+  }
+  
+  .sleep-icon {
+    font-size: 28px;
+    animation: sleepFloat 2s ease-in-out infinite;
+    
+    @media (min-width: 1024px) {
+      font-size: 40px;
+    }
+  }
+}
+
+@keyframes sleepFloat {
+  0%, 100% { transform: translateY(0); opacity: 0.8; }
+  50% { transform: translateY(-10px); opacity: 1; }
+}
+
+// 保留旧的水盾样式（可选择删除，但保留以防需要）
+.eden-water-shield {
+  position: absolute;
+  // 定位到敌人立绘区域
+  top: 40%; // 向上移动
+  right: 3%;
+  transform: translateY(-50%);
+  pointer-events: none;
+  z-index: 5; // 在立绘之后
+  
+  // 移动端尺寸 (匹配 avatar max-width: 180px)
+  width: 200px;
+  height: 300px;
+  
+  @media (min-width: 1024px) {
+    // 桌面端尺寸 (匹配 avatar max-width: 320px)
+    width: 350px;
+    height: 530px;
+    right: 5%;
+  }
+  
+  .water-shield-overlay {
+    position: absolute;
+    inset: -15%; // 使用百分比覆盖，随父元素缩放
+    background: linear-gradient(
+      135deg, 
+      rgba(96, 165, 250, 0.3) 0%,
+      rgba(59, 130, 246, 0.4) 25%,
+      rgba(96, 165, 250, 0.2) 50%,
+      rgba(59, 130, 246, 0.35) 75%,
+      rgba(96, 165, 250, 0.3) 100%
+    );
+    border-radius: 50%;
+    animation: waterShieldPulse 3s ease-in-out infinite, waterShieldRotate 8s linear infinite;
+    box-shadow: 
+      0 0 30px rgba(96, 165, 250, 0.5),
+      0 0 60px rgba(59, 130, 246, 0.3),
+      inset 0 0 40px rgba(96, 165, 250, 0.2);
+  }
+  
+  .sleep-icon {
+    position: absolute;
+    top: 5%;
+    right: -15%;
+    font-size: 24px; // 移动端
+    animation: sleepFloat 2s ease-in-out infinite;
+    
+    @media (min-width: 1024px) {
+      font-size: 36px; // 桌面端
+    }
+  }
+}
+
+@keyframes waterShieldPulse {
+  0%, 100% { opacity: 0.7; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.05); }
+}
+
+@keyframes waterShieldRotate {
+  from { filter: hue-rotate(0deg); }
+  to { filter: hue-rotate(30deg); }
+}
+
+@keyframes sleepFloat {
+  0%, 100% { transform: translateY(0); opacity: 0.8; }
+  50% { transform: translateY(-10px); opacity: 1; }
+}
+
+// ========== 伊甸芙宁倒计时显示 (响应式缩放) ==========
+.eden-countdown {
+  position: absolute;
+  // 移动端定位
+  top: 60px; 
+  right: 1%;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  background: linear-gradient(135deg, rgba(30, 64, 175, 0.8), rgba(59, 130, 246, 0.6));
+  border: 2px solid rgba(96, 165, 250, 0.6);
+  border-radius: 16px;
+  color: white;
+  font-weight: bold;
+  z-index: 25;
+  animation: fadeIn 0.3s ease-out;
+  box-shadow: 0 0 10px rgba(59, 130, 246, 0.4);
+  
+  @media (min-width: 1024px) {
+    // 桌面端定位
+    top: 80px;
+    right: 3%;
+    gap: 8px;
+    padding: 8px 16px;
+    border-radius: 20px;
+    box-shadow: 0 0 15px rgba(59, 130, 246, 0.4);
+  }
+  
+  .countdown-icon {
+    font-size: 14px;
+    
+    @media (min-width: 1024px) {
+      font-size: 20px;
+    }
+  }
+  
+  .countdown-number {
+    font-size: 16px;
+    font-family: 'Courier New', monospace;
+    min-width: 20px;
+    text-align: center;
+    
+    @media (min-width: 1024px) {
+      font-size: 24px;
+      min-width: 30px;
+    }
+  }
+  
+  &.countdown-urgent {
+    background: linear-gradient(135deg, rgba(220, 38, 38, 0.8), rgba(239, 68, 68, 0.6));
+    border-color: rgba(248, 113, 113, 0.6);
+    animation: urgentPulse 0.5s ease-in-out infinite;
+    box-shadow: 0 0 20px rgba(239, 68, 68, 0.5);
+  }
+}
+
+@keyframes urgentPulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.1); }
 }
 </style>

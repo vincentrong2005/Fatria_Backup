@@ -1001,8 +1001,8 @@ export function processEnvyOnBattleStart(
         message: `${displayName}：对手(${enemyValue}) > 自身(${playerValue})，${displayName}+${boost}`
       });
     } else {
-      // 对手属性低于或等于自身，自身-130%对手值
-      const penalty = Math.floor(enemyValue * 1.3);
+      // 对手属性低于或等于自身，自身-50%对手值（减少debuff惩罚）
+      const penalty = Math.floor(enemyValue * 0.5);
       effects.push({ 
         attribute: displayName, 
         value: -penalty, 

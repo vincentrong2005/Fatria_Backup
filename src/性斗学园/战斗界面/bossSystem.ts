@@ -1,5 +1,5 @@
 /**
- * BOSS战斗系统 - 沐芯兰专属机制
+ * BOSS战斗系统
  * 
  * 沐芯兰是一个三阶段BOSS：
  * 1. 代行机体·茉莉（伪装形态）- 50级，高闪避，嚣张雌小鬼
@@ -18,6 +18,11 @@ export interface BossState {
   dialogueIndex: number;
   buttonsDisabled: boolean;
   hasUsedMedal: boolean; // 是否使用了三好学生勋章
+  // Eden专属状态（懒惰天赋）
+  edenSleeping: boolean;        // 是否处于沉睡状态
+  edenCountdown: number;        // 8回合倒计时
+  edenAwakened: boolean;        // 是否已被唤醒过（用于判断高潮次数调整）
+  edenCritDebuffApplied: boolean; // 是否已应用暴击debuff
 }
 
 export interface BossDialogue {
@@ -152,6 +157,11 @@ export const bossState = reactive<BossState>({
   dialogueIndex: 0,
   buttonsDisabled: false,
   hasUsedMedal: false,
+  // Eden专属状态
+  edenSleeping: false,
+  edenCountdown: 8,
+  edenAwakened: false,
+  edenCritDebuffApplied: false,
 });
 
 // 当前显示的对话
@@ -200,6 +210,11 @@ export function resetBossState(): void {
   bossState.dialogueIndex = 0;
   bossState.buttonsDisabled = false;
   bossState.hasUsedMedal = false;
+  // Eden专属状态重置
+  bossState.edenSleeping = false;
+  bossState.edenCountdown = 8;
+  bossState.edenAwakened = false;
+  bossState.edenCritDebuffApplied = false;
   currentDialogue.value = null;
   dialogueQueue.value = [];
   isShowingDialogue.value = false;
@@ -750,4 +765,311 @@ export const BOSS_CONFIG = {
     levels: [55, 88],
     climaxLimits: [1, 3], // 第一阶段高潮1次转阶段，第二阶段高潮3次结束
   },
+  eden: {
+    id: 'eden',
+    phases: 1,  // 只有一个阶段
+    dataKeys: ['伊甸芙宁'],
+    displayNames: ['伊甸芙宁'],
+    levels: [99],
+    climaxLimits: [1], // 初始为1，苏醒后可能变为3
+    sinType: 'sloth' as const,  // 七宗罪类型：懒惰
+    gameOverSkillId: '伊甸芙宁_16', // Game Over技能ID
+  },
 };
+
+// ==================== 伊甸芙宁 BOSS 对话库 ====================
+export const EDEN_DIALOGUES = {
+  // 入场对话
+  entry: [
+    { speaker: '伊甸芙宁', text: '"锵锵! 芙宁登场，全体目光向我看齐!"', emotion: 'arrogant' as const },
+    { speaker: '伊甸芙宁', text: '"喂，杂鱼。你玩《Genshin Impact》吗?"', emotion: 'arrogant' as const },
+  ],
+  
+  // 沉睡状态对话（开局进入沉睡）
+  sleeping_start: [
+    { speaker: '伊甸芙宁', text: '"哈~好困喵...算了，先睡一会儿吧~"', emotion: 'weak' as const },
+    { speaker: '伊甸芙宁', text: '"杂鱼你自己玩，别吵醒人家..."', emotion: 'weak' as const },
+    { speaker: '系统', text: '【懒惰天赋】伊甸芙宁陷入了沉睡...水之结界包裹着她', emotion: 'weak' as const },
+  ],
+  
+  // 沉睡中被攻击的反应
+  sleeping_attacked: [
+    { speaker: '伊甸芙宁', text: '"嗯...（翻了个身）...五分钟后再来..."', emotion: 'weak' as const },
+    { speaker: '伊甸芙宁', text: '"别闹...人家还没抽到芙宁娜呢..."', emotion: 'weak' as const },
+    { speaker: '伊甸芙宁', text: '"呼呼...（睡得很香的样子）"', emotion: 'weak' as const },
+  ],
+  
+  // 沉睡期间快感达到上限被唤醒
+  awakening_pleasure: [
+    { speaker: '伊甸芙宁', text: '"...！（猛然睁眼）"', emotion: 'angry' as const },
+    { speaker: '伊甸芙宁', text: '"谁?!谁敢趁我睡觉偷袭?!"', emotion: 'angry' as const },
+    { speaker: '伊甸芙宁', text: '"杂鱼...你可真有胆量啊...让我好好教训你！"', emotion: 'angry' as const },
+  ],
+  
+  // 倒计时归零使用Game Over
+  countdown_zero: [
+    { speaker: '伊甸芙宁', text: '"好无聊啊...这样下去要睡过头了..."', emotion: 'arrogant' as const },
+    { speaker: '伊甸芙宁', text: '"时间到了哦~ 杂鱼连这点小游戏都赢不了呢~"', emotion: 'arrogant' as const },
+    { speaker: '伊甸芙宁', text: '"好了好了，让芙宁大人亲自来终结这无聊的对局吧！"', emotion: 'arrogant' as const },
+    { speaker: '伊甸芙宁', text: '"啪！Game Over~ 别浪费人家时间了！"', emotion: 'arrogant' as const },
+  ],
+  
+  // 苏醒后战斗中对话
+  battle: [
+    { speaker: '伊甸芙宁', text: '"杂鱼~ 杂鱼~❤️ 不会吧不会吧? 不会真的有人连我召唤的一只史莱姆都打不过吧?"', emotion: 'arrogant' as const },
+    { speaker: '伊甸芙宁', text: '"好弱哎~ 这是什么杂鱼? 我都快睡着了~"', emotion: 'arrogant' as const },
+    { speaker: '伊甸芙宁', text: '"麻烦快点投降好吗? 我还要回去抽卡呢!"', emotion: 'arrogant' as const },
+    { speaker: '伊甸芙宁', text: '"芙宁大人的脚好香吧? 承认吧杂鱼~❤️"', emotion: 'arrogant' as const },
+    { speaker: '伊甸芙宁', text: '"起舞吧~ 哒、哒、哒~ 你的叫声比音游的打击音效难听多了。"', emotion: 'arrogant' as const },
+    { speaker: '伊甸芙宁', text: '"这身装备太丑了，辣眼睛。变！给你换套更适合的~"', emotion: 'arrogant' as const },
+  ],
+  
+  // 被暴击时的反应
+  crit_reaction: [
+    { speaker: '伊甸芙宁', text: '"啊?! 你竟然敢打人家?!"', emotion: 'angry' as const },
+    { speaker: '伊甸芙宁', text: '"你知不知道我老妈是谁? 信不信我号召全校集火把你号封了?!"', emotion: 'angry' as const },
+    { speaker: '伊甸芙宁', text: '"好痛...（揉了揉被打的地方）...算你走运！"', emotion: 'tsundere' as const },
+  ],
+  
+  // 束缚免疫对话
+  bind_immune: [
+    { speaker: '伊甸芙宁', text: '"想束缚人家? 你是不是搞错了什么? 我可是GM权限哦~"', emotion: 'arrogant' as const },
+  ],
+  
+  // 战胜玩家后
+  victory: [
+    { speaker: '伊甸芙宁', text: '"游戏结束~ 杂鱼果然是杂鱼呢~"', emotion: 'arrogant' as const },
+    { speaker: '伊甸芙宁', text: '"算了算了，看在你这么配合的份上，赏你点金币吧~"', emotion: 'arrogant' as const },
+  ],
+  
+  // 战败（极其罕见）
+  defeat: [
+    { speaker: '伊甸芙宁', text: '"呜哇哇!! 你作弊! 你开挂!"', emotion: 'weak' as const },
+    { speaker: '伊甸芙宁', text: '"难道你的圣遗物全是双爆40分吗?! 这不科学!"', emotion: 'weak' as const },
+    { speaker: '伊甸芙宁', text: '"我要告诉妈妈(院长)! 你欺负人! 呜呜呜...赔钱! 把我的精神损失费赔给我!"', emotion: 'tsundere' as const },
+  ],
+};
+
+// ==================== 伊甸芙宁 BOSS 检测与初始化 ====================
+/**
+ * 检测是否是伊甸芙宁BOSS战
+ */
+export function isEdenBoss(enemyName: string): boolean {
+  if (!enemyName) return false;
+  const name = enemyName.toLowerCase();
+  return name.includes('伊甸芙宁') || name.includes('eden') || name.includes('funin') || name.includes('芙宁');
+}
+
+/**
+ * 初始化伊甸芙宁BOSS战
+ */
+export function initEdenBoss(): void {
+  bossState.isBossFight = true;
+  bossState.bossId = 'eden';
+  bossState.currentPhase = 1;
+  bossState.phaseTransitioning = false;
+  bossState.dialogueIndex = 0;
+  bossState.buttonsDisabled = false;
+  bossState.hasUsedMedal = false;
+  // Eden专属状态初始化
+  bossState.edenSleeping = true;  // 开局进入沉睡
+  bossState.edenCountdown = 6;    // 6回合倒计时（上限6）
+  bossState.edenAwakened = false;
+  bossState.edenCritDebuffApplied = false;
+  
+  // 播放入场对话，然后进入沉睡
+  queueDialogues([...EDEN_DIALOGUES.entry, ...EDEN_DIALOGUES.sleeping_start]);
+}
+
+/**
+ * 获取伊甸芙宁显示名称
+ */
+export function getEdenDisplayName(): string {
+  return '伊甸芙宁';
+}
+
+/**
+ * 获取伊甸芙宁立绘URL
+ */
+export function getEdenAvatarUrl(sleeping: boolean = false): string {
+  // 沉睡状态和苏醒状态使用同一张立绘，通过CSS特效区分
+  return 'https://raw.githubusercontent.com/vincentrong2005/Fatria/main/图片素材/性斗学园/立绘/伊甸芙宁.png';
+}
+
+/**
+ * 获取伊甸芙宁随机战斗对话
+ */
+export function getEdenRandomBattleDialogue(): BossDialogue | null {
+  if (bossState.edenSleeping) {
+    // 沉睡中被攻击
+    const dialogues = EDEN_DIALOGUES.sleeping_attacked;
+    return dialogues[Math.floor(Math.random() * dialogues.length)];
+  }
+  const dialogues = EDEN_DIALOGUES.battle;
+  return dialogues[Math.floor(Math.random() * dialogues.length)];
+}
+
+/**
+ * 获取伊甸芙宁被暴击对话
+ */
+export function getEdenCritReactionDialogue(): BossDialogue | null {
+  const dialogues = EDEN_DIALOGUES.crit_reaction;
+  return dialogues[Math.floor(Math.random() * dialogues.length)];
+}
+
+/**
+ * 获取伊甸芙宁束缚免疫对话
+ */
+export function getEdenBindImmuneDialogue(): BossDialogue | null {
+  const dialogues = EDEN_DIALOGUES.bind_immune;
+  return dialogues[Math.floor(Math.random() * dialogues.length)];
+}
+
+// ==================== 伊甸芙宁 懒惰天赋机制 ====================
+/**
+ * 处理伊甸芙宁回合开始（倒计时处理）
+ * @param enemyBoundTurns 敌人被束缚的回合数
+ * @returns 是否应该触发Game Over技能
+ */
+export function processEdenTurnStart(enemyBoundTurns: number = 0): { triggerSkill16: boolean; countdownValue: number } {
+  if (!bossState.isBossFight || bossState.bossId !== 'eden') {
+    return { triggerSkill16: false, countdownValue: 6 };
+  }
+  
+  // 倒计时-1
+  bossState.edenCountdown--;
+  
+  // 如果被束缚，额外-1
+  if (enemyBoundTurns > 0) {
+    bossState.edenCountdown--;
+  }
+  
+  // 检查是否归零
+  if (bossState.edenCountdown <= 0) {
+    // 重置倒计时
+    bossState.edenCountdown = 6;
+    // 如果沉睡中，苏醒
+    if (bossState.edenSleeping) {
+      bossState.edenSleeping = false;
+    }
+    // 触发Game Over技能
+    return { triggerSkill16: true, countdownValue: bossState.edenCountdown };
+  }
+  
+  return { triggerSkill16: false, countdownValue: bossState.edenCountdown };
+}
+
+/**
+ * 检查伊甸芙宁是否应该苏醒（沉睡期间快感达到上限）
+ */
+export function shouldEdenAwaken(currentPleasure: number, maxPleasure: number): boolean {
+  if (!bossState.isBossFight || bossState.bossId !== 'eden') {
+    return false;
+  }
+  
+  // 必须是沉睡状态且未被唤醒过
+  if (!bossState.edenSleeping) {
+    return false;
+  }
+  
+  // 快感达到上限时触发苏醒
+  return currentPleasure >= maxPleasure;
+}
+
+/**
+ * 执行伊甸芙宁苏醒流程
+ * @returns 新的高潮次数上限（3）
+ */
+export function processEdenAwakening(): { newClimaxLimit: number } {
+  bossState.edenSleeping = false;
+  bossState.edenAwakened = true;
+  bossState.edenCountdown = 6; // 重置倒计时（上限6）
+  
+  // 播放苏醒对话
+  queueDialogues(EDEN_DIALOGUES.awakening_pleasure);
+  
+  // 返回新的高潮次数上限
+  return { newClimaxLimit: 3 };
+}
+
+/**
+ * 处理伊甸芙宁被暴击
+ * @returns debuff信息 (闪避率-8, 暴击率-8)
+ */
+export function processEdenCritReceived(): { 
+  countdownIncrease: number; 
+  evasionDebuff: number; 
+  critDebuff: number;
+  critDamageMultiplier: number;
+} {
+  if (!bossState.isBossFight || bossState.bossId !== 'eden') {
+    return { countdownIncrease: 0, evasionDebuff: 0, critDebuff: 0, critDamageMultiplier: 1 };
+  }
+  
+  // 倒计时+4（不超过6）
+  bossState.edenCountdown = Math.min(6, bossState.edenCountdown + 4);
+  
+  // 标记已应用暴击debuff（闪避率-8，暴击率-8）
+  bossState.edenCritDebuffApplied = true;
+  
+  return {
+    countdownIncrease: 4,
+    evasionDebuff: -8,       // 闪避率-8（减少值）
+    critDebuff: -8,          // 暴击率-8（减少值）
+    critDamageMultiplier: 3.0, // 暴击伤害固定为300%
+  };
+}
+
+/**
+ * 获取懒惰天赋对玩家的debuff效果（增强版）
+ * @returns 玩家debuff参数
+ */
+export function getEdenSlothEffects(): {
+  cooldownIncrease: number;
+  staminaCostMultiplier: number;
+  sleepingEnduranceDebuff: number; // 沉睡状态下伊甸芙宁自己的忍耐力成算debuff
+} {
+  if (!bossState.isBossFight || bossState.bossId !== 'eden') {
+    return { cooldownIncrease: 0, staminaCostMultiplier: 1, sleepingEnduranceDebuff: 0 };
+  }
+  
+  return {
+    cooldownIncrease: 3,        // 技能冷却+3（增强）
+    staminaCostMultiplier: 2.0, // 耐力消耗×2（增强）
+    sleepingEnduranceDebuff: bossState.edenSleeping ? -70 : 0, // 沉睡时-70%忍耐力成算
+  };
+}
+
+/**
+ * 检查伊甸芙宁是否应该锁血（沉睡期间快感将达到上限时）
+ */
+export function shouldEdenLockPleasure(currentPleasure: number, maxPleasure: number): boolean {
+  if (!bossState.isBossFight || bossState.bossId !== 'eden') {
+    return false;
+  }
+  
+  // 沉睡期间快感即将达到上限时锁血
+  if (bossState.edenSleeping && currentPleasure >= maxPleasure - 1) {
+    return true;
+  }
+  
+  return false;
+}
+
+/**
+ * 获取伊甸芙宁懒惰天赋描述信息（用于UI显示）
+ */
+export function getEdenSlothDescription(): string {
+  const effects = [
+    '【七宗罪·懒惰】',
+    '• 开局进入沉睡状态，不使用任何技能',
+    '• 8回合倒计时，归零时使用Game Over并重置',
+    '• 被束缚时倒计时额外-1',
+    '• 沉睡期间被打至高潮将苏醒，高潮次数上限变为3',
+    '• 玩家技能冷却+2，耐力消耗×1.5',
+    '• 被暴击后：倒计时+4，闪避-30%，忍耐力成算-30%',
+    '• 受到暴击时伤害固定为300%',
+  ];
+  return effects.join('\n');
+}
+
