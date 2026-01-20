@@ -14,7 +14,6 @@ export const HomeWidgets: React.FC<{ state: GameState }> = ({ state }) => {
 
   return (
     <div className="space-y-4 px-1">
-
       <GlassCard className="p-3 flex flex-col justify-between h-20 bg-gradient-to-br from-slate-500/10 to-slate-700/10">
         <div className="flex items-center gap-2 text-white/60 text-xs uppercase tracking-wider">
           <Icon name="Clock" size={12} />
@@ -35,7 +34,9 @@ export const HomeWidgets: React.FC<{ state: GameState }> = ({ state }) => {
           </div>
           <div>
             <div className="text-lg font-bold leading-tight">{位置系统.地点名称}</div>
-            <div className="text-xs text-white/50">{位置系统.楼层}F - {位置系统.坐标}</div>
+            <div className="text-xs text-white/50">
+              {位置系统.楼层}F - {位置系统.坐标}
+            </div>
           </div>
         </GlassCard>
 
@@ -70,13 +71,19 @@ export const HomeWidgets: React.FC<{ state: GameState }> = ({ state }) => {
           <div className="flex items-center gap-3">
             <Icon name="Zap" size={14} className="text-teal-400" />
             <div className="flex-1 h-1.5 bg-white/10 rounded-full overflow-hidden">
-              <div className="h-full bg-teal-400" style={{ width: `${(核心状态.$耐力 / 核心状态.$最大耐力) * 100}%` }} />
+              <div
+                className="h-full bg-teal-400"
+                style={{ width: `${(核心状态.$耐力 / 核心状态.$最大耐力) * 100}%` }}
+              />
             </div>
           </div>
           <div className="flex items-center gap-3">
             <Icon name="Heart" size={14} className="text-pink-500" />
             <div className="flex-1 h-1.5 bg-white/10 rounded-full overflow-hidden">
-              <div className="h-full bg-pink-500" style={{ width: `${(核心状态.$快感 / 核心状态.$最大快感) * 100}%` }} />
+              <div
+                className="h-full bg-pink-500"
+                style={{ width: `${(核心状态.$快感 / 核心状态.$最大快感) * 100}%` }}
+              />
             </div>
           </div>
         </div>
@@ -94,9 +101,12 @@ export const HomeWidgets: React.FC<{ state: GameState }> = ({ state }) => {
         </div>
 
         <div className="mt-3 flex gap-2">
-          {Object.values(任务系统.支线任务).filter((q: Quest) => q.状态 === '进行中').slice(0, 2).map((q: Quest, i) => (
-            <div key={i} className="w-2 h-2 rounded-full bg-brand-accent animate-pulse" />
-          ))}
+          {Object.values(任务系统.支线任务)
+            .filter((q: Quest) => q.状态 === '进行中')
+            .slice(0, 2)
+            .map((q: Quest, i) => (
+              <div key={i} className="w-2 h-2 rounded-full bg-brand-accent animate-pulse" />
+            ))}
         </div>
       </GlassCard>
 
@@ -105,16 +115,23 @@ export const HomeWidgets: React.FC<{ state: GameState }> = ({ state }) => {
         <h3 className="text-xs font-bold text-white/40 mb-3 px-1 uppercase tracking-widest">System Feed</h3>
         <div className="space-y-2">
           {[
-            { title: "学生会公告", time: "10m ago", text: "本周性斗排位赛将在体育馆举行，请各位学员准时参加。", type: "info" },
-            { title: "账户变动", time: "1h ago", text: "你收到了一笔转账：500 学园币。", type: "money" },
-            { title: "警告", time: "2h ago", text: "检测到心率异常，请注意休息。", type: "alert" },
-            { title: "校园传闻", time: "4h ago", text: "据说旧校舍深夜会有奇怪的声音传出...", type: "gossip" },
+            {
+              title: '学生会公告',
+              time: '10m ago',
+              text: '本周性斗排位赛将在体育馆举行，请各位学员准时参加。',
+              type: 'info',
+            },
+            { title: '账户变动', time: '1h ago', text: '你收到了一笔转账：500 学园币。', type: 'money' },
+            { title: '警告', time: '2h ago', text: '检测到心率异常，请注意休息。', type: 'alert' },
+            { title: '校园传闻', time: '4h ago', text: '据说旧校舍深夜会有奇怪的声音传出...', type: 'gossip' },
           ].map((item, idx) => (
             <GlassCard key={idx} className="p-3 bg-white/5 border-white/5 flex gap-3">
-              <div className={`
+              <div
+                className={`
                     w-1 h-full rounded-full shrink-0
                     ${item.type === 'alert' ? 'bg-red-500' : item.type === 'money' ? 'bg-yellow-500' : 'bg-brand-primary'}
-                  `} />
+                  `}
+              />
               <div>
                 <div className="flex justify-between items-center w-full mb-1">
                   <span className="font-bold text-xs">{item.title}</span>
@@ -126,7 +143,6 @@ export const HomeWidgets: React.FC<{ state: GameState }> = ({ state }) => {
           ))}
         </div>
       </div>
-
     </div>
   );
 };

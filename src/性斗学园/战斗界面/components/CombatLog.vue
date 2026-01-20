@@ -3,12 +3,44 @@
     <!-- 头部切换栏 -->
     <div class="log-header" @click="isExpanded = !isExpanded">
       <div class="log-title">
-        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="12"
+          height="12"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+        </svg>
         <span>战斗日志</span>
       </div>
       <div class="log-toggle">
-        <svg v-if="isExpanded" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>
-        <svg v-else xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m18 15-6-6-6 6"/></svg>
+        <svg
+          v-if="isExpanded"
+          xmlns="http://www.w3.org/2000/svg"
+          width="14"
+          height="14"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <path d="m6 9 6 6 6-6" />
+        </svg>
+        <svg
+          v-else
+          xmlns="http://www.w3.org/2000/svg"
+          width="14"
+          height="14"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <path d="m18 15-6-6-6 6" />
+        </svg>
       </div>
     </div>
 
@@ -30,7 +62,7 @@
           'log-damage': log.type === 'damage',
           'log-heal': log.type === 'heal',
           'log-info': log.type === 'info',
-          'log-buff': log.type === 'buff'
+          'log-buff': log.type === 'buff',
         }"
       >
         <span class="log-turn">[{{ log.turn }}]</span>
@@ -53,13 +85,16 @@ const isExpanded = ref(true);
 const bottomRef = ref<HTMLDivElement | null>(null);
 
 // 自动滚动到底部
-watch(() => props.logs.length, () => {
-  if (isExpanded.value) {
-    nextTick(() => {
-      bottomRef.value?.scrollIntoView({ behavior: 'smooth' });
-    });
-  }
-});
+watch(
+  () => props.logs.length,
+  () => {
+    if (isExpanded.value) {
+      nextTick(() => {
+        bottomRef.value?.scrollIntoView({ behavior: 'smooth' });
+      });
+    }
+  },
+);
 </script>
 
 <style lang="scss" scoped>
@@ -198,4 +233,3 @@ watch(() => props.logs.length, () => {
   }
 }
 </style>
-

@@ -3,9 +3,7 @@
     <div class="rounded-2xl border border-white/10 bg-white/5 p-5 backdrop-blur-sm">
       <h3 class="mb-3 text-xl font-bold text-white">温馨提示</h3>
       <div class="space-y-4 text-sm leading-relaxed text-gray-200">
-        <p>
-          你好，这里是前端作者“𝒱𝒾𝓃 ”，本卡为“芙芙可爱捏”与“𝒱𝒾𝓃”共同创作，仅在类脑与旅程免费发布/更新。
-        </p>
+        <p>你好，这里是前端作者“𝒱𝒾𝓃 ”，本卡为“芙芙可爱捏”与“𝒱𝒾𝓃”共同创作，仅在类脑与旅程免费发布/更新。</p>
         <div class="flex flex-col gap-2">
           <a
             class="text-secondary underline decoration-secondary/40 underline-offset-4 hover:decoration-secondary"
@@ -38,7 +36,9 @@
     <div class="rounded-2xl border border-white/10 bg-white/5 p-5 backdrop-blur-sm">
       <h3 class="mb-3 text-xl font-bold text-white">游玩前请确保</h3>
       <div class="space-y-2 text-sm text-gray-200">
-        <div class="text-base">1. 酒馆助手与提示词模板已安装并更新到<span class="font-bold text-red-400">最新版本</span></div>
+        <div class="text-base">
+          1. 酒馆助手与提示词模板已安装并更新到<span class="font-bold text-red-400">最新版本</span>
+        </div>
         <div>2. 酒馆助手渲染已开启且小白x渲染已关闭</div>
         <div>3. 开梯子！开梯子！开梯子！</div>
         <div>4. 世界书有COT，请自行缝进预设，不知道怎么缝的去类脑找，不行去答疑区问。</div>
@@ -74,7 +74,8 @@
         <div>
           <div class="font-semibold text-white">Q: 我为什么无法进入性斗？我需要从哪里进入性斗？</div>
           <div>
-            A: 请确保你的选项UI的外观与其他UI一致，如果不一致就说明你的正则冲突了，其他的选项正则把我的正则覆盖掉了，请自行寻找查找正则表达式带&lt;option&gt;的全局/预设正则并关闭。（正文UI同理，但正文UI没那么重要）
+            A:
+            请确保你的选项UI的外观与其他UI一致，如果不一致就说明你的正则冲突了，其他的选项正则把我的正则覆盖掉了，请自行寻找查找正则表达式带&lt;option&gt;的全局/预设正则并关闭。（正文UI同理，但正文UI没那么重要）
           </div>
         </div>
 
@@ -85,7 +86,9 @@
 
         <div>
           <div class="font-semibold text-white">Q: 为什么明明AI更新了xxx变量，我却没有在状态栏中看到？</div>
-          <div>A: 绝大部分变量不由AI管理也不能管理，皆有脚本操控。对于目前AI可影响的变量请自行查看“Zod 变量结构”脚本。</div>
+          <div>
+            A: 绝大部分变量不由AI管理也不能管理，皆有脚本操控。对于目前AI可影响的变量请自行查看“Zod 变量结构”脚本。
+          </div>
         </div>
 
         <div>
@@ -93,7 +96,6 @@
           <div>A: 以状态栏为主，AI会口胡。</div>
         </div>
 
-        
         <div>
           <div class="font-semibold text-white">Q: 更新后需要重开吗？</div>
           <div>A: 不需要，只需要重新读取一遍初始变量即可。</div>
