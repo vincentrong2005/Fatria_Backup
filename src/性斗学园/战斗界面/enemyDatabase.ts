@@ -30,7 +30,7 @@ export const DIFFICULTY_COEFFICIENTS: Record<string, number> = {
   '普通': 1.0,
   '困难': 1.5,
   '抖M': 2.0,
-  '作弊': 1,
+  '作弊': 3.0,
 };
 
 /**
