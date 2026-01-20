@@ -97,12 +97,18 @@ export interface SkillData {
   effectDescription: string;
   icon?: string;
   type: SkillType;
+  rarity?: 'C' | 'B' | 'A' | 'S' | 'SS'; // 新增：稀有度
+  level?: number; // 新增：等级
   staminaCost: number;
   cooldown: number;
   castTime: number;
   damageFormula: DamageComponent[];
+  powerCoeff?: number; // 新增：威力系数
   accuracy: number;
+  accuracyModifier?: number; // 新增：命中率修正
   critModifier: number;
+  damageSource?: string; // 新增：伤害来源
+  damageDescription?: string; // 新增：伤害描述
   buffs: BuffEffect[];
   canBeReflected: boolean;
   hitCount: number;

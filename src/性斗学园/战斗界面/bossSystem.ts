@@ -23,6 +23,10 @@ export interface BossState {
   edenCountdown: number;        // 8回合倒计时
   edenAwakened: boolean;        // 是否已被唤醒过（用于判断高潮次数调整）
   edenCritDebuffApplied: boolean; // 是否已应用暴击debuff
+  // Elizabeth专属状态（傲慢天赋）
+  elizabethCurrentCommand: 'kneel' | 'tribute' | null;  // 当前演出指令
+  elizabethCommandTurn: number;                         // 发布指令的回合
+  elizabethViolationCount: number;                      // 违反次数（用于叠加buff）
 }
 
 export interface BossDialogue {
@@ -162,6 +166,10 @@ export const bossState = reactive<BossState>({
   edenCountdown: 8,
   edenAwakened: false,
   edenCritDebuffApplied: false,
+  // Elizabeth专属状态
+  elizabethCurrentCommand: null,
+  elizabethCommandTurn: 0,
+  elizabethViolationCount: 0,
 });
 
 // 当前显示的对话
@@ -215,6 +223,10 @@ export function resetBossState(): void {
   bossState.edenCountdown = 8;
   bossState.edenAwakened = false;
   bossState.edenCritDebuffApplied = false;
+  // Elizabeth专属状态重置
+  bossState.elizabethCurrentCommand = null;
+  bossState.elizabethCommandTurn = 0;
+  bossState.elizabethViolationCount = 0;
   currentDialogue.value = null;
   dialogueQueue.value = [];
   isShowingDialogue.value = false;
@@ -781,15 +793,14 @@ export const BOSS_CONFIG = {
 export const EDEN_DIALOGUES = {
   // 入场对话
   entry: [
-    { speaker: '伊甸芙宁', text: '"锵锵! 芙宁登场，全体目光向我看齐!"', emotion: 'arrogant' as const },
-    { speaker: '伊甸芙宁', text: '"喂，杂鱼。你玩《Genshin Impact》吗?"', emotion: 'arrogant' as const },
+    { speaker: '伊甸芙宁', text: '"喂,杂鱼。你玩《Genshin Impact》吗?"', emotion: 'arrogant' as const },
   ],
   
   // 沉睡状态对话（开局进入沉睡）
   sleeping_start: [
     { speaker: '伊甸芙宁', text: '"哈~好困喵...算了，先睡一会儿吧~"', emotion: 'weak' as const },
     { speaker: '伊甸芙宁', text: '"杂鱼你自己玩，别吵醒人家..."', emotion: 'weak' as const },
-    { speaker: '系统', text: '【懒惰天赋】伊甸芙宁陷入了沉睡...水之结界包裹着她', emotion: 'weak' as const },
+    { speaker: '系统', text: '【懒惰天赋】伊甸芙宁陷入了沉睡...', emotion: 'weak' as const },
   ],
   
   // 沉睡中被攻击的反应
@@ -892,8 +903,10 @@ export function getEdenDisplayName(): string {
  * 获取伊甸芙宁立绘URL
  */
 export function getEdenAvatarUrl(sleeping: boolean = false): string {
-  // 沉睡状态和苏醒状态使用同一张立绘，通过CSS特效区分
-  return 'https://raw.githubusercontent.com/vincentrong2005/Fatria/main/图片素材/性斗学园/立绘/伊甸芙宁.png';
+  if (sleeping) {
+    return 'https://raw.githubusercontent.com/vincentrong2005/Fatria/main/图片素材/性斗学园/立绘/伊甸芙宁_1.png';
+  }
+  return 'https://raw.githubusercontent.com/vincentrong2005/Fatria/main/图片素材/性斗学园/立绘/伊甸芙宁_2.png';
 }
 
 /**
@@ -1069,6 +1082,263 @@ export function getEdenSlothDescription(): string {
     '• 玩家技能冷却+2，耐力消耗×1.5',
     '• 被暴击后：倒计时+4，闪避-30%，忍耐力成算-30%',
     '• 受到暴击时伤害固定为300%',
+  ];
+  return effects.join('\n');
+}
+
+// ==================== 伊丽莎白夜羽 BOSS 对话库 ====================
+export const ELIZABETH_DIALOGUES = {
+  // 入场对话
+  entry: [
+    { speaker: '伊丽莎白夜羽', text: '"哼，汝这卑微的凡人，竟有幸得见吾之真容..."', emotion: 'arrogant' as const },
+    { speaker: '伊丽莎白夜羽', text: '"既已踏入吾之永夜领域，便做好成为吾眷属的觉悟吧！"', emotion: 'arrogant' as const },
+    { speaker: '伊丽莎白夜羽', text: '"记住，在这场「演出」中，吾才是唯一的主角！"', emotion: 'arrogant' as const },
+  ],
+  
+  // 跪拜指令
+  command_kneel: [
+    { speaker: '伊丽莎白夜羽', text: '"跪下！这是君王的命令！"', emotion: 'arrogant' as const },
+    { speaker: '伊丽莎白夜羽', text: '"在永夜的主宰面前，汝只配匍匐！"', emotion: 'arrogant' as const },
+  ],
+  
+  // 献礼指令
+  command_tribute: [
+    { speaker: '伊丽莎白夜羽', text: '"献上汝微薄的技艺吧！吾允许汝使用最低等的技能！"', emotion: 'arrogant' as const },
+    { speaker: '伊丽莎白夜羽', text: '"展示汝的实力...当然，只限最低等的那种！"', emotion: 'arrogant' as const },
+  ],
+  
+  // 玩家服从
+  player_obey: [
+    { speaker: '伊丽莎白夜羽', text: '"哼...还算识相。"', emotion: 'arrogant' as const },
+    { speaker: '伊丽莎白夜羽', text: '"不错，继续保持这份恭顺..."', emotion: 'arrogant' as const },
+  ],
+  
+  // 玩家违反（未暴击）
+  player_disobey: [
+    { speaker: '伊丽莎白夜羽', text: '"竟敢违抗吾的命令？！愚蠢至极！"', emotion: 'angry' as const },
+    { speaker: '伊丽莎白夜羽', text: '"看来汝需要更严厉的惩罚才能学会服从！"', emotion: 'angry' as const },
+    { speaker: '伊丽莎白夜羽', text: '"很好...吾喜欢不听话的猎物。这样玩弄起来才有趣！"', emotion: 'angry' as const },
+  ],
+  
+  // 玩家违反且暴击（触发debuff）
+  player_disobey_crit: [
+    { speaker: '伊丽莎白夜羽', text: '"...！可恶...汝的攻击竟然...！"', emotion: 'weak' as const },
+    { speaker: '伊丽莎白夜羽', text: '"哼...不过是走运而已...吾只是一时大意..."', emotion: 'tsundere' as const },
+    { speaker: '伊丽莎白夜羽', text: '"（咬牙）...这次就放过汝，但下次绝不会再犯这种失误..."', emotion: 'tsundere' as const },
+  ],
+};
+
+// ==================== 伊丽莎白夜羽 BOSS 检测与初始化 ====================
+/**
+ * 检测是否是伊丽莎白夜羽BOSS战
+ */
+export function isElizabethBoss(enemyName: string): boolean {
+  if (!enemyName) return false;
+  const name = enemyName.toLowerCase();
+  return name.includes('伊丽莎白') || name.includes('elizabeth') || name.includes('夜羽');
+}
+
+/**
+ * 初始化伊丽莎白夜羽BOSS战
+ */
+export function initElizabethBoss(): void {
+  bossState.isBossFight = true;
+  bossState.bossId = 'elizabeth';
+  bossState.currentPhase = 1;
+  bossState.phaseTransitioning = false;
+  bossState.dialogueIndex = 0;
+  bossState.buttonsDisabled = false;
+  bossState.hasUsedMedal = false;
+  // Elizabeth专属状态初始化
+  bossState.elizabethCurrentCommand = null;
+  bossState.elizabethCommandTurn = 0;
+  bossState.elizabethViolationCount = 0;
+  
+  // 播放入场对话
+  queueDialogues(ELIZABETH_DIALOGUES.entry);
+}
+
+/**
+ * 获取伊丽莎白夜羽显示名称
+ */
+export function getElizabethDisplayName(): string {
+  return '伊丽莎白夜羽';
+}
+
+/**
+ * 获取伊丽莎白夜羽立绘URL
+ */
+export function getElizabethAvatarUrl(): string {
+  return 'https://raw.githubusercontent.com/vincentrong2005/Fatria/main/图片素材/性斗学园/立绘/伊丽莎白夜羽.png';
+}
+
+// ==================== 伊丽莎白夜羽 傲慢天赋机制 ====================
+/**
+ * 处理伊丽莎白回合开始（发布演出指令）
+ * 每奇数回合发布一个随机指令
+ */
+export function processElizabethTurnStart(currentTurn: number): { 
+  hasCommand: boolean; 
+  command: 'kneel' | 'tribute' | null;
+  dialogues: BossDialogue[];
+} {
+  if (!bossState.isBossFight || bossState.bossId !== 'elizabeth') {
+    return { hasCommand: false, command: null, dialogues: [] };
+  }
+  
+  // 奇数回合发布指令
+  if (currentTurn % 2 === 1) {
+    const commands: Array<'kneel' | 'tribute'> = ['kneel', 'tribute'];
+    const command = commands[Math.floor(Math.random() * commands.length)];
+    
+    bossState.elizabethCurrentCommand = command;
+    bossState.elizabethCommandTurn = currentTurn;
+    
+    const dialogues = command === 'kneel' 
+      ? ELIZABETH_DIALOGUES.command_kneel 
+      : ELIZABETH_DIALOGUES.command_tribute;
+    
+    return { 
+      hasCommand: true, 
+      command, 
+      dialogues: [dialogues[Math.floor(Math.random() * dialogues.length)]]
+    };
+  }
+  
+  return { hasCommand: false, command: null, dialogues: [] };
+}
+
+/**
+ * 检查玩家是否服从了指令
+ * @param actionType 玩家行动类型: 'skip' | 'skill'
+ * @param skillRarity 使用的技能稀有度（如果是技能）
+ * @param isCrit 是否暴击
+ */
+export function checkElizabethCommandObedience(
+  actionType: 'skip' | 'skill',
+  skillRarity?: string,
+  isCrit?: boolean
+): {
+  obeyed: boolean;
+  punishPlayer: boolean;
+  punishBoss: boolean;
+  dialogues: BossDialogue[];
+} {
+  if (!bossState.isBossFight || bossState.bossId !== 'elizabeth') {
+    return { obeyed: true, punishPlayer: false, punishBoss: false, dialogues: [] };
+  }
+  
+  const command = bossState.elizabethCurrentCommand;
+  if (!command) {
+    return { obeyed: true, punishPlayer: false, punishBoss: false, dialogues: [] };
+  }
+  
+  let obeyed = false;
+  
+  if (command === 'kneel') {
+    // 跪拜指令：必须跳过回合
+    obeyed = actionType === 'skip';
+  } else if (command === 'tribute') {
+    // 献礼指令：必须使用C级技能（跳过回合也算违反）
+    obeyed = actionType === 'skill' && skillRarity === 'C';
+  }
+  
+  // 清除当前指令
+  bossState.elizabethCurrentCommand = null;
+  
+  if (obeyed) {
+    const dialogues = ELIZABETH_DIALOGUES.player_obey;
+    return { 
+      obeyed: true, 
+      punishPlayer: false, 
+      punishBoss: false, 
+      dialogues: [dialogues[Math.floor(Math.random() * dialogues.length)]]
+    };
+  } else {
+    bossState.elizabethViolationCount++;
+    
+    // 检查是否暴击触发特殊效果
+    if (isCrit) {
+      const dialogues = ELIZABETH_DIALOGUES.player_disobey_crit;
+      return { 
+        obeyed: false, 
+        punishPlayer: true, 
+        punishBoss: true, // 暴击时也惩罚BOSS
+        dialogues: [dialogues[Math.floor(Math.random() * dialogues.length)]]
+      };
+    } else {
+      const dialogues = ELIZABETH_DIALOGUES.player_disobey;
+      return { 
+        obeyed: false, 
+        punishPlayer: true, 
+        punishBoss: false,
+        dialogues: [dialogues[Math.floor(Math.random() * dialogues.length)]]
+      };
+    }
+  }
+}
+
+/**
+ * 获取伊丽莎白违反惩罚的BOSS加成值（可叠加）
+ */
+export function getElizabethViolationBonus(): {
+  sexPowerBonus: number;
+  enduranceBonus: number;
+  evasionBonus: number;
+  critBonus: number;
+} {
+  const count = bossState.elizabethViolationCount;
+  return {
+    sexPowerBonus: count * 50,
+    enduranceBonus: count * 50,
+    evasionBonus: count * 5,
+    critBonus: count * 5,
+  };
+}
+
+/**
+ * 获取伊丽莎白暴击反制debuff效果（2回合）
+ */
+export function getElizabethCritCounterDebuff(): {
+  evasionDebuff: number;
+  enduranceCalcDebuff: number;
+} {
+  return {
+    evasionDebuff: -60,        // 闪避率-60%
+    enduranceCalcDebuff: -90,  // 忍耐力成算-90%
+  };
+}
+
+/**
+ * 获取伊丽莎白吸血效果（每次攻击回复10%伤害值的快感）
+ */
+export function getElizabethVampirismHeal(damageDealt: number): number {
+  if (!bossState.isBossFight || bossState.bossId !== 'elizabeth') {
+    return 0;
+  }
+  return Math.floor(damageDealt * 0.1);
+}
+
+/**
+ * 获取伊丽莎白傲慢天赋描述信息（用于UI显示）
+ */
+export function getElizabethPrideDescription(): string {
+  const effects = [
+    '【七宗罪·傲慢】',
+    '• 高潮次数上限固定为3',
+    '',
+    '【君王的剧本】每奇数回合发布演出指令：',
+    '• 「跪拜」：玩家必须跳过回合',
+    '• 「献礼」：玩家必须使用C级技能',
+    '',
+    '【违反惩罚】：',
+    '• 玩家扣除20%最大耐力',
+    '• BOSS获得：性斗力+50，忍耐力+50，闪避+5%，暴击+5%（可叠加）',
+    '',
+    '【暴击反制】违反指令时暴击触发：',
+    '• BOSS获得：闪避率-60%，忍耐力成算-90%（2回合）',
+    '',
+    '【吸血】每次攻击回复10%伤害值的快感',
   ];
   return effects.join('\n');
 }

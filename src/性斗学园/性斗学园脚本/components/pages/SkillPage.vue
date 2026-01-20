@@ -461,7 +461,8 @@ const adjustedRates = computed(() => {
 
 // 作者测试功能状态（使用localStorage持久化解锁状态）
 const showAuthorTest = ref(false);
-const allTalents = TALENT_DATABASE;
+// 过滤掉七宗罪天赋（SIN稀有度）
+const allTalents = TALENT_DATABASE.filter(talent => talent.rarity !== 'SIN');
 
 const hasMuxinlanAccessCard = computed(() => {
   const backpack = props.characterData?.物品系统?.背包 || {};

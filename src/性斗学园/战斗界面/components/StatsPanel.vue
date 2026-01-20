@@ -42,17 +42,37 @@
       </div>
       <span class="stat-value">{{ stats.luck }}</span>
     </div>
+
+    <!-- 状态效果显示 -->
+    <div v-if="statusEffects && statusEffects.length > 0" class="status-section">
+      <div class="status-divider"></div>
+      <div class="status-list">
+        <div 
+          v-for="effect in statusEffects" 
+          :key="effect.id" 
+          class="status-item"
+          :class="effect.type === 'buff' ? 'status-buff' : 'status-debuff'"
+          :title="effect.name + ' (' + effect.duration + '回合)'"
+        >
+          <span class="status-icon">{{ effect.icon || (effect.type === 'buff' ? '▲' : '▼') }}</span>
+          <span class="status-name">{{ effect.name }}</span>
+          <span class="status-duration">{{ effect.duration }}T</span>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import type { CombatStats } from '../types';
+import type { CombatStats, StatusEffect } from '../types';
 
 withDefaults(defineProps<{
   stats: CombatStats;
+  statusEffects?: StatusEffect[];
   compact?: boolean;
 }>(), {
-  compact: false
+  compact: false,
+  statusEffects: () => []
 });
 </script>
 
@@ -60,27 +80,29 @@ withDefaults(defineProps<{
 .stats-panel {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 0.25rem 0.5rem;
+  gap: 0.25em 0.5em;
   width: 100%;
-  max-width: 20rem;
   animation: fadeIn 0.3s ease;
+  font-size: inherit; // 继承父级字体大小
 }
 
 .stats-compact {
-  max-width: 180px;
+  // 紧凑模式下缩小间距
+  gap: 0.2em 0.3em;
 }
 
 .stat-item {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0.5rem;
-  border-radius: 0.5rem;
+  padding: 0.4em;
+  border-radius: 0.4em;
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.05);
+  min-width: 0; // 允许flex子项收缩
 
   .stats-compact & {
-    padding: 0.25rem;
+    padding: 0.2em;
     background: transparent;
     border: none;
   }
@@ -93,28 +115,39 @@ withDefaults(defineProps<{
 .stat-info {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.3em;
+  min-width: 0; // 允许收缩
+  
+  svg {
+    flex-shrink: 0;
+    width: 1em;
+    height: 1em;
+  }
 }
 
 .stat-label {
-  font-size: 0.75rem;
+  font-size: 0.85em;
   font-weight: 500;
   text-transform: uppercase;
   color: #94a3b8;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 
   .stats-compact & {
-    font-size: 0.625rem;
+    font-size: 0.75em;
   }
 }
 
 .stat-value {
-  font-size: 0.875rem;
+  font-size: 1em;
   font-weight: 700;
   font-family: ui-monospace, monospace;
   color: white;
+  flex-shrink: 0;
 
   .stats-compact & {
-    font-size: 0.75rem;
+    font-size: 0.9em;
   }
 }
 
@@ -125,6 +158,59 @@ withDefaults(defineProps<{
 .text-rose-400 { color: #fb7185; }
 .text-yellow-400 { color: #facc15; }
 .text-purple-400 { color: #c084fc; }
+
+/* 状态效果样式 */
+.status-section {
+  grid-column: span 2;
+  margin-top: 0.5em;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5em;
+}
+
+.status-divider {
+  height: 1px;
+  background: rgba(255, 255, 255, 0.1);
+  width: 100%;
+}
+
+.status-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4em;
+}
+
+.status-item {
+  display: flex;
+  align-items: center;
+  gap: 0.3em;
+  padding: 0.2em 0.4em;
+  border-radius: 0.3em;
+  font-size: 0.8em;
+  border: 1px solid transparent;
+  
+  &.status-buff {
+    background: rgba(34, 197, 94, 0.1);
+    color: #4ade80;
+    border-color: rgba(34, 197, 94, 0.2);
+  }
+  
+  &.status-debuff {
+    background: rgba(244, 63, 94, 0.1);
+    color: #fb7185;
+    border-color: rgba(244, 63, 94, 0.2);
+  }
+}
+
+.status-icon {
+  font-weight: bold;
+}
+
+.status-duration {
+  font-size: 0.9em;
+  opacity: 0.8;
+  margin-left: 0.2em;
+}
 
 @keyframes fadeIn {
   from { opacity: 0; }

@@ -30,7 +30,11 @@
         <!-- 属性悬停面板 -->
         <div class="stats-overlay">
           <div class="overlay-title">详细属性</div>
-          <StatsPanel :stats="character.stats" compact />
+          <StatsPanel 
+            :stats="character.stats" 
+            :status-effects="character.statusEffects"
+            compact 
+          />
         </div>
       </div>
 
@@ -351,25 +355,23 @@ const zapIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" 
   justify-content: center;
   opacity: 0;
   transition: all 0.3s ease;
-  padding: 0.5rem;
+  padding: 5%;
   border-radius: 1rem;
   background: rgba(0, 0, 0, 0.6);
   backdrop-filter: blur(4px);
   border: 1px solid rgba(255, 255, 255, 0.1);
+  
+  // 让内容随容器缩放
+  font-size: clamp(0.5rem, 2vw, 0.875rem);
 }
 
 .overlay-title {
-  font-size: 0.625rem;
+  font-size: 1em;
   color: rgba(255, 255, 255, 0.7);
   text-transform: uppercase;
   letter-spacing: 0.1em;
-  margin-bottom: 0.25rem;
+  margin-bottom: 0.5em;
   font-weight: 700;
-
-  @media (min-width: 1024px) {
-    font-size: 0.75rem;
-    margin-bottom: 0.5rem;
-  }
 }
 
 // ========== 状态条 ==========

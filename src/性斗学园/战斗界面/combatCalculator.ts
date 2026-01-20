@@ -124,8 +124,8 @@ export function checkDodge(
   targetEvasion: number,
   skillAccuracy: number
 ): boolean {
-  // 计算最终命中率 = 技能基础命中率 - 目标闪避率 + (攻击者幸运 / 10)
-  const finalAccuracy = skillAccuracy - targetEvasion + (attackerLuck / 10);
+  // 计算最终命中率 = 技能基础命中率 - 目标闪避率 + (攻击者幸运 / 8)
+  const finalAccuracy = skillAccuracy - targetEvasion + (attackerLuck / 8);
 
   // 命中率最低10%,最高95%
   const clampedAccuracy = Math.max(10, Math.min(95, finalAccuracy));
@@ -143,8 +143,8 @@ export function checkDodge(
  * @returns 是否暴击
  */
 export function checkCritical(attackerCrit: number, attackerLuck: number, skillCritModifier: number): boolean {
-  // 计算最终暴击率 = 基础暴击率 + (幸运 / 10) + 技能修正
-  const finalCritRate = attackerCrit + (attackerLuck / 10) + skillCritModifier;
+  // 计算最终暴击率 = 基础暴击率 + (幸运 / 8) + 技能修正
+  const finalCritRate = attackerCrit + (attackerLuck / 8) + skillCritModifier;
 
   // 暴击率最低0%,最高100%
   const clampedCritRate = Math.max(0, Math.min(100, finalCritRate));
