@@ -270,7 +270,7 @@
                     </span>
                   </div>
                   <div class="skill-damage-source">
-                    伤害来源：<span class="source-type">{{ skill.data?.damageSource === 'charm' ? '魅力' : '性斗力' }}</span> ×{{ skill.data?.powerCoeff || 100 }}%
+                    伤害来源：<span class="source-type">{{ getSkillDamageSourceLabel(skill) }}</span> ×{{ getSkillPowerCoeff(skill) }}%
                   </div>
                   <div v-if="skill.data?.effectDescription" class="skill-effect">
                     <span class="effect-label">效果：</span>
@@ -833,6 +833,8 @@ async function loadFromMvu() {
                 cooldown: mvuSkill.冷却与消耗?.冷却回合数 || 0,
                 castTime: 0,
                 damageFormula: damageFormula,
+                powerCoeff: damageInfo.系数 || 100,
+                damageSource: source,
                 accuracy: mvuSkill.伤害与效果?.基础命中率 || 100,
                 critModifier: mvuSkill.伤害与效果?.暴击修正 || 0,
                 buffs: [],
@@ -859,7 +861,6 @@ async function loadFromMvu() {
           // 技能冷却在战斗中管理，不需要从MVU读取（每次战斗开始时冷却为0）
           const currentCooldown = 0;
 
-          // 数据库命中时，也需要用MVU里的技能等级/稀有度覆盖（否则UI会缺Lv或稀有度不一致）
           const mvuSkill = availableSkills[skillId];
           const mvuBasicInfo = mvuSkill?.基本信息;
           const rawRarity = mvuBasicInfo?.稀有度;
@@ -867,10 +868,18 @@ async function loadFromMvu() {
             ? rawRarity
             : (skillData.rarity || 'C');
           const mergedLevel = mvuBasicInfo?.技能等级 || skillData.level || 1;
+          const inferredDamageSource = skillData.damageSource || (skillData.damageFormula?.[0]?.source as any) || 'sex_power';
+          const inferredPowerCoeff = (skillData.powerCoeff !== undefined)
+            ? skillData.powerCoeff
+            : (skillData.damageFormula?.length === 1
+              ? Math.round((skillData.damageFormula[0].coefficient || 1) * 100)
+              : 100);
           const mergedSkillData = {
             ...skillData,
             rarity: mergedRarity,
             level: mergedLevel,
+            damageSource: inferredDamageSource,
+            powerCoeff: inferredPowerCoeff,
           };
 
           return {
@@ -2103,8 +2112,6 @@ async function updateStatusEffectsFromMvu(): Promise<string[]> {
 // 获取效果类型的中文名称
 function getEffectTypeName(effectType: string): string {
   const names: Record<string, string> = {
-    性斗力: '性斗力',
-    忍耐力: '忍耐力',
     魅力: '魅力',
     幸运: '幸运',
     闪避率: '闪避率',
@@ -2112,6 +2119,39 @@ function getEffectTypeName(effectType: string): string {
     束缚: '束缚',
   };
   return names[effectType] || effectType;
+}
+
+function getSkillDamageSourceLabel(skill: any): string {
+  const key = skill?.data?.damageSource || (skill?.data?.damageFormula?.[0]?.source as any);
+  const map: Record<string, string> = {
+    sex_power: '性斗力',
+    charm: '魅力',
+    luck: '幸运',
+    fixed: '固定值',
+    target_pleasure: '目标快感',
+    willpower: '意志力',
+  };
+  return map[key] || '性斗力';
+}
+
+function getSkillPowerCoeff(skill: any): number {
+  const v = skill?.data?.powerCoeff;
+  if (typeof v === 'number' && Number.isFinite(v)) return v;
+  const coef = skill?.data?.damageFormula?.[0]?.coefficient;
+  if (typeof coef === 'number' && Number.isFinite(coef)) return Math.round(coef * 100);
+  return 100;
+}
+
+function loadSkillData(skill: any): void {
+  if (!skill.data) skill.data = {};
+  if (!skill.data.damageSource) {
+    const source = skill.data.damageFormula?.[0]?.source;
+    if (source) skill.data.damageSource = source;
+  }
+  if (!skill.data.powerCoeff) {
+    const coef = skill.data.damageFormula?.[0]?.coefficient;
+    if (coef) skill.data.powerCoeff = Math.round(coef * 100);
+  }
 }
 
 // 从状态列表中动态计算加成总和（符合 mvuSchema.ts 设计：加成统计由代码实时计算）

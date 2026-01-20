@@ -38,7 +38,7 @@
     <div class="rounded-2xl border border-white/10 bg-white/5 p-5 backdrop-blur-sm">
       <h3 class="mb-3 text-xl font-bold text-white">游玩前请确保</h3>
       <div class="space-y-2 text-sm text-gray-200">
-        <div>1. 酒馆助手与提示词模板已安装并更新到最新版本</div>
+        <div class="text-base">1. 酒馆助手与提示词模板已安装并更新到<span class="font-bold text-red-400">最新版本</span></div>
         <div>2. 酒馆助手渲染已开启且小白x渲染已关闭</div>
         <div>3. 开梯子！开梯子！开梯子！</div>
         <div>4. 世界书有COT，请自行缝进预设，不知道怎么缝的去类脑找，不行去答疑区问。</div>
@@ -95,7 +95,7 @@
 
         
         <div>
-          <div class="font-semibold text-white">Q: 为更新后需要重开吗？</div>
+          <div class="font-semibold text-white">Q: 更新后需要重开吗？</div>
           <div>A: 不需要，只需要重新读取一遍初始变量即可。</div>
         </div>
 
