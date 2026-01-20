@@ -868,27 +868,80 @@ async function loadFromMvu() {
             ? rawRarity
             : (skillData.rarity || 'C');
           const mergedLevel = mvuBasicInfo?.技能等级 || skillData.level || 1;
-          const inferredDamageSource = skillData.damageSource || (skillData.damageFormula?.[0]?.source as any) || 'sex_power';
-          const inferredPowerCoeff = (skillData.powerCoeff !== undefined)
-            ? skillData.powerCoeff
+          const mvuDamageInfo = mvuSkill?.伤害与效果;
+          let mergedDamageSource: any = skillData.damageSource || (skillData.damageFormula?.[0]?.source as any) || 'sex_power';
+          let mergedPowerCoeff: number = (skillData.powerCoeff !== undefined)
+            ? (skillData.powerCoeff as number)
             : (skillData.damageFormula?.length === 1
               ? Math.round((skillData.damageFormula[0].coefficient || 1) * 100)
               : 100);
+          let mergedDamageFormula = skillData.damageFormula;
+          let mergedAccuracy = skillData.accuracy;
+          let mergedCritModifier = skillData.critModifier;
+          let mergedHitCount = skillData.hitCount;
+          let mergedAccuracyModifier = skillData.accuracyModifier;
+          let mergedEffectDescription = skillData.effectDescription;
+
+          if (mvuDamageInfo) {
+            const damageSourceName = mvuDamageInfo.伤害来源 || '性斗力';
+            const coefficient = (mvuDamageInfo.系数 || 100) / 100;
+            let source: any;
+            switch (damageSourceName) {
+              case '性斗力':
+                source = 'sex_power';
+                break;
+              case '魅力':
+                source = 'charm';
+                break;
+              case '幸运':
+                source = 'luck';
+                break;
+              case '固定值':
+                source = 'fixed';
+                break;
+              default:
+                source = 'sex_power';
+            }
+            mergedDamageSource = source;
+            mergedPowerCoeff = mvuDamageInfo.系数 || 100;
+            mergedDamageFormula = [
+              {
+                source,
+                coefficient,
+                baseValue: 0,
+              },
+            ];
+            mergedAccuracy = mvuDamageInfo.基础命中率 || mergedAccuracy;
+            mergedCritModifier = mvuDamageInfo.暴击修正 || mergedCritModifier;
+            mergedHitCount = mvuDamageInfo.连击数 || mergedHitCount;
+            mergedAccuracyModifier = mvuDamageInfo.准确率 || mergedAccuracyModifier;
+          }
+
+          if (mvuBasicInfo?.技能描述) {
+            mergedEffectDescription = mvuBasicInfo.技能描述;
+          }
+
           const mergedSkillData = {
             ...skillData,
             rarity: mergedRarity,
             level: mergedLevel,
-            damageSource: inferredDamageSource,
-            powerCoeff: inferredPowerCoeff,
+            damageSource: mergedDamageSource,
+            powerCoeff: mergedPowerCoeff,
+            damageFormula: mergedDamageFormula,
+            accuracy: mergedAccuracy,
+            critModifier: mergedCritModifier,
+            hitCount: mergedHitCount,
+            accuracyModifier: mergedAccuracyModifier,
+            effectDescription: mergedEffectDescription,
           };
 
           return {
             id: skillData.id,
             name: skillData.name,
-            description: skillData.description,
-            cost: skillData.staminaCost,
+            description: mvuBasicInfo?.技能描述 || skillData.description,
+            cost: mvuSkill?.冷却与消耗?.耐力消耗 || skillData.staminaCost,
             type: skillData.type,
-            cooldown: skillData.cooldown,
+            cooldown: mvuSkill?.冷却与消耗?.冷却回合数 ?? skillData.cooldown,
             currentCooldown,
             data: mergedSkillData,
           };
