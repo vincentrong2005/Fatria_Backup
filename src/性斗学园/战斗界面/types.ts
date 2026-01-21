@@ -169,13 +169,13 @@ export interface CombatLogEntry {
   turn: number;
   message: string;
   source: string;
-  type: 'damage' | 'heal' | 'info' | 'critical' | 'buff';
+  type: 'damage' | 'heal' | 'info' | 'critical' | 'buff' | 'debuff' | 'danger' | 'climax' | 'victory';
 }
 
 /** 回合状态 */
 export interface TurnState {
   currentTurn: number;
-  phase: 'playerInput' | 'processing' | 'enemyAction' | 'victory' | 'defeat' | 'climaxResolution';
+  phase: 'playerInput' | 'processing' | 'enemyAction' | 'victory' | 'defeat' | 'climaxResolution' | 'gameOver';
   enemyIntention: Skill | null;
   climaxTarget: 'player' | 'enemy' | null;
 }

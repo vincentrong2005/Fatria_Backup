@@ -453,7 +453,7 @@ const sealCanvas = ref<HTMLCanvasElement | null>(null);
 
 // BOSS阶段转换状态
 const isPhaseTransitioning = ref<boolean>(false);
-const phaseTransitionEffect = ref<'phase1to2' | 'phase2to3' | null>(null);
+const phaseTransitionEffect = ref<'phase1to2' | 'phase2to3' | 'eden-game-over' | '' | null>(null);
 
 // 特效状态
 const effectType = ref<'critical' | 'dodge' | 'climax' | 'victory' | 'defeat' | null>(null);
@@ -2657,6 +2657,7 @@ function getPhaseText(phase: TurnState['phase']): string {
     victory: '胜利',
     defeat: '败北',
     climaxResolution: '高潮处理',
+    gameOver: '游戏结束',
   };
   return texts[phase];
 }
