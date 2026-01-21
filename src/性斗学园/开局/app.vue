@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="relative flex w-full items-center justify-center p-4 py-8 font-sans text-gray-100 md:py-12">
     <FloatingShapes />
 
@@ -1664,7 +1664,7 @@ const sendCharacterDataToTavern = async () => {
           if (typeof updateWorldbookWith === 'function') {
             // @ts-ignore
             await updateWorldbookWith(
-              '性斗学园 V2.2',
+              '性斗学园',
               (worldbook: any[]) => {
                 const uidStr = '0';
                 let entry = worldbook.find((e: any) => String(e.uid) === uidStr);
@@ -1684,14 +1684,14 @@ const sendCharacterDataToTavern = async () => {
           // @ts-ignore - getWorldbook 为全局注入
           if (typeof getWorldbook === 'function') {
             // @ts-ignore
-            const worldbook = await getWorldbook('性斗学园 V2.2');
+            const worldbook = await getWorldbook('性斗学园');
             const entry = worldbook.find((e: any) => String(e.uid) === '0' || e.uid === 0);
             if (entry) {
               entry.content = characterDescription;
               // @ts-ignore - replaceWorldbook 为全局注入
               if (typeof replaceWorldbook === 'function') {
                 // @ts-ignore
-                await replaceWorldbook('性斗学园 V2.2', worldbook);
+                await replaceWorldbook('性斗学园', worldbook);
                 worldbookUpdated = true;
                 console.info('[开局] 世界书 uid=0 已直接更新');
               }
@@ -1703,7 +1703,7 @@ const sendCharacterDataToTavern = async () => {
 
         // 方法2: 如果无法直接访问，尝试通过slash命令执行器（与 uid=1 写入方式一致）
         if (!worldbookUpdated) {
-          const command = `/setentryfield file=性斗学园 V2.2 uid=0 field=content ${characterDescription}`;
+          const command = `/setentryfield file=性斗学园 uid=0 field=content ${characterDescription}`;
 
           // 尝试通过triggerSlash执行命令（如果可用）
           try {
@@ -1761,7 +1761,7 @@ const sendCharacterDataToTavern = async () => {
 
         if (!worldbookUpdated) {
           console.warn('[开局] 无法自动更新世界书，请手动执行以下命令:');
-          console.warn(`/setentryfield file=性斗学园 V2.2 uid=0 field=content ${characterDescription}`);
+          console.warn(`/setentryfield file=性斗学园 uid=0 field=content ${characterDescription}`);
         }
       } catch (worldbookError) {
         console.warn('[开局] 更新世界书失败:', worldbookError);
@@ -1806,7 +1806,7 @@ const clearMasochistTraitFromWorldbook = async () => {
       if (typeof updateWorldbookWith === 'function') {
         // @ts-ignore
         await updateWorldbookWith(
-          '性斗学园 V2.2',
+          '性斗学园',
           (worldbook: any[]) => {
             const uidStr = '1';
             let entry = worldbook.find((e: any) => String(e.uid) === uidStr);
@@ -1831,7 +1831,7 @@ const clearMasochistTraitFromWorldbook = async () => {
       // @ts-ignore - getWorldbook 为全局注入
       if (typeof getWorldbook === 'function') {
         // @ts-ignore
-        const worldbook = await getWorldbook('性斗学园 V2.2');
+        const worldbook = await getWorldbook('性斗学园');
         const entry = worldbook.find((e: any) => e.uid === '1' || e.uid === 1);
         if (entry) {
           if (entry.content && entry.content.includes('<trait_败北宿命>')) {
@@ -1840,7 +1840,7 @@ const clearMasochistTraitFromWorldbook = async () => {
           // @ts-ignore - replaceWorldbook 为全局注入
           if (typeof replaceWorldbook === 'function') {
             // @ts-ignore
-            await replaceWorldbook('性斗学园 V2.2', worldbook);
+            await replaceWorldbook('性斗学园', worldbook);
             worldbookUpdated = true;
             console.info('[开局] 抖M特性已从世界书清空');
           }
@@ -1855,7 +1855,7 @@ const clearMasochistTraitFromWorldbook = async () => {
       // 清空条目内容
       const finalContent = '';
 
-      const command = `/setentryfield file=性斗学园 V2.2 uid=1 field=content ${finalContent}`;
+      const command = `/setentryfield file=性斗学园 uid=1 field=content ${finalContent}`;
 
       // 尝试通过triggerSlash执行命令（如果可用）
       try {
@@ -1914,7 +1914,7 @@ const clearMasochistTraitFromWorldbook = async () => {
 
     if (!worldbookUpdated) {
       console.warn('[开局] 无法自动清空抖M特性，请手动执行以下命令:');
-      console.warn(`/setentryfield file=性斗学园 V2.2 uid=1 field=content `);
+      console.warn(`/setentryfield file=性斗学园 uid=1 field=content `);
     }
   } catch (error) {
     console.warn('[开局] 清空抖M特性失败:', error);
@@ -1940,7 +1940,7 @@ NPC都是完美体现数值的“性爱超人”，一定要让<user>体会到�
       if (typeof updateWorldbookWith === 'function') {
         // @ts-ignore
         await updateWorldbookWith(
-          '性斗学园 V2.2',
+          '性斗学园',
           (worldbook: any[]) => {
             const uidStr = '1';
             let entry = worldbook.find((e: any) => String(e.uid) === uidStr);
@@ -1963,14 +1963,14 @@ NPC都是完美体现数值的“性爱超人”，一定要让<user>体会到�
       // @ts-ignore - getWorldbook 为全局注入
       if (typeof getWorldbook === 'function') {
         // @ts-ignore
-        const worldbook = await getWorldbook('性斗学园 V2.2');
+        const worldbook = await getWorldbook('性斗学园');
         const entry = worldbook.find((e: any) => e.uid === '1' || e.uid === 1);
         if (entry) {
           entry.content = traitContent;
           // @ts-ignore - replaceWorldbook 为全局注入
           if (typeof replaceWorldbook === 'function') {
             // @ts-ignore
-            await replaceWorldbook('性斗学园 V2.2', worldbook);
+            await replaceWorldbook('性斗学园', worldbook);
             worldbookUpdated = true;
             console.info('[开局] 抖M特性已直接写入世界书');
           }
@@ -1984,7 +1984,7 @@ NPC都是完美体现数值的“性爱超人”，一定要让<user>体会到�
     if (!worldbookUpdated) {
       const finalContent = traitContent;
 
-      const command = `/setentryfield file=性斗学园 V2.2 uid=1 field=content ${finalContent}`;
+      const command = `/setentryfield file=性斗学园 uid=1 field=content ${finalContent}`;
 
       // 尝试通过triggerSlash执行命令（如果可用）
       try {
@@ -2043,7 +2043,7 @@ NPC都是完美体现数值的“性爱超人”，一定要让<user>体会到�
 
     if (!worldbookUpdated) {
       console.warn('[开局] 无法自动写入抖M特性到世界书，请手动执行以下命令:');
-      console.warn(`/setentryfield file=性斗学园 V2.2 uid=1 field=content ${traitContent}`);
+      console.warn(`/setentryfield file=性斗学园 uid=1 field=content ${traitContent}`);
     }
   } catch (error) {
     console.warn('[开局] 写入抖M特性失败:', error);
