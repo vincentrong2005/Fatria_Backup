@@ -1,10 +1,10 @@
 <template>
   <div class="parallel-events-beautifier" :style="containerStyle">
-    <div v-if="events.length > 0" class="beautified-events-wrapper" :class="{ 'collapsed': isCollapsed }">
+    <div v-if="events.length > 0" class="beautified-events-wrapper" :class="{ collapsed: isCollapsed }">
       <!-- 装饰性渐变背景 -->
       <div class="gradient-overlay"></div>
       <div class="shimmer-effect"></div>
-      
+
       <!-- 标题（可点击折叠） -->
       <div class="events-header" @click="toggleCollapse">
         <i class="fas fa-stream"></i>
@@ -12,15 +12,10 @@
         <i class="fas collapse-icon" :class="isCollapsed ? 'fa-chevron-down' : 'fa-chevron-up'"></i>
         <span class="event-count">({{ events.length }})</span>
       </div>
-      
+
       <!-- 事件列表（可折叠） -->
       <div class="events-list" v-show="!isCollapsed">
-        <div 
-          v-for="(event, index) in events" 
-          :key="index"
-          class="event-item"
-          :style="eventItemStyle"
-        >
+        <div v-for="(event, index) in events" :key="index" class="event-item" :style="eventItemStyle">
           <div class="event-character">
             <i class="fas fa-user-circle"></i>
             <span class="character-name">{{ event.character }}</span>
@@ -108,14 +103,14 @@ const loadCollapseState = () => {
     const variables = getAllVariables();
     const parallelEventsConfig = variables['并行事件UI配置'] || {};
     const savedState = parallelEventsConfig['折叠状态'];
-    
+
     // 如果用户之前设置过，使用保存的状态；否则默认折叠
     if (savedState !== undefined) {
       isCollapsed.value = savedState === true;
     } else {
       isCollapsed.value = true; // 默认折叠
     }
-    
+
     console.info('[并行事件UI] 折叠状态已加载:', isCollapsed.value);
   } catch (error) {
     console.warn('[并行事件UI] 加载折叠状态失败，使用默认值:', error);
@@ -129,9 +124,9 @@ const saveCollapseState = () => {
     const variables = getAllVariables();
     const parallelEventsConfig = variables['并行事件UI配置'] || {};
     parallelEventsConfig['折叠状态'] = isCollapsed.value;
-    
-    insertOrAssignVariables({ '并行事件UI配置': parallelEventsConfig }, { type: 'chat' });
-    
+
+    insertOrAssignVariables({ 并行事件UI配置: parallelEventsConfig }, { type: 'chat' });
+
     console.info('[并行事件UI] 折叠状态已保存:', isCollapsed.value);
   } catch (error) {
     console.error('[并行事件UI] 保存折叠状态失败:', error);
@@ -181,10 +176,13 @@ const getChatMessages = (messageId: string | null): any[] => {
 // 解析并行事件内容
 const parseParallelEvents = (content: string): ParallelEvent[] => {
   const parsedEvents: ParallelEvent[] = [];
-  
+
   // 按行分割
-  const lines = content.split('\n').map(line => line.trim()).filter(line => line.length > 0);
-  
+  const lines = content
+    .split('\n')
+    .map(line => line.trim())
+    .filter(line => line.length > 0);
+
   for (const line of lines) {
     // 只匹配标准格式：[角色名 | 描述内容]
     // 使用严格的正则表达式，确保格式正确
@@ -192,7 +190,7 @@ const parseParallelEvents = (content: string): ParallelEvent[] => {
     if (match) {
       const character = match[1].trim();
       const description = match[2].trim();
-      
+
       // 确保角色名和描述都不为空
       if (character && description) {
         parsedEvents.push({
@@ -203,7 +201,7 @@ const parseParallelEvents = (content: string): ParallelEvent[] => {
     }
     // 不再处理其他格式，只接受标准格式 [名字 | 描述]
   }
-  
+
   return parsedEvents;
 };
 
@@ -212,7 +210,7 @@ const extractParallelEvents = () => {
   try {
     // 获取当前消息ID
     const messageId = getCurrentMessageId();
-    
+
     // 获取当前消息内容
     const messages = getChatMessages(messageId);
     if (messages.length === 0) {
@@ -221,22 +219,22 @@ const extractParallelEvents = () => {
     }
 
     const message = messages[0];
-    
+
     // 获取消息内容
     const messageText = message.message || '';
 
     // 使用正则表达式提取所有 <parallel> 标签中的内容
     const matches = Array.from(messageText.matchAll(PARALLEL_REGEX));
-    
+
     if (matches.length > 0) {
       // 取最后一个匹配（最新的并行事件）
       const lastMatch = matches[matches.length - 1];
       const parallelContent = lastMatch[1].trim();
-      
+
       // 解析事件
       const parsedEvents = parseParallelEvents(parallelContent);
       events.value = parsedEvents;
-      
+
       console.info('[并行事件UI] 已提取并行事件，数量:', parsedEvents.length);
     } else {
       events.value = [];
@@ -264,22 +262,22 @@ const waitForGlobalFunctions = async (maxRetries = 30, interval = 200): Promise<
 
 onMounted(async () => {
   console.info('[并行事件UI] 组件已加载');
-  
+
   // 等待全局函数初始化
   const functionsReady = await waitForGlobalFunctions();
   if (!functionsReady) {
     console.error('[并行事件UI] 全局函数未就绪，无法提取事件');
     return;
   }
-  
+
   // 加载折叠状态
   loadCollapseState();
-  
+
   // 延迟提取，确保消息已加载
   setTimeout(() => {
     extractParallelEvents();
   }, 100);
-  
+
   // 监听消息更新（如果支持）
   const globalAny = window as any;
   if (globalAny.eventOn) {
@@ -309,24 +307,24 @@ onMounted(async () => {
   background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(236, 72, 153, 0.1) 100%);
   border: 1px solid rgba(255, 255, 255, 0.15);
   backdrop-filter: blur(20px) saturate(180%);
-  box-shadow: 
+  box-shadow:
     0 8px 32px rgba(0, 0, 0, 0.3),
     0 2px 8px rgba(99, 102, 241, 0.2),
     inset 0 1px 0 rgba(255, 255, 255, 0.1);
   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   width: 100%;
-  
+
   // 折叠状态：最小化高度
   &.collapsed {
     padding: 0.75rem 1.5rem;
-    
+
     .events-header {
       margin-bottom: 0;
       padding-bottom: 0;
       border-bottom: none;
     }
   }
-  
+
   &::before {
     content: '';
     position: absolute;
@@ -334,7 +332,8 @@ onMounted(async () => {
     left: 0;
     right: 0;
     height: 2px;
-    background: linear-gradient(90deg, 
+    background: linear-gradient(
+      90deg,
       transparent 0%,
       rgba(99, 102, 241, 0.5) 25%,
       rgba(236, 72, 153, 0.5) 75%,
@@ -343,24 +342,24 @@ onMounted(async () => {
     opacity: 0;
     transition: opacity 0.4s ease;
   }
-  
+
   &:hover {
     background: linear-gradient(135deg, rgba(99, 102, 241, 0.15) 0%, rgba(236, 72, 153, 0.15) 100%);
     border-color: rgba(236, 72, 153, 0.4);
-    box-shadow: 
+    box-shadow:
       0 12px 48px rgba(0, 0, 0, 0.4),
       0 4px 16px rgba(99, 102, 241, 0.3),
       inset 0 1px 0 rgba(255, 255, 255, 0.15);
     transform: translateY(-2px);
-    
+
     &::before {
       opacity: 1;
     }
-    
+
     .gradient-overlay {
       opacity: 0.3;
     }
-    
+
     .shimmer-effect {
       animation: shimmer 3s infinite;
     }
@@ -373,16 +372,9 @@ onMounted(async () => {
   left: 0;
   right: 0;
   bottom: 0;
-  background: radial-gradient(
-    circle at 30% 20%,
-    rgba(99, 102, 241, 0.2) 0%,
-    transparent 50%
-  ),
-  radial-gradient(
-    circle at 70% 80%,
-    rgba(236, 72, 153, 0.2) 0%,
-    transparent 50%
-  );
+  background:
+    radial-gradient(circle at 30% 20%, rgba(99, 102, 241, 0.2) 0%, transparent 50%),
+    radial-gradient(circle at 70% 80%, rgba(236, 72, 153, 0.2) 0%, transparent 50%);
   opacity: 0.2;
   transition: opacity 0.4s ease;
   pointer-events: none;
@@ -395,12 +387,7 @@ onMounted(async () => {
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(
-    90deg,
-    transparent 0%,
-    rgba(255, 255, 255, 0.1) 50%,
-    transparent 100%
-  );
+  background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.1) 50%, transparent 100%);
   pointer-events: none;
   z-index: 1;
 }
@@ -426,21 +413,21 @@ onMounted(async () => {
   cursor: pointer;
   user-select: none;
   transition: all 0.3s ease;
-  
+
   &:hover {
     opacity: 0.9;
-    
+
     .collapse-icon {
       transform: scale(1.1);
     }
   }
-  
+
   i:not(.collapse-icon) {
     color: #6366f1;
     font-size: 1.25rem;
     flex-shrink: 0;
   }
-  
+
   span:not(.event-count) {
     color: #ffffff;
     font-size: 1.1rem;
@@ -452,7 +439,7 @@ onMounted(async () => {
     text-shadow: 0 2px 4px rgba(99, 102, 241, 0.3);
     flex: 1;
   }
-  
+
   .collapse-icon {
     color: #6366f1;
     font-size: 0.9rem;
@@ -460,7 +447,7 @@ onMounted(async () => {
     transition: transform 0.3s ease;
     flex-shrink: 0;
   }
-  
+
   .event-count {
     color: #9ca3af;
     font-size: 0.85rem;
@@ -484,16 +471,16 @@ onMounted(async () => {
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 0.75rem;
   transition: all 0.3s ease;
-  
+
   &:last-child {
     margin-bottom: 0;
   }
-  
+
   &:hover {
     background: linear-gradient(135deg, rgba(99, 102, 241, 0.15) 0%, rgba(236, 72, 153, 0.15) 100%);
     border-color: rgba(236, 72, 153, 0.3);
     transform: translateX(4px);
-    box-shadow: 
+    box-shadow:
       0 4px 12px rgba(0, 0, 0, 0.2),
       0 2px 4px rgba(99, 102, 241, 0.2);
   }
@@ -503,13 +490,13 @@ onMounted(async () => {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  
+
   i {
     color: #6366f1;
     font-size: 1rem;
     flex-shrink: 0;
   }
-  
+
   .character-name {
     color: #ec4899;
     font-weight: 600;
@@ -539,32 +526,32 @@ onMounted(async () => {
   .beautified-events-wrapper {
     padding: 1rem;
     border-radius: 0.75rem;
-    
+
     &.collapsed {
       padding: 0.5rem 1rem;
     }
   }
-  
+
   .events-header {
     font-size: 1rem;
     margin-bottom: 1rem;
     padding-bottom: 0.75rem;
     gap: 0.5rem;
-    
+
     span:not(.event-count) {
       font-size: 1rem;
     }
-    
+
     .event-count {
       font-size: 0.8rem;
     }
   }
-  
+
   .event-item {
     padding: 0.75rem;
     margin-bottom: 0.75rem;
   }
-  
+
   .event-description {
     padding-left: 1.25rem;
     font-size: 0.9rem;
