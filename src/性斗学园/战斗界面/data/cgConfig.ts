@@ -127,6 +127,651 @@ const xingYeGuangConfig: CharacterCGConfig = {
   },
 };
 
+// 莎拉斯通的CG配置
+const shaLaSiTongConfig: CharacterCGConfig = {
+  characterName: '莎拉斯通',
+  male: {
+    defeat: [
+      {
+        id: 'sarah_chair_handjob',
+        name: '莎拉斯通-座椅手交事件',
+        description: '你被莎拉斯通击败，作为惩罚她会把仰面朝天的你当成座椅，然后用手优雅而无情地玩弄饱受屈辱的你的性器。',
+        images: ['莎拉斯通-座椅手交事件-1.png', '莎拉斯通-座椅手交事件-2.png', '莎拉斯通-座椅手交事件-3.png'],
+      },
+      {
+        id: 'sarah_handjob_torture',
+        name: '莎拉斯通-手交折磨事件',
+        description: '你被莎拉斯通击败，作为惩罚她会将特制的细棍插入你的龟头，再用手交令你受到极致的痛苦与快感。',
+        images: ['莎拉斯通-手交折磨事件-1.png', '莎拉斯通-手交折磨事件-2.png'],
+      },
+      {
+        id: 'sarah_footjob_brainwash',
+        name: '莎拉斯通-足交洗脑事件',
+        description: '你被莎拉斯通击败，作为惩罚她会一边在你耳边不断用言语羞辱一边用灵活的黑丝小脚从身后对你进行足交榨取，还会强迫你嗅闻她高跟鞋的味道，让你的反抗意志在三重的刺激中被剥夺。',
+        images: ['莎拉斯通-足交洗脑事件-1.png', '莎拉斯通-足交洗脑事件-2.png', '莎拉斯通-足交洗脑事件-3.png', '莎拉斯通-足交洗脑事件-4.png'],
+      },
+      {
+        id: 'sarah_foot_conquest',
+        name: '莎拉斯通-足下征服事件',
+        description: '你被莎拉斯通击败，作为惩罚她会将穿着高跟鞋的脚掌踩在你的脸上，令你在气味与疼痛中体验到属于M奴的专属快感。',
+        images: ['莎拉斯通-足下征服事件.png'],
+      },
+      {
+        id: 'sarah_legjob_training',
+        name: '莎拉斯通-腿夹调教事件',
+        description: '你被莎拉斯通击败，作为惩罚她会用黑丝包裹的修长美腿夹紧你的肉棒，施加被支配的强烈快感。',
+        images: ['莎拉斯通-腿夹调教事件-1.png', '莎拉斯通-腿夹调教事件-2.png', '莎拉斯通-腿夹调教事件-3.png'],
+      },
+      {
+        id: 'sarah_puppy_training',
+        name: '莎拉斯通-犬化调教事件',
+        description: '你被莎拉斯通击败，作为惩罚她会将全裸的你的脸夹在释放诱惑气味的大腿之间，而你只能像小狗一般舔舐她的小穴一边接受主人黑丝小脚的榨取奖励。',
+        images: ['莎拉斯通-犬化调教事件-1.png', '莎拉斯通-犬化调教事件-2.png', '莎拉斯通-犬化调教事件-3.png'],
+      },
+      {
+        id: 'sarah_smell_test',
+        name: '莎拉斯通-气味考验事件',
+        description: '你被莎拉斯通击败，作为惩罚她会将你带到女权协会总部，你会被蒙上眼睛被迫跪在一排鞋袜前，通过嗅闻气味来分辨主人，每猜错一次你都会受到严厉的惩罚与羞辱。',
+        images: ['莎拉斯通-气味考验事件-1.png', '莎拉斯通-气味考验事件-2.png'],
+      },
+      {
+        id: 'sarah_yuri_ntr',
+        name: '莎拉斯通-百合NTR事件',
+        description: '你被莎拉斯通击败，作为惩罚她会戴上假阳具在你面前调教你的女伴，而你只能在眼睁睁看着的同时接受莎拉斯通的羞辱。',
+        images: ['莎拉斯通-百合NTR事件-1.png', '莎拉斯通-百合NTR事件-2.png'],
+      },
+    ],
+    victory: [
+      {
+        id: 'sarah_legjob_victory',
+        name: '莎拉斯通-腿夹战胜事件',
+        description: '你战胜了莎拉斯通，作为奖励她会用黑丝包裹的修长美腿夹紧你的肉棒，为你进行服务。',
+        images: ['莎拉斯通-腿夹战胜事件-1.png', '莎拉斯通-腿夹战胜事件-2.png', '莎拉斯通-腿夹战胜事件-3.png'],
+      },
+      {
+        id: 'sarah_thighjob_victory',
+        name: '莎拉斯通-素股战胜事件',
+        description: '你战胜了莎拉斯通，作为奖励你可以从身后将肉棒夹在她被丝袜包裹的大腿之间，一边揉捏她柔软的乳房一边进行素股性交。',
+        images: ['莎拉斯通-素股战胜事件-1.png', '莎拉斯通-素股战胜事件-2.png'],
+      },
+      {
+        id: 'sarah_breeding_victory',
+        name: '莎拉斯通-播种调教事件',
+        description: '你战胜了莎拉斯通，你可以将她压在身下进行激烈的播种性交，而她会用修长的黑丝美腿夹紧你抽送中的腰部。',
+        images: ['莎拉斯通-播种调教事件-1.png', '莎拉斯通-播种调教事件-2.png'],
+      },
+    ],
+  },
+  female: {
+    defeat: [
+      {
+        id: 'sarah_toy_training_female',
+        name: '莎拉斯通-玩具调教事件',
+        description: '你被莎拉斯通击败，作为惩罚她会将粗壮的假肉棒与肛珠插入你的两穴，让你在调教中屈服于激烈的快感。',
+        images: ['莎拉斯通-玩具调教事件-1.png', '莎拉斯通-玩具调教事件-2.png', '莎拉斯通-玩具调教事件-3.png'],
+      },
+      {
+        id: 'sarah_dildo_training_female',
+        name: '莎拉斯通-假阳具调教事件',
+        description: '你被莎拉斯通击败，作为惩罚她会亲自戴上粗壮的假阳具，抽插你的小穴进行调教。',
+        images: ['莎拉斯通-假阳具调教事件-1.png', '莎拉斯通-假阳具调教事件-2.png'],
+      },
+      {
+        id: 'sarah_puppy_training_female',
+        name: '莎拉斯通-犬化调教事件',
+        description: '你被莎拉斯通击败，作为惩罚她会给你戴上特制项圈，令你舔舐她散发体香的足底，直至打心底认为自己一条只配服从命令的母狗。',
+        images: ['莎拉斯通-犬化调教事件.png'],
+      },
+      {
+        id: 'sarah_restraint_brainwash_female',
+        name: '莎拉斯通-束缚洗脑事件',
+        description: '你被莎拉斯通击败，作为惩罚她会让你穿上束缚衣并戴上口球，并在你的耳边不断用言语羞辱来剥夺你反抗的意志。',
+        images: ['莎拉斯通-束缚洗脑事件-1.png', '莎拉斯通-束缚洗脑事件-2.png'],
+      },
+      {
+        id: 'sarah_smell_test_female',
+        name: '莎拉斯通-气味考验事件',
+        description: '你被莎拉斯通击败，作为惩罚她会将你带到女权协会总部，你会被蒙上眼睛被迫跪在一排鞋袜前，通过嗅闻气味来分辨主人，每猜错一次你都会受到严厉的惩罚与羞辱。',
+        images: ['莎拉斯通-气味考验事件-1.png', '莎拉斯通-气味考验事件-2.png'],
+      },
+      {
+        id: 'sarah_feminism_association_female',
+        name: '莎拉斯通-女权协会事件',
+        description: '你被莎拉斯通击败，千夏会加入女权协会，并且邀请你一同成为女权协会的成员。',
+        images: ['莎拉斯通-女权协会事件-1.png', '莎拉斯通-女权协会事件-2.png'],
+      },
+    ],
+    victory: [
+      {
+        id: 'sarah_sex_victory_female',
+        name: '莎拉斯通-性交战胜事件',
+        description: '你战胜了莎拉斯通，作为奖励你可以命令她戴上假阳具与你进行甜蜜的性交。',
+        images: ['莎拉斯通-性交战胜事件.png'],
+      },
+      {
+        id: 'sarah_toy_service_victory_female',
+        name: '莎拉斯通-玩具服务事件',
+        description: '你战胜了莎拉斯通，作为奖励你可以命令她用各种玩具为你进行甜蜜的服务。',
+        images: ['莎拉斯通-玩具服务事件-1.png', '莎拉斯通-玩具服务事件-2.png'],
+      },
+      {
+        id: 'sarah_foot_lick_humiliation_victory_female',
+        name: '莎拉斯通-舔足羞辱事件',
+        description: '你战胜了莎拉斯通，你可以让她扮演小猫跪在地上，命令心高气傲的她舔干净你伸出的脚。',
+        images: ['莎拉斯通-舔足羞辱事件.png'],
+      },
+    ],
+  },
+};
+
+// 上杉亚衣的CG配置
+const shangShanYaYiConfig: CharacterCGConfig = {
+  characterName: '上杉亚衣',
+  male: {
+    defeat: [
+      {
+        id: 'aii_relationship_compare_male',
+        name: '上杉亚衣-关系对比事件',
+        description: '你被上杉亚衣击败，她把你铐在床上，用温柔的语气贬低你不如女性并榨精',
+        images: ['上杉亚衣-关系对比嘲讽事件-1.png', '上杉亚衣-关系对比嘲讽事件-2.png'],
+      },
+      {
+        id: 'aii_kiss_middlefinger_double_footjob_male',
+        name: '上杉亚衣-接吻中指羞辱双重足交事件',
+        description: '你被上杉亚衣击败，她和女伴在你面前舌吻，对你使用足交',
+        images: [
+          '上杉亚衣-接吻中指羞辱双重足交事件-1.png',
+          '上杉亚衣-接吻中指羞辱双重足交事件-2.png',
+          '上杉亚衣-接吻中指羞辱双重足交事件-3.png',
+          '上杉亚衣-接吻中指羞辱双重足交事件-4.png',
+        ],
+      },
+      {
+        id: 'aii_mock_scenario_male',
+        name: '上杉亚衣-模拟情景羞辱事件',
+        description: '你被上杉亚衣击败，她给你带上耳机，让你幻想她与其她女孩子的甜蜜时刻',
+        images: ['上杉亚衣-模拟情景羞辱事件-1.png', '上杉亚衣-模拟情景羞辱事件-2.png', '上杉亚衣-模拟情景羞辱事件-3.png'],
+      },
+      {
+        id: 'aii_forced_milking_male',
+        name: '上杉亚衣-强制榨精事件',
+        description: '你被上杉亚衣击败，她给你双手绑起来开始榨精',
+        images: ['上杉亚衣-强制榨精事件-1.png', '上杉亚衣-强制榨精事件-2.png', '上杉亚衣-强制榨精事件-3.png'],
+      },
+      {
+        id: 'aii_forced_chastity_male',
+        name: '上杉亚衣-强制贞操锁事件',
+        description: '你被上杉亚衣击败，她给你带上无法取下的贞操锁并羞辱你的尊严',
+        images: ['上杉亚衣-强制贞操锁事件-1.png', '上杉亚衣-强制贞操锁事件-2.png', '上杉亚衣-强制贞操锁事件-3.png'],
+      },
+      {
+        id: 'aii_bondage_training_male',
+        name: '上杉亚衣-束缚调教事件',
+        description: '你被上杉亚衣击败，她把你束缚起来调教',
+        images: ['上杉亚衣-束缚调教事件-1.png', '上杉亚衣-束缚调教事件-2.png'],
+      },
+      {
+        id: 'aii_intimate_clothes_handjob_male',
+        name: '上杉亚衣-私密衣物手交事件',
+        description: '你被上杉亚衣击败，她用自己的私密衣物给你手交',
+        images: ['上杉亚衣-私密衣物手交事件-1.png', '上杉亚衣-私密衣物手交事件-2.png'],
+      },
+      {
+        id: 'aii_brainwash_training_male',
+        name: '上杉亚衣-洗脑调教事件',
+        description: '你被上杉亚衣击败，她给你带上洗脑耳机，束缚你为你足交',
+        images: ['上杉亚衣-洗脑调教事件-1.png', '上杉亚衣-洗脑调教事件-2.png', '上杉亚衣-洗脑调教事件-3.png', '上杉亚衣-洗脑调教事件-4.png'],
+      },
+      {
+        id: 'aii_puppy_training_male',
+        name: '上杉亚衣-训狗调教事件',
+        description: '你被上杉亚衣击败，她让你像狗一样跪下来并让你闻她私处给你足交',
+        images: ['上杉亚衣-训狗调教事件-1.png', '上杉亚衣-训狗调教事件-2.png', '上杉亚衣-训狗调教事件-3.png', '上杉亚衣-训狗调教事件-4.png'],
+      },
+      {
+        id: 'aii_oral_humiliation_male',
+        name: '上杉亚衣-口交羞辱事件',
+        description: '你被上杉亚衣击败，她带上假阳具让你口交',
+        images: ['上杉亚衣-口交羞辱事件-1.png', '上杉亚衣-口交羞辱事件-2.png'],
+      },
+      {
+        id: 'aii_library_humiliation_male',
+        name: '上杉亚衣-图书馆羞辱事件',
+        description: '你被上杉亚衣击败，她在图书馆用穿鞋子的脚给你足交，并羞辱你',
+        images: ['上杉亚衣-图书馆羞辱事件-1.png'],
+      },
+      {
+        id: 'aii_sarah_ntr_male',
+        name: '上杉亚衣-莎拉斯通ntr事件',
+        description: '你被上杉亚衣击败，她和莎拉斯通在你面前开始做爱，NTR羞辱你（感觉你好可怜）',
+        images: ['上杉亚衣-莎拉斯通ntr事件-1.png', '上杉亚衣-莎拉斯通ntr事件-2.png', '上杉亚衣-莎拉斯通ntr事件-3.png', '上杉亚衣-莎拉斯通ntr事件-4.png'],
+      },
+      {
+        id: 'aii_yuexiaxiang_ntr_male',
+        name: '上杉亚衣-月下香ntr事件',
+        description: '你被上杉亚衣击败，她和月下香在你面前开始做爱，NTR羞辱你（可恶口牙，ntr那种事不要啊）',
+        images: ['上杉亚衣-月下香ntr事件-1.png', '上杉亚衣-月下香ntr事件-2.png', '上杉亚衣-月下香ntr事件-3.png'],
+      },
+    ],
+    victory: [
+      {
+        id: 'aii_victory_male',
+        name: '上杉亚衣-战胜事件',
+        description: '你成功战胜了上杉亚衣，她主动跪坐在你的脸上，为你手交，好感度大幅度提升哦~',
+        images: ['上杉亚衣-战胜事件-1.png', '上杉亚衣-战胜事件-2.png', '上杉亚衣-战胜事件-3.png', '上杉亚衣-战胜事件-4.png'],
+      },
+    ],
+  },
+  female: {
+    defeat: [
+      {
+        id: 'aii_love_rubbing_female',
+        name: '上杉亚衣-爱的贴贴事件',
+        description: '你被上杉亚衣击败，她主动贴合上来跟你磨豆腐，爱的贴贴♡',
+        images: ['上杉亚衣-爱的贴贴事件-1.png', '上杉亚衣-爱的贴贴事件-2.png', '上杉亚衣-爱的贴贴事件-3.png'],
+      },
+      {
+        id: 'aii_obedience_training_female',
+        name: '上杉亚衣-服从性调教事件',
+        description: '你被上杉亚衣击败，脱光衣服插入阳具，跪在她面前臣服于她',
+        images: ['上杉亚衣-服从性调教事件-1.png', '上杉亚衣-服从性调教事件-2.png'],
+      },
+      {
+        id: 'aii_dildo_sex_female',
+        name: '上杉亚衣-假阳具性爱事件',
+        description: '你被上杉亚衣击败，她用双头龙假阳具跟你性爱',
+        images: ['上杉亚衣-假阳具性爱事件-1.png', '上杉亚衣-假阳具性爱事件-2.png', '上杉亚衣-假阳具性爱事件-3.png'],
+      },
+      {
+        id: 'aii_oral_service_female',
+        name: '上杉亚衣-口侍事件',
+        description: '你被上杉亚衣击败，她强制为你口交，你也乐在其中不是吗？',
+        images: ['上杉亚衣-口侍事件-1.png', '上杉亚衣-口侍事件-2.png'],
+      },
+      {
+        id: 'aii_reverse_wedding_female',
+        name: '上杉亚衣-逆转婚礼事件',
+        description: '你被上杉亚衣击败，你被迫变成新娘穿着暴露的衣服与她完成婚礼（这也算纯爱呀）',
+        images: ['上杉亚衣-逆转婚礼事件-1.png', '上杉亚衣-逆转婚礼事件-2.png', '上杉亚衣-逆转婚礼事件-3.png'],
+      },
+      {
+        id: 'aii_handjob_female',
+        name: '上杉亚衣-手交事件',
+        description: '你被上杉亚衣击败，作为惩罚，她开始猛烈的扣你',
+        images: ['上杉亚衣-手交事件-1.png', '上杉亚衣-手交事件-2.png'],
+      },
+      {
+        id: 'aii_bondage_training_female',
+        name: '上杉亚衣-束缚调教事件',
+        description: '你被上杉亚衣击败，她把你束缚起来，在户外调教',
+        images: ['上杉亚衣-束缚调教事件-1.png', '上杉亚衣-束缚调教事件-2.png'],
+      },
+      {
+        id: 'aii_brainwash_female',
+        name: '上杉亚衣-洗脑事件',
+        description: '你被上杉亚衣击败，作为惩罚，她给你带上洗脑耳机，开始洗脑',
+        images: ['上杉亚衣-洗脑事件-1.png'],
+      },
+      {
+        id: 'aii_puppy_training_female',
+        name: '上杉亚衣-训狗调教事件',
+        description: '你被上杉亚衣击败，她给你带上狗狗项圈，让你像狗一样臣服于她',
+        images: ['上杉亚衣-训狗调教事件-1.png', '上杉亚衣-训狗调教事件-2.png'],
+      },
+      {
+        id: 'aii_rain_intimacy_training_female',
+        name: '上杉亚衣-雨间亲密调教事件',
+        description: '你被上杉亚衣击败，她和你在雨间亲密，并顺便像训狗一样调教你',
+        images: ['上杉亚衣-雨间亲密调教事件-1.png', '上杉亚衣-雨间亲密调教事件-2.png', '上杉亚衣-雨间亲密调教事件-3.png', '上杉亚衣-雨间亲密调教事件-4.png'],
+      },
+      {
+        id: 'aii_yuexiaxiang_ntr_female',
+        name: '（稀有事件）上杉亚衣-月下香ntr事件',
+        description: '你被上杉亚衣击败，她和月下香在你面前开始做爱，让你看着却什么也做不了',
+        images: ['上杉亚衣-月下香ntr事件-1.png', '上杉亚衣-月下香ntr事件-2.png', '上杉亚衣-月下香ntr事件-3.png'],
+        probability: 0.03,
+      },
+      {
+        id: 'aii_sarah_ntr_female',
+        name: '（稀有事件）上杉亚衣-莎拉斯通ntr事件',
+        description: '你被上杉亚衣击败，她和莎拉斯通在你面前开始做爱，你却无能为力（好可怜呀）',
+        images: ['上杉亚衣-莎拉斯通ntr事件-1.png', '上杉亚衣-莎拉斯通ntr事件-2.png', '上杉亚衣-莎拉斯通ntr事件-3.png', '上杉亚衣-莎拉斯通ntr事件-4.png'],
+        probability: 0.03,
+      },
+    ],
+    victory: [
+      {
+        id: 'aii_love_rubbing_victory_female',
+        name: '上杉亚衣-爱的贴贴战胜事件',
+        description: '你战胜了上杉亚衣，她主动与你爱的贴贴，好感度大幅度提升（百合是对的）',
+        images: ['上杉亚衣-爱的贴贴战胜事件1.png', '上杉亚衣-爱的贴贴战胜事件2.png', '上杉亚衣-爱的贴贴战胜事件3.png'],
+      },
+      {
+        id: 'aii_dildo_sex_victory_female',
+        name: '上杉亚衣-假阳具性爱战胜事件',
+        description: '你战胜了上杉亚衣，并与她使用双头龙开始性爱',
+        images: ['上杉亚衣-假阳具性爱战胜事件-1.png', '上杉亚衣-假阳具性爱战胜事件-2.png'],
+      },
+      {
+        id: 'aii_oral_service_victory_female',
+        name: '上杉亚衣-口侍战胜事件',
+        description: '你战胜了上杉亚衣，她主动为你口侍或者你主动为她口侍，总之百合是对的，好感度大幅度提升',
+        images: ['上杉亚衣-口侍战胜事件-1.png', '上杉亚衣-口侍战胜事件-2.png'],
+      },
+      {
+        id: 'aii_reverse_wedding_victory_female',
+        name: '上杉亚衣-逆转婚礼战胜事件？',
+        description: '你战胜了上杉亚衣，并与她结婚，不过你变成了新娘，现在你成未婚妻了，总之好感度大幅度提升',
+        images: ['上杉亚衣-逆转婚礼战胜事件？-1.png', '上杉亚衣-逆转婚礼战胜事件？-2.png', '上杉亚衣-逆转婚礼战胜事件？-3.png'],
+      },
+      {
+        id: 'aii_intimacy_event_victory_female',
+        name: '上杉亚衣-亲密无间事件',
+        description: '你战胜了上杉亚衣，好感度大幅度提升，你们变的亲密无间（百合厨的大胜利！）',
+        images: ['上杉亚衣-亲密无间事件.png'],
+      },
+    ],
+  },
+};
+
+// 白川千夏的CG配置
+const baiChuanQianXiaConfig: CharacterCGConfig = {
+  characterName: '白川千夏',
+  male: {
+    defeat: [
+      {
+        id: 'meimei_asmr_brainwash_male',
+        name: '妹妹-asmr洗脑事件',
+        description: '你被妹妹击败，作为惩罚她给你套上耳机，播放特制的色情asmr妹控抖m洗脑录音内容，使你沉浸幻想，露出痴迷的表情。',
+        images: ['妹妹-asmr洗脑事件.png'],
+      },
+      {
+        id: 'meimei_trample_head_male',
+        name: '妹妹-踩头事件',
+        description: '你被妹妹击败，作为惩罚，妹妹用穿过的袜子狠狠地踩在你的脸部摩擦，并掀起裙子让你看而不得。',
+        images: ['妹妹-踩头事件1.png', '妹妹-踩头事件2.png'],
+      },
+      {
+        id: 'meimei_chastity_footjob_male',
+        name: '妹妹-带锁足交事件',
+        description: '你被妹妹击败，作为惩罚，妹妹给你的肉棒套上贞操锁，并用玉足进行摩擦。妹妹扒开自己的嫩穴给你看，但你却因为枷锁而迟迟无法射精。',
+        images: ['妹妹-带锁足交事件1.png', '妹妹-带锁足交事件2.png', '妹妹-带锁足交事件3.png', '妹妹-带锁足交事件4.png'],
+      },
+      {
+        id: 'meimei_bondage_face_massage_male',
+        name: '妹妹-捆绑面部按摩事件',
+        description: '你被妹妹击败，作为惩罚，妹妹把你完全捆了起来，随后用翘立的肉臀坐在你的脸上前后移动，你只能感受到鼻腔中充满了妹妹的气味。',
+        images: ['妹妹-捆绑面部按摩事件1.png', '妹妹-捆绑面部按摩事件2.png', '妹妹-捆绑面部按摩事件3.png'],
+      },
+      {
+        id: 'meimei_bondage_cowgirl_male',
+        name: '妹妹-捆绑女上位事件',
+        description: '你被妹妹击败，作为惩罚，妹妹把你完全捆了起来，随后坐在你的腿上并把肉棒放进小穴肉棒，开始强制榨精',
+        images: ['妹妹-捆绑女上位事件1.png', '妹妹-捆绑女上位事件2.png'],
+      },
+      {
+        id: 'meimei_meatus_tease_male',
+        name: '妹妹-马眼扣弄调教事件',
+        description: '你被妹妹击败，作为惩罚，妹妹把你捆在床上，掏出你的肉棒，一只手对着马眼进行扣弄，另一只手上下撸动。',
+        images: ['妹妹-马眼扣弄调教事件.png', '妹妹-马眼扣弄调教事件1.png'],
+      },
+      {
+        id: 'meimei_forced_cunnilingus_footjob_male',
+        name: '妹妹-强制舔阴足交事件',
+        description: '你被妹妹击败后，妹妹要求你跪下来为她舔阴，她则将一只脚放在你的背上，另一只脚对你进行榨取。',
+        images: ['妹妹-强制舔阴足交事件1.png', '妹妹-强制舔阴足交事件2.png'],
+      },
+      {
+        id: 'meimei_student_council_pet_male',
+        name: '妹妹-学生会遛宠事件',
+        description: '你被妹妹击败，作为惩罚，你被套上项圈，戴上眼罩，并扒光了全部衣服，在学生会被妹妹作为小狗对待。',
+        images: ['妹妹-学生会遛宠事件1.png', '妹妹-学生会遛宠事件2.png'],
+      },
+      {
+        id: 'meimei_nightclub_queen_training_male',
+        name: '妹妹-夜店女王调教事件',
+        description: '妹妹成为夜店女王后，被妹妹击败，她将让你跪拜在她的石榴裙下，在你被妹妹的气味侵染的同时，用穿着高跟的脚玩弄你的肉棒并随意榨取。',
+        images: ['妹妹-夜店女王调教事件1.png', '妹妹-夜店女王调教事件2.png'],
+      },
+      {
+        id: 'meimei_penis_bondage_male',
+        name: '妹妹-阴茎捆绑事件',
+        description: '你被妹妹击败，作为惩罚，妹妹拿来细丝线开始捆绑你的肉棒，并随意玩弄。',
+        images: ['妹妹-阴茎捆绑事件1.png', '妹妹-阴茎捆绑事件2.png', '妹妹-阴茎捆绑事件3.png'],
+      },
+      {
+        id: 'meimei_ntr_kiss_male',
+        name: '妹妹-ntr女伴亲吻事件',
+        description: '你被妹妹击败，作为惩罚，你的未婚妻被妹妹当着你的面强行舌吻，两个人都对你露出鄙视的神情。',
+        images: ['妹妹-ntr女伴亲吻事件1.png', '妹妹-ntr女伴亲吻事件2.png'],
+      },
+      {
+        id: 'meimei_ntr_footjob_male',
+        name: '妹妹-ntr女伴足交事件',
+        description: '你被妹妹击败，作为惩罚，你的女伴被要求和她一起对你进行足交的同时，互相扒开对方的小穴进行玩弄。',
+        images: ['妹妹-ntr女伴足交事件1.png', '妹妹-ntr女伴足交事件2.png'],
+      },
+    ],
+    victory: [
+      {
+        id: 'meimei_victory_cowgirl_male',
+        name: '妹妹-羞耻展示与女上位事件',
+        description: '你战胜了妹妹，作为奖励，妹妹脱下她的内裤送给你，并用女上位的姿势与你做爱。',
+        images: ['妹妹-羞耻展示与女上位事件1.png', '妹妹-羞耻展示与女上位事件2.png'],
+      },
+    ],
+  },
+  female: {
+    defeat: [
+      {
+        id: 'meimei_asmr_brainwash_female',
+        name: '妹妹-asmr洗脑事件',
+        description: '你被妹妹击败，作为惩罚她给你套上耳机，播放特制的录音内容，使你沉浸幻想，露出痴迷的表情。',
+        images: ['妹妹-asmr洗脑事件.png'],
+      },
+      {
+        id: 'meimei_yuri_ride_female',
+        name: '妹妹-百合骑乘事件',
+        description: '你被妹妹击败，作为惩罚她将你压在身下，进行骑乘位百合性爱。',
+        images: ['妹妹-百合骑乘事件1.png', '妹妹-百合骑乘事件2.png'],
+      },
+      {
+        id: 'meimei_dildo_penetration_female',
+        name: '妹妹-假阳具抽插事件',
+        description: '你被妹妹击败，她将你摁在身下，露出实现穿戴好的假阳具，对你进行抽插调教。',
+        images: ['妹妹-假阳具抽插事件1.png', '妹妹-假阳具抽插事件2.png', '妹妹-假阳具抽插事件3.png'],
+      },
+      {
+        id: 'meimei_latex_gag_bondage_female',
+        name: '妹妹-紧身衣口球束缚事件',
+        description: '你被妹妹击败，作为惩罚，你穿上紧身胶衣并被戴上口球，被妹妹调教。',
+        images: ['妹妹-紧身衣口球束缚事件1.png', '妹妹-紧身衣口球束缚事件2.png'],
+      },
+      {
+        id: 'meimei_forced_kiss_defeat_female',
+        name: '妹妹-强吻事件',
+        description: '你被妹妹击败，作为惩罚，妹妹强行与你进行深吻，并将自己私处在你大腿上摩擦。',
+        images: ['妹妹-强吻事件.png'],
+      },
+      {
+        id: 'meimei_forced_oral_service_female',
+        name: '妹妹-强制口交事件',
+        description: '你被妹妹击败，作为惩罚，妹妹要求你给她进行口交，并且要求你在她高潮时吞下全部淫水',
+        images: ['妹妹-强制口交事件1.png', '妹妹-强制口交事件2.png'],
+      },
+      {
+        id: 'meimei_gentle_service_defeat_female',
+        name: '妹妹-温柔侍奉事件',
+        description: '你被妹妹击败，但妹妹没有对你进行调教，而是选择让你温柔侍奉她。',
+        images: ['妹妹-温柔侍奉事件.png'],
+      },
+    ],
+    victory: [
+      {
+        id: 'meimei_dildo_doggy_victory_female',
+        name: '妹妹-假阳具后入事件',
+        description: '你战胜妹妹，你穿戴假阳具，并且一边后入妹妹一边用手玩弄妹妹小穴，前后夹击。',
+        images: ['妹妹-假阳具后入事件1.png', '妹妹-假阳具后入事件2.png', '妹妹-假阳具后入事件3.png', '妹妹-假阳具后入事件4.png'],
+      },
+      {
+        id: 'meimei_classroom_yuri_victory_female',
+        name: '妹妹-教室百合情爱事件',
+        description: '你战胜妹妹，你将妹妹带到教室，与她进行一场百合性爱。',
+        images: ['妹妹-教室百合情爱事件1.png', '妹妹-教室百合情爱事件2.png'],
+      },
+      {
+        id: 'meimei_gag_training_victory_female',
+        name: '妹妹-口球调教事件',
+        description: '你战胜妹妹，你将妹妹进行束缚并戴上了口球，对其进行调教。',
+        images: ['妹妹-口球调教事件1.png', '妹妹-口球调教事件2.png'],
+      },
+      {
+        id: 'meimei_service_victory_female',
+        name: '妹妹-侍奉事件',
+        description: '你战胜妹妹，你要求妹妹对你进行一场温柔的侍奉。',
+        images: ['妹妹-侍奉事件.png'],
+      },
+      {
+        id: 'meimei_deep_kiss_victory_female',
+        name: '妹妹-强吻事件',
+        description: '你战胜妹妹，妹妹与你进行深吻，并将自己私处在你大腿上摩擦。',
+        images: ['妹妹-强吻事件.png'],
+      },
+    ],
+  },
+};
+
+// 莉莉安的CG配置
+const liLiAnConfig: CharacterCGConfig = {
+  characterName: '莉莉安',
+  male: {
+    defeat: [
+      {
+        id: 'lilian_fleshlight_milking_male',
+        name: '莉莉安-飞机杯榨精事件',
+        description: '你被莉莉安击败，作为惩罚她会用特制的飞机杯一边榨取你一边播放她亲口录制的充满鼓励与挑逗的淫语。',
+        images: ['莉莉安-飞机杯榨精事件-1.png', '莉莉安-飞机杯榨精事件-2.png'],
+      },
+      {
+        id: 'lilian_public_paizuri_male',
+        name: '莉莉安-公开洗面奶事件',
+        description: '你被莉莉安击败，作为惩罚她会在大庭广众之下将你的脸埋入她那柔软而富有弹性的D罩杯胸部之中，受到窒息与奶香的支配。',
+        images: ['莉莉安-公开洗面奶事件-1.png', '莉莉安-公开洗面奶事件-2.png'],
+      },
+      {
+        id: 'lilian_public_vacuum_blowjob_male',
+        name: '莉莉安-公开真空口交事件',
+        description: '你被莉莉安击败，作为惩罚她会在大庭广众之下用她那小巧而灵活的嘴唇与舌头完全包裹你的肉棒，通过调整口腔内的气压进行如同真空泵般无法抗拒的吮吸。',
+        images: ['莉莉安-公开真空口交事件-1.png', '莉莉安-公开真空口交事件-2.png'],
+      },
+      {
+        id: 'lilian_urethra_training_male',
+        name: '莉莉安-尿道调教事件',
+        description: '你被莉莉安击败，作为惩罚她会用纤细的、涂满润滑液的马眼棒轻柔而深入地刺激你的尿道，带来禁忌的快感。',
+        images: ['莉莉安-尿道调教事件-1.png', '莉莉安-尿道调教事件-2.png'],
+      },
+      {
+        id: 'lilian_ride_highspeed_male',
+        name: '莉莉安-骑乘高速榨精事件',
+        description: '你被莉莉安击败，作为惩罚她会将你绑在椅子上，用她那如同电动马达湿滑温热的小穴对你进行高速连续的榨取。',
+        images: ['莉莉安-骑乘高速榨精事件-1.png', '莉莉安-骑乘高速榨精事件-2.png', '莉莉安-骑乘高速榨精事件-3.png'],
+      },
+      {
+        id: 'lilian_forced_handjob_male',
+        name: '莉莉安-强制手交事件',
+        description: '你被莉莉安击败，作为惩罚她会在温暖的手上涂满高级润滑剂，对你进行强制的手交“辅导”。',
+        images: ['莉莉安-强制手交事件-1.png', '莉莉安-强制手交事件-2.png'],
+      },
+    ],
+    victory: [
+      {
+        id: 'lilian_public_training_victory_male',
+        name: '莉莉安-公开调教事件',
+        description: '你战胜了莉莉安，你可以将她抱起来，令她所有的学生都清楚看见她湿滑温热的小穴被你的肉棒调教的姿态。',
+        images: ['莉莉安-公开调教事件-1.png', '莉莉安-公开调教事件-2.png'],
+      },
+      {
+        id: 'lilian_doggy_training_victory_male',
+        name: '莉莉安-后入调教事件',
+        description: '你战胜了莉莉安，作为奖励你可以从身后插入她那湿滑温热的小穴，然后握住她丰满的臀部进行调教。',
+        images: ['莉莉安-后入调教事件-1.png', '莉莉安-后入调教事件-2.png'],
+      },
+      {
+        id: 'lilian_leglift_side_entry_victory_male',
+        name: '莉莉安-抬腿侧入事件',
+        description: '你战胜了莉莉安，作为奖励你可以抬起她一条美丽的黑丝长腿从侧面插入小穴，一边交换口中的津液一边进行抽送调教。',
+        images: ['莉莉安-抬腿侧入事件-1.png', '莉莉安-抬腿侧入事件-2.png'],
+      },
+      {
+        id: 'lilian_suspended_sex_victory_male',
+        name: '莉莉安-悬空性爱事件',
+        description: '你战胜了莉莉安，作为奖励你可以将她整个抱起，让她在悬空的不安全感与重力的作用下被你的肉棒不断调教。',
+        images: ['莉莉安-悬空性爱事件-1.png', '莉莉安-悬空性爱事件-2.png'],
+      },
+    ],
+  },
+  female: {
+    defeat: [
+      {
+        id: 'lilian_public_paizuri_female',
+        name: '莉莉安-当众乳压脸事件',
+        description: '你被莉莉安击败，作为惩罚她会在大庭广众之下将你的脸埋入她那柔软而富有弹性的D罩杯胸部之中，受到窒息与奶香的支配。',
+        images: ['莉莉安-当众乳压脸事件-1.png', '莉莉安-当众乳压脸事件-2.png'],
+      },
+      {
+        id: 'lilian_urethra_training_female',
+        name: '莉莉安-尿道调教事件',
+        description: '你被莉莉安击败，作为惩罚她会用纤细的、涂满润滑液的尿道棒轻柔而深入地刺激你的尿道，带来禁忌的快感。',
+        images: ['莉莉安-尿道调教事件-1.png', '莉莉安-尿道调教事件-2.png'],
+      },
+      {
+        id: 'lilian_lubed_handjob_female',
+        name: '莉莉安-润滑手交事件',
+        description: '你被莉莉安击败，作为惩罚她会在温暖的手上涂满高级润滑剂，插入你的小穴进行强制的手交“辅导”。',
+        images: ['莉莉安-润滑手交事件-1.png', '莉莉安-润滑手交事件-2.png'],
+      },
+      {
+        id: 'lilian_forced_cunnilingus_female',
+        name: '莉莉安-强制舔穴事件',
+        description: '你被莉莉安击败，作为惩罚她会将你绑在椅子上，用她那小巧而灵活的嘴唇与舌头舔舐你的小穴进行调教。',
+        images: ['莉莉安-强制舔穴事件-1.png', '莉莉安-强制舔穴事件-2.png'],
+      },
+      {
+        id: 'lilian_toy_squirting_female',
+        name: '莉莉安-玩具潮吹事件',
+        description: '你被莉莉安击败，作为惩罚她会将你捆绑在固定有粗大假阳具的椅子上，不断上下抽送直至你在强烈的快感下激烈潮吹。',
+        images: ['莉莉安-玩具潮吹事件-1.png', '莉莉安-玩具潮吹事件-2.png'],
+      },
+      {
+        id: 'lilian_toy_training_female',
+        name: '莉莉安-玩具调教事件',
+        description: '你被莉莉安击败，作为惩罚她会将你仰面绑在躺椅上M字开腿，用粗大的假阳具对你的小穴进行调教。',
+        images: ['莉莉安-玩具调教事件-1.png', '莉莉安-玩具调教事件-2.png'],
+      },
+    ],
+    victory: [
+      {
+        id: 'lilian_dildo_training_victory_female',
+        name: '莉莉安-道具抽插事件',
+        description: '你战胜了莉莉安，作为奖励你可以将粗大的假阳具插入她那湿滑温热的小穴进行抽插调教。',
+        images: ['莉莉安-道具抽插事件-1.png', '莉莉安-道具抽插事件-2.png'],
+      },
+      {
+        id: 'lilian_public_whip_training_victory_female',
+        name: '莉莉安-公开调教事件',
+        description: '你战胜了莉莉安，你可以将她全裸绑缚于半空，令她所有的学生都清楚看见她那美丽而诱惑的胴体被你的皮鞭调教的淫荡姿态。',
+        images: ['莉莉安-公开调教事件-1.png', '莉莉安-公开调教事件-2.png'],
+      },
+      {
+        id: 'lilian_cunnilingus_order_victory_female',
+        name: '莉莉安-舔穴命令事件',
+        description: '你战胜了莉莉安，作为奖励你可以命令她用那小巧而灵活的嘴唇与舌头为你的小穴进行舔舐服务。',
+        images: ['莉莉安-舔穴命令事件-1.png', '莉莉安-舔穴命令事件-2.png'],
+      },
+    ],
+  },
+};
+
 // 风音的CG配置
 const fengYinConfig: CharacterCGConfig = {
   characterName: '风音',
@@ -1607,10 +2252,14 @@ const meiSuiLingConfig: CharacterCGConfig = {
 // 所有角色的CG配置
 export const CG_CONFIGS: CharacterCGConfig[] = [
   xingYeGuangConfig,
+  baiChuanQianXiaConfig,
   aiLinHaiDeConfig,
   luNaLaKeDiSiConfig,
+  liLiAnConfig,
   xueLiKeLinMuXiErDeConfig,
   meiSuiLingConfig,
+  shaLaSiTongConfig,
+  shangShanYaYiConfig,
   muXinLanConfig,
   baiShiXiangZiConfig,
   shenQiLinConfig,

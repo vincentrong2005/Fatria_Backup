@@ -27,6 +27,17 @@ export interface BossState {
   elizabethCurrentCommand: 'kneel' | 'tribute' | null;  // 当前演出指令
   elizabethCommandTurn: number;                         // 发布指令的回合
   elizabethViolationCount: number;                      // 违反次数（用于叠加buff）
+  // Vespera专属状态（色欲天赋）
+  vesperaCurrentTurn: number;                           // 当前回合数
+  vesperaLastSkillStaminaCost: number;                  // 玩家上回合使用技能的耐力消耗
+  vesperaPlayerDodgedLastTurn: boolean;                 // 玩家上回合是否闪避
+  vesperaPlayerDodgedThisTurn: boolean;                 // 玩家本回合是否闪避
+  vesperaConsecutiveDodges: number;                     // 玩家连续闪避次数
+  vesperaSelfSacrificeUsed: boolean;                    // 是否已使用自体献祭
+  // Heisaki专属状态（贪婪天赋）
+  heisakiDebt: number;                                   // 玩家债务值
+  heisakiSkillCostMultipliers: Record<string, number>;   // 各技能的耐力消耗倍率
+  heisakiDebtSettlementTriggered: boolean;               // 本回合是否触发了债务结算
 }
 
 export interface BossDialogue {
@@ -170,12 +181,25 @@ export const bossState = reactive<BossState>({
   elizabethCurrentCommand: null,
   elizabethCommandTurn: 0,
   elizabethViolationCount: 0,
+  // Vespera专属状态
+  vesperaCurrentTurn: 0,
+  vesperaLastSkillStaminaCost: 0,
+  vesperaPlayerDodgedLastTurn: false,
+  vesperaPlayerDodgedThisTurn: false,
+  vesperaConsecutiveDodges: 0,
+  vesperaSelfSacrificeUsed: false,
+  // Heisaki专属状态
+  heisakiDebt: 0,
+  heisakiSkillCostMultipliers: {},
+  heisakiDebtSettlementTriggered: false,
 });
 
 // 当前显示的对话
 export const currentDialogue = ref<BossDialogue | null>(null);
 export const dialogueQueue = ref<BossDialogue[]>([]);
 export const isShowingDialogue = ref(false);
+
+export const isDialogueSkippable = ref(true);
 
 // 对话自动播放定时器
 let dialogueAutoPlayTimer: number | null = null;
@@ -227,6 +251,17 @@ export function resetBossState(): void {
   bossState.elizabethCurrentCommand = null;
   bossState.elizabethCommandTurn = 0;
   bossState.elizabethViolationCount = 0;
+  // Vespera专属状态重置
+  bossState.vesperaCurrentTurn = 0;
+  bossState.vesperaLastSkillStaminaCost = 0;
+  bossState.vesperaPlayerDodgedLastTurn = false;
+  bossState.vesperaPlayerDodgedThisTurn = false;
+  bossState.vesperaConsecutiveDodges = 0;
+  bossState.vesperaSelfSacrificeUsed = false;
+  // Heisaki专属状态重置
+  bossState.heisakiDebt = 0;
+  bossState.heisakiSkillCostMultipliers = {};
+  bossState.heisakiDebtSettlementTriggered = false;
   currentDialogue.value = null;
   dialogueQueue.value = [];
   isShowingDialogue.value = false;
@@ -277,6 +312,7 @@ export function showNextDialogue(): void {
   if (dialogueQueue.value.length === 0) {
     isShowingDialogue.value = false;
     currentDialogue.value = null;
+    isDialogueSkippable.value = true;
     return;
   }
   
@@ -293,7 +329,25 @@ export function showNextDialogue(): void {
  * 跳过当前对话（立即显示下一条）
  */
 export function skipDialogue(): void {
+  if (!isDialogueSkippable.value) {
+    return;
+  }
   showNextDialogue();
+}
+
+export function setDialogueSkippable(skippable: boolean): void {
+  isDialogueSkippable.value = skippable;
+}
+
+export function waitForDialoguesToFinish(pollIntervalMs: number = 50): Promise<void> {
+  return new Promise((resolve) => {
+    const timer = window.setInterval(() => {
+      if (!isShowingDialogue.value && dialogueQueue.value.length === 0 && currentDialogue.value === null) {
+        window.clearInterval(timer);
+        resolve();
+      }
+    }, pollIntervalMs);
+  });
 }
 
 /**
@@ -786,6 +840,25 @@ export const BOSS_CONFIG = {
     climaxLimits: [1], // 初始为1，苏醒后可能变为3
     sinType: 'sloth' as const,  // 七宗罪类型：懒惰
     gameOverSkillId: '伊甸芙宁_16', // Game Over技能ID
+  },
+  vespera: {
+    id: 'vespera',
+    phases: 1,  // 只有一个阶段
+    dataKeys: ['薇丝佩菈'],
+    displayNames: ['薇丝佩菈'],
+    levels: [40],
+    climaxLimits: [3], // 高潮次数上限3
+    sinType: 'lust' as const,  // 七宗罪类型：色欲
+    selfSacrificeSkillId: '薇丝佩菈_自体献祭', // 自体献祭技能ID
+  },
+  heisaki: {
+    id: 'heisaki',
+    phases: 1,  // 只有一个阶段
+    dataKeys: ['黑崎晴雯'],
+    displayNames: ['黑崎晴雯'],
+    levels: [60],
+    climaxLimits: [3], // 高潮次数上限3
+    sinType: 'greed' as const,  // 七宗罪类型：贪婪
   },
 };
 
@@ -1339,6 +1412,788 @@ export function getElizabethPrideDescription(): string {
     '• BOSS获得：闪避率-60%，忍耐力成算-90%（2回合）',
     '',
     '【吸血】每次攻击回复10%伤害值的快感',
+  ];
+  return effects.join('\n');
+}
+
+// ==================== 薇丝佩菈 BOSS 对话库 ====================
+export const VESPERA_DIALOGUES = {
+  // 入场对话
+  entry: [
+    { speaker: '薇丝佩菈', text: '"呵呵...又一只迷途的羔羊闯入了我的领域~"', emotion: 'arrogant' as const },
+    { speaker: '薇丝佩菈', text: '"让我看看...你是男是女呢？"', emotion: 'arrogant' as const },
+  ],
+  
+  // 入场对话（女性玩家）
+  entry_female: [
+    { speaker: '薇丝佩菈', text: '"哦？是个可爱的女孩子呢~❤️"', emotion: 'arrogant' as const },
+    { speaker: '薇丝佩菈', text: '"太好了...我最喜欢女孩子了...让我好好疼爱你吧~"', emotion: 'arrogant' as const },
+  ],
+  
+  // 入场对话（男性玩家）
+  entry_male: [
+    { speaker: '薇丝佩菈', text: '"...是男的啊。真是晦气。"', emotion: 'angry' as const },
+    { speaker: '薇丝佩菈', text: '"算了，快点解决掉你，我还要去找可爱的女孩子玩呢。"', emotion: 'angry' as const },
+  ],
+  
+  // 战斗中对话（女性玩家）
+  battle_female: [
+    { speaker: '薇丝佩菈', text: '"你的身体好敏感呢~是不是已经开始喜欢上我了？❤️"', emotion: 'arrogant' as const },
+    { speaker: '薇丝佩菈', text: '"不要害羞嘛~在我面前，你可以尽情地展现自己~"', emotion: 'arrogant' as const },
+    { speaker: '薇丝佩菈', text: '"呵呵...你的表情好可爱...让我更想欺负你了~"', emotion: 'arrogant' as const },
+    { speaker: '薇丝佩菈', text: '"感受到了吗？这就是被我的信息素包围的感觉~"', emotion: 'arrogant' as const },
+    { speaker: '薇丝佩菈', text: '"乖孩子...再坚持一下就好了...很快你就会完全属于我~"', emotion: 'arrogant' as const },
+  ],
+  
+  // 战斗中对话（男性玩家）
+  battle_male: [
+    { speaker: '薇丝佩菈', text: '"真是碍眼...快点射出来然后滚蛋。"', emotion: 'angry' as const },
+    { speaker: '薇丝佩菈', text: '"你这种东西也配碰我？用脚趾头对付你就够了。"', emotion: 'angry' as const },
+    { speaker: '薇丝佩菈', text: '"恶心...赶紧结束这场闹剧吧。"', emotion: 'angry' as const },
+    { speaker: '薇丝佩菈', text: '"哼...男人果然都是这么没用。"', emotion: 'angry' as const },
+  ],
+  
+  // 玩家被束缚时
+  player_bound: [
+    { speaker: '薇丝佩菈', text: '"被抓住了呢~现在你无处可逃了哦~❤️"', emotion: 'arrogant' as const },
+    { speaker: '薇丝佩菈', text: '"乖乖不动...让我好好品尝你~"', emotion: 'arrogant' as const },
+  ],
+  
+  // 玩家连续闪避时
+  player_consecutive_dodge: [
+    { speaker: '薇丝佩菈', text: '"呵...还挺灵活的嘛...不过这样只会让我更兴奋~"', emotion: 'arrogant' as const },
+    { speaker: '薇丝佩菈', text: '"（微微喘息）...你的闪避让我有点...着急了呢..."', emotion: 'weak' as const },
+  ],
+  
+  // 自体献祭技能对话（仅女性玩家，高潮次数2/3时）
+  self_sacrifice: [
+    { speaker: '薇丝佩菈', text: '"呼...呼...（眼神变得迷离）"', emotion: 'weak' as const },
+    { speaker: '薇丝佩菈', text: '"不行了...我已经忍不住了..."', emotion: 'weak' as const },
+    { speaker: '薇丝佩菈', text: '"你...让我用这个...好吗？❤️"', emotion: 'arrogant' as const },
+    { speaker: '系统', text: '【色欲天赋·自体献祭】薇丝佩菈强行将你压在身下，扯下了了她的鬼角，插入了你的小穴中', emotion: 'weak' as const },
+    { speaker: '薇丝佩菈', text: '"现在...你完全是我的了...永远都是...❤️"', emotion: 'arrogant' as const },
+  ],
+  
+  // 自体献祭后的战斗对话
+  post_sacrifice: [
+    { speaker: '薇丝佩菈', text: '"感觉如何？我的全部...都给你了哦~❤️"', emotion: 'arrogant' as const },
+    { speaker: '薇丝佩菈', text: '"现在你已经被我标记了...逃不掉的~"', emotion: 'arrogant' as const },
+  ],
+  
+  // 束缚免疫对话
+  bind_immune: [
+    { speaker: '薇丝佩菈', text: '"想束缚我？呵呵...你搞错了，应该是我束缚你才对~"', emotion: 'arrogant' as const },
+  ],
+  
+  // 战胜玩家后（女性）
+  victory_female: [
+    { speaker: '薇丝佩菈', text: '"呵呵...你输了呢~从现在起，你就是我的人了~❤️"', emotion: 'arrogant' as const },
+    { speaker: '薇丝佩菈', text: '"别担心...我会好好疼爱你的...永远~"', emotion: 'arrogant' as const },
+  ],
+  
+  // 战胜玩家后（男性）
+  victory_male: [
+    { speaker: '薇丝佩菈', text: '"终于结束了...真是浪费时间。"', emotion: 'angry' as const },
+    { speaker: '薇丝佩菈', text: '"滚吧，别再让我看到你。"', emotion: 'angry' as const },
+  ],
+  
+  // 战败
+  defeat: [
+    { speaker: '薇丝佩菈', text: '"不...不可能...我怎么会..."', emotion: 'weak' as const },
+    { speaker: '薇丝佩菈', text: '"（喘息）...你...你赢了...这次..."', emotion: 'weak' as const },
+  ],
+};
+
+// ==================== 薇丝佩菈 BOSS 检测与初始化 ====================
+/**
+ * 检测是否是薇丝佩菈BOSS战
+ */
+export function isVesperaBoss(enemyName: string): boolean {
+  if (!enemyName) return false;
+  const name = enemyName.toLowerCase();
+  return name.includes('薇丝佩菈') || name.includes('vespera') || name.includes('色欲');
+}
+
+/**
+ * 初始化薇丝佩菈BOSS战
+ */
+export function initVesperaBoss(playerGender: string = '女'): void {
+  bossState.isBossFight = true;
+  bossState.bossId = 'vespera';
+  bossState.currentPhase = 1;
+  bossState.phaseTransitioning = false;
+  bossState.dialogueIndex = 0;
+  bossState.buttonsDisabled = false;
+  bossState.hasUsedMedal = false;
+  // Vespera专属状态初始化
+  bossState.vesperaCurrentTurn = 0;
+  bossState.vesperaLastSkillStaminaCost = 0;
+  bossState.vesperaPlayerDodgedLastTurn = false;
+  bossState.vesperaPlayerDodgedThisTurn = false;
+  bossState.vesperaConsecutiveDodges = 0;
+  bossState.vesperaSelfSacrificeUsed = false;
+  
+  // 播放入场对话（根据玩家性别）
+  const entryDialogues: BossDialogue[] = [...VESPERA_DIALOGUES.entry];
+  if (playerGender === '男') {
+    entryDialogues.push(...VESPERA_DIALOGUES.entry_male);
+  } else {
+    entryDialogues.push(...VESPERA_DIALOGUES.entry_female);
+  }
+  queueDialogues(entryDialogues);
+}
+
+/**
+ * 获取薇丝佩菈显示名称
+ */
+export function getVesperaDisplayName(): string {
+  return '薇丝佩菈';
+}
+
+/**
+ * 获取薇丝佩菈立绘URL
+ */
+export function getVesperaAvatarUrl(): string {
+  return 'https://raw.githubusercontent.com/vincentrong2005/Fatria/main/图片素材/性斗学园/立绘/薇丝佩菈.png';
+}
+
+/**
+ * 获取薇丝佩菈随机战斗对话
+ */
+export function getVesperaRandomBattleDialogue(playerGender: string = '女'): BossDialogue | null {
+  // 如果已使用自体献祭，使用献祭后对话
+  if (bossState.vesperaSelfSacrificeUsed) {
+    const dialogues = VESPERA_DIALOGUES.post_sacrifice;
+    return dialogues[Math.floor(Math.random() * dialogues.length)];
+  }
+  
+  const dialogues = playerGender === '男'
+    ? VESPERA_DIALOGUES.battle_male
+    : VESPERA_DIALOGUES.battle_female;
+  return dialogues[Math.floor(Math.random() * dialogues.length)];
+}
+
+/**
+ * 获取薇丝佩菈束缚免疫对话
+ */
+export function getVesperaBindImmuneDialogue(): BossDialogue | null {
+  const dialogues = VESPERA_DIALOGUES.bind_immune;
+  return dialogues[Math.floor(Math.random() * dialogues.length)];
+}
+
+// ==================== 薇丝佩菈 色欲天赋机制 ====================
+
+/**
+ * 处理薇丝佩菈回合开始
+ * @param currentTurn 当前回合数
+ * @param playerMaxPleasure 玩家最大快感
+ * @returns 玩家应增加的快感值和buff/debuff信息
+ */
+export function processVesperaTurnStart(currentTurn: number, playerMaxPleasure: number): {
+  pleasureIncrease: number;
+  sexPowerCalcBuff: number;
+  enduranceCalcDebuff: number;
+  shouldBindNextTurn: boolean;
+} {
+  if (!bossState.isBossFight || bossState.bossId !== 'vespera') {
+    return { pleasureIncrease: 0, sexPowerCalcBuff: 0, enduranceCalcDebuff: 0, shouldBindNextTurn: false };
+  }
+  
+  bossState.vesperaCurrentTurn = currentTurn;
+  
+  // 每回合开始时，玩家自动增添一层 基础性斗力成算+5 的buff与 基础忍耐力成算 -5 的debuff （可叠加）
+  const sexPowerCalcBuff = currentTurn * 5;  // 累计buff
+  const enduranceCalcDebuff = currentTurn * -5;  // 累计debuff
+  
+  // 玩家每回合开始时自身快感增添 当前回合*3%*最大快感
+  const pleasureIncrease = Math.floor(currentTurn * 0.03 * playerMaxPleasure);
+  
+  // 检查上回合是否使用了耐力消耗>28的技能，如果是则本回合被束缚
+  const shouldBindNextTurn = bossState.vesperaLastSkillStaminaCost > 28;
+  
+  // 重置上回合技能消耗记录（避免重复触发）
+  bossState.vesperaLastSkillStaminaCost = 0;
+  
+  // 更新闪避状态
+  bossState.vesperaPlayerDodgedLastTurn = bossState.vesperaPlayerDodgedThisTurn;
+  bossState.vesperaPlayerDodgedThisTurn = false;
+  
+  return {
+    pleasureIncrease,
+    sexPowerCalcBuff,
+    enduranceCalcDebuff,
+    shouldBindNextTurn,
+  };
+}
+
+/**
+ * 记录玩家使用的技能耐力消耗
+ */
+export function recordVesperaPlayerSkillCost(staminaCost: number): void {
+  if (!bossState.isBossFight || bossState.bossId !== 'vespera') {
+    return;
+  }
+  bossState.vesperaLastSkillStaminaCost = staminaCost;
+}
+
+/**
+ * 记录玩家本回合闪避
+ */
+export function recordVesperaPlayerDodge(): {
+  consecutiveDodges: number;
+  triggerDebuff: boolean;
+  evasionDebuff: number;
+  enduranceCalcDebuff: number;
+} {
+  if (!bossState.isBossFight || bossState.bossId !== 'vespera') {
+    return { consecutiveDodges: 0, triggerDebuff: false, evasionDebuff: 0, enduranceCalcDebuff: 0 };
+  }
+  
+  bossState.vesperaPlayerDodgedThisTurn = true;
+  
+  // 检查是否连续两回合闪避
+  if (bossState.vesperaPlayerDodgedLastTurn && bossState.vesperaPlayerDodgedThisTurn) {
+    bossState.vesperaConsecutiveDodges++;
+    
+    // 播放对话
+    queueDialogues([VESPERA_DIALOGUES.player_consecutive_dodge[Math.floor(Math.random() * VESPERA_DIALOGUES.player_consecutive_dodge.length)]]);
+    
+    // 薇丝佩菈自身闪避率-8，忍耐力成算-8（永久，可叠加）
+    return {
+      consecutiveDodges: bossState.vesperaConsecutiveDodges,
+      triggerDebuff: true,
+      evasionDebuff: -8,
+      enduranceCalcDebuff: -8,
+    };
+  }
+  
+  return { consecutiveDodges: 0, triggerDebuff: false, evasionDebuff: 0, enduranceCalcDebuff: 0 };
+}
+
+/**
+ * 获取薇丝佩菈对束缚玩家的攻击加成
+ * @param isPlayerBound 玩家是否被束缚
+ */
+export function getVesperaBoundAttackBonus(isPlayerBound: boolean): {
+  guaranteedHit: boolean;
+  guaranteedCrit: boolean;
+} {
+  if (!bossState.isBossFight || bossState.bossId !== 'vespera') {
+    return { guaranteedHit: false, guaranteedCrit: false };
+  }
+  
+  // 若玩家属于束缚状态，则薇丝佩菈的攻击必定命中且必定暴击
+  if (isPlayerBound) {
+    // 播放束缚猎物对话
+    queueDialogues([VESPERA_DIALOGUES.player_bound[Math.floor(Math.random() * VESPERA_DIALOGUES.player_bound.length)]]);
+    return { guaranteedHit: true, guaranteedCrit: true };
+  }
+  
+  return { guaranteedHit: false, guaranteedCrit: false };
+}
+
+/**
+ * 检查是否应该使用自体献祭技能
+ * @param bossClimaxCount BOSS高潮次数
+ * @param playerGender 玩家性别
+ */
+export function shouldUseVesperaSelfSacrifice(bossClimaxCount: number, playerGender: string): boolean {
+  if (!bossState.isBossFight || bossState.bossId !== 'vespera') {
+    return false;
+  }
+  
+  // 已经使用过则不再使用
+  if (bossState.vesperaSelfSacrificeUsed) {
+    return false;
+  }
+  
+  // 只有当BOSS高潮次数为2或3且玩家为女性时才使用
+  // 注意：高潮次数2/3意味着高潮2次或3次后
+  if ((bossClimaxCount === 2 || bossClimaxCount === 3) && playerGender !== '男') {
+    return true;
+  }
+  
+  return false;
+}
+
+/**
+ * 执行自体献祭技能
+ * @returns 技能效果信息
+ */
+export function executeVesperaSelfSacrifice(): {
+  bindDuration: number;
+  dialogues: BossDialogue[];
+} {
+  if (!bossState.isBossFight || bossState.bossId !== 'vespera') {
+    return { bindDuration: 0, dialogues: [] };
+  }
+  
+  bossState.vesperaSelfSacrificeUsed = true;
+  
+  return {
+    bindDuration: 3,  // 3回合束缚
+    dialogues: VESPERA_DIALOGUES.self_sacrifice,
+  };
+}
+
+/**
+ * 获取薇丝佩菈累计的连续闪避debuff
+ */
+export function getVesperaConsecutiveDodgeDebuff(): {
+  totalEvasionDebuff: number;
+  totalEnduranceCalcDebuff: number;
+} {
+  if (!bossState.isBossFight || bossState.bossId !== 'vespera') {
+    return { totalEvasionDebuff: 0, totalEnduranceCalcDebuff: 0 };
+  }
+  
+  // 每次连续闪避-8，可叠加
+  return {
+    totalEvasionDebuff: bossState.vesperaConsecutiveDodges * -8,
+    totalEnduranceCalcDebuff: bossState.vesperaConsecutiveDodges * -8,
+  };
+}
+
+/**
+ * 获取薇丝佩菈色欲天赋描述信息（用于UI显示）
+ */
+export function getVesperaLustDescription(): string {
+  const effects = [
+    '【七宗罪·色欲】',
+    '',
+    '【信息素侵蚀】每回合开始时：',
+    '• 玩家获得：性斗力成算+5%（可叠加）',
+    '• 玩家获得：忍耐力成算-5%（可叠加）',
+    '• 玩家快感增加：当前回合×3%×最大快感',
+    '',
+    '【束缚猎物】玩家被束缚时：',
+    '• 薇丝佩菈攻击必定命中',
+    '• 薇丝佩菈攻击必定暴击',
+    '',
+    '【体力透支】玩家使用耐力消耗>28的技能后：',
+    '• 下一回合被强制束缚1回合',
+    '',
+    '【挑逗惩罚】玩家连续两回合闪避时：',
+    '• 薇丝佩菈闪避率-8%（永久，可叠加）',
+    '• 薇丝佩菈忍耐力成算-8%（永久，可叠加）',
+    '',
+    '【自体献祭】高潮2/3次后（仅女性玩家）：',
+    '• 强制使用特殊技能（无视束缚）',
+    '• 必定命中，附带3回合束缚',
+  ];
+  return effects.join('\n');
+}
+
+// ==================== 黑崎晴雯 BOSS 对话库 ====================
+export const HEISAKI_DIALOGUES = {
+  // 入场对话
+  entry: [
+    { speaker: '黑崎晴雯', text: '"名字写在风纪册上。然后…把你的筹码交出来。"', emotion: 'arrogant' as const },
+    { speaker: '黑崎晴雯', text: '"别误会，我不是在邀请你——我是在登记猎物。"', emotion: 'arrogant' as const },
+    { speaker: '黑崎晴雯', text: '"利息很贵。你越挣扎，越值得我慢慢品尝。"', emotion: 'arrogant' as const },
+  ],
+  
+  // 战斗中对话
+  battle: [
+    { speaker: '黑崎晴雯', text: '"规矩很简单：你出手一次，我就把价码抬高一次。"', emotion: 'arrogant' as const },
+    { speaker: '黑崎晴雯', text: '"人类的理性…真廉价。只要一点点利息，就会碎得很漂亮。"', emotion: 'arrogant' as const },
+    { speaker: '黑崎晴雯', text: '"我喜欢亮晶晶的东西。包括你现在发抖的表情。"', emotion: 'arrogant' as const },
+    { speaker: '黑崎晴雯', text: '"别急，我会很有耐心——直到你学会‘顺从’。"', emotion: 'arrogant' as const },
+    { speaker: '黑崎晴雯', text: '"嗯…这回合结束后，我要去泡杯红茶。加五块方糖。你也一样甜就好了。"', emotion: 'arrogant' as const },
+    { speaker: '黑崎晴雯', text: '"你越透支，我越省事。毕竟，欠条最后都会落到我手里。"', emotion: 'arrogant' as const },
+  ],
+  
+  // 玩家使用高稀有度技能时
+  high_rarity_skill: [
+    { speaker: '黑崎晴雯', text: '"奢侈的招式。很好——我会把它的价码抬到你承受不起。"', emotion: 'arrogant' as const },
+    { speaker: '黑崎晴雯', text: '"再用一次试试？我保证你的‘代价’会更漂亮。"', emotion: 'arrogant' as const },
+  ],
+  
+  // 玩家使用低稀有度技能命中时
+  low_rarity_skill_hit: [
+    { speaker: '黑崎晴雯', text: '"这种廉价的把戏也敢往我身上丢？…啧，算你捡到一点便宜。"', emotion: 'angry' as const },
+    { speaker: '黑崎晴雯', text: '"别把我当成会被‘省钱’打败的那种生物。"', emotion: 'angry' as const },
+  ],
+  
+  // 玩家透支耐力时
+  overdraft: [
+    { speaker: '黑崎晴雯', text: '"耐力不够？很好。写欠条吧——我喜欢看你签字的样子。"', emotion: 'arrogant' as const },
+    { speaker: '黑崎晴雯', text: '"透支？那不是失误，是你主动把自己交到我手里。"', emotion: 'arrogant' as const },
+  ],
+  
+  // 债务结算触发时（特殊对话，不可跳过）
+  debt_settlement: [
+    { speaker: '黑崎晴雯', text: '"停下。现在开始结算。"', emotion: 'arrogant' as const },
+    { speaker: '黑崎晴雯', text: '"别眨眼。我会让你记住被掠食的感觉。"', emotion: 'arrogant' as const },
+  ],
+  
+  // 债务结算后（贪婪满足）
+  greed_satisfied: [
+    { speaker: '黑崎晴雯', text: '"……嗯。味道不错。"', emotion: 'weak' as const },
+  ],
+  
+  // 束缚免疫对话
+  bind_immune: [
+    { speaker: '黑崎晴雯', text: '"想束缚龙族？你在开玩笑吧？"', emotion: 'arrogant' as const },
+  ],
+  
+  // 战胜玩家后
+  victory: [
+    { speaker: '黑崎晴雯', text: '"交易完成~你的一切...现在都是我的了~"', emotion: 'arrogant' as const },
+    { speaker: '黑崎晴雯', text: '"别担心，我会好好「保管」你的~"', emotion: 'arrogant' as const },
+  ],
+  
+  // 战败
+  defeat: [
+    { speaker: '黑崎晴雯', text: '"不...不可能...我的收藏..."', emotion: 'weak' as const },
+    { speaker: '黑崎晴雯', text: '"（咬牙）...这笔账...我记下了..."', emotion: 'angry' as const },
+  ],
+};
+
+// ==================== 黑崎晴雯 BOSS 检测与初始化 ====================
+/**
+ * 检测是否是黑崎晴雯BOSS战
+ */
+export function isHeisakiBoss(enemyName: string): boolean {
+  if (!enemyName) return false;
+  const name = enemyName.toLowerCase();
+  return name.includes('黑崎晴雯') || name.includes('heisaki') || name.includes('晴雯') || name.includes('贪婪');
+}
+
+/**
+ * 初始化黑崎晴雯BOSS战
+ */
+export function initHeisakiBoss(): void {
+  bossState.isBossFight = true;
+  bossState.bossId = 'heisaki';
+  bossState.currentPhase = 1;
+  bossState.phaseTransitioning = false;
+  bossState.dialogueIndex = 0;
+  bossState.buttonsDisabled = false;
+  bossState.hasUsedMedal = false;
+  // Heisaki专属状态初始化
+  bossState.heisakiDebt = 0;
+  bossState.heisakiSkillCostMultipliers = {};
+  bossState.heisakiDebtSettlementTriggered = false;
+  
+  // 播放入场对话
+  queueDialogues(HEISAKI_DIALOGUES.entry);
+}
+
+/**
+ * 获取黑崎晴雯显示名称
+ */
+export function getHeisakiDisplayName(): string {
+  return '黑崎晴雯';
+}
+
+/**
+ * 获取黑崎晴雯立绘URL
+ */
+export function getHeisakiAvatarUrl(): string {
+  return 'https://raw.githubusercontent.com/vincentrong2005/Fatria/main/图片素材/性斗学园/立绘/黑崎晴雯.png';
+}
+
+/**
+ * 获取黑崎晴雯随机战斗对话
+ */
+export function getHeisakiRandomBattleDialogue(): BossDialogue | null {
+  const dialogues = HEISAKI_DIALOGUES.battle;
+  return dialogues[Math.floor(Math.random() * dialogues.length)];
+}
+
+/**
+ * 获取黑崎晴雯束缚免疫对话
+ */
+export function getHeisakiBindImmuneDialogue(): BossDialogue | null {
+  const dialogues = HEISAKI_DIALOGUES.bind_immune;
+  return dialogues[Math.floor(Math.random() * dialogues.length)];
+}
+
+// ==================== 黑崎晴雯 贪婪天赋机制 ====================
+
+/**
+ * 获取技能当前的耐力消耗倍率
+ * @param skillId 技能ID
+ * @returns 当前倍率（默认1）
+ */
+export function getHeisakiSkillCostMultiplier(skillId: string): number {
+  if (!bossState.isBossFight || bossState.bossId !== 'heisaki') {
+    return 1;
+  }
+  return bossState.heisakiSkillCostMultipliers[skillId] || 1;
+}
+
+/**
+ * 计算技能实际耐力消耗（考虑倍率）
+ * @param skillId 技能ID
+ * @param baseCost 基础耐力消耗
+ * @returns 实际耐力消耗
+ */
+export function calculateHeisakiSkillCost(skillId: string, baseCost: number): number {
+  if (!bossState.isBossFight || bossState.bossId !== 'heisaki') {
+    return baseCost;
+  }
+  const multiplier = bossState.heisakiSkillCostMultipliers[skillId] || 1;
+  return Math.floor(baseCost * multiplier);
+}
+
+/**
+ * 处理玩家使用A/S/SS级技能后的耐力消耗翻倍
+ * @param skillId 技能ID
+ * @param skillRarity 技能稀有度
+ * @returns 是否触发了翻倍
+ */
+export function processHeisakiHighRaritySkillUsed(skillId: string, skillRarity: string): {
+  triggered: boolean;
+  newMultiplier: number;
+  dialogues: BossDialogue[];
+} {
+  if (!bossState.isBossFight || bossState.bossId !== 'heisaki') {
+    return { triggered: false, newMultiplier: 1, dialogues: [] };
+  }
+  
+  // 只有A、S、SS级技能触发翻倍
+  if (skillRarity !== 'A' && skillRarity !== 'S' && skillRarity !== 'SS') {
+    return { triggered: false, newMultiplier: 1, dialogues: [] };
+  }
+  
+  // 获取当前倍率，翻倍
+  const currentMultiplier = bossState.heisakiSkillCostMultipliers[skillId] || 1;
+  const newMultiplier = currentMultiplier * 4;
+  bossState.heisakiSkillCostMultipliers[skillId] = newMultiplier;
+  
+  // 随机播放对话
+  const dialogues = HEISAKI_DIALOGUES.high_rarity_skill;
+  
+  return {
+    triggered: true,
+    newMultiplier,
+    dialogues: [dialogues[Math.floor(Math.random() * dialogues.length)]],
+  };
+}
+
+/**
+ * 处理玩家使用C/B级技能命中后的随机技能耐力消耗减半
+ * @param playerSkillIds 玩家所有技能ID列表
+ * @returns 被减半的技能ID和新倍率
+ */
+export function processHeisakiLowRaritySkillHit(playerSkillIds: string[]): {
+  triggered: boolean;
+  affectedSkillId: string | null;
+  newMultiplier: number;
+  dialogues: BossDialogue[];
+} {
+  if (!bossState.isBossFight || bossState.bossId !== 'heisaki') {
+    return { triggered: false, affectedSkillId: null, newMultiplier: 1, dialogues: [] };
+  }
+  
+  if (playerSkillIds.length === 0) {
+    return { triggered: false, affectedSkillId: null, newMultiplier: 1, dialogues: [] };
+  }
+  
+  // 随机选择一个技能
+  const randomIndex = Math.floor(Math.random() * playerSkillIds.length);
+  const affectedSkillId = playerSkillIds[randomIndex];
+  
+  // 获取当前倍率，减半（向上取整，最低为1）
+  const currentMultiplier = bossState.heisakiSkillCostMultipliers[affectedSkillId] || 1;
+  const newMultiplier = Math.max(1, Math.ceil(currentMultiplier / 2));
+  bossState.heisakiSkillCostMultipliers[affectedSkillId] = newMultiplier;
+  
+  // 随机播放对话
+  const dialogues = HEISAKI_DIALOGUES.low_rarity_skill_hit;
+  
+  return {
+    triggered: true,
+    affectedSkillId,
+    newMultiplier,
+    dialogues: [dialogues[Math.floor(Math.random() * dialogues.length)]],
+  };
+}
+
+/**
+ * 处理玩家透支耐力（耐力不足时使用债务承担）
+ * @param currentStamina 当前耐力
+ * @param requiredStamina 需要的耐力
+ * @returns 透支信息
+ */
+export function processHeisakiOverdraft(currentStamina: number, requiredStamina: number): {
+  canUseSkill: boolean;
+  staminaToUse: number;
+  debtIncrease: number;
+  newDebt: number;
+  dialogues: BossDialogue[];
+} {
+  if (!bossState.isBossFight || bossState.bossId !== 'heisaki') {
+    // 非BOSS战，正常判断
+    return {
+      canUseSkill: currentStamina >= requiredStamina,
+      staminaToUse: requiredStamina,
+      debtIncrease: 0,
+      newDebt: 0,
+      dialogues: [],
+    };
+  }
+  
+  // 贪婪机制：允许透支
+  if (currentStamina >= requiredStamina) {
+    // 耐力足够，正常消耗
+    return {
+      canUseSkill: true,
+      staminaToUse: requiredStamina,
+      debtIncrease: 0,
+      newDebt: bossState.heisakiDebt,
+      dialogues: [],
+    };
+  }
+  
+  // 耐力不足，透支
+  const debtIncrease = requiredStamina - currentStamina;
+  bossState.heisakiDebt += debtIncrease;
+  
+  // 随机播放透支对话
+  const dialogues = HEISAKI_DIALOGUES.overdraft;
+  
+  return {
+    canUseSkill: true,
+    staminaToUse: currentStamina, // 消耗所有当前耐力
+    debtIncrease,
+    newDebt: bossState.heisakiDebt,
+    dialogues: [dialogues[Math.floor(Math.random() * dialogues.length)]],
+  };
+}
+
+/**
+ * 处理回合开始时的债务利息（30%向下取整）
+ * @returns 利息增加量和新债务值
+ */
+export function processHeisakiDebtInterest(): {
+  interestAmount: number;
+  newDebt: number;
+} {
+  if (!bossState.isBossFight || bossState.bossId !== 'heisaki') {
+    return { interestAmount: 0, newDebt: 0 };
+  }
+  
+  // 重置债务结算标记
+  bossState.heisakiDebtSettlementTriggered = false;
+  
+  if (bossState.heisakiDebt <= 0) {
+    return { interestAmount: 0, newDebt: 0 };
+  }
+  
+  // 30%利息，向下取整
+  const interestAmount = Math.floor(bossState.heisakiDebt * 0.30);
+  bossState.heisakiDebt += interestAmount;
+  
+  return {
+    interestAmount,
+    newDebt: bossState.heisakiDebt,
+  };
+}
+
+/**
+ * 检查是否应该触发债务结算
+ * @param currentPleasure 当前快感
+ * @param maxPleasure 最大快感
+ * @returns 是否应该触发
+ */
+export function shouldTriggerHeisakiDebtSettlement(currentPleasure: number, maxPleasure: number): boolean {
+  if (!bossState.isBossFight || bossState.bossId !== 'heisaki') {
+    return false;
+  }
+  if (bossState.heisakiDebt <= 0) {
+    return false;
+  }
+  if (currentPleasure >= maxPleasure) {
+    return false;
+  }
+  
+  // 当玩家的当前快感 + 债务 > 快感上限时触发
+  return (currentPleasure + bossState.heisakiDebt) > maxPleasure;
+}
+
+/**
+ * 执行债务结算
+ * @param currentPleasure 当前快感
+ * @param maxPleasure 最大快感
+ * @returns 结算结果
+ */
+export function executeHeisakiDebtSettlement(currentPleasure: number, maxPleasure: number): {
+  pleasureIncrease: number;
+  debtReduction: number;
+  newDebt: number;
+  dialogues: BossDialogue[];
+  greedSatisfiedDebuff: { enduranceCalcDebuff: number; duration: number };
+} {
+  if (!bossState.isBossFight || bossState.bossId !== 'heisaki') {
+    return {
+      pleasureIncrease: 0,
+      debtReduction: 0,
+      newDebt: 0,
+      dialogues: [],
+      greedSatisfiedDebuff: { enduranceCalcDebuff: 0, duration: 0 },
+    };
+  }
+  
+  // 计算可以结算的债务量（不超过快感上限-当前快感）
+  const availableSpace = maxPleasure - currentPleasure;
+  const debtToSettle = Math.min(bossState.heisakiDebt, Math.max(0, availableSpace));
+  
+  // 实际增加的快感量（可能触发高潮）
+  const pleasureIncrease = debtToSettle;
+  
+  // 减少债务
+  bossState.heisakiDebt -= debtToSettle;
+  bossState.heisakiDebtSettlementTriggered = true;
+  
+  // 返回结算对话和贪婪满足debuff
+  return {
+    pleasureIncrease,
+    debtReduction: debtToSettle,
+    newDebt: bossState.heisakiDebt,
+    dialogues: [...HEISAKI_DIALOGUES.debt_settlement, ...HEISAKI_DIALOGUES.greed_satisfied],
+    greedSatisfiedDebuff: {
+      enduranceCalcDebuff: -90, // 忍耐力成算-90%
+      duration: 2, // 2回合
+    },
+  };
+}
+
+/**
+ * 获取当前债务值
+ */
+export function getHeisakiDebt(): number {
+  if (!bossState.isBossFight || bossState.bossId !== 'heisaki') {
+    return 0;
+  }
+  return bossState.heisakiDebt;
+}
+
+/**
+ * 获取黑崎晴雯贪婪天赋描述信息（用于UI显示）
+ */
+export function getHeisakiGreedDescription(): string {
+  const effects = [
+    '【七宗罪·贪婪】黑崎晴雯的贪婪天赋：',
+    '',
+    '【利息翻倍】使用A/S/SS级技能后：',
+    '• 该技能下次耐力消耗翻4倍（可叠加）',
+    '',
+    '【廉价回馈】使用C/B级技能命中后：',
+    '• 随机一个技能耐力消耗减半（可叠加）',
+    '',
+    '【透支机制】耐力不足时：',
+    '• 允许透支，不足部分计入债务',
+    '• 债务每回合增加30%利息（向下取整）',
+    '',
+    '【债务结算】当前快感+债务 > 快感上限时：',
+    '• 触发债务结算，增加等同于债务的快感',
+    '• 债务减少等同于溢出部分',
+    '',
+    '【贪婪满足】债务结算触发时：',
+    '• 黑崎晴雯获得忍耐力成算-90%（1回合）',
   ];
   return effects.join('\n');
 }

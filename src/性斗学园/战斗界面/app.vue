@@ -61,6 +61,22 @@
       >
         <span class="sleep-icon">💤</span>
       </div>
+      
+      <!-- 黑崎晴雯债务显示 -->
+      <div 
+        v-if="BossSystem.bossState.isBossFight && BossSystem.bossState.bossId === 'heisaki'"
+        class="heisaki-debt-display"
+      >
+        <div class="debt-container">
+          <div class="debt-icon">💰</div>
+          <div class="debt-info">
+            <span class="debt-label">债务</span>
+            <span class="debt-value" :class="{ 'debt-danger': BossSystem.bossState.heisakiDebt > 0 }">
+              {{ BossSystem.bossState.heisakiDebt }}
+            </span>
+          </div>
+        </div>
+      </div>
     </main>
 
     <!-- BOSS文字特效 -->
@@ -256,9 +272,15 @@
                   </div>
                   <p class="skill-desc">{{ skill.data?.damageDescription || skill.description || `造成${skill.data?.powerCoeff || 100}%性斗力伤害` }}</p>
                   <div class="skill-stats-row">
-                    <span class="stat-item cost" :class="{ 'cost-danger': player.stats.currentEndurance < skill.cost }">
+                    <span class="stat-item cost" :class="{ 
+                      'cost-danger': player.stats.currentEndurance < getDisplaySkillCost(skill),
+                      'cost-multiplied': BossSystem.bossState.isBossFight && BossSystem.bossState.bossId === 'heisaki' && BossSystem.getHeisakiSkillCostMultiplier(skill.id) > 1
+                    }">
                       <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
-                      {{ skill.cost }}耐力
+                      {{ getDisplaySkillCost(skill) }}耐力
+                      <span v-if="BossSystem.bossState.isBossFight && BossSystem.bossState.bossId === 'heisaki' && BossSystem.getHeisakiSkillCostMultiplier(skill.id) > 1" class="cost-multiplier">
+                        (×{{ BossSystem.getHeisakiSkillCostMultiplier(skill.id) }})
+                      </span>
                     </span>
                     <span v-if="skill.cooldown > 0" class="stat-item cooldown">
                       <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
@@ -1412,6 +1434,82 @@ async function loadEnemyFromMvuData(data: any, maxClimaxCount: number) {
     
     console.info(`[战斗界面] 伊丽莎白夜羽BOSS战初始化完成, 高潮次数上限: ${bossClimaxLimit}`);
   }
+  // 检测是否是薇丝佩菈BOSS战
+  else if (BossSystem.isVesperaBoss(enemyName)) {
+    console.info('[战斗界面] 检测到薇丝佩菈BOSS战！');
+    let playerGender = '男';
+    try {
+      if (typeof Mvu !== 'undefined') {
+        const mvuData = Mvu.getMvuData({ type: 'message', message_id: 'latest' });
+        const rawGender = _.get(mvuData?.stat_data, '角色基础.性别', '男');
+        playerGender = String(rawGender || '男');
+      }
+    } catch (e) {
+      playerGender = '男';
+    }
+    // 仅当明确为“男”时按男性处理，否则一律按女性处理
+    playerGender = playerGender === '男' ? '男' : '女';
+    BossSystem.initVesperaBoss(playerGender);
+    const bossDisplayName = BossSystem.getVesperaDisplayName();
+    const bossClimaxLimit = BossSystem.BOSS_CONFIG.vespera.climaxLimits[0]; // 高潮次数上限3
+    enemy.value.name = bossDisplayName;
+    enemy.value.avatarUrl = BossSystem.getVesperaAvatarUrl();
+    
+    // 更新MVU中的对手名称和胜负规则
+    if (typeof Mvu !== 'undefined') {
+      const mvuData = Mvu.getMvuData({ type: 'message', message_id: 'latest' });
+      if (mvuData?.stat_data) {
+        _.set(mvuData.stat_data, '性斗系统.对手名称', bossDisplayName);
+        _.set(mvuData.stat_data, '性斗系统.胜负规则.高潮次数上限', bossClimaxLimit);
+        _.set(mvuData.stat_data, '性斗系统.对手高潮次数', 0);
+        await Mvu.replaceMvuData(mvuData, { type: 'message', message_id: 'latest' });
+      }
+    }
+    // 同步更新UI中的高潮次数上限
+    player.value.stats.maxClimaxCount = bossClimaxLimit;
+    enemy.value.stats.maxClimaxCount = bossClimaxLimit;
+    
+    addLog(`【七宗罪·色欲】薇丝佩菈的色欲天赋正在影响战场...`, 'system', 'critical');
+    addLog(`【信息素侵蚀】每回合你的性斗力成算+5%，忍耐力成算-5%，快感增加`, 'system', 'debuff');
+    addLog(`【束缚猎物】被束缚时薇丝佩菈攻击必定命中且必定暴击`, 'system', 'debuff');
+    addLog(`【体力透支】使用耐力消耗>28的技能后，下回合被强制束缚`, 'system', 'info');
+    
+    console.info(`[战斗界面] 薇丝佩菈BOSS战初始化完成, 高潮次数上限: ${bossClimaxLimit}, 玩家性别: ${playerGender}`);
+  }
+  // 检测是否是黑崎晴雯BOSS战
+  else if (BossSystem.isHeisakiBoss(enemyName)) {
+    console.info('[战斗界面] 检测到黑崎晴雯BOSS战！');
+    BossSystem.initHeisakiBoss();
+    const bossDisplayName = BossSystem.getHeisakiDisplayName();
+    const bossClimaxLimit = BossSystem.BOSS_CONFIG.heisaki.climaxLimits[0]; // 高潮次数上限3
+    enemy.value.name = bossDisplayName;
+    enemy.value.avatarUrl = BossSystem.getHeisakiAvatarUrl();
+    
+    // 更新MVU中的对手名称和胜负规则
+    if (typeof Mvu !== 'undefined') {
+      const mvuData = Mvu.getMvuData({ type: 'message', message_id: 'latest' });
+      if (mvuData?.stat_data) {
+        _.set(mvuData.stat_data, '性斗系统.对手名称', bossDisplayName);
+        _.set(mvuData.stat_data, '性斗系统.胜负规则.高潮次数上限', bossClimaxLimit);
+        _.set(mvuData.stat_data, '性斗系统.对手高潮次数', 0);
+        await Mvu.replaceMvuData(mvuData, { type: 'message', message_id: 'latest' });
+      }
+    }
+    // 同步更新UI中的高潮次数上限
+    player.value.stats.maxClimaxCount = bossClimaxLimit;
+    enemy.value.stats.maxClimaxCount = bossClimaxLimit;
+    
+    addLog(`【七宗罪·贪婪】黑崎晴雯的贪婪天赋正在影响战场...`, 'system', 'critical');
+    addLog(`【利息翻倍】使用A/S/SS级技能后，该技能下次耐力消耗翻4倍`, 'system', 'debuff');
+    addLog(`【透支机制】耐力不足时允许透支，不足部分计入债务`, 'system', 'info');
+    addLog(`【债务利息】债务每回合增加30%利息`, 'system', 'debuff');
+    
+    // 禁用投降按钮
+    isBossSurrenderDisabled.value = true;
+    addLog(`【贪婪契约】投降按钮已被封印！`, 'system', 'critical');
+    
+    console.info(`[战斗界面] 黑崎晴雯BOSS战初始化完成, 高潮次数上限: ${bossClimaxLimit}`);
+  }
 
   // 优先从数据库查找对手数据，如果存在则覆盖MVU变量
   if (enemyName) {
@@ -1436,6 +1534,8 @@ async function loadEnemyFromMvuData(data: any, maxClimaxCount: number) {
         enemy.value.avatarUrl = BossSystem.getEdenAvatarUrl(BossSystem.bossState.edenSleeping);
       } else if (BossSystem.bossState.isBossFight && BossSystem.bossState.bossId === 'elizabeth') {
         enemy.value.avatarUrl = BossSystem.getElizabethAvatarUrl();
+      } else if (BossSystem.bossState.isBossFight && BossSystem.bossState.bossId === 'heisaki') {
+        enemy.value.avatarUrl = BossSystem.getHeisakiAvatarUrl();
       } else {
         enemy.value.avatarUrl = getEnemyPortraitUrl(fullEnemyName);
       }
@@ -1504,16 +1604,32 @@ async function loadEnemyFromMvuData(data: any, maxClimaxCount: number) {
             
             // 自动加载对手技能（使用解析后的完整名称）
             // 重要：如果数据库中存在该对手技能，则直接覆盖MVU中的技能
-            // 特殊处理：艾格妮丝根据玩家性别选择技能池
+            // 特殊处理：根据玩家性别选择技能池（艾格妮丝、芙莲、薇丝佩菈）
             let skillLookupName = fullEnemyName;
+            const playerGender = _.get(mvuData.stat_data, '角色基础.性别', '女');
             if (fullEnemyName === '艾格妮丝' || fullEnemyName.includes('艾格妮丝')) {
-              const playerGender = _.get(mvuData.stat_data, '角色基础.性别', '女');
               if (playerGender === '男') {
                 skillLookupName = '艾格妮丝_男';
                 console.info(`[战斗界面] 艾格妮丝检测到男性玩家，使用男性技能池`);
               } else {
                 skillLookupName = '艾格妮丝';
                 console.info(`[战斗界面] 艾格妮丝检测到女性/非二元玩家，使用女性技能池`);
+              }
+            } else if (fullEnemyName === '芙莲' || fullEnemyName.includes('芙莲')) {
+              if (playerGender === '男') {
+                skillLookupName = '芙莲_男';
+                console.info(`[战斗界面] 芙莲检测到男性玩家，使用去雄系技能池`);
+              } else {
+                skillLookupName = '芙莲';
+                console.info(`[战斗界面] 芙莲检测到女性/非二元玩家，使用精灵化技能池`);
+              }
+            } else if (fullEnemyName === '薇丝佩菈' || fullEnemyName.includes('薇丝佩菈')) {
+              if (playerGender === '男') {
+                skillLookupName = '薇丝佩菈_男';
+                console.info(`[战斗界面] 薇丝佩菈检测到男性玩家，使用厌男处刑技能池`);
+              } else {
+                skillLookupName = '薇丝佩菈';
+                console.info(`[战斗界面] 薇丝佩菈检测到女性/非二元玩家，使用百合乐园技能池`);
               }
             }
             
@@ -1667,16 +1783,32 @@ async function loadEnemyFromMvuData(data: any, maxClimaxCount: number) {
             
             // 尝试加载对手技能（使用解析后的完整名称）
             // 重要：如果数据库中存在该对手技能，则直接覆盖MVU中的技能
-            // 特殊处理：艾格妮丝根据玩家性别选择技能池
+            // 特殊处理：根据玩家性别选择技能池（艾格妮丝、芙莲、薇丝佩菈）
             let skillLookupName = fullEnemyName;
+            const playerGender = _.get(mvuData.stat_data, '角色基础.性别', '女');
             if (fullEnemyName === '艾格妮丝' || fullEnemyName.includes('艾格妮丝')) {
-              const playerGender = _.get(mvuData.stat_data, '角色基础.性别', '女');
               if (playerGender === '男') {
                 skillLookupName = '艾格妮丝_男';
                 console.info(`[战斗界面] 艾格妮丝检测到男性玩家，使用男性技能池`);
               } else {
                 skillLookupName = '艾格妮丝';
                 console.info(`[战斗界面] 艾格妮丝检测到女性/非二元玩家，使用女性技能池`);
+              }
+            } else if (fullEnemyName === '芙莲' || fullEnemyName.includes('芙莲')) {
+              if (playerGender === '男') {
+                skillLookupName = '芙莲_男';
+                console.info(`[战斗界面] 芙莲检测到男性玩家，使用去雄系技能池`);
+              } else {
+                skillLookupName = '芙莲';
+                console.info(`[战斗界面] 芙莲检测到女性/非二元玩家，使用精灵化技能池`);
+              }
+            } else if (fullEnemyName === '薇丝佩菈' || fullEnemyName.includes('薇丝佩菈')) {
+              if (playerGender === '男') {
+                skillLookupName = '薇丝佩菈_男';
+                console.info(`[战斗界面] 薇丝佩菈检测到男性玩家，使用厌男处刑技能池`);
+              } else {
+                skillLookupName = '薇丝佩菈';
+                console.info(`[战斗界面] 薇丝佩菈检测到女性/非二元玩家，使用百合乐园技能池`);
               }
             }
             
@@ -2663,7 +2795,26 @@ function getPhaseText(phase: TurnState['phase']): string {
 }
 
 function isSkillDisabled(skill: Skill): boolean {
-  return skill.currentCooldown > 0 || player.value.stats.currentEndurance < skill.cost;
+  // 黑崎晴雯BOSS战允许透支，所以不检查耐力
+  if (BossSystem.bossState.isBossFight && BossSystem.bossState.bossId === 'heisaki') {
+    return skill.currentCooldown > 0;
+  }
+  const actualCost = getDisplaySkillCost(skill);
+  return skill.currentCooldown > 0 || player.value.stats.currentEndurance < actualCost;
+}
+
+function getDisplaySkillCost(skill: Skill): number {
+  let cost = skill.cost;
+  // 伊甸芙宁BOSS：懒惰天赋 - 耐力消耗×2
+  if (BossSystem.bossState.isBossFight && BossSystem.bossState.bossId === 'eden') {
+    const slothEffects = BossSystem.getEdenSlothEffects();
+    cost = Math.floor(cost * slothEffects.staminaCostMultiplier);
+  }
+  // 黑崎晴雯BOSS：贪婪天赋 - 技能耐力消耗倍率
+  if (BossSystem.bossState.isBossFight && BossSystem.bossState.bossId === 'heisaki') {
+    cost = BossSystem.calculateHeisakiSkillCost(skill.id, skill.cost);
+  }
+  return cost;
 }
 
 // ================= 战斗逻辑 =================
@@ -2791,8 +2942,19 @@ function handlePlayerSkill(skill: Skill) {
     requiredCost = Math.floor(skill.cost * slothEffects.staminaCostMultiplier);
   }
   
+  // ========== 黑崎晴雯BOSS：贪婪天赋 - 技能耐力消耗倍率 ==========
+  if (BossSystem.bossState.isBossFight && BossSystem.bossState.bossId === 'heisaki') {
+    requiredCost = BossSystem.calculateHeisakiSkillCost(skill.id, skill.cost);
+    if (requiredCost > skill.cost) {
+      addLog(`【利息翻倍】${skill.name} 耐力消耗: ${skill.cost} → ${requiredCost}`, 'system', 'debuff');
+    }
+  }
+  
   // 检查体力是否足够（使用计算后的实际消耗）
-  if (player.value.stats.currentEndurance < requiredCost) {
+  // 黑崎晴雯BOSS战允许透支
+  if (BossSystem.bossState.isBossFight && BossSystem.bossState.bossId === 'heisaki') {
+    // 贪婪机制：允许透支，不检查耐力
+  } else if (player.value.stats.currentEndurance < requiredCost) {
     addLog(`体力不足，无法使用技能！需要 ${requiredCost} 点体力`, 'system', 'info');
     return;
   }
@@ -2819,6 +2981,11 @@ function handlePlayerSkill(skill: Skill) {
     }
   }
   
+  // ========== 黑崎晴雯BOSS：贪婪天赋 - 技能耐力消耗倍率 ==========
+  if (BossSystem.bossState.isBossFight && BossSystem.bossState.bossId === 'heisaki') {
+    actualCost = BossSystem.calculateHeisakiSkillCost(skill.id, skill.cost);
+  }
+  
   if (playerTalent.value) {
     const staminaCap = TalentSystem.getTalentStaminaChangeCap(playerTalent.value);
     if (staminaCap !== null && actualCost > staminaCap) {
@@ -2826,8 +2993,35 @@ function handlePlayerSkill(skill: Skill) {
       actualCost = staminaCap;
     }
   }
-  nextPlayer.stats.currentEndurance -= actualCost;
-  addLog(`${nextPlayer.name} 消耗了 ${actualCost} 点体力`, 'system', 'info');
+  
+  // ========== 黑崎晴雯BOSS：贪婪天赋 - 透支机制 ==========
+  if (BossSystem.bossState.isBossFight && BossSystem.bossState.bossId === 'heisaki') {
+    const overdraftResult = BossSystem.processHeisakiOverdraft(nextPlayer.stats.currentEndurance, actualCost);
+    if (overdraftResult.debtIncrease > 0) {
+      // 透支：消耗所有耐力，剩余部分计入债务
+      nextPlayer.stats.currentEndurance = 0;
+      addLog(`${nextPlayer.name} 消耗了 ${overdraftResult.staminaToUse} 点体力`, 'system', 'info');
+      addLog(`【透支】耐力不足，债务增加 ${overdraftResult.debtIncrease}，当前债务: ${overdraftResult.newDebt}`, 'system', 'critical');
+      // 播放透支对话
+      if (overdraftResult.dialogues.length > 0) {
+        BossSystem.queueDialogues(overdraftResult.dialogues);
+      }
+    } else {
+      nextPlayer.stats.currentEndurance -= actualCost;
+      addLog(`${nextPlayer.name} 消耗了 ${actualCost} 点体力`, 'system', 'info');
+    }
+  } else {
+    nextPlayer.stats.currentEndurance -= actualCost;
+    addLog(`${nextPlayer.name} 消耗了 ${actualCost} 点体力`, 'system', 'info');
+  }
+
+  // ========== 薇丝佩菈BOSS：记录玩家技能耐力消耗（用于下回合束缚判定） ==========
+  if (BossSystem.bossState.isBossFight && BossSystem.bossState.bossId === 'vespera') {
+    BossSystem.recordVesperaPlayerSkillCost(skill.cost);
+    if (skill.cost > 28) {
+      addLog(`【体力透支】使用了耐力消耗>28的技能，下回合将被束缚！`, 'system', 'danger');
+    }
+  }
 
   // 设置冷却
   const skillIndex = nextPlayer.skills.findIndex(s => s.id === skill.id);
@@ -3221,6 +3415,54 @@ function handlePlayerSkill(skill: Skill) {
             addLog(`【天赋】${nextEnemy.name} 被束缚了 ${talentAttackResult.bindDuration} 回合！`, 'system', 'info');
           }
         }
+        
+        // ========== 黑崎晴雯BOSS：贪婪天赋 - C/B级技能命中时随机技能耐力消耗减半 ==========
+        if (BossSystem.bossState.isBossFight && BossSystem.bossState.bossId === 'heisaki') {
+          // 获取技能稀有度
+          let skillRarity = 'C';
+          if (typeof Mvu !== 'undefined') {
+            const mvuData = Mvu.getMvuData({ type: 'message', message_id: 'latest' });
+            const skillMvuData = _.get(mvuData?.stat_data, `技能系统.主动技能.${skill.id}`, null);
+            if (skillMvuData?.基本信息?.稀有度) {
+              skillRarity = skillMvuData.基本信息.稀有度;
+            }
+          }
+          
+          // C/B级技能命中时，随机技能耐力消耗减半
+          if (skillRarity === 'C' || skillRarity === 'B') {
+            const playerSkillIds = nextPlayer.skills.map(s => s.id);
+            const halfResult = BossSystem.processHeisakiLowRaritySkillHit(playerSkillIds);
+            if (halfResult.triggered && halfResult.affectedSkillId) {
+              const affectedSkill = nextPlayer.skills.find(s => s.id === halfResult.affectedSkillId);
+              addLog(`【廉价回馈】${affectedSkill?.name || halfResult.affectedSkillId} 耐力消耗倍率减半（当前倍率: ${halfResult.newMultiplier}x）`, 'system', 'buff');
+              if (halfResult.dialogues.length > 0) {
+                BossSystem.queueDialogues(halfResult.dialogues);
+              }
+            }
+          }
+        }
+      }
+      
+      // ========== 黑崎晴雯BOSS：贪婪天赋 - A/S/SS级技能使用后耐力消耗翻倍 ==========
+      if (BossSystem.bossState.isBossFight && BossSystem.bossState.bossId === 'heisaki') {
+        // 获取技能稀有度
+        let skillRarity = 'C';
+        if (typeof Mvu !== 'undefined') {
+          const mvuData = Mvu.getMvuData({ type: 'message', message_id: 'latest' });
+          const skillMvuData = _.get(mvuData?.stat_data, `技能系统.主动技能.${skill.id}`, null);
+          if (skillMvuData?.基本信息?.稀有度) {
+            skillRarity = skillMvuData.基本信息.稀有度;
+          }
+        }
+        
+        // A/S/SS级技能使用后，该技能下次耐力消耗翻倍
+        const doubleResult = BossSystem.processHeisakiHighRaritySkillUsed(skill.id, skillRarity);
+        if (doubleResult.triggered) {
+          addLog(`【利息翻倍】${skill.name} 下次耐力消耗将翻倍（当前倍率: ${doubleResult.newMultiplier}x）`, 'system', 'debuff');
+          if (doubleResult.dialogues.length > 0) {
+            BossSystem.queueDialogues(doubleResult.dialogues);
+          }
+        }
       }
 
       // 更新状态
@@ -3483,6 +3725,9 @@ function handleEnemyTurn() {
   
   console.info(`[束缚系统] 敌人回合开始 - enemyBoundTurns=${enemyBoundTurns.value}, enemyBindSource=${enemyBindSource.value}`);
 
+  // 记录：敌人回合开始时玩家是否处于束缚状态（用于本回合薇丝佩菈必中必暴判定）
+  const playerWasBoundAtEnemyTurnStart = playerBoundTurns.value > 0;
+
   // 敌人行动开始时，递减敌人施加的束缚效果
   if (playerBoundTurns.value > 0 && playerBindSource.value === 'enemy') {
     playerBoundTurns.value--;
@@ -3490,7 +3735,7 @@ function handleEnemyTurn() {
       addLog(`${player.value.name} 的束缚效果消失了`, 'system', 'info');
       playerBindSource.value = null;
     } else {
-      addLog(`${player.value.name} 的束缚剩余 ${playerBoundTurns.value} 回合`, 'system', 'info');
+      addLog(`${player.value.name} 的束缚效果剩余 ${playerBoundTurns.value} 回合`, 'system', 'info');
     }
   }
 
@@ -3700,6 +3945,65 @@ function handleEnemyTurn() {
 
   addLog(`${enemy.value.name} 开始行动...`, 'system', 'info')
 
+  // ========== 薇丝佩菈BOSS：自体献祭检查（高潮2/3次后，仅女性玩家） ==========
+  if (BossSystem.bossState.isBossFight && BossSystem.bossState.bossId === 'vespera') {
+    let playerGender = '男';
+    try {
+      if (typeof Mvu !== 'undefined') {
+        const mvuData = Mvu.getMvuData({ type: 'message', message_id: 'latest' });
+        const rawGender = _.get(mvuData?.stat_data, '角色基础.性别', '男');
+        playerGender = String(rawGender || '男');
+      }
+    } catch (e) {
+      playerGender = '男';
+    }
+    playerGender = playerGender === '男' ? '男' : '女';
+    const bossClimaxCount = enemy.value.stats.climaxCount || 0;
+    
+    if (BossSystem.shouldUseVesperaSelfSacrifice(bossClimaxCount, playerGender)) {
+      // 执行自体献祭（无视束缚）
+      const sacrificeResult = BossSystem.executeVesperaSelfSacrifice();
+      
+      // 播放对话
+      BossSystem.setDialogueSkippable(false);
+      BossSystem.queueDialogues(sacrificeResult.dialogues);
+      
+      // 应用束缚效果（等待对话播放完毕，强制玩家看完）
+      (async () => {
+        await BossSystem.waitForDialoguesToFinish();
+        playerBoundTurns.value = sacrificeResult.bindDuration;
+        playerBindSource.value = 'enemy';
+        addLog(`【自体献祭·鬼角先生】薇丝佩菈使用了特殊技能！`, 'system', 'critical');
+        addLog(`【自体献祭】必定命中！你被束缚了 ${sacrificeResult.bindDuration} 回合！`, 'system', 'critical');
+        
+        // 造成伤害
+        const sacrificeDamage = Math.floor(enemy.value.stats.charm * 2.0 + 50);
+        player.value.stats.currentPleasure = Math.min(
+          player.value.stats.maxPleasure,
+          player.value.stats.currentPleasure + sacrificeDamage
+        );
+        syncPlayerPleasureToMvu(player.value.stats.currentPleasure);
+        addLog(`【自体献祭】造成 ${sacrificeDamage} 点快感伤害！`, 'system', 'damage');
+        
+        // 应用debuff
+        applyTalentBuff('player', 'BOSS_薇丝佩菈_自体献祭', {
+          '基础忍耐力成算': -30,
+          '闪避率加成': -30,
+        }, 3);
+        addLog(`【自体献祭】敏感度+50%，防御-30%，性斗力-30%（3回合）`, 'system', 'debuff');
+        
+        // 结束回合
+        endTurn().then((climaxTriggered) => {
+          if (!climaxTriggered) {
+            setTimeout(startNewTurn, 1000);
+          }
+        });
+      })();
+      
+      return; // 使用自体献祭后不再执行普通技能
+    }
+  }
+
   setTimeout(() => {
     // 使用预告的技能（如果预告存在且可用），否则随机选择
     if (!turnState.enemyIntention) {
@@ -3871,9 +4175,21 @@ function handleEnemyTurn() {
           addLog(`【敌人·暴怒】克莉丝汀的攻击必定暴击，连击+1！`, 'system', 'critical');
         }
         
+        // ========== 薇丝佩菈BOSS：束缚猎物 - 本回合玩家处于束缚状态则必定命中且必定暴击 ==========
+        let vesperaGuaranteedHit = false;
+        let vesperaGuaranteedCrit = false;
+        if (BossSystem.bossState.isBossFight && BossSystem.bossState.bossId === 'vespera') {
+          const boundBonus = BossSystem.getVesperaBoundAttackBonus(playerWasBoundAtEnemyTurnStart);
+          vesperaGuaranteedHit = boundBonus.guaranteedHit;
+          vesperaGuaranteedCrit = boundBonus.guaranteedCrit;
+          if (vesperaGuaranteedHit) {
+            addLog(`【束缚猎物】你被束缚了！薇丝佩菈的攻击必定命中且必定暴击！`, 'system', 'critical');
+          }
+        }
+        
         const result = executeAttack(nextEnemy, nextPlayer, skill.data, false, {
-          guaranteedHit: lustGuaranteedHit,
-          guaranteedCrit: lustGuaranteedCrit || christineWrathCrit,
+          guaranteedHit: lustGuaranteedHit || vesperaGuaranteedHit,
+          guaranteedCrit: lustGuaranteedCrit || christineWrathCrit || vesperaGuaranteedCrit,
           extraHitCount: christineWrathExtraHits,
         });
         
@@ -3898,10 +4214,42 @@ function handleEnemyTurn() {
             BossSystem.queueDialogues([battleDialogue]);
           }
         }
+        // 薇丝佩菈BOSS战：敌人使用技能后触发随机战斗对话
+        if (BossSystem.bossState.isBossFight && BossSystem.bossState.bossId === 'vespera') {
+          let playerGender = '男';
+          try {
+            if (typeof Mvu !== 'undefined') {
+              const mvuData = Mvu.getMvuData({ type: 'message', message_id: 'latest' });
+              const rawGender = _.get(mvuData?.stat_data, '角色基础.性别', '男');
+              playerGender = String(rawGender || '男');
+            }
+          } catch (e) {
+            playerGender = '男';
+          }
+          playerGender = playerGender === '男' ? '男' : '女';
+          const battleDialogue = BossSystem.getVesperaRandomBattleDialogue(playerGender);
+          if (battleDialogue) {
+            BossSystem.queueDialogues([battleDialogue]);
+          }
+        }
 
         if (result.isDodged) {
           addLog(`${nextPlayer.name} 闪避了所有攻击！`, 'system', 'info');
           triggerEffect('dodge');
+          
+          // ========== 薇丝佩菈BOSS：记录玩家闪避（用于连续闪避判定） ==========
+          if (BossSystem.bossState.isBossFight && BossSystem.bossState.bossId === 'vespera') {
+            const dodgeResult = BossSystem.recordVesperaPlayerDodge();
+            if (dodgeResult.triggerDebuff) {
+              // 应用薇丝佩菈的debuff（闪避率-8，忍耐力成算-8，永久）
+              const totalDebuff = BossSystem.getVesperaConsecutiveDodgeDebuff();
+              applyTalentBuff('enemy', 'BOSS_薇丝佩菈_连续闪避debuff', {
+                '闪避率加成': totalDebuff.totalEvasionDebuff,
+                '基础忍耐力成算': totalDebuff.totalEnduranceCalcDebuff,
+              }, 999);
+              addLog(`【挑逗惩罚】连续闪避${dodgeResult.consecutiveDodges}次！薇丝佩菈闪避率${totalDebuff.totalEvasionDebuff}%，忍耐力成算${totalDebuff.totalEnduranceCalcDebuff}%！`, 'system', 'debuff');
+            }
+          }
           
           // ========== 克莉丝汀BOSS第二阶段：暴怒天赋 - 攻击被闪避未造成伤害时增加快感 ==========
           if (BossSystem.bossState.isBossFight && BossSystem.bossState.bossId === 'christine' && BossSystem.bossState.currentPhase === 2) {
@@ -4213,6 +4561,38 @@ function startNewTurn() {
     }
   }
 
+  // ========== 薇丝佩菈：色欲天赋 - 回合开始效果 ==========
+  if (BossSystem.bossState.isBossFight && BossSystem.bossState.bossId === 'vespera') {
+    const vesperaResult = BossSystem.processVesperaTurnStart(turnState.currentTurn, player.value.stats.maxPleasure);
+    
+    // 增加玩家快感
+    if (vesperaResult.pleasureIncrease > 0) {
+      const oldPleasure = player.value.stats.currentPleasure;
+      player.value.stats.currentPleasure = Math.min(
+        player.value.stats.maxPleasure,
+        player.value.stats.currentPleasure + vesperaResult.pleasureIncrease
+      );
+      syncPlayerPleasureToMvu(player.value.stats.currentPleasure);
+      addLog(`【信息素侵蚀】快感增加 ${vesperaResult.pleasureIncrease}（第${turnState.currentTurn}回合×4%×最大快感）`, 'system', 'debuff');
+    }
+    
+    // 应用累计的性斗力成算buff和忍耐力成算debuff到玩家
+    if (vesperaResult.sexPowerCalcBuff !== 0 || vesperaResult.enduranceCalcDebuff !== 0) {
+      applyTalentBuff('player', 'BOSS_薇丝佩菈_信息素', {
+        '基础性斗力成算': vesperaResult.sexPowerCalcBuff,
+        '基础忍耐力成算': vesperaResult.enduranceCalcDebuff,
+      }, 999);
+      addLog(`【信息素侵蚀】性斗力成算+${vesperaResult.sexPowerCalcBuff}%，忍耐力成算${vesperaResult.enduranceCalcDebuff}%`, 'system', 'debuff');
+    }
+    
+    // 检查是否因上回合使用高耐力技能而被束缚
+    if (vesperaResult.shouldBindNextTurn && playerBoundTurns.value <= 0) {
+      playerBoundTurns.value = 1;
+      playerBindSource.value = 'enemy';
+      addLog(`【体力透支】上回合使用了高耐力技能，被强制束缚1回合！`, 'system', 'critical');
+    }
+  }
+
   // ========== 伊丽莎白夜羽：君王的剧本 - 发布演出指令 ==========
   if (BossSystem.bossState.isBossFight && BossSystem.bossState.bossId === 'elizabeth') {
     const commandResult = BossSystem.processElizabethTurnStart(turnState.currentTurn);
@@ -4227,6 +4607,60 @@ function startNewTurn() {
       } else if (commandResult.command === 'tribute') {
         addLog(`【君王的剧本】伊丽莎白命令你献礼！本回合必须使用C级技能！`, 'system', 'critical');
       }
+    }
+  }
+
+  // ========== 黑崎晴雯：贪婪天赋 - 债务利息 ==========
+  if (BossSystem.bossState.isBossFight && BossSystem.bossState.bossId === 'heisaki') {
+    const interestResult = BossSystem.processHeisakiDebtInterest();
+    if (interestResult.interestAmount > 0) {
+      addLog(`【债务利息】债务增加 ${interestResult.interestAmount}（30%利息），当前债务: ${interestResult.newDebt}`, 'system', 'debuff');
+    }
+    
+    // 检查是否应该触发债务结算
+    if (BossSystem.shouldTriggerHeisakiDebtSettlement(player.value.stats.currentPleasure, player.value.stats.maxPleasure)) {
+      // 强制锁定操作：对话期间禁止玩家行动
+      showSurrenderMenu.value = false;
+      turnState.phase = 'processing';
+
+      // 设置对话不可跳过
+      BossSystem.setDialogueSkippable(false);
+      
+      // 执行债务结算
+      const settlementResult = BossSystem.executeHeisakiDebtSettlement(
+        player.value.stats.currentPleasure,
+        player.value.stats.maxPleasure
+      );
+      
+      // 播放债务结算对话
+      if (settlementResult.dialogues.length > 0) {
+        BossSystem.queueDialogues(settlementResult.dialogues);
+      }
+      
+      // 等待对话完成后应用效果
+      BossSystem.waitForDialoguesToFinish().then(() => {
+        // 增加玩家快感
+        player.value.stats.currentPleasure = Math.min(
+          player.value.stats.maxPleasure,
+          player.value.stats.currentPleasure + settlementResult.pleasureIncrease
+        );
+        syncPlayerPleasureToMvu(player.value.stats.currentPleasure);
+        
+        addLog(`【债务结算】快感增加 ${settlementResult.pleasureIncrease}，债务减少 ${settlementResult.debtReduction}`, 'system', 'critical');
+        
+        // 应用贪婪满足debuff到黑崎晴雯
+        if (settlementResult.greedSatisfiedDebuff.enduranceCalcDebuff !== 0) {
+          applyTalentBuff('enemy', 'BOSS_黑崎晴雯_贪婪满足', {
+            '基础忍耐力成算': settlementResult.greedSatisfiedDebuff.enduranceCalcDebuff,
+          }, settlementResult.greedSatisfiedDebuff.duration);
+          addLog(`【贪婪满足】黑崎晴雯忍耐力成算${settlementResult.greedSatisfiedDebuff.enduranceCalcDebuff}%（${settlementResult.greedSatisfiedDebuff.duration}回合）`, 'system', 'buff');
+        }
+
+        // 恢复玩家输入（若仍处于处理中）
+        if (turnState.phase === 'processing') {
+          turnState.phase = 'playerInput';
+        }
+      });
     }
   }
 
@@ -6748,6 +7182,19 @@ function getSinTalentDisplayName(sinType: string): string {
     &.cost-danger {
       color: #f87171;
     }
+    
+    &.cost-multiplied {
+      color: #fbbf24;
+      background: rgba(234, 179, 8, 0.15);
+      border: 1px solid rgba(234, 179, 8, 0.3);
+    }
+    
+    .cost-multiplier {
+      font-size: 0.5rem;
+      color: #f87171;
+      font-weight: 700;
+      margin-left: 0.25rem;
+    }
   }
   
   &.cooldown {
@@ -7397,6 +7844,107 @@ function getSinTalentDisplayName(sinType: string): string {
       font-size: 40px;
     }
   }
+}
+
+// ========== 黑崎晴雯债务显示 ==========
+.heisaki-debt-display {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 25;
+  pointer-events: none;
+  
+  .debt-container {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.25rem;
+    background: linear-gradient(135deg, rgba(234, 179, 8, 0.15) 0%, rgba(161, 98, 7, 0.25) 100%);
+    border: 2px solid rgba(234, 179, 8, 0.6);
+    border-radius: 12px;
+    box-shadow: 
+      0 0 20px rgba(234, 179, 8, 0.3),
+      0 0 40px rgba(234, 179, 8, 0.15),
+      inset 0 0 15px rgba(234, 179, 8, 0.1);
+    backdrop-filter: blur(8px);
+    animation: debtPulse 2s ease-in-out infinite;
+    
+    @media (min-width: 1024px) {
+      padding: 1rem 1.75rem;
+      gap: 0.75rem;
+    }
+  }
+  
+  .debt-icon {
+    font-size: 1.5rem;
+    animation: coinSpin 3s ease-in-out infinite;
+    
+    @media (min-width: 1024px) {
+      font-size: 2rem;
+    }
+  }
+  
+  .debt-info {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .debt-label {
+    font-size: 0.625rem;
+    font-weight: 600;
+    color: rgba(234, 179, 8, 0.8);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    
+    @media (min-width: 1024px) {
+      font-size: 0.75rem;
+    }
+  }
+  
+  .debt-value {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #fbbf24;
+    text-shadow: 0 0 10px rgba(234, 179, 8, 0.5);
+    font-family: 'Courier New', monospace;
+    
+    @media (min-width: 1024px) {
+      font-size: 1.75rem;
+    }
+    
+    &.debt-danger {
+      color: #f87171;
+      text-shadow: 0 0 15px rgba(248, 113, 113, 0.6);
+      animation: debtDanger 0.5s ease-in-out infinite alternate;
+    }
+  }
+}
+
+@keyframes debtPulse {
+  0%, 100% { 
+    box-shadow: 
+      0 0 20px rgba(234, 179, 8, 0.3),
+      0 0 40px rgba(234, 179, 8, 0.15),
+      inset 0 0 15px rgba(234, 179, 8, 0.1);
+  }
+  50% { 
+    box-shadow: 
+      0 0 30px rgba(234, 179, 8, 0.5),
+      0 0 60px rgba(234, 179, 8, 0.25),
+      inset 0 0 20px rgba(234, 179, 8, 0.15);
+  }
+}
+
+@keyframes coinSpin {
+  0%, 100% { transform: rotateY(0deg); }
+  50% { transform: rotateY(180deg); }
+}
+
+@keyframes debtDanger {
+  from { transform: scale(1); }
+  to { transform: scale(1.05); }
 }
 
 @keyframes sleepFloat {
