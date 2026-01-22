@@ -3739,6 +3739,69 @@ function handleEnemyTurn() {
     }
   }
 
+  // ========== 薇丝佩菈BOSS：自体献祭检查（高潮2/3次后，仅女性玩家） ==========
+  if (BossSystem.bossState.isBossFight && BossSystem.bossState.bossId === 'vespera') {
+    let playerGender = '男';
+    try {
+      if (typeof Mvu !== 'undefined') {
+        const mvuData = Mvu.getMvuData({ type: 'message', message_id: 'latest' });
+        const rawGender = _.get(mvuData?.stat_data, '角色基础.性别', '男');
+        playerGender = String(rawGender || '男');
+      }
+    } catch (e) {
+      playerGender = '男';
+    }
+    playerGender = playerGender === '男' ? '男' : '女';
+    const bossClimaxCount = enemy.value.stats.climaxCount || 0;
+
+    if (BossSystem.shouldUseVesperaSelfSacrifice(bossClimaxCount, playerGender)) {
+      if (enemyBoundTurns.value > 0) {
+        enemyBoundTurns.value--;
+        if (enemyBoundTurns.value === 0) {
+          enemyBindSource.value = null;
+          addLog(`${enemy.value.name} 的束缚效果消失了`, 'system', 'info');
+        } else {
+          addLog(`${enemy.value.name} 的束缚效果剩余 ${enemyBoundTurns.value} 回合`, 'system', 'info');
+        }
+      }
+
+      const sacrificeResult = BossSystem.executeVesperaSelfSacrifice();
+
+      BossSystem.setDialogueSkippable(false);
+      BossSystem.queueDialogues(sacrificeResult.dialogues);
+
+      (async () => {
+        await BossSystem.waitForDialoguesToFinish();
+        playerBoundTurns.value = sacrificeResult.bindDuration;
+        playerBindSource.value = 'enemy';
+        addLog(`【自体献祭·鬼角先生】薇丝佩菈使用了特殊技能！`, 'system', 'critical');
+        addLog(`【自体献祭】必定命中！你被束缚了 ${sacrificeResult.bindDuration} 回合！`, 'system', 'critical');
+
+        const sacrificeDamage = Math.floor(enemy.value.stats.charm * 2.0 + 50);
+        player.value.stats.currentPleasure = Math.min(
+          player.value.stats.maxPleasure,
+          player.value.stats.currentPleasure + sacrificeDamage
+        );
+        syncPlayerPleasureToMvu(player.value.stats.currentPleasure);
+        addLog(`【自体献祭】造成 ${sacrificeDamage} 点快感伤害！`, 'system', 'damage');
+
+        applyTalentBuff('player', 'BOSS_薇丝佩菈_自体献祭', {
+          '基础忍耐力成算': -30,
+          '闪避率加成': -30,
+        }, 3);
+        addLog(`【自体献祭】敏感度+50%，防御-30%，性斗力-30%（3回合）`, 'system', 'debuff');
+
+        endTurn().then((climaxTriggered) => {
+          if (!climaxTriggered) {
+            setTimeout(startNewTurn, 1000);
+          }
+        });
+      })();
+
+      return;
+    }
+  }
+
   // 检查敌人是否被束缚（玩家施加的束缚）
   console.info(`[束缚系统] 检查敌人束缚状态 - enemyBoundTurns=${enemyBoundTurns.value}`);
   if (enemyBoundTurns.value > 0) {
@@ -3752,6 +3815,14 @@ function handleEnemyTurn() {
         enemy.value.stats.currentPleasure + wrathPleasureGain
       );
       addLog(`【敌人·暴怒】${enemy.value.name} 被束缚无法造成伤害！快感+${wrathPleasureGain}！`, 'system', 'critical');
+
+      if (enemy.value.stats.currentPleasure >= enemy.value.stats.maxPleasure && turnState.climaxTarget === null) {
+        addLog(`${enemy.value.name} 达到了快感上限！`, 'system', 'critical');
+        addLog(`${enemy.value.name} 达到了高潮！ (过程略)`, 'system', 'info');
+        triggerEffect('climax');
+        void processClimaxAfterLLM(true);
+        return;
+      }
     }
     
     // ========== 伊甸芙宁BOSS：被束缚时也要处理倒计时（正常-1，束缚额外-1=共-2） ==========
@@ -3944,65 +4015,6 @@ function handleEnemyTurn() {
   }
 
   addLog(`${enemy.value.name} 开始行动...`, 'system', 'info')
-
-  // ========== 薇丝佩菈BOSS：自体献祭检查（高潮2/3次后，仅女性玩家） ==========
-  if (BossSystem.bossState.isBossFight && BossSystem.bossState.bossId === 'vespera') {
-    let playerGender = '男';
-    try {
-      if (typeof Mvu !== 'undefined') {
-        const mvuData = Mvu.getMvuData({ type: 'message', message_id: 'latest' });
-        const rawGender = _.get(mvuData?.stat_data, '角色基础.性别', '男');
-        playerGender = String(rawGender || '男');
-      }
-    } catch (e) {
-      playerGender = '男';
-    }
-    playerGender = playerGender === '男' ? '男' : '女';
-    const bossClimaxCount = enemy.value.stats.climaxCount || 0;
-    
-    if (BossSystem.shouldUseVesperaSelfSacrifice(bossClimaxCount, playerGender)) {
-      // 执行自体献祭（无视束缚）
-      const sacrificeResult = BossSystem.executeVesperaSelfSacrifice();
-      
-      // 播放对话
-      BossSystem.setDialogueSkippable(false);
-      BossSystem.queueDialogues(sacrificeResult.dialogues);
-      
-      // 应用束缚效果（等待对话播放完毕，强制玩家看完）
-      (async () => {
-        await BossSystem.waitForDialoguesToFinish();
-        playerBoundTurns.value = sacrificeResult.bindDuration;
-        playerBindSource.value = 'enemy';
-        addLog(`【自体献祭·鬼角先生】薇丝佩菈使用了特殊技能！`, 'system', 'critical');
-        addLog(`【自体献祭】必定命中！你被束缚了 ${sacrificeResult.bindDuration} 回合！`, 'system', 'critical');
-        
-        // 造成伤害
-        const sacrificeDamage = Math.floor(enemy.value.stats.charm * 2.0 + 50);
-        player.value.stats.currentPleasure = Math.min(
-          player.value.stats.maxPleasure,
-          player.value.stats.currentPleasure + sacrificeDamage
-        );
-        syncPlayerPleasureToMvu(player.value.stats.currentPleasure);
-        addLog(`【自体献祭】造成 ${sacrificeDamage} 点快感伤害！`, 'system', 'damage');
-        
-        // 应用debuff
-        applyTalentBuff('player', 'BOSS_薇丝佩菈_自体献祭', {
-          '基础忍耐力成算': -30,
-          '闪避率加成': -30,
-        }, 3);
-        addLog(`【自体献祭】敏感度+50%，防御-30%，性斗力-30%（3回合）`, 'system', 'debuff');
-        
-        // 结束回合
-        endTurn().then((climaxTriggered) => {
-          if (!climaxTriggered) {
-            setTimeout(startNewTurn, 1000);
-          }
-        });
-      })();
-      
-      return; // 使用自体献祭后不再执行普通技能
-    }
-  }
 
   setTimeout(() => {
     // 使用预告的技能（如果预告存在且可用），否则随机选择
@@ -4259,6 +4271,16 @@ function handleEnemyTurn() {
               nextEnemy.stats.currentPleasure + wrathPleasureGain
             );
             addLog(`【敌人·暴怒】${nextEnemy.name} 攻击被闪避无法造成伤害！快感+${wrathPleasureGain}！`, 'system', 'critical');
+
+            if (nextEnemy.stats.currentPleasure >= nextEnemy.stats.maxPleasure && turnState.climaxTarget === null) {
+              enemy.value = nextEnemy;
+              player.value = nextPlayer;
+              addLog(`${nextEnemy.name} 达到了快感上限！`, 'system', 'critical');
+              addLog(`${nextEnemy.name} 达到了高潮！ (过程略)`, 'system', 'info');
+              triggerEffect('climax');
+              await processClimaxAfterLLM(true);
+              return;
+            }
           }
         } else {
           // 输出详细的伤害计算过程（包括连击日志）
@@ -4409,6 +4431,10 @@ function handleEnemyTurn() {
 }
 
 function startNewTurn() {
+  if (turnState.phase === 'climaxResolution' || turnState.phase === 'victory' || turnState.phase === 'defeat') {
+    return;
+  }
+
   turnState.currentTurn++;
 
   // 重置高潮目标标记

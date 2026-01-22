@@ -1411,7 +1411,7 @@ export const ENEMY_DATABASE: Record<string, EnemyMvuData> = {
     对手快感: 0,
     对手最大快感: 400,
     对手高潮次数: 0,
-    对手性斗力: 68, // 等级40 x 潜力9.9
+    对手性斗力: 68, 
     对手忍耐力: 400,
     对手临时状态: {},
     对手技能冷却: {},

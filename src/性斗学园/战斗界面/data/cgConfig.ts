@@ -1126,6 +1126,12 @@ const lingYinConfig: CharacterCGConfig = {
   male: {
     defeat: [
       {
+        id: 'sock_footjob_male',
+        name: '铃音-穿袜足交事件',
+        description: '你被铃音击败后，她给你绑了完美的龟甲缚，她脱下木履,用力穿着足袋的脚踩踏你的肉棒,被她高超的足技研磨，你射了出来',
+        images: ['铃音-铃音的穿袜足交事件-1.png'],
+      },
+      {
         id: 'shoe_foot_torture_male',
         name: '铃音-穿鞋足责事件',
         description: '你被铃音击败后，她把你捆绑起来，穿上有特殊纹路的木履用力踩踏你的性器，并把自己的袜子塞进你的嘴里，你承受不住最终射精。',
