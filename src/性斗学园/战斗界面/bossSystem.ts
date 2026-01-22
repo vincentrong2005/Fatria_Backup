@@ -1150,7 +1150,7 @@ export function getEdenSlothDescription(): string {
     '【七宗罪·懒惰】',
     '• 开局进入沉睡状态，不使用任何技能',
     '• 8回合倒计时，归零时使用Game Over并重置',
-    '• 被束缚时倒计时额外-1',
+    '• 被束缚时倒计时额外-2',
     '• 沉睡期间被打至高潮将苏醒，高潮次数上限变为3',
     '• 玩家技能冷却+2，耐力消耗×1.5',
     '• 被暴击后：倒计时+4，闪避-30%，忍耐力成算-30%',
@@ -1857,7 +1857,7 @@ export const HEISAKI_DIALOGUES = {
 export function isHeisakiBoss(enemyName: string): boolean {
   if (!enemyName) return false;
   const name = enemyName.toLowerCase();
-  return name.includes('黑崎晴雯') || name.includes('heisaki') || name.includes('晴雯') || name.includes('贪婪');
+  return name.includes('黑崎晴雯') || name.includes('heisaki') || name.includes('晴雯') || name.includes('黑崎') || name.includes('贪婪');
 }
 
 /**

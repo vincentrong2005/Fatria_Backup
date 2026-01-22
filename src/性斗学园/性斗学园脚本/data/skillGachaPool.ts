@@ -653,7 +653,7 @@ export const S_RANK_SKILLS: GachaSkillData[] = [
     cooldown: 6,
     damageSource: '性斗力',
     coefficient: 96,
-    accuracy: 80,
+    accuracy: 70,
     critModifier: 0,
     hitCount: 1,
     buffs: [
@@ -824,7 +824,7 @@ export const SS_RANK_SKILLS: GachaSkillData[] = [
     cooldown: 8,
     damageSource: '性斗力',
     coefficient: 240,
-    accuracy: 90,
+    accuracy: 75,
     critModifier: 25,
     hitCount: 1,
     buffs: [
@@ -903,11 +903,11 @@ export const SS_RANK_SKILLS: GachaSkillData[] = [
     icon: 'Lock',
     type: 'control',
     rarity: 'SS',
-    staminaCost: 68,
+    staminaCost: 88,
     cooldown: 10,
     damageSource: '性斗力',
     coefficient: 120,
-    accuracy: 75,
+    accuracy: 65,
     critModifier: 0,
     hitCount: 1,
     buffs: [

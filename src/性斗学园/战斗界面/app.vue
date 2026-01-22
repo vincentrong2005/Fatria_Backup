@@ -3868,8 +3868,58 @@ function handleEnemyTurn() {
       // 如果触发Game Over技能
       if (countdownResult.triggerSkill16) {
         addLog(`【懒惰】伊甸芙宁的倒计时归零！`, 'system', 'critical');
+        turnState.phase = 'processing';
+        BossSystem.setDialogueSkippable(false);
         BossSystem.queueDialogues(BossSystem.EDEN_DIALOGUES.countdown_zero);
-        // Game Over处理会在下一回合触发
+
+        // 添加蓝色特效
+        phaseTransitionEffect.value = 'eden-game-over';
+
+        (async () => {
+          await BossSystem.waitForDialoguesToFinish();
+
+          // 使用Game Over技能（伊甸芙宁_16）
+          addLog(`【Game Over】伊甸芙宁发动了终极技能！`, 'system', 'critical');
+          addLog(`【Game Over】造成500%性斗力伤害，必定暴击，5连击！`, 'system', 'damage');
+
+          // 计算伤害：500% × 5次 = 2500%
+          const gameOverDamage = Math.floor(enemy.value.stats.sexPower * 5.0 * 5);
+          player.value.stats.currentPleasure = Math.min(
+            player.value.stats.maxPleasure,
+            player.value.stats.currentPleasure + gameOverDamage
+          );
+          addLog(`${player.value.name} 受到了 ${gameOverDamage} 点快感伤害！`, 'system', 'critical');
+
+          // 清除特效
+          setTimeout(() => { phaseTransitionEffect.value = ''; }, 1500);
+
+          // 直接检查玩家是否达到高潮上限，触发游戏结束
+          if (player.value.stats.currentPleasure >= player.value.stats.maxPleasure) {
+            player.value.stats.climaxCount++;
+            addLog(`${player.value.name} 达到了高潮！(${player.value.stats.climaxCount}/${player.value.stats.maxClimaxCount})`, 'system', 'climax');
+            triggerEffect('climax');
+
+            if (player.value.stats.climaxCount >= player.value.stats.maxClimaxCount) {
+              addLog(`${player.value.name} 达到高潮次数上限，战斗结束！`, 'system', 'critical');
+              addLog(`${enemy.value.name} 获得了胜利！`, 'system', 'victory');
+              triggerEffect('defeat');
+              BossSystem.queueDialogues(BossSystem.EDEN_DIALOGUES.victory);
+              turnState.phase = 'gameOver';
+              return;
+            }
+
+            player.value.stats.currentPleasure = 0;
+          }
+
+          // 继续游戏
+          endTurn().then((climaxTriggered) => {
+            if (!climaxTriggered) {
+              setTimeout(startNewTurn, 1000);
+            }
+          });
+        })();
+
+        return;
       }
     }
     
@@ -3889,7 +3939,7 @@ function handleEnemyTurn() {
 
   // ========== 伊甸芙宁BOSS：懒惰天赋 - 沉睡状态处理 ==========
   if (BossSystem.bossState.isBossFight && BossSystem.bossState.bossId === 'eden') {
-    // 处理倒计时（每回合-1，被束缚时额外-1已在上面处理）
+    // 处理倒计时（每回合-1，被束缚时额外-2已在上面处理）
     const countdownResult = BossSystem.processEdenTurnStart(enemyBoundTurns.value);
     // 倒计时日志高亮显示（红色）
     const isUrgent = countdownResult.countdownValue <= 3;
@@ -3939,14 +3989,17 @@ function handleEnemyTurn() {
     if (countdownResult.triggerSkill16) {
       addLog(`【懒惰】伊甸芙宁的倒计时归零！`, 'system', 'critical');
       
-      // Bug 3 Fix: 先显示对话，然后延迟执行伤害
+      turnState.phase = 'processing';
+      BossSystem.setDialogueSkippable(false);
+
       BossSystem.queueDialogues(BossSystem.EDEN_DIALOGUES.countdown_zero);
       
       // 添加蓝色特效
       phaseTransitionEffect.value = 'eden-game-over';
       
-      // 延迟2秒后执行Game Over伤害（等待对话播放）
-      setTimeout(async () => {
+      (async () => {
+        await BossSystem.waitForDialoguesToFinish();
+
         // 使用Game Over技能（伊甸芙宁_16）
         addLog(`【Game Over】伊甸芙宁发动了终极技能！`, 'system', 'critical');
         addLog(`【Game Over】造成500%性斗力伤害，必定暴击，5连击！`, 'system', 'damage');
@@ -3990,7 +4043,7 @@ function handleEnemyTurn() {
             setTimeout(startNewTurn, 1000);
           }
         });
-      }, 2500); // 等待对话播放
+      })();
       
       return;
     }
