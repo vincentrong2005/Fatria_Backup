@@ -416,6 +416,8 @@ import * as BossSystem from './bossSystem';
 // 天赋系统
 import { getTalentById, type TalentData } from '../性斗学园脚本/data/talentDatabase';
 import * as TalentSystem from './talentSystem';
+// 七美德装备掉落系统
+import { createVirtueItemMvuData, getVirtueItemByBoss } from './virtueItems';
 
 // 延迟加载数据库模块的辅助函数
 let enemyDbModule: any = null;
@@ -5288,7 +5290,37 @@ async function handleSendCombatLogToLLM() {
   try {
     if (turnState.phase === 'victory' && typeof Mvu !== 'undefined') {
       const resolvedEnemyName = resolveEnemyName(enemy.value.name).replace(/_\d+$/g, '');
-      if (resolvedEnemyName === '沐芯兰') {
+      const virtueItem = getVirtueItemByBoss(resolvedEnemyName);
+      if (virtueItem) {
+        const mvuData = Mvu.getMvuData({ type: 'message', message_id: 'latest' });
+        if (mvuData?.stat_data) {
+          if (!mvuData.stat_data.物品系统) mvuData.stat_data.物品系统 = {};
+          if (!mvuData.stat_data.物品系统.背包) mvuData.stat_data.物品系统.背包 = {};
+
+          const backpack = mvuData.stat_data.物品系统.背包;
+          const itemKey = virtueItem.name;
+          if (!backpack[itemKey]) {
+            backpack[itemKey] = createVirtueItemMvuData(virtueItem);
+            await Mvu.replaceMvuData(mvuData, { type: 'message', message_id: 'latest' });
+            addLog(`【七美德】获得SS级特殊装备：${itemKey}`, 'system', 'victory');
+            const bonusText = Object.entries(virtueItem.bonuses)
+              .filter(([_, v]) => v !== 0)
+              .map(([k, v]) => `${k.replace('加成', '').replace('基础', '')}+${v}`)
+              .join(', ');
+            addLog(`效果：${bonusText}`, 'system', 'buff');
+          }
+        }
+      }
+    }
+  } catch (e) {
+    console.warn('[战斗界面] 发放七美德装备失败', e);
+  }
+
+  // 特殊战利品：沐芯兰胜利后额外发放"沐芯兰的权限卡"（仅发放一次）
+  try {
+    if (turnState.phase === 'victory' && typeof Mvu !== 'undefined') {
+      const resolvedEnemyName = resolveEnemyName(enemy.value.name).replace(/_\d+$/g, '');
+      if (resolvedEnemyName === '沐芯兰' || resolvedEnemyName.toLowerCase().includes('muxinlan')) {
         const mvuData = Mvu.getMvuData({ type: 'message', message_id: 'latest' });
         if (mvuData?.stat_data) {
           if (!mvuData.stat_data.物品系统) mvuData.stat_data.物品系统 = {};
