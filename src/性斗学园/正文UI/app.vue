@@ -3,7 +3,6 @@
     <div v-if="content" class="beautified-content-wrapper" :style="wrapperStyle">
       <!-- 装饰性渐变背景 -->
       <div class="gradient-overlay"></div>
-      <div class="shimmer-effect"></div>
 
       <!-- 顶部信息栏 -->
       <div v-if="hasDateInfo" class="info-bar" :style="infoBarStyle">
@@ -651,10 +650,6 @@ onMounted(() => {
     .gradient-overlay {
       opacity: 0.3;
     }
-
-    .shimmer-effect {
-      animation: shimmer 3s infinite;
-    }
   }
 }
 
@@ -673,25 +668,7 @@ onMounted(() => {
   z-index: 0;
 }
 
-.shimmer-effect {
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.1) 50%, transparent 100%);
-  pointer-events: none;
-  z-index: 1;
-}
 
-@keyframes shimmer {
-  0% {
-    left: -100%;
-  }
-  100% {
-    left: 100%;
-  }
-}
 
 .beautified-content {
   position: relative;
