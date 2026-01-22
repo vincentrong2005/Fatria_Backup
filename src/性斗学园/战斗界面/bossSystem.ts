@@ -1025,9 +1025,9 @@ export function processEdenTurnStart(enemyBoundTurns: number = 0): { triggerSkil
   // 倒计时-1
   bossState.edenCountdown--;
   
-  // 如果被束缚，额外-1
+  // 如果被束缚，额外-2
   if (enemyBoundTurns > 0) {
-    bossState.edenCountdown--;
+    bossState.edenCountdown -= 2;
   }
   
   // 检查是否归零

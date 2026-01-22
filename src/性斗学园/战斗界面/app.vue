@@ -3825,11 +3825,11 @@ function handleEnemyTurn() {
       }
     }
     
-    // ========== 伊甸芙宁BOSS：被束缚时也要处理倒计时（正常-1，束缚额外-1=共-2） ==========
+    // ========== 伊甸芙宁BOSS：被束缚时也要处理倒计时（正常-1，束缚额外-2=共-3） ==========
     if (BossSystem.bossState.isBossFight && BossSystem.bossState.bossId === 'eden') {
       const countdownResult = BossSystem.processEdenTurnStart(enemyBoundTurns.value);
       const isUrgent = countdownResult.countdownValue <= 3;
-      addLog(`【懒惰·倒计时】剩余 ${countdownResult.countdownValue} 回合（被束缚额外-1）`, 'system', isUrgent ? 'critical' : 'info');
+      addLog(`【懒惰·倒计时】剩余 ${countdownResult.countdownValue} 回合（被束缚额外-2）`, 'system', isUrgent ? 'critical' : 'info');
       
       // 苏醒激怒buff衰减
       if (!BossSystem.bossState.edenSleeping && BossSystem.bossState.edenAwakened) {
