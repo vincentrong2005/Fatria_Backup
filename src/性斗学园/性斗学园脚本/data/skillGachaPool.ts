@@ -190,7 +190,7 @@ export const B_RANK_SKILLS: GachaSkillData[] = [
     accuracy: 95,
     critModifier: 10,
     hitCount: 1,
-    buffs: [{ type: '忍耐力', value: -10, isPercent: true, duration: 2 , isTargetEnemy: true }],
+    buffs: [{ type: '忍耐力', value: -10, isPercent: true, duration: 2, isTargetEnemy: true }],
   },
   {
     id: 'g_b_lick',
@@ -241,7 +241,7 @@ export const B_RANK_SKILLS: GachaSkillData[] = [
     accuracy: 100,
     critModifier: 0,
     hitCount: 1,
-    buffs: [{ type: '忍耐力', value: -10, isPercent: true, duration: 2 , isTargetEnemy: true }],
+    buffs: [{ type: '忍耐力', value: -10, isPercent: true, duration: 2, isTargetEnemy: true }],
   },
   {
     id: 'g_b_double_tap',
@@ -364,7 +364,7 @@ export const A_RANK_SKILLS: GachaSkillData[] = [
     accuracy: 90,
     critModifier: 15,
     hitCount: 1,
-    buffs: [{ type: '忍耐力', value: -15, isPercent: true, duration: 3 , isTargetEnemy: true }],
+    buffs: [{ type: '忍耐力', value: -15, isPercent: true, duration: 3, isTargetEnemy: true }],
   },
   {
     id: 'g_a_lucky_touch',
@@ -381,7 +381,7 @@ export const A_RANK_SKILLS: GachaSkillData[] = [
     accuracy: 80,
     critModifier: 30,
     hitCount: 1,
-    buffs: [{ type: '暴击率', value: 30, isPercent: true, duration: 2 , isTargetEnemy: false }],
+    buffs: [{ type: '暴击率', value: 30, isPercent: true, duration: 2, isTargetEnemy: false }],
   },
   {
     id: 'g_a_seduce',
@@ -398,7 +398,7 @@ export const A_RANK_SKILLS: GachaSkillData[] = [
     accuracy: 95,
     critModifier: 10,
     hitCount: 1,
-    buffs: [{ type: '性斗力', value: -20, isPercent: true, duration: 3 , isTargetEnemy: true }],
+    buffs: [{ type: '性斗力', value: -20, isPercent: true, duration: 3, isTargetEnemy: true }],
   },
   {
     id: 'g_a_triple_strike',
@@ -433,8 +433,8 @@ export const A_RANK_SKILLS: GachaSkillData[] = [
     critModifier: 0,
     hitCount: 1,
     buffs: [
-      { type: '性斗力', value: -25, isPercent: true, duration: 3 , isTargetEnemy: true },
-      { type: '忍耐力', value: -15, isPercent: true, duration: 3 , isTargetEnemy: true },
+      { type: '性斗力', value: -25, isPercent: true, duration: 3, isTargetEnemy: true },
+      { type: '忍耐力', value: -15, isPercent: true, duration: 3, isTargetEnemy: true },
     ],
   },
   {
@@ -452,7 +452,7 @@ export const A_RANK_SKILLS: GachaSkillData[] = [
     accuracy: 85,
     critModifier: 50,
     hitCount: 1,
-    buffs: [{ type: '幸运', value: 15, isPercent: false, duration: 2 , isTargetEnemy: false }],
+    buffs: [{ type: '幸运', value: 15, isPercent: false, duration: 2, isTargetEnemy: false }],
   },
   {
     id: 'g_a_charm_burst',
@@ -469,7 +469,7 @@ export const A_RANK_SKILLS: GachaSkillData[] = [
     accuracy: 100,
     critModifier: 8,
     hitCount: 1,
-    buffs: [{ type: '魅力', value: 10, isPercent: false, duration: 2 , isTargetEnemy: false }],
+    buffs: [{ type: '魅力', value: 10, isPercent: false, duration: 2, isTargetEnemy: false }],
   },
   {
     id: 'g_a_power_strike',
@@ -486,7 +486,7 @@ export const A_RANK_SKILLS: GachaSkillData[] = [
     accuracy: 85,
     critModifier: 20,
     hitCount: 1,
-    buffs: [{ type: '性斗力', value: 20, isPercent: true, duration: 2 , isTargetEnemy: false }],
+    buffs: [{ type: '性斗力', value: 20, isPercent: true, duration: 2, isTargetEnemy: false }],
   },
   {
     id: 'g_a_dodge_master',
@@ -503,7 +503,7 @@ export const A_RANK_SKILLS: GachaSkillData[] = [
     accuracy: 100,
     critModifier: 0,
     hitCount: 1,
-    buffs: [{ type: '闪避率', value: 25, isPercent: true, duration: 3 , isTargetEnemy: false }],
+    buffs: [{ type: '闪避率', value: 25, isPercent: true, duration: 3, isTargetEnemy: false }],
   },
   {
     id: 'g_a_crit_focus',
@@ -520,7 +520,7 @@ export const A_RANK_SKILLS: GachaSkillData[] = [
     accuracy: 100,
     critModifier: 0,
     hitCount: 1,
-    buffs: [{ type: '暴击率', value: 35, isPercent: true, duration: 2 , isTargetEnemy: false }],
+    buffs: [{ type: '暴击率', value: 35, isPercent: true, duration: 2, isTargetEnemy: false }],
   },
   {
     id: 'g_a_quad_strike',
@@ -555,8 +555,8 @@ export const A_RANK_SKILLS: GachaSkillData[] = [
     critModifier: 5,
     hitCount: 1,
     buffs: [
-      { type: '魅力', value: -10, isPercent: false, duration: 3 , isTargetEnemy: true },
-      { type: '魅力', value: 5, isPercent: false, duration: 3 , isTargetEnemy: false },
+      { type: '魅力', value: -10, isPercent: false, duration: 3, isTargetEnemy: true },
+      { type: '魅力', value: 5, isPercent: false, duration: 3, isTargetEnemy: false },
     ],
   },
 ];
@@ -579,10 +579,11 @@ export const S_RANK_SKILLS: GachaSkillData[] = [
     critModifier: 10,
     hitCount: 1,
     buffs: [
-      { type: '束缚', value: 0, isPercent: false, duration: 2 , isTargetEnemy: true },
-      { type: '闪避率', value: -40, isPercent: true, duration: 2 , isTargetEnemy: true },
-      { type: '忍耐力', value: -25, isPercent: true, duration: 2 , isTargetEnemy: true },
-    ]},
+      { type: '束缚', value: 0, isPercent: false, duration: 2, isTargetEnemy: true },
+      { type: '闪避率', value: -40, isPercent: true, duration: 2, isTargetEnemy: true },
+      { type: '忍耐力', value: -25, isPercent: true, duration: 2, isTargetEnemy: true },
+    ],
+  },
   {
     id: 'g_s_ultimate_pleasure',
     name: '极致淫乐',
@@ -599,8 +600,8 @@ export const S_RANK_SKILLS: GachaSkillData[] = [
     critModifier: 20,
     hitCount: 1,
     buffs: [
-      { type: '性斗力', value: -30, isPercent: true, duration: 3 , isTargetEnemy: true },
-      { type: '忍耐力', value: -20, isPercent: true, duration: 3 , isTargetEnemy: true },
+      { type: '性斗力', value: -30, isPercent: true, duration: 3, isTargetEnemy: true },
+      { type: '忍耐力', value: -20, isPercent: true, duration: 3, isTargetEnemy: true },
     ],
   },
   {
@@ -618,7 +619,7 @@ export const S_RANK_SKILLS: GachaSkillData[] = [
     accuracy: 70,
     critModifier: 35,
     hitCount: 7,
-    buffs: [{ type: '暴击率', value: 15, isPercent: true, duration: 2 , isTargetEnemy: false }],
+    buffs: [{ type: '暴击率', value: 15, isPercent: true, duration: 2, isTargetEnemy: false }],
   },
   {
     id: 'g_s_total_breakdown',
@@ -636,9 +637,9 @@ export const S_RANK_SKILLS: GachaSkillData[] = [
     critModifier: 10,
     hitCount: 1,
     buffs: [
-      { type: '性斗力', value: -35, isPercent: true, duration: 4 , isTargetEnemy: true },
-      { type: '忍耐力', value: -25, isPercent: true, duration: 4 , isTargetEnemy: true },
-      { type: '魅力', value: -15, isPercent: false, duration: 4 , isTargetEnemy: true },
+      { type: '性斗力', value: -35, isPercent: true, duration: 4, isTargetEnemy: true },
+      { type: '忍耐力', value: -25, isPercent: true, duration: 4, isTargetEnemy: true },
+      { type: '魅力', value: -15, isPercent: false, duration: 4, isTargetEnemy: true },
     ],
   },
   {
@@ -657,9 +658,10 @@ export const S_RANK_SKILLS: GachaSkillData[] = [
     critModifier: 0,
     hitCount: 1,
     buffs: [
-      { type: '束缚', value: 0, isPercent: false, duration: 3 , isTargetEnemy: true },
-      { type: '闪避率', value: -60, isPercent: true, duration: 3 , isTargetEnemy: true },
-    ]},
+      { type: '束缚', value: 0, isPercent: false, duration: 3, isTargetEnemy: true },
+      { type: '闪避率', value: -60, isPercent: true, duration: 3, isTargetEnemy: true },
+    ],
+  },
   {
     id: 'g_s_power_boost',
     name: '淫力觉醒',
@@ -676,8 +678,8 @@ export const S_RANK_SKILLS: GachaSkillData[] = [
     critModifier: 0,
     hitCount: 1,
     buffs: [
-      { type: '性斗力', value: 40, isPercent: true, duration: 3 , isTargetEnemy: false },
-      { type: '暴击率', value: 25, isPercent: true, duration: 3 , isTargetEnemy: false },
+      { type: '性斗力', value: 40, isPercent: true, duration: 3, isTargetEnemy: false },
+      { type: '暴击率', value: 25, isPercent: true, duration: 3, isTargetEnemy: false },
     ],
   },
   {
@@ -695,7 +697,7 @@ export const S_RANK_SKILLS: GachaSkillData[] = [
     accuracy: 100,
     critModifier: 15,
     hitCount: 1,
-    buffs: [{ type: '魅力', value: 20, isPercent: false, duration: 3 , isTargetEnemy: false }],
+    buffs: [{ type: '魅力', value: 20, isPercent: false, duration: 3, isTargetEnemy: false }],
   },
   {
     id: 'g_s_perfect_dodge',
@@ -712,7 +714,7 @@ export const S_RANK_SKILLS: GachaSkillData[] = [
     accuracy: 100,
     critModifier: 0,
     hitCount: 1,
-    buffs: [{ type: '闪避率', value: 45, isPercent: true, duration: 4 , isTargetEnemy: false }],
+    buffs: [{ type: '闪避率', value: 45, isPercent: true, duration: 4, isTargetEnemy: false }],
   },
   {
     id: 'g_s_luck_burst',
@@ -730,8 +732,8 @@ export const S_RANK_SKILLS: GachaSkillData[] = [
     critModifier: 40,
     hitCount: 1,
     buffs: [
-      { type: '幸运', value: 25, isPercent: false, duration: 3 , isTargetEnemy: false },
-      { type: '暴击率', value: 30, isPercent: true, duration: 3 , isTargetEnemy: false },
+      { type: '幸运', value: 25, isPercent: false, duration: 3, isTargetEnemy: false },
+      { type: '暴击率', value: 30, isPercent: true, duration: 3, isTargetEnemy: false },
     ],
   },
   {
@@ -766,7 +768,7 @@ export const S_RANK_SKILLS: GachaSkillData[] = [
     accuracy: 200,
     critModifier: 0,
     hitCount: 1,
-    buffs: [{ type: '闪避率', value: -90, isPercent: true, duration: 3 , isTargetEnemy: true }],
+    buffs: [{ type: '闪避率', value: -90, isPercent: true, duration: 3, isTargetEnemy: true }],
   },
   {
     id: 'g_s_armor_break',
@@ -783,7 +785,7 @@ export const S_RANK_SKILLS: GachaSkillData[] = [
     accuracy: 85,
     critModifier: 0,
     hitCount: 1,
-    buffs: [{ type: '忍耐力', value: -60, isPercent: true, duration: 4 , isTargetEnemy: true }],
+    buffs: [{ type: '忍耐力', value: -60, isPercent: true, duration: 4, isTargetEnemy: true }],
   },
   {
     id: 'g_s_god_blessing',
@@ -801,11 +803,11 @@ export const S_RANK_SKILLS: GachaSkillData[] = [
     critModifier: 0,
     hitCount: 1,
     buffs: [
-      { type: '性斗力', value: 50, isPercent: true, duration: 4 , isTargetEnemy: false },
-      { type: '忍耐力', value: 40, isPercent: true, duration: 4 , isTargetEnemy: false },
-      { type: '魅力', value: 30, isPercent: false, duration: 4 , isTargetEnemy: false },
-      { type: '闪避率', value: 35, isPercent: true, duration: 4 , isTargetEnemy: false },
-      { type: '暴击率', value: 30, isPercent: true, duration: 4 , isTargetEnemy: false },
+      { type: '性斗力', value: 50, isPercent: true, duration: 4, isTargetEnemy: false },
+      { type: '忍耐力', value: 40, isPercent: true, duration: 4, isTargetEnemy: false },
+      { type: '魅力', value: 30, isPercent: false, duration: 4, isTargetEnemy: false },
+      { type: '闪避率', value: 35, isPercent: true, duration: 4, isTargetEnemy: false },
+      { type: '暴击率', value: 30, isPercent: true, duration: 4, isTargetEnemy: false },
     ],
   },
 ];
@@ -828,11 +830,12 @@ export const SS_RANK_SKILLS: GachaSkillData[] = [
     critModifier: 25,
     hitCount: 1,
     buffs: [
-      { type: '束缚', value: 0, isPercent: false, duration: 3 , isTargetEnemy: true },
-      { type: '性斗力', value: -40, isPercent: true, duration: 4 , isTargetEnemy: true },
-      { type: '忍耐力', value: -30, isPercent: true, duration: 4 , isTargetEnemy: true },
-      { type: '闪避率', value: -50, isPercent: true, duration: 4 , isTargetEnemy: true },
-    ]},
+      { type: '束缚', value: 0, isPercent: false, duration: 3, isTargetEnemy: true },
+      { type: '性斗力', value: -40, isPercent: true, duration: 4, isTargetEnemy: true },
+      { type: '忍耐力', value: -30, isPercent: true, duration: 4, isTargetEnemy: true },
+      { type: '闪避率', value: -50, isPercent: true, duration: 4, isTargetEnemy: true },
+    ],
+  },
   {
     id: 'g_ss_divine_pleasure',
     name: '神圣淫乐',
@@ -849,8 +852,8 @@ export const SS_RANK_SKILLS: GachaSkillData[] = [
     critModifier: 30,
     hitCount: 1,
     buffs: [
-      { type: '性斗力', value: -50, isPercent: true, duration: 5 , isTargetEnemy: true },
-      { type: '忍耐力', value: -40, isPercent: true, duration: 5 , isTargetEnemy: true },
+      { type: '性斗力', value: -50, isPercent: true, duration: 5, isTargetEnemy: true },
+      { type: '忍耐力', value: -40, isPercent: true, duration: 5, isTargetEnemy: true },
     ],
   },
   {
@@ -869,8 +872,8 @@ export const SS_RANK_SKILLS: GachaSkillData[] = [
     critModifier: 40,
     hitCount: 10,
     buffs: [
-      { type: '暴击率', value: 20, isPercent: true, duration: 3 , isTargetEnemy: false },
-      { type: '幸运', value: 15, isPercent: false, duration: 3 , isTargetEnemy: false },
+      { type: '暴击率', value: 20, isPercent: true, duration: 3, isTargetEnemy: false },
+      { type: '幸运', value: 15, isPercent: false, duration: 3, isTargetEnemy: false },
     ],
   },
   {
@@ -889,10 +892,10 @@ export const SS_RANK_SKILLS: GachaSkillData[] = [
     critModifier: 20,
     hitCount: 1,
     buffs: [
-      { type: '性斗力', value: -45, isPercent: true, duration: 5 , isTargetEnemy: true },
-      { type: '忍耐力', value: -35, isPercent: true, duration: 5 , isTargetEnemy: true },
-      { type: '魅力', value: -25, isPercent: false, duration: 5 , isTargetEnemy: true },
-      { type: '闪避率', value: -40, isPercent: true, duration: 5 , isTargetEnemy: true },
+      { type: '性斗力', value: -45, isPercent: true, duration: 5, isTargetEnemy: true },
+      { type: '忍耐力', value: -35, isPercent: true, duration: 5, isTargetEnemy: true },
+      { type: '魅力', value: -25, isPercent: false, duration: 5, isTargetEnemy: true },
+      { type: '闪避率', value: -40, isPercent: true, duration: 5, isTargetEnemy: true },
     ],
   },
   {
@@ -911,10 +914,11 @@ export const SS_RANK_SKILLS: GachaSkillData[] = [
     critModifier: 0,
     hitCount: 1,
     buffs: [
-      { type: '束缚', value: 0, isPercent: false, duration: 4 , isTargetEnemy: true },
-      { type: '闪避率', value: -80, isPercent: true, duration: 4 , isTargetEnemy: true },
-      { type: '性斗力', value: -35, isPercent: true, duration: 4 , isTargetEnemy: true },
-    ]},
+      { type: '束缚', value: 0, isPercent: false, duration: 4, isTargetEnemy: true },
+      { type: '闪避率', value: -80, isPercent: true, duration: 4, isTargetEnemy: true },
+      { type: '性斗力', value: -35, isPercent: true, duration: 4, isTargetEnemy: true },
+    ],
+  },
   {
     id: 'g_ss_god_mode',
     name: '淫神领域',
@@ -931,10 +935,10 @@ export const SS_RANK_SKILLS: GachaSkillData[] = [
     critModifier: 0,
     hitCount: 1,
     buffs: [
-      { type: '性斗力', value: 60, isPercent: true, duration: 4 , isTargetEnemy: false },
-      { type: '魅力', value: 30, isPercent: false, duration: 4 , isTargetEnemy: false },
-      { type: '暴击率', value: 40, isPercent: true, duration: 4 , isTargetEnemy: false },
-      { type: '闪避率', value: 35, isPercent: true, duration: 4 , isTargetEnemy: false },
+      { type: '性斗力', value: 60, isPercent: true, duration: 4, isTargetEnemy: false },
+      { type: '魅力', value: 30, isPercent: false, duration: 4, isTargetEnemy: false },
+      { type: '暴击率', value: 40, isPercent: true, duration: 4, isTargetEnemy: false },
+      { type: '闪避率', value: 35, isPercent: true, duration: 4, isTargetEnemy: false },
     ],
   },
   {
@@ -953,8 +957,8 @@ export const SS_RANK_SKILLS: GachaSkillData[] = [
     critModifier: 25,
     hitCount: 1,
     buffs: [
-      { type: '魅力', value: 35, isPercent: false, duration: 5 , isTargetEnemy: false },
-      { type: '魅力', value: -30, isPercent: false, duration: 5 , isTargetEnemy: true },
+      { type: '魅力', value: 35, isPercent: false, duration: 5, isTargetEnemy: false },
+      { type: '魅力', value: -30, isPercent: false, duration: 5, isTargetEnemy: true },
     ],
   },
   {
@@ -973,9 +977,9 @@ export const SS_RANK_SKILLS: GachaSkillData[] = [
     critModifier: 60,
     hitCount: 1,
     buffs: [
-      { type: '幸运', value: 40, isPercent: false, duration: 4 , isTargetEnemy: false },
-      { type: '暴击率', value: 50, isPercent: true, duration: 4 , isTargetEnemy: false },
-      { type: '闪避率', value: 30, isPercent: true, duration: 4 , isTargetEnemy: false },
+      { type: '幸运', value: 40, isPercent: false, duration: 4, isTargetEnemy: false },
+      { type: '暴击率', value: 50, isPercent: true, duration: 4, isTargetEnemy: false },
+      { type: '闪避率', value: 30, isPercent: true, duration: 4, isTargetEnemy: false },
     ],
   },
   {
@@ -993,13 +997,14 @@ export const SS_RANK_SKILLS: GachaSkillData[] = [
     accuracy: 200,
     critModifier: 0,
     hitCount: 1,
-    buffs: [{ type: '闪避率', value: -100, isPercent: true, duration: 5 , isTargetEnemy: true }],
+    buffs: [{ type: '闪避率', value: -100, isPercent: true, duration: 5, isTargetEnemy: true }],
   },
   {
     id: 'g_ss_absolute_field',
     name: '绝对领域',
     description: '【增益】展开绝对领域，免疫控制并全属性超大幅提升',
-    effectDescription: '造成10%性斗力伤害，提升自身性斗力69%、忍耐力69%、魅力69点、幸运69点、闪避率69%、暴击率69%持续5回合',
+    effectDescription:
+      '造成10%性斗力伤害，提升自身性斗力69%、忍耐力69%、魅力69点、幸运69点、闪避率69%、暴击率69%持续5回合',
     icon: 'Shield',
     type: 'ultimate',
     rarity: 'SS',
@@ -1011,23 +1016,23 @@ export const SS_RANK_SKILLS: GachaSkillData[] = [
     critModifier: 0,
     hitCount: 1,
     buffs: [
-      { type: '性斗力', value: 69, isPercent: true, duration: 5 , isTargetEnemy: false },
-      { type: '忍耐力', value: 69, isPercent: true, duration: 5 , isTargetEnemy: false },
-      { type: '魅力', value: 69, isPercent: false, duration: 5 , isTargetEnemy: false },
-      { type: '幸运', value: 69, isPercent: false, duration: 5 , isTargetEnemy: false },
-      { type: '闪避率', value: 69, isPercent: true, duration: 5 , isTargetEnemy: false },
-      { type: '暴击率', value: 69, isPercent: true, duration: 5 , isTargetEnemy: false },
+      { type: '性斗力', value: 69, isPercent: true, duration: 5, isTargetEnemy: false },
+      { type: '忍耐力', value: 69, isPercent: true, duration: 5, isTargetEnemy: false },
+      { type: '魅力', value: 69, isPercent: false, duration: 5, isTargetEnemy: false },
+      { type: '幸运', value: 69, isPercent: false, duration: 5, isTargetEnemy: false },
+      { type: '闪避率', value: 69, isPercent: true, duration: 5, isTargetEnemy: false },
+      { type: '暴击率', value: 69, isPercent: true, duration: 5, isTargetEnemy: false },
     ],
   },
 ];
 
 // 抽取概率配置
 export const GACHA_RATES = {
-  C: 50,   // 50%
-  B: 30,   // 30%
-  A: 17.5, // 17.5% 
-  S: 2,    // 2% 
-  SS: 0.5, // 0.5% 
+  C: 50, // 50%
+  B: 30, // 30%
+  A: 17.5, // 17.5%
+  S: 2, // 2%
+  SS: 0.5, // 0.5%
 };
 
 // 获取所有技能池
@@ -1045,14 +1050,14 @@ export function getAllSkillPools() {
 export function rollRarity(): 'C' | 'B' | 'A' | 'S' | 'SS' {
   const roll = Math.random() * 100;
   let cumulative = 0;
-  
+
   for (const [rarity, rate] of Object.entries(GACHA_RATES)) {
     cumulative += rate;
     if (roll < cumulative) {
       return rarity as 'C' | 'B' | 'A' | 'S' | 'SS';
     }
   }
-  
+
   return 'C';
 }
 
@@ -1074,7 +1079,7 @@ export function performSingleGacha(): GachaSkillData {
 export function performTenGacha(): GachaSkillData[] {
   const results: GachaSkillData[] = [];
   let hasAOrAbove = false;
-  
+
   for (let i = 0; i < 10; i++) {
     const skill = performSingleGacha();
     results.push(skill);
@@ -1082,11 +1087,11 @@ export function performTenGacha(): GachaSkillData[] {
       hasAOrAbove = true;
     }
   }
-  
+
   // 保底：如果没有A级及以上，最后一个替换为A级
   if (!hasAOrAbove) {
     results[9] = rollSkillFromPool('A');
   }
-  
+
   return results;
 }

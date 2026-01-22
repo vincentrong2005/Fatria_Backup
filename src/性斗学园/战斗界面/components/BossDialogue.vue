@@ -49,7 +49,7 @@ const handleSkip = () => {
   border: 2px solid;
   box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
   animation: dialogue-enter 0.3s ease-out;
-  
+
   @media (max-width: 640px) {
     padding: 1.5rem;
     max-width: 90%;
@@ -60,11 +60,11 @@ const handleSkip = () => {
 .emotion-arrogant {
   background: linear-gradient(135deg, rgba(236, 72, 153, 0.2), rgba(219, 39, 119, 0.2));
   border-color: #ec4899;
-  
+
   .dialogue-speaker {
     color: #f9a8d4;
   }
-  
+
   .dialogue-text {
     color: #fce7f3;
   }
@@ -73,11 +73,11 @@ const handleSkip = () => {
 .emotion-angry {
   background: linear-gradient(135deg, rgba(239, 68, 68, 0.2), rgba(185, 28, 28, 0.2));
   border-color: #ef4444;
-  
+
   .dialogue-speaker {
     color: #fca5a5;
   }
-  
+
   .dialogue-text {
     color: #fee2e2;
   }
@@ -86,11 +86,11 @@ const handleSkip = () => {
 .emotion-weak {
   background: linear-gradient(135deg, rgba(147, 197, 253, 0.2), rgba(96, 165, 250, 0.2));
   border-color: #60a5fa;
-  
+
   .dialogue-speaker {
     color: #bfdbfe;
   }
-  
+
   .dialogue-text {
     color: #dbeafe;
   }
@@ -99,11 +99,11 @@ const handleSkip = () => {
 .emotion-tsundere {
   background: linear-gradient(135deg, rgba(251, 146, 60, 0.2), rgba(249, 115, 22, 0.2));
   border-color: #fb923c;
-  
+
   .dialogue-speaker {
     color: #fed7aa;
   }
-  
+
   .dialogue-text {
     color: #ffedd5;
   }
@@ -115,7 +115,7 @@ const handleSkip = () => {
   margin-bottom: 1rem;
   text-align: center;
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
-  
+
   @media (max-width: 640px) {
     font-size: 1rem;
     margin-bottom: 0.75rem;
@@ -128,7 +128,7 @@ const handleSkip = () => {
   text-align: center;
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
   min-height: 3rem;
-  
+
   @media (max-width: 640px) {
     font-size: 1rem;
     line-height: 1.6;
@@ -142,7 +142,7 @@ const handleSkip = () => {
   font-size: 0.875rem;
   color: rgba(255, 255, 255, 0.5);
   animation: pulse 2s ease-in-out infinite;
-  
+
   @media (max-width: 640px) {
     margin-top: 1rem;
     font-size: 0.75rem;
@@ -161,7 +161,8 @@ const handleSkip = () => {
 }
 
 @keyframes pulse {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 0.5;
   }
   50% {
