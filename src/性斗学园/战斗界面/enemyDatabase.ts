@@ -23,11 +23,11 @@ export interface EnemyMvuData {
 
 /**
  * 难度系数映射
- * 简单: 0.7, 普通: 1.0, 困难: 1.5, 抖M: 2.0, 作弊: 3
+ * 简单: 0.8, 普通: 1.1, 困难: 1.5, 抖M: 2.0, 作弊: 3
  */
 export const DIFFICULTY_COEFFICIENTS: Record<string, number> = {
-  '简单': 0.7,
-  '普通': 1.0,
+  '简单': 0.8,
+  '普通': 1.1,
   '困难': 1.5,
   '抖M': 2.0,
   '作弊': 3.0,
@@ -44,15 +44,15 @@ export const DIFFICULTY_COEFFICIENTS: Record<string, number> = {
 export function applyLevelScaling(baseData: EnemyMvuData, userLevel: number): EnemyMvuData {
   const minLevel = userLevel - 8;
   const originalLevel = baseData.对手等级;
-  
+
   // 如果原等级已经高于等级下限，不需要调整
   if (originalLevel >= minLevel) {
     return { ...baseData };
   }
-  
+
   // 计算需要提升的等级数
   const levelDiff = minLevel - originalLevel;
-  
+
   return {
     对手等级: minLevel,
     对手魅力: baseData.对手魅力 + levelDiff,
@@ -79,11 +79,11 @@ export function applyLevelScaling(baseData: EnemyMvuData, userLevel: number): En
  */
 export function applyDifficultyCoefficient(baseData: EnemyMvuData, difficulty: string): EnemyMvuData {
   const coefficient = DIFFICULTY_COEFFICIENTS[difficulty] || 1.0;
-  
+
   if (coefficient === 1.0) {
     return { ...baseData };
   }
-  
+
   return {
     对手等级: baseData.对手等级, // 等级不变
     对手魅力: Math.round(baseData.对手魅力 * coefficient),
@@ -1411,7 +1411,7 @@ export const ENEMY_DATABASE: Record<string, EnemyMvuData> = {
     对手快感: 0,
     对手最大快感: 400,
     对手高潮次数: 0,
-    对手性斗力: 68, 
+    对手性斗力: 68,
     对手忍耐力: 400,
     对手临时状态: {},
     对手技能冷却: {},
@@ -1627,7 +1627,7 @@ export function getEnemyMvuData(enemyName: string): EnemyMvuData | null {
       return ENEMY_DATABASE[fullName];
     }
   }
-  
+
   // 3. 尝试包含匹配：遍历数据库全名，如果对手名包含某个全名，返回该数据
   //    如果包含多个，以第一个为准
   const enemyDbNames = Object.keys(ENEMY_DATABASE).sort((a, b) => b.length - a.length);
@@ -1637,7 +1637,7 @@ export function getEnemyMvuData(enemyName: string): EnemyMvuData | null {
       return ENEMY_DATABASE[fullName];
     }
   }
-  
+
   // 4. 尝试别名包含匹配：遍历别名表，如果对手名包含某个别名，返回对应数据
   //    如果包含多个，以第一个为准
   const enemyAliases = Object.entries(NAME_ALIASES).sort((a, b) => b[0].length - a[0].length);
@@ -1647,7 +1647,7 @@ export function getEnemyMvuData(enemyName: string): EnemyMvuData | null {
       return ENEMY_DATABASE[fullName];
     }
   }
-  
+
   // 5. 都没匹配到，返回null
   console.warn(`[敌人数据库] 未找到数据匹配: "${enemyName}"`);
   return null;
@@ -1671,7 +1671,7 @@ export function resolveEnemyName(enemyName: string): string {
       return fullName;
     }
   }
-  
+
   // 3. 尝试包含匹配：遍历数据库全名，如果对手名包含某个全名，返回该全名
   //    如果包含多个，以第一个为准
   const enemyDbNames = Object.keys(ENEMY_DATABASE).sort((a, b) => b.length - a.length);
@@ -1681,7 +1681,7 @@ export function resolveEnemyName(enemyName: string): string {
       return fullName;
     }
   }
-  
+
   // 4. 尝试别名包含匹配：遍历别名表，如果对手名包含某个别名，返回对应全名
   //    如果包含多个，以第一个为准
   const enemyAliases = Object.entries(NAME_ALIASES).sort((a, b) => b[0].length - a[0].length);
@@ -1691,7 +1691,7 @@ export function resolveEnemyName(enemyName: string): string {
       return fullName;
     }
   }
-  
+
   // 5. 都没匹配到，返回原名
   console.warn(`[敌人数据库] 未找到匹配: "${enemyName}"，返回原名`);
   return enemyName;
