@@ -15,16 +15,16 @@ export interface TalentBonus {
 }
 
 export type TalentEffectType =
-  | 'pleasure_control'      // 快感控制类
-  | 'stamina_control'       // 耐力控制类
-  | 'damage_boost'          // 伤害增强类
-  | 'defense_boost'         // 防御增强类
-  | 'first_strike'          // 先手类
-  | 'counter'               // 反击类
-  | 'recovery'              // 恢复类
-  | 'special'               // 特殊类
-  | 'daily'                 // 日常类（非战斗效果）
-  | 'sin';                  // 七宗罪类（特殊机制）
+  | 'pleasure_control' // 快感控制类
+  | 'stamina_control' // 耐力控制类
+  | 'damage_boost' // 伤害增强类
+  | 'defense_boost' // 防御增强类
+  | 'first_strike' // 先手类
+  | 'counter' // 反击类
+  | 'recovery' // 恢复类
+  | 'special' // 特殊类
+  | 'daily' // 日常类（非战斗效果）
+  | 'sin'; // 七宗罪类（特殊机制）
 
 export interface TalentEffect {
   type: TalentEffectType;
@@ -276,7 +276,7 @@ export const TALENT_DATABASE: TalentData[] = [
     name: '精准打击·稳健',
     description: '暴击率+1。前3次攻击必定命中。',
     rarity: 'SS',
-    bonus: { 暴击率加成: 1  },
+    bonus: { 暴击率加成: 1 },
     effects: [
       {
         type: 'first_strike',
@@ -527,12 +527,14 @@ export const TALENT_DATABASE: TalentData[] = [
     description: '基础忍耐力+4，基础忍耐力成算+2。每回合第一次受到的快感伤害减少15点。',
     rarity: 'SS',
     bonus: { 基础忍耐力加成: 4, 基础忍耐力成算: 2 },
-    effects: [{
-      type: 'defense_boost',
-      trigger: 'on_damage_receive',
-      effect: 'reduce_first_damage_per_turn',
-      params: { value: 15 }
-    }]
+    effects: [
+      {
+        type: 'defense_boost',
+        trigger: 'on_damage_receive',
+        effect: 'reduce_first_damage_per_turn',
+        params: { value: 15 },
+      },
+    ],
   },
   {
     id: 'talent_willpower_variant_1',
@@ -540,12 +542,14 @@ export const TALENT_DATABASE: TalentData[] = [
     description: '基础忍耐力+8，基础忍耐力成算+5。每回合第一次受到的快感伤害减少8点。',
     rarity: 'S',
     bonus: { 基础忍耐力加成: 8, 基础忍耐力成算: 5 },
-    effects: [{
-      type: 'defense_boost',
-      trigger: 'on_damage_receive',
-      effect: 'reduce_first_damage_per_turn',
-      params: { value: 8 }
-    }]
+    effects: [
+      {
+        type: 'defense_boost',
+        trigger: 'on_damage_receive',
+        effect: 'reduce_first_damage_per_turn',
+        params: { value: 8 },
+      },
+    ],
   },
 
   // ==================== 日常类（非战斗效果） ====================
@@ -708,12 +712,14 @@ export const TALENT_DATABASE: TalentData[] = [
       '【七宗罪·色欲】魅力+125。每回合攻击被动附带魅惑属性（概率=35%+(自身魅力-对方魅力)/10），魅惑成功则束缚敌人1回合。但魅惑成功会降低自身12%忍耐力成算（可叠加），连续魅惑失败两次则对方下次攻击必定命中且暴击。',
     rarity: 'SIN',
     bonus: { 魅力加成: 125 },
-    effects: [{
-      type: 'sin',
-      trigger: 'sin_lust',
-      effect: 'sin_lust_charm',
-      params: { value: 10 }
-    }]
+    effects: [
+      {
+        type: 'sin',
+        trigger: 'sin_lust',
+        effect: 'sin_lust_charm',
+        params: { value: 10 },
+      },
+    ],
   },
   {
     id: 'talent_sin_wrath',
@@ -842,7 +848,6 @@ export function getAdjustedGachaRates(corruptionLevel: number): Record<TalentDat
   const sinProb = calculateSinProbability(corruptionLevel);
   const deductPerRarity = sinProb / 3; // 从C/B/A各扣除1/3
 
-
   return {
     C: Math.max(0, TALENT_GACHA_RATES.C - deductPerRarity),
     B: Math.max(0, TALENT_GACHA_RATES.B - deductPerRarity),
@@ -900,7 +905,6 @@ export function getDailyTalentEffect(talentId: string | undefined, effectName: s
   if (!talentId) return 0;
   const talent = getTalentById(talentId);
   if (!talent) return 0;
-
 
   for (const effect of talent.effects) {
     if (effect.type === 'daily' && effect.effect === effectName) {
