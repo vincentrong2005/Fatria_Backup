@@ -1380,7 +1380,6 @@ const applyCheatCode = async () => {
         openModal('错误', '添加装备失败');
       }
     } else if (code === '980321') {
-      // 生活模拟模式解锁码（测试用）
       showCheatInput.value = false;
       cheatCode.value = '';
 
