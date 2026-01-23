@@ -25,19 +25,19 @@ export const ENEMY_SIN_TALENTS: Record<string, 'lust' | 'wrath' | 'envy' | 'slot
  */
 export function getEnemySinTalentType(enemyName: string): 'lust' | 'wrath' | 'envy' | 'sloth' | 'pride' | 'gluttony' | 'greed' | null {
   if (!enemyName) return null;
-  
+
   // 精确匹配
   if (enemyName in ENEMY_SIN_TALENTS) {
     return ENEMY_SIN_TALENTS[enemyName];
   }
-  
+
   // 包含匹配
   for (const [key, value] of Object.entries(ENEMY_SIN_TALENTS)) {
     if (enemyName.includes(key)) {
       return value;
     }
   }
-  
+
   return null;
 }
 
@@ -56,7 +56,7 @@ export interface TalentState {
   shieldValue: number;           // 护盾减伤值
   nextAttackBoost: number;       // 下次攻击加成
   dodgeBoostActive: boolean;     // 闪避后攻击加成是否激活
-  
+
   // ==================== 七宗罪状态 ====================
   // 色欲
   lustCharmSuccessCount: number;       // 魅惑成功次数（用于计算忍耐力惩罚）
@@ -176,12 +176,12 @@ export function processTalentOnTurnStart(
   context: TalentEffectContext
 ): TalentEffectResult {
   if (!talent) return {};
-  
+
   const result: TalentEffectResult = {};
-  
+
   for (const effect of talent.effects) {
     if (effect.trigger !== 'turn_start') continue;
-    
+
     switch (effect.effect) {
       case 'reduce_pleasure_when_high': {
         // 当快感超过阈值时减少快感
@@ -193,7 +193,7 @@ export function processTalentOnTurnStart(
         }
         break;
       }
-      
+
       case 'reduce_pleasure_when_low': {
         // 当快感低于阈值时减少快感
         const threshold = (effect.params.threshold || 25) / 100;
@@ -204,13 +204,13 @@ export function processTalentOnTurnStart(
         }
         break;
       }
-      
+
       case 'balance_pleasure': {
         // 快感向目标值调整
         const targetPercent = (effect.params.threshold || 50) / 100;
         const targetPleasure = context.playerMaxPleasure * targetPercent;
         const adjustValue = effect.params.value || 20;
-        
+
         if (context.playerPleasure > targetPleasure) {
           const reduction = Math.min(adjustValue, context.playerPleasure - targetPleasure);
           context.modifyPlayerPleasure(-reduction);
@@ -222,7 +222,7 @@ export function processTalentOnTurnStart(
         }
         break;
       }
-      
+
       case 'random_buff_every_n_turns': {
         // 每N回合获得随机buff
         const interval = effect.params.count || 3;
@@ -242,10 +242,10 @@ export function processTalentOnTurnStart(
       }
     }
   }
-  
+
   // 重置回合内计数器
   context.talentState.damageReceivedCount = 0;
-  
+
   return result;
 }
 
@@ -255,26 +255,26 @@ export function processTalentOnTurnEnd(
   context: TalentEffectContext
 ): TalentEffectResult {
   if (!talent) return {};
-  
+
   const result: TalentEffectResult = {};
-  
+
   for (const effect of talent.effects) {
     if (effect.trigger !== 'turn_end') continue;
-    
+
     switch (effect.effect) {
       case 'boost_stamina_recovery': {
         // 耐力回复量增加（这个效果需要在实际回复时应用）
         // 这里只是标记，实际处理在耐力回复逻辑中
         break;
       }
-      
+
       case 'recover_stamina_per_turn': {
         const value = effect.params.value || 2;
         context.modifyPlayerStamina(value);
         context.addLog(`【${talent.name}】触发：回复${value}点耐力`, 'system', 'info');
         break;
       }
-      
+
       case 'reduce_pleasure_per_turn': {
         const value = effect.params.value || 3;
         context.modifyPlayerPleasure(-value);
@@ -283,7 +283,7 @@ export function processTalentOnTurnEnd(
       }
     }
   }
-  
+
   // 护盾回合递减
   if (context.talentState.hasShield && context.talentState.shieldTurnsRemaining > 0) {
     context.talentState.shieldTurnsRemaining--;
@@ -293,7 +293,7 @@ export function processTalentOnTurnEnd(
       context.addLog(`【护盾】效果已结束`, 'system', 'info');
     }
   }
-  
+
   return result;
 }
 
@@ -303,13 +303,13 @@ export function processTalentOnBattleStart(
   context: TalentEffectContext
 ): TalentEffectResult {
   if (!talent) return {};
-  
+
   // 重置天赋状态
   Object.assign(context.talentState, createDefaultTalentState());
-  
+
   for (const effect of talent.effects) {
     if (effect.trigger !== 'battle_start') continue;
-    
+
     switch (effect.effect) {
       case 'reset_stats_on_battle_start': {
         // 回满耐力，清空快感
@@ -320,7 +320,7 @@ export function processTalentOnBattleStart(
         context.addLog(`【${talent.name}】触发：耐力回满，快感清空`, 'system', 'info');
         break;
       }
-      
+
       case 'shield_first_n_turns': {
         context.talentState.hasShield = true;
         context.talentState.shieldTurnsRemaining = effect.params.duration || 3;
@@ -328,7 +328,7 @@ export function processTalentOnBattleStart(
         context.addLog(`【${talent.name}】触发：获得护盾（${context.talentState.shieldTurnsRemaining}回合）`, 'system', 'info');
         break;
       }
-      
+
       case 'bonus_stamina_on_start': {
         const value = effect.params.value || 15;
         context.modifyPlayerStamina(value);
@@ -337,7 +337,7 @@ export function processTalentOnBattleStart(
       }
     }
   }
-  
+
   return {};
 }
 
@@ -348,13 +348,13 @@ export function processTalentOnAttack(
   hasBindEffect: boolean
 ): TalentEffectResult {
   if (!talent) return {};
-  
+
   const result: TalentEffectResult = {};
   context.talentState.attackCount++;
-  
+
   for (const effect of talent.effects) {
     if (effect.trigger !== 'on_attack') continue;
-    
+
     switch (effect.effect) {
       case 'double_first_n_attacks': {
         const count = effect.params.count || 2;
@@ -364,7 +364,7 @@ export function processTalentOnAttack(
         }
         break;
       }
-      
+
       case 'guaranteed_hit_first_n': {
         const count = effect.params.count || 2;
         if (context.talentState.attackCount <= count) {
@@ -373,7 +373,7 @@ export function processTalentOnAttack(
         }
         break;
       }
-      
+
       case 'add_bind_first_n': {
         const count = effect.params.count || 2;
         if (context.talentState.attackCount <= count && !hasBindEffect) {
@@ -383,7 +383,7 @@ export function processTalentOnAttack(
         }
         break;
       }
-      
+
       case 'reduce_enemy_dodge_chance': {
         const chance = effect.params.chance || 15;
         if (Math.random() * 100 < chance) {
@@ -396,7 +396,7 @@ export function processTalentOnAttack(
       }
     }
   }
-  
+
   // 处理闪避后攻击加成
   if (context.talentState.dodgeBoostActive && context.talentState.nextAttackBoost > 0) {
     result.damageMultiplier = (result.damageMultiplier || 1) * (1 + context.talentState.nextAttackBoost / 100);
@@ -404,7 +404,7 @@ export function processTalentOnAttack(
     context.talentState.dodgeBoostActive = false;
     context.talentState.nextAttackBoost = 0;
   }
-  
+
   return result;
 }
 
@@ -415,12 +415,12 @@ export function processTalentOnDamageDealt(
   damageDealt: number
 ): TalentEffectResult {
   if (!talent) return {};
-  
+
   const result: TalentEffectResult = {};
-  
+
   for (const effect of talent.effects) {
     if (effect.trigger !== 'on_damage_deal') continue;
-    
+
     switch (effect.effect) {
       case 'reduce_self_pleasure_on_attack': {
         const value = effect.params.value || 3;
@@ -428,7 +428,7 @@ export function processTalentOnDamageDealt(
         context.addLog(`【${talent.name}】触发：快感减少${value}点`, 'system', 'info');
         break;
       }
-      
+
       case 'drain_enemy_stamina': {
         const chance = effect.params.chance || 25;
         if (Math.random() * 100 < chance) {
@@ -440,10 +440,10 @@ export function processTalentOnDamageDealt(
       }
     }
   }
-  
+
   // 连续命中计数
   context.talentState.consecutiveHits++;
-  
+
   return result;
 }
 
@@ -454,14 +454,14 @@ export function processTalentOnDamageReceived(
   incomingDamage: number
 ): TalentEffectResult {
   if (!talent) return {};
-  
+
   const result: TalentEffectResult = {};
   context.talentState.damageReceivedCount++;
   context.talentState.damageReceivedCountInBattle++;
-  
+
   for (const effect of talent.effects) {
     if (effect.trigger !== 'on_damage_receive') continue;
-    
+
     switch (effect.effect) {
       case 'cap_pleasure_damage': {
         // 单次伤害上限
@@ -473,7 +473,7 @@ export function processTalentOnDamageReceived(
         }
         break;
       }
-      
+
       case 'reflect_pleasure_damage': {
         const reflectPercent = (effect.params.value || 25) / 100;
         result.reflectDamage = Math.floor(incomingDamage * reflectPercent);
@@ -483,13 +483,13 @@ export function processTalentOnDamageReceived(
         }
         break;
       }
-      
+
       case 'reduce_pleasure_damage': {
         const reductionPercent = effect.params.value || 15;
         result.damageReductionPercent = (result.damageReductionPercent || 0) + reductionPercent;
         break;
       }
-      
+
       case 'reduce_first_n_damage': {
         const count = effect.params.count || 2;
         if (context.talentState.damageReceivedCountInBattle <= count) {
@@ -499,7 +499,7 @@ export function processTalentOnDamageReceived(
         }
         break;
       }
-      
+
       case 'reduce_first_damage_per_turn': {
         if (context.talentState.damageReceivedCount === 1) {
           const value = effect.params.value || 8;
@@ -508,7 +508,7 @@ export function processTalentOnDamageReceived(
         }
         break;
       }
-      
+
       case 'convert_pleasure_to_stamina': {
         context.talentState.accumulatedPleasureDamage += incomingDamage;
         const threshold = effect.params.threshold || 15;
@@ -520,7 +520,7 @@ export function processTalentOnDamageReceived(
         }
         break;
       }
-      
+
       case 'reduce_damage_when_high_pleasure': {
         const threshold = (effect.params.threshold || 80) / 100;
         if (context.playerPleasure > context.playerMaxPleasure * threshold) {
@@ -530,7 +530,7 @@ export function processTalentOnDamageReceived(
         }
         break;
       }
-      
+
       case 'chance_immune_attack': {
         const chance = effect.params.chance || 10;
         if (Math.random() * 100 < chance) {
@@ -541,12 +541,12 @@ export function processTalentOnDamageReceived(
       }
     }
   }
-  
+
   // 护盾减伤
   if (context.talentState.hasShield && context.talentState.shieldValue > 0) {
     result.damageReduction = (result.damageReduction || 0) + context.talentState.shieldValue;
   }
-  
+
   return result;
 }
 
@@ -556,10 +556,10 @@ export function processTalentOnDodge(
   context: TalentEffectContext
 ): TalentEffectResult {
   if (!talent) return {};
-  
+
   for (const effect of talent.effects) {
     if (effect.trigger !== 'on_dodge') continue;
-    
+
     switch (effect.effect) {
       case 'boost_next_attack_on_dodge': {
         const value = effect.params.value || 15;
@@ -570,7 +570,7 @@ export function processTalentOnDodge(
       }
     }
   }
-  
+
   return {};
 }
 
@@ -581,12 +581,12 @@ export function processTalentOnCrit(
   baseDamage: number
 ): TalentEffectResult {
   if (!talent) return {};
-  
+
   const result: TalentEffectResult = {};
-  
+
   for (const effect of talent.effects) {
     if (effect.trigger !== 'on_crit') continue;
-    
+
     switch (effect.effect) {
       case 'boost_crit_damage': {
         const value = effect.params.value || 25;
@@ -596,7 +596,7 @@ export function processTalentOnCrit(
       }
     }
   }
-  
+
   return result;
 }
 
@@ -606,12 +606,12 @@ export function processTalentOnCritReceived(
   context: TalentEffectContext
 ): TalentEffectResult {
   if (!talent) return {};
-  
+
   const result: TalentEffectResult = {};
-  
+
   for (const effect of talent.effects) {
     if (effect.trigger !== 'on_crit_receive') continue;
-    
+
     switch (effect.effect) {
       case 'reduce_crit_damage_received': {
         const value = effect.params.value || 20;
@@ -621,7 +621,7 @@ export function processTalentOnCritReceived(
       }
     }
   }
-  
+
   return result;
 }
 
@@ -631,12 +631,12 @@ export function processTalentOnClimax(
   context: TalentEffectContext
 ): TalentEffectResult {
   if (!talent) return {};
-  
+
   const result: TalentEffectResult = {};
-  
+
   for (const effect of talent.effects) {
     if (effect.trigger !== 'on_climax') continue;
-    
+
     switch (effect.effect) {
       case 'chance_ignore_climax_count': {
         const chance = effect.params.chance || 30;
@@ -648,7 +648,7 @@ export function processTalentOnClimax(
       }
     }
   }
-  
+
   return result;
 }
 
@@ -658,10 +658,10 @@ export function processTalentOnEnemyClimax(
   context: TalentEffectContext
 ): TalentEffectResult {
   if (!talent) return {};
-  
+
   for (const effect of talent.effects) {
     if (effect.trigger !== 'on_enemy_climax') continue;
-    
+
     switch (effect.effect) {
       case 'recover_stamina_on_enemy_climax': {
         const value = effect.params.value || 20;
@@ -671,7 +671,7 @@ export function processTalentOnEnemyClimax(
       }
     }
   }
-  
+
   return {};
 }
 
@@ -682,12 +682,12 @@ export function processTalentOnDebuffReceived(
   debuffType: string
 ): TalentEffectResult {
   if (!talent) return {};
-  
+
   const result: TalentEffectResult = {};
-  
+
   for (const effect of talent.effects) {
     if (effect.trigger !== 'on_debuff_receive') continue;
-    
+
     switch (effect.effect) {
       case 'immune_first_n_binds': {
         if (debuffType === 'bind') {
@@ -702,7 +702,7 @@ export function processTalentOnDebuffReceived(
       }
     }
   }
-  
+
   return result;
 }
 
@@ -713,10 +713,10 @@ export function processTalentOnStaminaConsume(
   staminaConsumed: number
 ): TalentEffectResult {
   if (!talent) return {};
-  
+
   for (const effect of talent.effects) {
     if (effect.trigger !== 'on_stamina_consume') continue;
-    
+
     switch (effect.effect) {
       case 'convert_stamina_to_pleasure_reduce': {
         context.talentState.accumulatedStaminaConsume += staminaConsumed;
@@ -731,7 +731,7 @@ export function processTalentOnStaminaConsume(
       }
     }
   }
-  
+
   return {};
 }
 
@@ -766,12 +766,12 @@ export function getTalentPassiveModifiers(
     chanceBoost: 0,
     powerCoeffBoost: 0,
   };
-  
+
   if (!talent) return result;
-  
+
   for (const effect of talent.effects) {
     if (effect.trigger !== 'passive') continue;
-    
+
     switch (effect.effect) {
       case 'power_boost_when_high_pleasure': {
         const threshold = (effect.params.threshold || 75) / 100;
@@ -780,7 +780,7 @@ export function getTalentPassiveModifiers(
         }
         break;
       }
-      
+
       case 'damage_boost_when_low_stamina': {
         const threshold = (effect.params.threshold || 30) / 100;
         if (context.playerStamina < context.playerMaxStamina * threshold) {
@@ -788,7 +788,7 @@ export function getTalentPassiveModifiers(
         }
         break;
       }
-      
+
       case 'damage_boost_when_enemy_high_pleasure': {
         const threshold = (effect.params.threshold || 70) / 100;
         if (context.enemyPleasure > context.enemyMaxPleasure * threshold) {
@@ -796,12 +796,12 @@ export function getTalentPassiveModifiers(
         }
         break;
       }
-      
+
       case 'boost_accuracy': {
         result.accuracyBoost += effect.params.value || 10;
         break;
       }
-      
+
       case 'boost_all_stats_when_critical': {
         const threshold = (effect.params.threshold || 90) / 100;
         if (context.playerPleasure > context.playerMaxPleasure * threshold) {
@@ -809,17 +809,17 @@ export function getTalentPassiveModifiers(
         }
         break;
       }
-      
+
       case 'reduce_enemy_dodge': {
         result.enemyDodgeReduction += effect.params.value || 5;
         break;
       }
-      
+
       case 'boost_all_chances': {
         result.chanceBoost += effect.params.value || 5;
         break;
       }
-      
+
       case 'boost_dodge_when_low_stamina': {
         const threshold = (effect.params.threshold || 20) / 100;
         if (context.playerStamina < context.playerMaxStamina * threshold) {
@@ -829,33 +829,33 @@ export function getTalentPassiveModifiers(
       }
     }
   }
-  
+
   return result;
 }
 
 // 获取耐力回复倍率
 export function getTalentStaminaRecoveryMultiplier(talent: TalentData | null): number {
   if (!talent) return 1;
-  
+
   for (const effect of talent.effects) {
     if (effect.trigger === 'turn_end' && effect.effect === 'boost_stamina_recovery') {
       return effect.params.multiplier || 1.3;
     }
   }
-  
+
   return 1;
 }
 
 // 获取耐力变化上限
 export function getTalentStaminaChangeCap(talent: TalentData | null): number | null {
   if (!talent) return null;
-  
+
   for (const effect of talent.effects) {
     if (effect.trigger === 'on_stamina_change' && effect.effect === 'cap_stamina_change') {
       return effect.params.maxValue || 30;
     }
   }
-  
+
   return null;
 }
 
@@ -873,7 +873,7 @@ export function hasSinTalent(talent: TalentData | null): boolean {
  */
 export function getSinTalentType(talent: TalentData | null): string | null {
   if (!talent || talent.rarity !== 'SIN') return null;
-  
+
   const sinTypes: Record<string, string> = {
     'talent_sin_lust': 'lust',
     'talent_sin_wrath': 'wrath',
@@ -883,7 +883,7 @@ export function getSinTalentType(talent: TalentData | null): string | null {
     'talent_sin_gluttony': 'gluttony',
     'talent_sin_greed': 'greed',
   };
-  
+
   return sinTypes[talent.id] || null;
 }
 
@@ -915,10 +915,10 @@ export function processLustCharm(
   enemyCharm: number
 ): { success: boolean; message: string; bindEnemy?: boolean; bindDuration?: number; selfEnduranceDebuff?: number; enemyGuaranteedHitCrit?: boolean } {
   // 魅惑成功率 = 30% + (玩家魅力 - 敌人魅力) / 10
-  const charmChance = 30 + (playerCharm - enemyCharm) / 10;
+  const charmChance = 35 + (playerCharm - enemyCharm) / 10;
   const roll = Math.random() * 100;
   const success = roll < charmChance;
-  
+
   if (success) {
     context.talentState.lustCharmSuccessCount++;
     context.talentState.lustCharmFailCount = 0;
@@ -979,39 +979,39 @@ export function processEnvyOnBattleStart(
     charm: '魅力',
     luck: '幸运',
   };
-  
+
   // 随机选择3个属性
   const shuffled = [...statKeys].sort(() => Math.random() - 0.5);
   const selectedStats = shuffled.slice(0, 3);
-  
+
   const effects: Array<{ attribute: string; value: number; isBonus: boolean; message: string }> = [];
-  
+
   for (const stat of selectedStats) {
     const playerValue = playerStats[stat];
     const enemyValue = enemyStats[stat];
     const displayName = statNames[stat];
-    
+
     if (enemyValue > playerValue) {
       // 对手属性高于自身，自身+80%对手值
       const boost = Math.floor(enemyValue * 0.8);
-      effects.push({ 
-        attribute: displayName, 
-        value: boost, 
+      effects.push({
+        attribute: displayName,
+        value: boost,
         isBonus: true,
         message: `${displayName}：对手(${enemyValue}) > 自身(${playerValue})，${displayName}+${boost}`
       });
     } else {
       // 对手属性低于或等于自身，自身-50%对手值（减少debuff惩罚）
       const penalty = Math.floor(enemyValue * 0.5);
-      effects.push({ 
-        attribute: displayName, 
-        value: -penalty, 
+      effects.push({
+        attribute: displayName,
+        value: -penalty,
         isBonus: false,
         message: `${displayName}：对手(${enemyValue}) ≤ 自身(${playerValue})，${displayName}-${penalty}`
       });
     }
   }
-  
+
   context.talentState.envyApplied = true;
   return { effects };
 }
@@ -1034,13 +1034,13 @@ export function processSlothSkipTurn(context: TalentEffectContext): { message: s
  */
 export function getSlothAttackModifiers(talentState: TalentState, currentTurn: number): TalentEffectResult {
   const result: TalentEffectResult = {};
-  
+
   // 前3回合无法攻击
   if (talentState.slothCannotAttackTurns > 0) {
     result.cannotAttack = true;
     return result;
   }
-  
+
   // 消耗积蓄获得效果
   const stacks = talentState.slothStacks;
   if (stacks >= 1) {
@@ -1052,7 +1052,7 @@ export function getSlothAttackModifiers(talentState: TalentState, currentTurn: n
   if (stacks >= 3) {
     result.extraHitCount = 2;
   }
-  
+
   return result;
 }
 
@@ -1063,7 +1063,7 @@ export function processSlothAfterAttack(context: TalentEffectContext): { message
   const stacks = context.talentState.slothStacks;
   context.talentState.slothStacks = 0;
   context.talentState.slothDebuffTurns = 2;
-  
+
   return {
     message: `【七宗罪·懒惰】消耗${stacks}层怠惰积蓄，进入"懒散"状态2回合（性斗力成算-20%、闪避率-15%）`,
   };
@@ -1083,12 +1083,12 @@ export function getPrideStatModifiers(
     charm: '魅力',
     luck: '幸运',
   };
-  
+
   const boosts: string[] = [];
   const penalties: string[] = [];
   let totalBoostPercent = 0;
   let totalPenaltyPercent = 0;
-  
+
   for (const stat of stats) {
     if (playerStats[stat] > enemyStats[stat]) {
       boosts.push(statNames[stat]);
@@ -1098,7 +1098,7 @@ export function getPrideStatModifiers(
       totalPenaltyPercent += 20;
     }
   }
-  
+
   return { boosts, penalties, totalBoostPercent, totalPenaltyPercent };
 }
 
@@ -1109,17 +1109,17 @@ export function processGluttonyOnDamageReceived(context: TalentEffectContext): {
   if (context.talentState.gluttonyStacks < 5) {
     context.talentState.gluttonyStacks++;
   }
-  
+
   const stacks = context.talentState.gluttonyStacks;
   let bindNextTurn = false;
   let message = `【七宗罪·暴食】获得1层「饕餮」（当前${stacks}层）：性斗力/忍耐力成算+${stacks * 10}、暴击率+${stacks * 5}%`;
-  
+
   if (stacks >= 5) {
     context.talentState.gluttonyOvereatNext = true;
     message += `\n警告：饕餮层数达到5层，下回合将进入「过食」状态！`;
     bindNextTurn = true;
   }
-  
+
   return { message, bindNextTurn };
 }
 
@@ -1142,18 +1142,18 @@ export function processGreedOnTurnStart(context: TalentEffectContext, currentSta
   if (context.talentState.greedStacks >= 5) {
     return { staminaCost: 0, message: `【七宗罪·贪婪】贪婪层数已达上限（5层）` };
   }
-  
+
   const staminaCost = Math.floor(currentStamina * 0.1);
   context.talentState.greedStacks++;
-  
+
   const stacks = context.talentState.greedStacks;
   let message = `【七宗罪·贪婪】消耗${staminaCost}耐力，获得1层「贪婪」（当前${stacks}层）：暴击率+${stacks * 10}%、魅力+${stacks * 30}、幸运+${stacks * 30}、性斗力成算+${stacks * 15}%`;
-  
+
   if (stacks >= 3) {
     message += `\n暴击伤害提升至300%！`;
   }
   message += `\n闪避率-${stacks * 10}%`;
-  
+
   return { staminaCost, message };
 }
 
@@ -1217,17 +1217,17 @@ export function getSinTalentPassiveModifiers(
     luckBoost: 0,
     extraHitCount: 0,
   };
-  
+
   const sinType = getSinTalentType(talent);
   if (!sinType) return result;
-  
+
   switch (sinType) {
     case 'wrath':
       // 暴怒：闪避率-999%（已在bonus中），连击+1
       result.evasionBoost = -999;
       result.extraHitCount = 1;
       break;
-      
+
     case 'sloth':
       // 懒惰：每层怠惰积蓄提供性斗力/忍耐力成算+10%、闪避率+5%
       const slothStacks = talentState.slothStacks;
@@ -1240,7 +1240,7 @@ export function getSinTalentPassiveModifiers(
         result.evasionBoost -= 15;
       }
       break;
-      
+
     case 'gluttony':
       // 暴食：每层饕餮提供性斗力/忍耐力成算+10、暴击率+5%
       const gluttonyStacks = talentState.gluttonyStacks;
@@ -1248,7 +1248,7 @@ export function getSinTalentPassiveModifiers(
       result.endurancePercent = gluttonyStacks * 10;
       result.critBoost = gluttonyStacks * 5;
       break;
-      
+
     case 'greed':
       // 贪婪：每层提供暴击率+10%、魅力+30、幸运+30、性斗力成算+15%，闪避率-10%
       const greedStacks = talentState.greedStacks;
@@ -1259,6 +1259,6 @@ export function getSinTalentPassiveModifiers(
       result.evasionBoost = -greedStacks * 10;
       break;
   }
-  
+
   return result;
 }

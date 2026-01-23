@@ -455,6 +455,11 @@ const enemyBoundTurns = ref<number>(0); // 敌人被束缚的回合数
 const playerBindSource = ref<'player' | 'enemy' | null>(null); // 玩家束缚的施加者
 const enemyBindSource = ref<'player' | 'enemy' | null>(null); // 敌人束缚的施加者
 
+// 感官麻木状态（束缚解除后获得，期间再次被束缚只持续1回合）
+const playerSensoryNumb = ref<number>(0); // 玩家感官麻木剩余回合
+const enemySensoryNumb = ref<number>(0); // 敌人感官麻木剩余回合
+const MAX_BIND_DURATION = 4; // 束缚回合上限
+
 // BOSS禁用状态（第二阶段禁用物品和投降）
 const isBossItemsDisabled = ref<boolean>(false);
 const isBossSurrenderDisabled = ref<boolean>(false);
@@ -2139,6 +2144,16 @@ async function applySkillEffectsFromMvu(skillId: string, isPlayerSkill: boolean)
             logs.push(`【七宗罪·贪婪】被束缚时持续时间+2回合！`);
           }
           
+          // 感官麻木检查：如果有感官麻木，束缚只持续1回合
+          if (playerSensoryNumb.value > 0) {
+            finalDuration = 1;
+            playerSensoryNumb.value = 0;
+            logs.push(`【感官麻木】${player.value.name} 的束缚持续时间被减少为1回合！`);
+          }
+          
+          // 应用束缚上限
+          finalDuration = Math.min(finalDuration, MAX_BIND_DURATION);
+          
           playerBoundTurns.value = finalDuration;
           playerBindSource.value = isPlayerSkill ? 'player' : 'enemy';
           logs.push(`${player.value.name} 被束缚了 ${finalDuration} 回合，无法行动！`);
@@ -2155,9 +2170,20 @@ async function applySkillEffectsFromMvu(skillId: string, isPlayerSkill: boolean)
             continue;
           }
           
-          enemyBoundTurns.value = duration;
+          // 感官麻木检查：如果有感官麻木，束缚只持续1回合
+          let finalEnemyDuration = duration;
+          if (enemySensoryNumb.value > 0) {
+            finalEnemyDuration = 1;
+            enemySensoryNumb.value = 0;
+            logs.push(`【感官麻木】${enemy.value.name} 的束缚持续时间被减少为1回合！`);
+          }
+          
+          // 应用束缚上限
+          finalEnemyDuration = Math.min(finalEnemyDuration, MAX_BIND_DURATION);
+          
+          enemyBoundTurns.value = finalEnemyDuration;
           enemyBindSource.value = isPlayerSkill ? 'player' : 'enemy';
-          logs.push(`${enemy.value.name} 被束缚了 ${duration} 回合，无法行动！`);
+          logs.push(`${enemy.value.name} 被束缚了 ${finalEnemyDuration} 回合，无法行动！`);
           console.info(`[束缚] ★★★ 设置敌人束缚: enemyBoundTurns=${enemyBoundTurns.value}, enemyBindSource=${enemyBindSource.value}`);
         }
         continue;
@@ -2729,6 +2755,9 @@ async function clearTemporaryStatus() {
     enemyBoundTurns.value = 0;
     playerBindSource.value = null;
     enemyBindSource.value = null;
+    // 清空感官麻木状态
+    playerSensoryNumb.value = 0;
+    enemySensoryNumb.value = 0;
 
     // 保存到MVU
     await Mvu.replaceMvuData(mvuData, { type: 'message', message_id: 'latest' });
@@ -3736,6 +3765,9 @@ function handleEnemyTurn() {
     if (playerBoundTurns.value === 0) {
       addLog(`${player.value.name} 的束缚效果消失了`, 'system', 'info');
       playerBindSource.value = null;
+      // 授予感官麻木状态
+      playerSensoryNumb.value = 2;
+      addLog(`${player.value.name} 获得了【感官麻木】状态，持续2回合`, 'system', 'buff');
     } else {
       addLog(`${player.value.name} 的束缚效果剩余 ${playerBoundTurns.value} 回合`, 'system', 'info');
     }
@@ -3762,6 +3794,9 @@ function handleEnemyTurn() {
         if (enemyBoundTurns.value === 0) {
           enemyBindSource.value = null;
           addLog(`${enemy.value.name} 的束缚效果消失了`, 'system', 'info');
+          // 授予感官麻木状态
+          enemySensoryNumb.value = 2;
+          addLog(`${enemy.value.name} 获得了【感官麻木】状态，持续2回合`, 'system', 'buff');
         } else {
           addLog(`${enemy.value.name} 的束缚效果剩余 ${enemyBoundTurns.value} 回合`, 'system', 'info');
         }
@@ -3930,6 +3965,9 @@ function handleEnemyTurn() {
     if (enemyBoundTurns.value === 0) {
       enemyBindSource.value = null;
       addLog(`${enemy.value.name} 的束缚效果消失了`, 'system', 'info');
+      // 授予感官麻木状态
+      enemySensoryNumb.value = 2;
+      addLog(`${enemy.value.name} 获得了【感官麻木】状态，持续2回合`, 'system', 'buff');
     }
     endTurn().then((climaxTriggered) => {
       if (!climaxTriggered) {
