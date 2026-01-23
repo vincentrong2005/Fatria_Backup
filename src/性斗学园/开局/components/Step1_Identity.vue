@@ -105,7 +105,10 @@
               {{ getDifficultyDisplayName(d) }}
             </option>
           </select>
-          <div v-if="data.difficulty === Difficulty.MASOCHIST" class="mt-2 text-xs text-pink-400 flex items-center gap-1">
+          <div
+            v-if="data.difficulty === Difficulty.MASOCHIST"
+            class="mt-2 text-xs text-pink-400 flex items-center gap-1"
+          >
             <i class="fas fa-lock"></i> 已选择抖M特化难度
           </div>
           <p v-if="data.difficulty === Difficulty.CHEATER" class="mt-2 text-xs text-yellow-400 flex items-center gap-1">
@@ -145,10 +148,7 @@
 
     <!-- 生活模拟模式：NPC选择 -->
     <template v-else>
-      <NpcCharacterSelect
-        ref="npcSelectRef"
-        @select="handleNpcSelect"
-      />
+      <NpcCharacterSelect ref="npcSelectRef" @select="handleNpcSelect" />
 
       <!-- 难度选择（生活模拟模式） -->
       <div v-if="localSelectedNpc" class="mt-4">
@@ -244,7 +244,7 @@ const handleNpcSelect = (npc: NpcCharacter | null) => {
 };
 
 // 监听开局场景变化
-watch(openingScene, (newScene) => {
+watch(openingScene, newScene => {
   emit('update-data', { personality: `[生活模拟模式开局场景]\n${newScene}` });
 });
 

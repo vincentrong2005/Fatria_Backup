@@ -75,7 +75,7 @@
               :is-life-sim-unlocked="isLifeSimUnlocked"
               :is-life-sim-mode="isLifeSimMode"
               @update-data="updateCharacterData"
-              @update-life-sim-mode="(v: boolean) => isLifeSimMode = v"
+              @update-life-sim-mode="(v: boolean) => (isLifeSimMode = v)"
               @select-npc="handleNpcSelect"
             />
             <Step2_Archetype v-if="step === 3" :data="characterData" @update-data="updateCharacterData" />
@@ -85,7 +85,12 @@
               :cheat-mode="isCheatActive"
               @update-data="updateCharacterData"
             />
-            <Step4_Skills v-if="step === 5" :data="characterData" :is-life-sim-mode="isLifeSimMode" @update-data="updateCharacterData" />
+            <Step4_Skills
+              v-if="step === 5"
+              :data="characterData"
+              :is-life-sim-mode="isLifeSimMode"
+              @update-data="updateCharacterData"
+            />
           </div>
         </div>
 
@@ -486,7 +491,14 @@ const isApplyingCheatCode = ref(false);
 // 生活模拟模式相关
 const isLifeSimMode = ref(false);
 const isLifeSimUnlocked = ref(false);
-const selectedNpc = ref<{ id: string; name: string; dbKey: string; skillKey: string; level: number; gender?: '男' | '女' | '非二元' } | null>(null);
+const selectedNpc = ref<{
+  id: string;
+  name: string;
+  dbKey: string;
+  skillKey: string;
+  level: number;
+  gender?: '男' | '女' | '非二元';
+} | null>(null);
 
 // 从 MVU 变量同步初始数据
 onMounted(async () => {
@@ -1376,7 +1388,10 @@ const applyCheatCode = async () => {
       await recordActivatedCheatCode('980321');
 
       console.info('[开局] 生活模拟模式已解锁');
-      openModal('生活模拟模式', '夺舍模式已解锁！\n\n现在你可以在角色档案页面的右上角切换到生活模拟模式，选择一位NPC角色进行游玩。');
+      openModal(
+        '生活模拟模式',
+        '夺舍模式已解锁！\n\n现在你可以在角色档案页面的右上角切换到生活模拟模式，选择一位NPC角色进行游玩。',
+      );
     } else {
       openModal('错误', '无效的代码');
       cheatCode.value = '';
@@ -1448,7 +1463,16 @@ const updateCharacterData = (fields: Partial<CharacterData>) => {
 };
 
 // 处理NPC选择（生活模拟模式）
-const handleNpcSelect = (npc: { id: string; name: string; dbKey: string; skillKey: string; level: number; gender?: '男' | '女' | '非二元' } | null) => {
+const handleNpcSelect = (
+  npc: {
+    id: string;
+    name: string;
+    dbKey: string;
+    skillKey: string;
+    level: number;
+    gender?: '男' | '女' | '非二元';
+  } | null,
+) => {
   selectedNpc.value = npc;
 };
 
@@ -1534,7 +1558,7 @@ const handleStartGame = async () => {
     if (isLifeSimMode.value && selectedNpc.value) {
       const npcData = ENEMY_DATABASE[selectedNpc.value.dbKey];
       const npcSkillIds = ENEMY_SKILL_MAP[selectedNpc.value.skillKey] || [];
-      
+
       if (!npcData) {
         console.error('[开局] 找不到NPC数据:', selectedNpc.value.dbKey);
         loading.value = false;
@@ -1609,7 +1633,7 @@ const handleStartGame = async () => {
         if (skillData) {
           // 获取主要伤害来源（取第一个damageFormula）
           const primaryDamage = skillData.damageFormula?.[0];
-          
+
           npcActiveSkills[skillData.name] = {
             基本信息: {
               技能名称: skillData.name,
@@ -1834,11 +1858,11 @@ const sendCharacterDataToTavern = async () => {
   if (isLifeSimMode.value) {
     // 生活模拟模式：简化输出
     const difficultyMap: Record<string, string> = {
-      '学园生活': '简单',
-      '普通': '普通',
-      '困难': '困难',
-      '抖M特化': '抖M',
-      '作弊者': '作弊',
+      学园生活: '简单',
+      普通: '普通',
+      困难: '困难',
+      抖M特化: '抖M',
+      作弊者: '作弊',
     };
     const mvuDifficultyText = difficultyMap[characterData.value.difficulty] || characterData.value.difficulty;
 

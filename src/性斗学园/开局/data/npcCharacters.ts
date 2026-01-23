@@ -5,14 +5,14 @@
 
 export interface NpcCharacter {
   id: string;
-  name: string;           // 显示名称
-  dbKey: string;          // enemyDatabase中的key
-  skillKey: string;       // enemySkillDatabase中的key
-  portraitKey?: string;   // 头像文件名（可选，默认使用name）
-  gender?: '男' | '女' | '非二元';  // 性别（可选，默认为女）
-  level: number;          // 等级
-  category: NpcCategory;  // 分类
-  description: string;    // 简短描述
+  name: string; // 显示名称
+  dbKey: string; // enemyDatabase中的key
+  skillKey: string; // enemySkillDatabase中的key
+  portraitKey?: string; // 头像文件名（可选，默认使用name）
+  gender?: '男' | '女' | '非二元'; // 性别（可选，默认为女）
+  level: number; // 等级
+  category: NpcCategory; // 分类
+  description: string; // 简短描述
 }
 
 export type NpcCategory =

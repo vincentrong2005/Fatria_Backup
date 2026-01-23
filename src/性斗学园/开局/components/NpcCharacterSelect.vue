@@ -47,9 +47,7 @@
             class="w-full h-full object-cover"
             @error="handleImageError($event)"
           />
-          <div
-            class="absolute bottom-0 left-0 right-0 bg-black/60 text-white text-[10px] px-1 py-0.5"
-          >
+          <div class="absolute bottom-0 left-0 right-0 bg-black/60 text-white text-[10px] px-1 py-0.5">
             Lv.{{ npc.level }}
           </div>
         </div>
@@ -66,13 +64,12 @@
     </div>
 
     <!-- 选中角色详情 -->
-    <div
-      v-if="selectedNpc"
-      class="bg-white/5 border border-white/10 rounded-xl p-6 backdrop-blur-sm"
-    >
+    <div v-if="selectedNpc" class="bg-white/5 border border-white/10 rounded-xl p-6 backdrop-blur-sm">
       <div class="flex flex-col items-center">
         <!-- 大头像 (832x1216 比例) -->
-        <div class="w-48 aspect-[832/1216] rounded-2xl overflow-hidden bg-black/30 mb-4 ring-4 ring-purple-500/30 shadow-xl shadow-purple-500/20">
+        <div
+          class="w-48 aspect-[832/1216] rounded-2xl overflow-hidden bg-black/30 mb-4 ring-4 ring-purple-500/30 shadow-xl shadow-purple-500/20"
+        >
           <img
             :src="getPortraitUrl(selectedNpc.name, selectedNpc.portraitKey)"
             :alt="selectedNpc.name"
@@ -83,9 +80,7 @@
         <!-- 信息 -->
         <div class="text-center">
           <div class="text-2xl font-bold text-white mb-1">{{ selectedNpc.name }}</div>
-          <div class="text-sm text-purple-400 mb-2">
-            Lv.{{ selectedNpc.level }} · {{ selectedNpc.category }}
-          </div>
+          <div class="text-sm text-purple-400 mb-2">Lv.{{ selectedNpc.level }} · {{ selectedNpc.category }}</div>
           <div class="text-sm text-gray-400 max-w-xs">{{ selectedNpc.description }}</div>
         </div>
       </div>
@@ -112,10 +107,7 @@
     </div>
 
     <!-- 未选中提示 -->
-    <div
-      v-else
-      class="bg-white/5 border border-dashed border-white/20 rounded-xl p-8 text-center text-gray-400"
-    >
+    <div v-else class="bg-white/5 border border-dashed border-white/20 rounded-xl p-8 text-center text-gray-400">
       <i class="fas fa-hand-pointer text-2xl mb-2"></i>
       <div>点击上方角色头像进行选择</div>
     </div>
@@ -125,13 +117,7 @@
 <script setup lang="ts">
 import { ENEMY_DATABASE, EnemyMvuData } from '@/性斗学园/战斗界面/enemyDatabase';
 import { computed, ref } from 'vue';
-import {
-  getNpcPortraitUrl,
-  getNpcsByCategory,
-  NPC_CHARACTERS,
-  NpcCategory,
-  NpcCharacter,
-} from '../data/npcCharacters';
+import { getNpcPortraitUrl, getNpcsByCategory, NPC_CHARACTERS, NpcCategory, NpcCharacter } from '../data/npcCharacters';
 
 const emit = defineEmits<{
   (e: 'select', npc: NpcCharacter | null): void;
@@ -165,7 +151,8 @@ function getPortraitUrl(name: string, portraitKey?: string): string {
 // 图片加载失败处理
 function handleImageError(event: Event) {
   const img = event.target as HTMLImageElement;
-  img.src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect fill="%23334155" width="100" height="100"/><text fill="%239ca3af" x="50" y="55" text-anchor="middle" font-size="12">无头像</text></svg>';
+  img.src =
+    'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect fill="%23334155" width="100" height="100"/><text fill="%239ca3af" x="50" y="55" text-anchor="middle" font-size="12">无头像</text></svg>';
 }
 
 // 选择NPC
