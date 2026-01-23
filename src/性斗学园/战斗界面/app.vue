@@ -53,17 +53,21 @@
         :turn-state="turnState"
         :enemy-intention="turnState.enemyIntention"
       />
-      
+
       <!-- 伊甸芙宁沉睡图标 (只保留zzz图标) -->
-      <div 
-        v-if="BossSystem.bossState.isBossFight && BossSystem.bossState.bossId === 'eden' && BossSystem.bossState.edenSleeping"
+      <div
+        v-if="
+          BossSystem.bossState.isBossFight &&
+          BossSystem.bossState.bossId === 'eden' &&
+          BossSystem.bossState.edenSleeping
+        "
         class="eden-sleep-icon"
       >
         <span class="sleep-icon">💤</span>
       </div>
-      
+
       <!-- 黑崎晴雯债务显示 -->
-      <div 
+      <div
         v-if="BossSystem.bossState.isBossFight && BossSystem.bossState.bossId === 'heisaki'"
         class="heisaki-debt-display"
       >
@@ -84,10 +88,10 @@
       v-if="bossOverlayText"
       :key="bossDialogueKey"
       class="boss-text-overlay active"
-      :class="{ 
+      :class="{
         'boss-text-muxinlan': BossSystem.bossState.isBossFight && BossSystem.bossState.bossId === 'muxinlan',
         'boss-text-christine': BossSystem.bossState.isBossFight && BossSystem.bossState.bossId === 'christine',
-        'boss-text-eden': BossSystem.bossState.isBossFight && BossSystem.bossState.bossId === 'eden'
+        'boss-text-eden': BossSystem.bossState.isBossFight && BossSystem.bossState.bossId === 'eden',
       }"
       @click="handleBossTextClick"
     >
@@ -98,7 +102,12 @@
     <div v-if="phaseTransitionEffect" class="phase-transition-effect" :class="phaseTransitionEffect">
       <div class="transition-flash"></div>
       <div class="transition-particles">
-        <div v-for="i in 50" :key="i" class="particle" :style="{ '--delay': i * 0.02 + 's', '--x': Math.random() * 100 + '%', '--y': Math.random() * 100 + '%' }"></div>
+        <div
+          v-for="i in 50"
+          :key="i"
+          class="particle"
+          :style="{ '--delay': i * 0.02 + 's', '--x': Math.random() * 100 + '%', '--y': Math.random() * 100 + '%' }"
+        ></div>
       </div>
       <div class="transition-shockwave"></div>
     </div>
@@ -161,7 +170,7 @@
                   </svg>
                   <span>战斗技能</span>
                 </Card>
-                <Card 
+                <Card
                   :hover="!isItemsDisabled"
                   class="menu-card"
                   :class="{ disabled: isItemsDisabled }"
@@ -220,13 +229,39 @@
                       <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z" />
                       <line x1="4" y1="22" x2="4" y2="15" />
                     </svg>
-                    <span>{{ isSurrenderDisabled ? (isSinSurrenderDisabled ? '七宗罪封印' : '已封印') : (allowSurrender ? '不可投降' : (showSurrenderMenu ? '收起' : '投降')) }}</span>
+                    <span>{{
+                      isSurrenderDisabled
+                        ? isSinSurrenderDisabled
+                          ? '七宗罪封印'
+                          : '已封印'
+                        : allowSurrender
+                          ? '不可投降'
+                          : showSurrenderMenu
+                            ? '收起'
+                            : '投降'
+                    }}</span>
                   </Card>
                   <div v-if="showSurrenderMenu" class="surrender-submenu">
-                    <button class="tab-btn surrender-sub-btn" :disabled="allowSurrender || isSurrenderDisabled" @click="handleSurrender">投降</button>
-                    <button class="tab-btn surrender-sub-btn" :disabled="isSurrenderDisabled" @click="handleSelfPleasure">自慰</button>
-                    <button class="tab-btn surrender-sub-btn" :disabled="isSurrenderDisabled" @click="handleTempted">被诱惑</button>
-                    <button class="tab-btn surrender-sub-btn" :disabled="isSurrenderDisabled" @click="handleTribute">上贡</button>
+                    <button
+                      class="tab-btn surrender-sub-btn"
+                      :disabled="allowSurrender || isSurrenderDisabled"
+                      @click="handleSurrender"
+                    >
+                      投降
+                    </button>
+                    <button
+                      class="tab-btn surrender-sub-btn"
+                      :disabled="isSurrenderDisabled"
+                      @click="handleSelfPleasure"
+                    >
+                      自慰
+                    </button>
+                    <button class="tab-btn surrender-sub-btn" :disabled="isSurrenderDisabled" @click="handleTempted">
+                      被诱惑
+                    </button>
+                    <button class="tab-btn surrender-sub-btn" :disabled="isSurrenderDisabled" @click="handleTribute">
+                      上贡
+                    </button>
                   </div>
                   <input
                     ref="playerPortraitInput"
@@ -267,32 +302,84 @@
                     <span class="skill-name" :class="{ 'skill-disabled': isSkillDisabled(skill) }">{{
                       skill.name
                     }}</span>
-                    <span class="skill-rarity" :class="'rarity-' + (skill.data?.rarity || 'C').toLowerCase()">{{ skill.data?.rarity || 'C' }}</span>
+                    <span class="skill-rarity" :class="'rarity-' + (skill.data?.rarity || 'C').toLowerCase()">{{
+                      skill.data?.rarity || 'C'
+                    }}</span>
                     <span v-if="skill.data?.level" class="skill-level">Lv.{{ skill.data.level }}</span>
                   </div>
-                  <p class="skill-desc">{{ skill.data?.damageDescription || skill.description || `造成${skill.data?.powerCoeff || 100}%性斗力伤害` }}</p>
+                  <p class="skill-desc">
+                    {{
+                      skill.data?.damageDescription ||
+                      skill.description ||
+                      `造成${skill.data?.powerCoeff || 100}%性斗力伤害`
+                    }}
+                  </p>
                   <div class="skill-stats-row">
-                    <span class="stat-item cost" :class="{ 
-                      'cost-danger': player.stats.currentEndurance < getDisplaySkillCost(skill),
-                      'cost-multiplied': BossSystem.bossState.isBossFight && BossSystem.bossState.bossId === 'heisaki' && BossSystem.getHeisakiSkillCostMultiplier(skill.id) > 1
-                    }">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                    <span
+                      class="stat-item cost"
+                      :class="{
+                        'cost-danger': player.stats.currentEndurance < getDisplaySkillCost(skill),
+                        'cost-multiplied':
+                          BossSystem.bossState.isBossFight &&
+                          BossSystem.bossState.bossId === 'heisaki' &&
+                          BossSystem.getHeisakiSkillCostMultiplier(skill.id) > 1,
+                      }"
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="12"
+                        height="12"
+                        viewBox="0 0 24 24"
+                        fill="currentColor"
+                      >
+                        <path d="M13 10V3L4 14h7v7l9-11h-7z" />
+                      </svg>
                       {{ getDisplaySkillCost(skill) }}耐力
-                      <span v-if="BossSystem.bossState.isBossFight && BossSystem.bossState.bossId === 'heisaki' && BossSystem.getHeisakiSkillCostMultiplier(skill.id) > 1" class="cost-multiplier">
+                      <span
+                        v-if="
+                          BossSystem.bossState.isBossFight &&
+                          BossSystem.bossState.bossId === 'heisaki' &&
+                          BossSystem.getHeisakiSkillCostMultiplier(skill.id) > 1
+                        "
+                        class="cost-multiplier"
+                      >
                         (×{{ BossSystem.getHeisakiSkillCostMultiplier(skill.id) }})
                       </span>
                     </span>
                     <span v-if="skill.cooldown > 0" class="stat-item cooldown">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="12"
+                        height="12"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                      >
+                        <circle cx="12" cy="12" r="10" />
+                        <polyline points="12 6 12 12 16 14" />
+                      </svg>
                       {{ skill.cooldown }}回合
                     </span>
                     <span class="stat-item accuracy">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="2"/></svg>
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="12"
+                        height="12"
+                        viewBox="0 0 24 24"
+                        fill="currentColor"
+                      >
+                        <circle cx="12" cy="12" r="10" />
+                        <circle cx="12" cy="12" r="6" fill="none" stroke="currentColor" stroke-width="2" />
+                        <circle cx="12" cy="12" r="2" />
+                      </svg>
                       {{ skill.data?.accuracyModifier || 100 }}%
                     </span>
                   </div>
                   <div class="skill-damage-source">
-                    伤害来源：<span class="source-type">{{ getSkillDamageSourceLabel(skill) }}</span> ×{{ getSkillPowerCoeff(skill) }}%
+                    伤害来源：<span class="source-type">{{ getSkillDamageSourceLabel(skill) }}</span> ×{{
+                      getSkillPowerCoeff(skill)
+                    }}%
                   </div>
                   <div v-if="skill.data?.effectDescription" class="skill-effect">
                     <span class="effect-label">效果：</span>
@@ -369,12 +456,12 @@
               {{ turnState.phase === 'victory' ? '完全胜利' : '彻底败北' }}
             </h2>
             <p class="result-subtitle">战斗结束</p>
-            
+
             <!-- CG图片显示 -->
             <div v-if="cgImageUrl" class="cg-container">
               <img :src="cgImageUrl" :alt="cgDescription" class="cg-image" @error="handleCGImageError" />
             </div>
-            
+
             <button class="btn btn-process" @click="handleSendCombatLogToLLM">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -521,7 +608,7 @@ watch(
       bossOverlayText.value = '';
     }
   },
-  { immediate: true, deep: true }
+  { immediate: true, deep: true },
 );
 
 // 粒子封印系统
@@ -545,7 +632,7 @@ function generateCrossPoints(rect: DOMRect, count: number): { x: number; y: numb
   const points: { x: number; y: number }[] = [];
   const padding = 12;
   const size = rect.width - padding * 2;
-  
+
   for (let i = 0; i < count; i++) {
     const pos = (i / count) * size;
     // 左上到右下
@@ -561,7 +648,7 @@ function createParticle(tx: number, ty: number, delay: number): Particle {
   const angle = Math.random() * Math.PI * 2;
   const dist = 500 + Math.random() * 300;
   const shades = ['#000000', '#1a1a1a', '#0d0d0d'];
-  
+
   return {
     x: tx + Math.cos(angle) * dist,
     y: ty + Math.sin(angle) * dist,
@@ -582,10 +669,10 @@ function updateParticle(p: Particle) {
     return;
   }
   if (p.isArrived) return;
-  
+
   p.x += (p.tx - p.x) * p.speed;
   p.y += (p.ty - p.y) * p.speed;
-  
+
   if (Math.abs(p.x - p.tx) < 0.5 && Math.abs(p.y - p.ty) < 0.5) {
     p.x = p.tx;
     p.y = p.ty;
@@ -605,37 +692,37 @@ function animateParticles() {
   if (!sealCanvas.value) return;
   const ctx = sealCanvas.value.getContext('2d');
   if (!ctx) return;
-  
+
   ctx.clearRect(0, 0, sealCanvas.value.width, sealCanvas.value.height);
   particles.forEach(p => {
     updateParticle(p);
     drawParticle(ctx, p);
   });
-  
+
   animationFrameId = requestAnimationFrame(animateParticles);
 }
 
 // 执行封印效果（禁用按钮）
 function castSealEffect(targetSelectors: string[]) {
   particles = [];
-  
+
   targetSelectors.forEach(selector => {
     const el = document.querySelector(selector) as HTMLElement;
     if (!el) return;
-    
+
     const rect = el.getBoundingClientRect();
     const points = generateCrossPoints(rect, 50);
-    
+
     points.forEach(p => {
       particles.push(createParticle(p.x, p.y, Math.random() * 40));
     });
-    
+
     // 1.2秒后按钮变暗
     setTimeout(() => {
       el.classList.add('is-sealed');
     }, 1200);
   });
-  
+
   if (animationFrameId === null) {
     animateParticles();
   }
@@ -749,16 +836,16 @@ async function loadFromMvu() {
       if (talentData) {
         playerTalent.value = talentData;
         playerTalentState.value = TalentSystem.createDefaultTalentState();
-        
+
         // 应用天赋属性加成
         if (talentData.bonus) {
           const bonus = talentData.bonus;
-          player.value.stats.sexPower += (bonus.基础性斗力加成 || 0);
-          player.value.stats.baseEndurance += (bonus.基础忍耐力加成 || 0);
-          player.value.stats.charm += (bonus.魅力加成 || 0);
-          player.value.stats.luck += (bonus.幸运加成 || 0);
-          player.value.stats.evasion += (bonus.闪避率加成 || 0);
-          player.value.stats.crit += (bonus.暴击率加成 || 0);
+          player.value.stats.sexPower += bonus.基础性斗力加成 || 0;
+          player.value.stats.baseEndurance += bonus.基础忍耐力加成 || 0;
+          player.value.stats.charm += bonus.魅力加成 || 0;
+          player.value.stats.luck += bonus.幸运加成 || 0;
+          player.value.stats.evasion += bonus.闪避率加成 || 0;
+          player.value.stats.crit += bonus.暴击率加成 || 0;
         }
       } else {
         // 如果数据库中没有，尝试从MVU数据读取
@@ -847,9 +934,10 @@ async function loadFromMvu() {
 
               // 创建基本的SkillData对象（读取连击数、准确率、暴击修正）
               const rawRarity = mvuSkill.基本信息?.稀有度;
-              const rarity = (rawRarity === 'C' || rawRarity === 'B' || rawRarity === 'A' || rawRarity === 'S' || rawRarity === 'SS')
-                ? rawRarity
-                : 'C';
+              const rarity =
+                rawRarity === 'C' || rawRarity === 'B' || rawRarity === 'A' || rawRarity === 'S' || rawRarity === 'SS'
+                  ? rawRarity
+                  : 'C';
               const basicSkillData = {
                 id: skillId,
                 name: mvuSkill.基本信息.技能名称 || skillId,
@@ -893,17 +981,20 @@ async function loadFromMvu() {
           const mvuSkill = availableSkills[skillId];
           const mvuBasicInfo = mvuSkill?.基本信息;
           const rawRarity = mvuBasicInfo?.稀有度;
-          const mergedRarity = (rawRarity === 'C' || rawRarity === 'B' || rawRarity === 'A' || rawRarity === 'S' || rawRarity === 'SS')
-            ? rawRarity
-            : (skillData.rarity || 'C');
+          const mergedRarity =
+            rawRarity === 'C' || rawRarity === 'B' || rawRarity === 'A' || rawRarity === 'S' || rawRarity === 'SS'
+              ? rawRarity
+              : skillData.rarity || 'C';
           const mergedLevel = mvuBasicInfo?.技能等级 || skillData.level || 1;
           const mvuDamageInfo = mvuSkill?.伤害与效果;
-          let mergedDamageSource: any = skillData.damageSource || (skillData.damageFormula?.[0]?.source as any) || 'sex_power';
-          let mergedPowerCoeff: number = (skillData.powerCoeff !== undefined)
-            ? (skillData.powerCoeff as number)
-            : (skillData.damageFormula?.length === 1
-              ? Math.round((skillData.damageFormula[0].coefficient || 1) * 100)
-              : 100);
+          let mergedDamageSource: any =
+            skillData.damageSource || (skillData.damageFormula?.[0]?.source as any) || 'sex_power';
+          let mergedPowerCoeff: number =
+            skillData.powerCoeff !== undefined
+              ? (skillData.powerCoeff as number)
+              : skillData.damageFormula?.length === 1
+                ? Math.round((skillData.damageFormula[0].coefficient || 1) * 100)
+                : 100;
           let mergedDamageFormula = skillData.damageFormula;
           let mergedAccuracy = skillData.accuracy;
           let mergedCritModifier = skillData.critModifier;
@@ -1010,7 +1101,7 @@ async function loadFromMvu() {
           if (itemData?.加成属性) {
             console.info(`[战斗界面] 加载临时buff物品: ${itemId}`, itemData.加成属性);
           }
-          
+
           // 创建Item对象
           // 使用itemId作为名称（因为背包的key就是物品名称）
           const item: Item = {
@@ -1056,7 +1147,10 @@ async function loadFromMvu() {
               // 增加快感
               if (itemData?.快感增加) {
                 const oldPleasure = user.stats.currentPleasure;
-                user.stats.currentPleasure = Math.min(user.stats.maxPleasure, user.stats.currentPleasure + itemData.快感增加);
+                user.stats.currentPleasure = Math.min(
+                  user.stats.maxPleasure,
+                  user.stats.currentPleasure + itemData.快感增加,
+                );
                 const actualIncrease = user.stats.currentPleasure - oldPleasure;
                 if (actualIncrease > 0) {
                   message += `，快感增加了 ${actualIncrease} 点`;
@@ -1101,15 +1195,15 @@ async function loadFromMvu() {
 
     // 解析临时状态列表为 StatusEffect[]
     const statusList = _.get(data, '临时状态.状态列表', {});
-    console.info('[战斗界面] Raw Status List:', statusList); 
+    console.info('[战斗界面] Raw Status List:', statusList);
 
     const effects: StatusEffect[] = [];
-    
+
     Object.entries(statusList).forEach(([name, val]) => {
       // 获取持续时间和加成信息
       let duration = 0;
       let bonuses: Record<string, number> = {};
-      
+
       if (typeof val === 'number') {
         duration = val;
       } else if (typeof val === 'object' && val !== null) {
@@ -1123,29 +1217,29 @@ async function loadFromMvu() {
       let displayName = '';
       let type: 'buff' | 'debuff' = 'buff';
       let icon = '⚡';
-      
+
       // 如果有加成信息，格式化显示
       if (Object.keys(bonuses).length > 0) {
         const bonusTexts: string[] = [];
         for (const [key, value] of Object.entries(bonuses)) {
           if (value === 0) continue;
-          
+
           // 映射加成键名到显示名称
           const attrMap: Record<string, string> = {
-            '魅力加成': '魅力',
-            '幸运加成': '幸运',
-            '闪避率加成': '闪避',
-            '暴击率加成': '暴击',
-            '基础性斗力加成': '性斗力',
-            '基础性斗力成算': '性斗力%',
-            '基础忍耐力加成': '忍耐力',
-            '基础忍耐力成算': '忍耐力%',
+            魅力加成: '魅力',
+            幸运加成: '幸运',
+            闪避率加成: '闪避',
+            暴击率加成: '暴击',
+            基础性斗力加成: '性斗力',
+            基础性斗力成算: '性斗力%',
+            基础忍耐力加成: '忍耐力',
+            基础忍耐力成算: '忍耐力%',
           };
-          
+
           const attrName = attrMap[key] || key;
           const sign = value > 0 ? '+' : '';
           bonusTexts.push(`${attrName}${sign}${value}`);
-          
+
           // 判断是buff还是debuff
           if (value < 0) {
             type = 'debuff';
@@ -1156,37 +1250,37 @@ async function loadFromMvu() {
         // 没有加成信息，使用原名称
         displayName = name;
       }
-      
+
       // 根据类型设置图标
       if (type === 'debuff') {
         icon = '▼';
       } else {
         icon = '▲';
       }
-      
+
       // 特殊状态图标映射
       if (name.includes('敏感')) icon = '❤️';
       if (name.includes('沉默')) icon = '😶';
       if (name.includes('束缚')) icon = '⛓️';
       if (name.includes('无敌')) icon = '🛡️';
       if (name.includes('必暴')) icon = '💥';
-      
+
       effects.push({
         id: name,
         name: displayName || name,
         duration: duration,
         icon: icon,
         type: type,
-        effect: { 
-          type: 'focus' as any, 
-          value: 0, 
-          isPercent: false, 
-          duration: duration, 
-          stackable: false 
-        } 
+        effect: {
+          type: 'focus' as any,
+          value: 0,
+          isPercent: false,
+          duration: duration,
+          stackable: false,
+        },
       });
     });
-    
+
     player.value.statusEffects = effects;
 
     // 应用临时状态和永久状态的加成
@@ -1219,89 +1313,89 @@ async function loadEnemyFromMvuData(data: any, maxClimaxCount: number) {
   // 解析对手临时状态 (Buff/Debuff)
   const enemyStatusList = _.get(data, '性斗系统.对手临时状态.状态列表', {});
   console.info('[战斗界面] Raw Enemy Status List:', enemyStatusList);
-  
+
   const enemyEffects: StatusEffect[] = [];
   Object.entries(enemyStatusList).forEach(([name, val]) => {
-      // 获取持续时间和加成信息
-      let duration = 0;
-      let bonuses: Record<string, number> = {};
-      
-      if (typeof val === 'number') {
-        duration = val;
-      } else if (typeof val === 'object' && val !== null) {
-        duration = _.get(val, '剩余回合', 0);
-        bonuses = _.get(val, '加成', {});
-      }
+    // 获取持续时间和加成信息
+    let duration = 0;
+    let bonuses: Record<string, number> = {};
 
-      if (duration <= 0) return;
+    if (typeof val === 'number') {
+      duration = val;
+    } else if (typeof val === 'object' && val !== null) {
+      duration = _.get(val, '剩余回合', 0);
+      bonuses = _.get(val, '加成', {});
+    }
 
-      // 从加成信息生成显示名称
-      let displayName = '';
-      let type: 'buff' | 'debuff' = 'buff';
-      let icon = '⚡';
-      
-      // 如果有加成信息，格式化显示
-      if (Object.keys(bonuses).length > 0) {
-        const bonusTexts: string[] = [];
-        for (const [key, value] of Object.entries(bonuses)) {
-          if (value === 0) continue;
-          
-          // 映射加成键名到显示名称
-          const attrMap: Record<string, string> = {
-            '魅力加成': '魅力',
-            '幸运加成': '幸运',
-            '闪避率加成': '闪避',
-            '暴击率加成': '暴击',
-            '基础性斗力加成': '性斗力',
-            '基础性斗力成算': '性斗力%',
-            '基础忍耐力加成': '忍耐力',
-            '基础忍耐力成算': '忍耐力%',
-          };
-          
-          const attrName = attrMap[key] || key;
-          const sign = value > 0 ? '+' : '';
-          bonusTexts.push(`${attrName}${sign}${value}`);
-          
-          // 判断是buff还是debuff
-          if (value < 0) {
-            type = 'debuff';
-          }
+    if (duration <= 0) return;
+
+    // 从加成信息生成显示名称
+    let displayName = '';
+    let type: 'buff' | 'debuff' = 'buff';
+    let icon = '⚡';
+
+    // 如果有加成信息，格式化显示
+    if (Object.keys(bonuses).length > 0) {
+      const bonusTexts: string[] = [];
+      for (const [key, value] of Object.entries(bonuses)) {
+        if (value === 0) continue;
+
+        // 映射加成键名到显示名称
+        const attrMap: Record<string, string> = {
+          魅力加成: '魅力',
+          幸运加成: '幸运',
+          闪避率加成: '闪避',
+          暴击率加成: '暴击',
+          基础性斗力加成: '性斗力',
+          基础性斗力成算: '性斗力%',
+          基础忍耐力加成: '忍耐力',
+          基础忍耐力成算: '忍耐力%',
+        };
+
+        const attrName = attrMap[key] || key;
+        const sign = value > 0 ? '+' : '';
+        bonusTexts.push(`${attrName}${sign}${value}`);
+
+        // 判断是buff还是debuff
+        if (value < 0) {
+          type = 'debuff';
         }
-        displayName = bonusTexts.join(', ');
-      } else {
-        // 没有加成信息，使用原名称
-        displayName = name;
       }
-      
-      // 根据类型设置图标
-      if (type === 'debuff') {
-        icon = '▼';
-      } else {
-        icon = '▲';
-      }
-      
-      // 特殊状态图标映射
-      if (name.includes('敏感')) icon = '❤️';
-      if (name.includes('沉默')) icon = '😶';
-      if (name.includes('束缚')) icon = '⛓️';
-      if (name.includes('无敌')) icon = '🛡️';
-      if (name.includes('必暴')) icon = '💥';
-      if (name.includes('嘲讽')) icon = '🤬';
-      
-      enemyEffects.push({
-        id: 'enemy_' + name, 
-        name: displayName || name,
+      displayName = bonusTexts.join(', ');
+    } else {
+      // 没有加成信息，使用原名称
+      displayName = name;
+    }
+
+    // 根据类型设置图标
+    if (type === 'debuff') {
+      icon = '▼';
+    } else {
+      icon = '▲';
+    }
+
+    // 特殊状态图标映射
+    if (name.includes('敏感')) icon = '❤️';
+    if (name.includes('沉默')) icon = '😶';
+    if (name.includes('束缚')) icon = '⛓️';
+    if (name.includes('无敌')) icon = '🛡️';
+    if (name.includes('必暴')) icon = '💥';
+    if (name.includes('嘲讽')) icon = '🤬';
+
+    enemyEffects.push({
+      id: 'enemy_' + name,
+      name: displayName || name,
+      duration: duration,
+      icon: icon,
+      type: type,
+      effect: {
+        type: 'focus' as any,
+        value: 0,
+        isPercent: false,
         duration: duration,
-        icon: icon,
-        type: type,
-        effect: { 
-          type: 'focus' as any, 
-          value: 0, 
-          isPercent: false, 
-          duration: duration, 
-          stackable: false 
-        } 
-      });
+        stackable: false,
+      },
+    });
   });
   console.info('[战斗界面] Parsed Enemy Effects:', enemyEffects);
   enemy.value.statusEffects = enemyEffects;
@@ -1316,7 +1410,7 @@ async function loadEnemyFromMvuData(data: any, maxClimaxCount: number) {
     const bossClimaxLimit = BossSystem.BOSS_CONFIG.muxinlan.climaxLimits[0]; // 第一阶段高潮次数上限
     enemy.value.name = bossDisplayName;
     enemy.value.avatarUrl = BossSystem.getMuxinlanAvatarUrl(1);
-    
+
     // 更新MVU中的对手名称和胜负规则
     if (typeof Mvu !== 'undefined') {
       const mvuData = Mvu.getMvuData({ type: 'message', message_id: 'latest' });
@@ -1332,10 +1426,10 @@ async function loadEnemyFromMvuData(data: any, maxClimaxCount: number) {
     // 同步更新UI中的高潮次数上限（双方共享）
     player.value.stats.maxClimaxCount = bossClimaxLimit;
     enemy.value.stats.maxClimaxCount = bossClimaxLimit;
-    
+
     // 入场对话已在BossSystem.initMuxinlanBoss()中通过queueDialogues播放
     addLog(`【特殊战斗】沐芯兰BOSS战开始！`, 'system', 'critical');
-    
+
     console.info(`[战斗界面] BOSS战初始化完成: ${bossDisplayName}, 高潮次数上限: ${bossClimaxLimit}`);
   }
   // 检测是否是克莉丝汀BOSS战
@@ -1347,7 +1441,7 @@ async function loadEnemyFromMvuData(data: any, maxClimaxCount: number) {
     const bossClimaxLimit = BossSystem.BOSS_CONFIG.christine.climaxLimits[0]; // 第一阶段高潮次数上限
     enemy.value.name = bossDisplayName;
     enemy.value.avatarUrl = BossSystem.getChristineAvatarUrl(1);
-    
+
     // 更新MVU中的对手名称和胜负规则
     if (typeof Mvu !== 'undefined') {
       const mvuData = Mvu.getMvuData({ type: 'message', message_id: 'latest' });
@@ -1363,10 +1457,10 @@ async function loadEnemyFromMvuData(data: any, maxClimaxCount: number) {
     // 同步更新UI中的高潮次数上限（双方共享）
     player.value.stats.maxClimaxCount = bossClimaxLimit;
     enemy.value.stats.maxClimaxCount = bossClimaxLimit;
-    
+
     // 入场对话已在BossSystem.initChristineBoss()中通过queueDialogues播放
     // 克莉丝汀是隐藏BOSS，不显示特殊战斗日志
-    
+
     console.info(`[战斗界面] BOSS战初始化完成: ${bossDisplayName}, 高潮次数上限: ${bossClimaxLimit}`);
   }
   // 检测是否是伊甸芙宁BOSS战
@@ -1378,7 +1472,7 @@ async function loadEnemyFromMvuData(data: any, maxClimaxCount: number) {
     const bossClimaxLimit = BossSystem.BOSS_CONFIG.eden.climaxLimits[0]; // 初始高潮次数上限为1
     enemy.value.name = bossDisplayName;
     enemy.value.avatarUrl = BossSystem.getEdenAvatarUrl();
-    
+
     // 更新MVU中的对手名称和胜负规则
     if (typeof Mvu !== 'undefined') {
       const mvuData = Mvu.getMvuData({ type: 'message', message_id: 'latest' });
@@ -1388,7 +1482,7 @@ async function loadEnemyFromMvuData(data: any, maxClimaxCount: number) {
         _.set(mvuData.stat_data, '性斗系统.胜负规则.高潮次数上限', bossClimaxLimit);
         // 对手高潮次数初始为0
         _.set(mvuData.stat_data, '性斗系统.对手高潮次数', 0);
-        
+
         // ========== 沉睡状态：写入对手临时状态 - 忍耐力成算-70% ==========
         _.set(mvuData.stat_data, '性斗系统.对手临时状态.状态列表.懒惰沉睡', {
           加成: {
@@ -1398,20 +1492,22 @@ async function loadEnemyFromMvuData(data: any, maxClimaxCount: number) {
         });
         // 更新加成统计
         _.set(mvuData.stat_data, '性斗系统.对手临时状态.加成统计.基础忍耐力成算', -70);
-        
+
         await Mvu.replaceMvuData(mvuData, { type: 'message', message_id: 'latest' });
       }
     }
     // 同步更新UI中的高潮次数上限
     player.value.stats.maxClimaxCount = bossClimaxLimit;
     enemy.value.stats.maxClimaxCount = bossClimaxLimit;
-    
+
     // 懒惰天赋对玩家的debuff已在bossSystem中定义
     // 会在executeAttack等地方应用：技能冷却+3，耐力消耗×2
     addLog(`【七宗罪·懒惰】伊甸芙宁的懒惰天赋正在影响战场...`, 'system', 'critical');
     addLog(`【懒惰效果】你的技能冷却+3，耐力消耗翻倍`, 'system', 'debuff');
-    
-    console.info(`[战斗界面] 伊甸芙宁BOSS战初始化完成, 高潮次数上限: ${bossClimaxLimit}, 沉睡状态: ${BossSystem.bossState.edenSleeping}`);
+
+    console.info(
+      `[战斗界面] 伊甸芙宁BOSS战初始化完成, 高潮次数上限: ${bossClimaxLimit}, 沉睡状态: ${BossSystem.bossState.edenSleeping}`,
+    );
   }
   // 检测是否是伊丽莎白夜羽BOSS战
   else if (BossSystem.isElizabethBoss(enemyName)) {
@@ -1421,7 +1517,7 @@ async function loadEnemyFromMvuData(data: any, maxClimaxCount: number) {
     const bossClimaxLimit = 3; // 傲慢天赋：高潮次数上限固定为3
     enemy.value.name = bossDisplayName;
     enemy.value.avatarUrl = BossSystem.getElizabethAvatarUrl();
-    
+
     // 更新MVU中的对手名称和胜负规则
     if (typeof Mvu !== 'undefined') {
       const mvuData = Mvu.getMvuData({ type: 'message', message_id: 'latest' });
@@ -1435,10 +1531,10 @@ async function loadEnemyFromMvuData(data: any, maxClimaxCount: number) {
     // 同步更新UI中的高潮次数上限
     player.value.stats.maxClimaxCount = bossClimaxLimit;
     enemy.value.stats.maxClimaxCount = bossClimaxLimit;
-    
+
     addLog(`【七宗罪·傲慢】伊丽莎白夜羽的傲慢天赋正在影响战场...`, 'system', 'critical');
     addLog(`【君王的剧本】每奇数回合会发布演出指令，违反者将受到惩罚！`, 'system', 'info');
-    
+
     console.info(`[战斗界面] 伊丽莎白夜羽BOSS战初始化完成, 高潮次数上限: ${bossClimaxLimit}`);
   }
   // 检测是否是薇丝佩菈BOSS战
@@ -1461,7 +1557,7 @@ async function loadEnemyFromMvuData(data: any, maxClimaxCount: number) {
     const bossClimaxLimit = BossSystem.BOSS_CONFIG.vespera.climaxLimits[0]; // 高潮次数上限3
     enemy.value.name = bossDisplayName;
     enemy.value.avatarUrl = BossSystem.getVesperaAvatarUrl();
-    
+
     // 更新MVU中的对手名称和胜负规则
     if (typeof Mvu !== 'undefined') {
       const mvuData = Mvu.getMvuData({ type: 'message', message_id: 'latest' });
@@ -1475,12 +1571,12 @@ async function loadEnemyFromMvuData(data: any, maxClimaxCount: number) {
     // 同步更新UI中的高潮次数上限
     player.value.stats.maxClimaxCount = bossClimaxLimit;
     enemy.value.stats.maxClimaxCount = bossClimaxLimit;
-    
+
     addLog(`【七宗罪·色欲】薇丝佩菈的色欲天赋正在影响战场...`, 'system', 'critical');
     addLog(`【信息素侵蚀】每回合你的性斗力成算+5%，忍耐力成算-5%，快感增加`, 'system', 'debuff');
     addLog(`【束缚猎物】被束缚时薇丝佩菈攻击必定命中且必定暴击`, 'system', 'debuff');
     addLog(`【体力透支】使用耐力消耗>28的技能后，下回合被强制束缚`, 'system', 'info');
-    
+
     console.info(`[战斗界面] 薇丝佩菈BOSS战初始化完成, 高潮次数上限: ${bossClimaxLimit}, 玩家性别: ${playerGender}`);
   }
   // 检测是否是黑崎晴雯BOSS战
@@ -1491,7 +1587,7 @@ async function loadEnemyFromMvuData(data: any, maxClimaxCount: number) {
     const bossClimaxLimit = BossSystem.BOSS_CONFIG.heisaki.climaxLimits[0]; // 高潮次数上限3
     enemy.value.name = bossDisplayName;
     enemy.value.avatarUrl = BossSystem.getHeisakiAvatarUrl();
-    
+
     // 更新MVU中的对手名称和胜负规则
     if (typeof Mvu !== 'undefined') {
       const mvuData = Mvu.getMvuData({ type: 'message', message_id: 'latest' });
@@ -1505,16 +1601,16 @@ async function loadEnemyFromMvuData(data: any, maxClimaxCount: number) {
     // 同步更新UI中的高潮次数上限
     player.value.stats.maxClimaxCount = bossClimaxLimit;
     enemy.value.stats.maxClimaxCount = bossClimaxLimit;
-    
+
     addLog(`【七宗罪·贪婪】黑崎晴雯的贪婪天赋正在影响战场...`, 'system', 'critical');
     addLog(`【利息翻倍】使用A/S/SS级技能后，该技能下次耐力消耗翻4倍`, 'system', 'debuff');
     addLog(`【透支机制】耐力不足时允许透支，不足部分计入债务`, 'system', 'info');
     addLog(`【债务利息】债务每回合增加30%利息`, 'system', 'debuff');
-    
+
     // 禁用投降按钮
     isBossSurrenderDisabled.value = true;
     addLog(`【贪婪契约】投降按钮已被封印！`, 'system', 'critical');
-    
+
     console.info(`[战斗界面] 黑崎晴雯BOSS战初始化完成, 高潮次数上限: ${bossClimaxLimit}`);
   }
 
@@ -1522,16 +1618,16 @@ async function loadEnemyFromMvuData(data: any, maxClimaxCount: number) {
   if (enemyName) {
     try {
       console.info('[战斗界面] 开始加载对手数据...');
-      
+
       // 加载数据库模块
       const { enemyDbModule, enemySkillDbModule } = await loadDatabaseModules();
-      
+
       // 解析完整名称（支持模糊匹配）
       const fullEnemyName = enemyDbModule.resolveEnemyName(enemyName);
       const presetData = enemyDbModule.getEnemyMvuData(fullEnemyName);
-      
+
       console.info(`[战斗界面] 名称解析: ${enemyName} -> ${fullEnemyName}`);
-      
+
       // 设置敌人立绘 URL（BOSS战使用专用立绘，其它敌人使用名称生成 GitHub 路径）
       if (BossSystem.bossState.isBossFight && BossSystem.bossState.bossId === 'muxinlan') {
         enemy.value.avatarUrl = BossSystem.getMuxinlanAvatarUrl(BossSystem.bossState.currentPhase);
@@ -1547,7 +1643,7 @@ async function loadEnemyFromMvuData(data: any, maxClimaxCount: number) {
         enemy.value.avatarUrl = getEnemyPortraitUrl(fullEnemyName);
       }
       console.info(`[战斗界面] 敌人立绘 URL: ${enemy.value.avatarUrl}`);
-      
+
       if (presetData) {
         console.info(`[战斗界面] 从数据库加载对手数据并覆盖MVU: ${enemyName} -> ${fullEnemyName}`);
         // 将预设数据写入MVU（覆盖原有数据）
@@ -1557,18 +1653,22 @@ async function loadEnemyFromMvuData(data: any, maxClimaxCount: number) {
             // 获取用户等级和难度
             const userLevel = _.get(mvuData.stat_data, '角色基础._等级', 1) as number;
             const difficulty = _.get(mvuData.stat_data, '角色基础.难度', '普通');
-            
+
             // 先应用等级下限调整（NPC最低等级 = 用户等级 - 8）
             const levelScaledData = enemyDbModule.applyLevelScaling(presetData, userLevel);
             const levelDiff = levelScaledData.对手等级 - presetData.对手等级;
             if (levelDiff > 0) {
-              console.info(`[战斗界面] 应用等级下限: 用户等级=${userLevel}, NPC原等级=${presetData.对手等级}, 调整后=${levelScaledData.对手等级} (+${levelDiff}级)`);
+              console.info(
+                `[战斗界面] 应用等级下限: 用户等级=${userLevel}, NPC原等级=${presetData.对手等级}, 调整后=${levelScaledData.对手等级} (+${levelDiff}级)`,
+              );
             }
-            
+
             // 再应用难度系数
             const adjustedData = enemyDbModule.applyDifficultyCoefficient(levelScaledData, difficulty);
-            console.info(`[战斗界面] 应用难度系数: ${difficulty}, 基础性斗力=${levelScaledData.对手性斗力}, 调整后=${adjustedData.对手性斗力}`);
-            
+            console.info(
+              `[战斗界面] 应用难度系数: ${difficulty}, 基础性斗力=${levelScaledData.对手性斗力}, 调整后=${adjustedData.对手性斗力}`,
+            );
+
             // 确保对手名称被写入（使用完整名称）
             _.set(mvuData.stat_data, '性斗系统.对手名称', fullEnemyName);
             // 写入所有对手基础属性（已应用难度系数）
@@ -1608,7 +1708,7 @@ async function loadEnemyFromMvuData(data: any, maxClimaxCount: number) {
             }
             // 写入对手技能冷却（如果为空则初始化为空对象）
             _.set(mvuData.stat_data, '性斗系统.对手技能冷却', presetData.对手技能冷却 || {});
-            
+
             // 自动加载对手技能（使用解析后的完整名称）
             // 重要：如果数据库中存在该对手技能，则直接覆盖MVU中的技能
             // 特殊处理：根据玩家性别选择技能池（艾格妮丝、芙莲、薇丝佩菈）
@@ -1639,10 +1739,13 @@ async function loadEnemyFromMvuData(data: any, maxClimaxCount: number) {
                 console.info(`[战斗界面] 薇丝佩菈检测到女性/非二元玩家，使用百合乐园技能池`);
               }
             }
-            
+
             const enemySkills = enemySkillDbModule.getEnemySkills(fullEnemyName, skillLookupName);
             if (enemySkills && enemySkills.length > 0) {
-              console.info(`[战斗界面] 为对手 ${fullEnemyName} 加载技能:`, enemySkills.map((s: any) => s.name));
+              console.info(
+                `[战斗界面] 为对手 ${fullEnemyName} 加载技能:`,
+                enemySkills.map((s: any) => s.name),
+              );
               const mvuSkills: Record<string, any> = {};
               enemySkills.forEach((skill: any) => {
                 mvuSkills[skill.id] = enemySkillDbModule.convertToMvuSkillFormat(skill);
@@ -1653,7 +1756,10 @@ async function loadEnemyFromMvuData(data: any, maxClimaxCount: number) {
               // 如果未匹配到对手技能：使用基础技能库兜底，保证敌人至少有技能可用
               const fallbackSkills = enemySkillDbModule.getFallbackEnemySkills(fullEnemyName, 5);
               if (fallbackSkills && fallbackSkills.length > 0) {
-                console.info(`[战斗界面] 对手 ${fullEnemyName} 未匹配到专属技能，使用基础技能兜底:`, fallbackSkills.map((s: any) => s.name));
+                console.info(
+                  `[战斗界面] 对手 ${fullEnemyName} 未匹配到专属技能，使用基础技能兜底:`,
+                  fallbackSkills.map((s: any) => s.name),
+                );
                 const mvuSkills: Record<string, any> = {};
                 fallbackSkills.forEach((skill: any) => {
                   mvuSkills[skill.id] = enemySkillDbModule.convertToMvuSkillFormat(skill);
@@ -1675,7 +1781,7 @@ async function loadEnemyFromMvuData(data: any, maxClimaxCount: number) {
                 }
               }
             }
-            
+
             await Mvu.replaceMvuData(mvuData, { type: 'message', message_id: 'latest' });
             console.info(`[战斗界面] 已将对手数据和技能写入MVU: ${fullEnemyName}`);
             // 重新读取数据
@@ -1787,7 +1893,7 @@ async function loadEnemyFromMvuData(data: any, maxClimaxCount: number) {
             if (!_.get(mvuData.stat_data, '性斗系统.对手技能冷却')) {
               _.set(mvuData.stat_data, '性斗系统.对手技能冷却', {});
             }
-            
+
             // 尝试加载对手技能（使用解析后的完整名称）
             // 重要：如果数据库中存在该对手技能，则直接覆盖MVU中的技能
             // 特殊处理：根据玩家性别选择技能池（艾格妮丝、芙莲、薇丝佩菈）
@@ -1818,10 +1924,13 @@ async function loadEnemyFromMvuData(data: any, maxClimaxCount: number) {
                 console.info(`[战斗界面] 薇丝佩菈检测到女性/非二元玩家，使用百合乐园技能池`);
               }
             }
-            
+
             const enemySkills = enemySkillDbModule.getEnemySkills(fullEnemyName, skillLookupName);
             if (enemySkills && enemySkills.length > 0) {
-              console.info(`[战斗界面] 为对手 ${fullEnemyName} 加载技能:`, enemySkills.map((s: any) => s.name));
+              console.info(
+                `[战斗界面] 为对手 ${fullEnemyName} 加载技能:`,
+                enemySkills.map((s: any) => s.name),
+              );
               const mvuSkills: Record<string, any> = {};
               enemySkills.forEach((skill: any) => {
                 mvuSkills[skill.id] = enemySkillDbModule.convertToMvuSkillFormat(skill);
@@ -1832,7 +1941,10 @@ async function loadEnemyFromMvuData(data: any, maxClimaxCount: number) {
               // 如果未匹配到对手技能：使用基础技能库兜底，保证敌人至少有技能可用
               const fallbackSkills = enemySkillDbModule.getFallbackEnemySkills(fullEnemyName, 5);
               if (fallbackSkills && fallbackSkills.length > 0) {
-                console.info(`[战斗界面] 对手 ${fullEnemyName} 未匹配到专属技能，使用基础技能兜底:`, fallbackSkills.map((s: any) => s.name));
+                console.info(
+                  `[战斗界面] 对手 ${fullEnemyName} 未匹配到专属技能，使用基础技能兜底:`,
+                  fallbackSkills.map((s: any) => s.name),
+                );
                 const mvuSkills: Record<string, any> = {};
                 fallbackSkills.forEach((skill: any) => {
                   mvuSkills[skill.id] = enemySkillDbModule.convertToMvuSkillFormat(skill);
@@ -1854,7 +1966,7 @@ async function loadEnemyFromMvuData(data: any, maxClimaxCount: number) {
                 }
               }
             }
-            
+
             await Mvu.replaceMvuData(mvuData, { type: 'message', message_id: 'latest' });
           }
         }
@@ -2083,7 +2195,7 @@ async function applySkillEffectsFromMvu(skillId: string, isPlayerSkill: boolean)
     }
 
     // 从MVU读取技能效果列表
-    const skillPath = isPlayerSkill 
+    const skillPath = isPlayerSkill
       ? `技能系统.主动技能.${skillId}.伤害与效果.效果列表`
       : `性斗系统.对手可用技能.${skillId}.伤害与效果.效果列表`;
     const effectList = _.get(mvuData.stat_data, skillPath, {});
@@ -2091,12 +2203,18 @@ async function applySkillEffectsFromMvu(skillId: string, isPlayerSkill: boolean)
     if (!effectList || Object.keys(effectList).length === 0) {
       return logs;
     }
-    
-    console.info(`[Debuff系统] 处理技能效果: ${skillId}, isPlayerSkill=${isPlayerSkill}, 路径=${skillPath}`, effectList);
+
+    console.info(
+      `[Debuff系统] 处理技能效果: ${skillId}, isPlayerSkill=${isPlayerSkill}, 路径=${skillPath}`,
+      effectList,
+    );
 
     console.info(`[Debuff系统] 效果列表keys:`, Object.keys(effectList));
     for (const [effectName, effectData] of Object.entries(effectList)) {
-      console.info(`[Debuff系统] 开始处理效果: ${effectName}, effectData类型=${typeof effectData}, effectData=`, effectData);
+      console.info(
+        `[Debuff系统] 开始处理效果: ${effectName}, effectData类型=${typeof effectData}, effectData=`,
+        effectData,
+      );
       if (!effectData || typeof effectData !== 'object') {
         console.warn(`[Debuff系统] 跳过无效效果: ${effectName}`);
         continue;
@@ -2112,13 +2230,17 @@ async function applySkillEffectsFromMvu(skillId: string, isPlayerSkill: boolean)
       // 特殊处理：束缚效果（不写入状态列表，直接设置束缚回合数）
       // 束缚效果的effectValue可以为0，只需要duration>0即可生效
       if (effectType === '束缚') {
-        console.info(`[束缚] 检测到束缚效果: duration=${duration}, targetEnemy=${targetEnemy}, isPlayerSkill=${isPlayerSkill}`);
+        console.info(
+          `[束缚] 检测到束缚效果: duration=${duration}, targetEnemy=${targetEnemy}, isPlayerSkill=${isPlayerSkill}`,
+        );
         if (duration === 0) {
           console.warn(`[束缚] 束缚效果duration为0，跳过`);
           continue;
         }
         const targetIsPlayer = isPlayerSkill ? !targetEnemy : targetEnemy;
-        console.info(`[束缚] 束缚目标计算: targetIsPlayer=${targetIsPlayer}, isPlayerSkill=${isPlayerSkill}, targetEnemy=${targetEnemy}`);
+        console.info(
+          `[束缚] 束缚目标计算: targetIsPlayer=${targetIsPlayer}, isPlayerSkill=${isPlayerSkill}, targetEnemy=${targetEnemy}`,
+        );
         if (targetIsPlayer) {
           // 检查天赋束缚免疫
           let immuneToBind = false;
@@ -2131,11 +2253,11 @@ async function applySkillEffectsFromMvu(skillId: string, isPlayerSkill: boolean)
               console.info(`[束缚] 天赋免疫束缚效果`);
             }
           }
-          
+
           if (immuneToBind) {
             continue; // 跳过束缚设置
           }
-          
+
           // 贪婪：被束缚时持续时间+2回合
           let finalDuration = duration;
           const sinTypeForBind = TalentSystem.getSinTalentType(playerTalent.value);
@@ -2143,17 +2265,17 @@ async function applySkillEffectsFromMvu(skillId: string, isPlayerSkill: boolean)
             finalDuration += 2;
             logs.push(`【七宗罪·贪婪】被束缚时持续时间+2回合！`);
           }
-          
+
           // 感官麻木检查：如果有感官麻木，束缚只持续1回合
           if (playerSensoryNumb.value > 0) {
             finalDuration = 1;
             playerSensoryNumb.value = 0;
             logs.push(`【感官麻木】${player.value.name} 的束缚持续时间被减少为1回合！`);
           }
-          
+
           // 应用束缚上限
           finalDuration = Math.min(finalDuration, MAX_BIND_DURATION);
-          
+
           playerBoundTurns.value = finalDuration;
           playerBindSource.value = isPlayerSkill ? 'player' : 'enemy';
           logs.push(`${player.value.name} 被束缚了 ${finalDuration} 回合，无法行动！`);
@@ -2169,7 +2291,7 @@ async function applySkillEffectsFromMvu(skillId: string, isPlayerSkill: boolean)
             console.info(`[束缚] 沐芯兰BOSS免疫束缚`);
             continue;
           }
-          
+
           // 感官麻木检查：如果有感官麻木，束缚只持续1回合
           let finalEnemyDuration = duration;
           if (enemySensoryNumb.value > 0) {
@@ -2177,14 +2299,16 @@ async function applySkillEffectsFromMvu(skillId: string, isPlayerSkill: boolean)
             enemySensoryNumb.value = 0;
             logs.push(`【感官麻木】${enemy.value.name} 的束缚持续时间被减少为1回合！`);
           }
-          
+
           // 应用束缚上限
           finalEnemyDuration = Math.min(finalEnemyDuration, MAX_BIND_DURATION);
-          
+
           enemyBoundTurns.value = finalEnemyDuration;
           enemyBindSource.value = isPlayerSkill ? 'player' : 'enemy';
           logs.push(`${enemy.value.name} 被束缚了 ${finalEnemyDuration} 回合，无法行动！`);
-          console.info(`[束缚] ★★★ 设置敌人束缚: enemyBoundTurns=${enemyBoundTurns.value}, enemyBindSource=${enemyBindSource.value}`);
+          console.info(
+            `[束缚] ★★★ 设置敌人束缚: enemyBoundTurns=${enemyBoundTurns.value}, enemyBindSource=${enemyBindSource.value}`,
+          );
         }
         continue;
       }
@@ -2199,29 +2323,29 @@ async function applySkillEffectsFromMvu(skillId: string, isPlayerSkill: boolean)
 
       // 生成唯一的状态key（同一技能同一效果只存在一个条目）
       const statusKey = `${effectType}_${skillId}_${effectName}`;
-      
+
       // 构建加成对象
       const bonusObj: Record<string, number> = {};
       const bonusFieldMap: Record<string, string> = {
-        '性斗力': isPercentage ? '基础性斗力成算' : '基础性斗力加成',
-        '忍耐力': isPercentage ? '基础忍耐力成算' : '基础忍耐力加成',
-        '魅力': '魅力加成',
-        '幸运': '幸运加成',
-        '闪避率': '闪避率加成',
-        '暴击率': '暴击率加成',
+        性斗力: isPercentage ? '基础性斗力成算' : '基础性斗力加成',
+        忍耐力: isPercentage ? '基础忍耐力成算' : '基础忍耐力加成',
+        魅力: '魅力加成',
+        幸运: '幸运加成',
+        闪避率: '闪避率加成',
+        暴击率: '暴击率加成',
       };
-      
+
       const bonusField = bonusFieldMap[effectType];
       if (!bonusField) {
         console.warn(`[Debuff系统] 未知效果类型: ${effectType}`);
         continue;
       }
-      
+
       bonusObj[bonusField] = effectValue; // 直接使用原始值（可正可负）
 
       // 读取当前状态列表
       const currentStatusList = _.get(mvuData.stat_data, statusListPath, {}) as Record<string, any>;
-      
+
       // 检查是否已存在该状态
       if (currentStatusList[statusKey]) {
         // 已存在：只刷新回合数，不重复添加
@@ -2238,16 +2362,15 @@ async function applySkillEffectsFromMvu(skillId: string, isPlayerSkill: boolean)
         logs.push(`${targetName} ${sign}${effectValue}${isPercentage ? '%' : ''} ${effectType} (${duration} 回合)`);
         console.info(`[Debuff系统] 添加新状态: ${statusKey}`, currentStatusList[statusKey]);
       }
-      
+
       _.set(mvuData.stat_data, statusListPath, currentStatusList);
     }
 
     // 一次性保存所有更改
     await Mvu.replaceMvuData(mvuData, { type: 'message', message_id: 'latest' });
-    
+
     // 更新对手实时属性（状态列表 -> 加成统计 -> 实时属性 -> UI）
     await updateEnemyRealtimeStats();
-    
   } catch (e) {
     console.error('[Debuff系统] 应用效果失败', e);
     logs.push('应用技能效果失败');
@@ -2273,13 +2396,13 @@ async function updateStatusEffectsFromMvu(): Promise<string[]> {
     // 处理玩家状态
     const playerStatusList = _.get(mvuData.stat_data, '临时状态.状态列表', {}) as Record<string, any>;
     const updatedPlayerStatus: Record<string, any> = {};
-    
+
     for (const [statusKey, statusData] of Object.entries(playerStatusList)) {
       if (typeof statusData !== 'object' || statusData === null) continue;
-      
+
       const currentDuration = statusData.剩余回合 || 0;
       const newDuration = currentDuration - 1;
-      
+
       if (newDuration > 0) {
         updatedPlayerStatus[statusKey] = { ...statusData, 剩余回合: newDuration };
       } else {
@@ -2293,13 +2416,13 @@ async function updateStatusEffectsFromMvu(): Promise<string[]> {
     // 处理对手状态
     const enemyStatusList = _.get(mvuData.stat_data, '性斗系统.对手临时状态.状态列表', {}) as Record<string, any>;
     const updatedEnemyStatus: Record<string, any> = {};
-    
+
     for (const [statusKey, statusData] of Object.entries(enemyStatusList)) {
       if (typeof statusData !== 'object' || statusData === null) continue;
-      
+
       const currentDuration = statusData.剩余回合 || 0;
       const newDuration = currentDuration - 1;
-      
+
       if (newDuration > 0) {
         updatedEnemyStatus[statusKey] = { ...statusData, 剩余回合: newDuration };
       } else {
@@ -2311,10 +2434,9 @@ async function updateStatusEffectsFromMvu(): Promise<string[]> {
     _.set(mvuData.stat_data, '性斗系统.对手临时状态.状态列表', updatedEnemyStatus);
 
     await Mvu.replaceMvuData(mvuData, { type: 'message', message_id: 'latest' });
-    
+
     // 状态变化后更新对手实时属性
     await updateEnemyRealtimeStats();
-    
   } catch (e) {
     console.error('[Debuff系统] 更新状态失败', e);
   }
@@ -2379,7 +2501,7 @@ function calculateBonusFromStatusList(statusList: Record<string, any>): Record<s
     闪避率加成: 0,
     暴击率加成: 0,
   };
-  
+
   for (const [_statusKey, statusData] of Object.entries(statusList)) {
     if (typeof statusData === 'object' && statusData !== null) {
       const bonus = (statusData as any).加成 || {};
@@ -2390,7 +2512,7 @@ function calculateBonusFromStatusList(statusList: Record<string, any>): Record<s
       }
     }
   }
-  
+
   return totalBonus;
 }
 
@@ -2401,22 +2523,22 @@ function calculateBonusFromStatusList(statusList: Record<string, any>): Record<s
 async function updateEnemyRealtimeStats(): Promise<void> {
   try {
     if (typeof Mvu === 'undefined') return;
-    
+
     const mvuData = Mvu.getMvuData({ type: 'message', message_id: 'latest' });
     if (!mvuData?.stat_data) return;
-    
+
     const data = mvuData.stat_data;
-    
+
     // 1. 从状态列表计算加成统计
     const enemyStatusList = _.get(data, '性斗系统.对手临时状态.状态列表', {});
     const enemyTempBonus = calculateBonusFromStatusList(enemyStatusList);
-    
+
     // 重新解析敌人临时状态为 StatusEffect[]
     const enemyEffects: StatusEffect[] = [];
     Object.entries(enemyStatusList).forEach(([name, val]) => {
       let duration = 0;
       let bonuses: Record<string, number> = {};
-      
+
       if (typeof val === 'number') {
         duration = val;
       } else if (typeof val === 'object' && val !== null) {
@@ -2429,15 +2551,20 @@ async function updateEnemyRealtimeStats(): Promise<void> {
       let displayName = '';
       let type: 'buff' | 'debuff' = 'buff';
       let icon = '⚡';
-      
+
       if (Object.keys(bonuses).length > 0) {
         const bonusTexts: string[] = [];
         for (const [key, value] of Object.entries(bonuses)) {
           if (value === 0) continue;
           const attrMap: Record<string, string> = {
-            '魅力加成': '魅力', '幸运加成': '幸运', '闪避率加成': '闪避', '暴击率加成': '暴击',
-            '基础性斗力加成': '性斗力', '基础性斗力成算': '性斗力%',
-            '基础忍耐力加成': '忍耐力', '基础忍耐力成算': '忍耐力%',
+            魅力加成: '魅力',
+            幸运加成: '幸运',
+            闪避率加成: '闪避',
+            暴击率加成: '暴击',
+            基础性斗力加成: '性斗力',
+            基础性斗力成算: '性斗力%',
+            基础忍耐力加成: '忍耐力',
+            基础忍耐力成算: '忍耐力%',
           };
           const attrName = attrMap[key] || key;
           const sign = value > 0 ? '+' : '';
@@ -2448,31 +2575,31 @@ async function updateEnemyRealtimeStats(): Promise<void> {
       } else {
         displayName = name;
       }
-      
+
       if (type === 'debuff') icon = '▼';
       else icon = '▲';
-      
+
       if (name.includes('敏感')) icon = '❤️';
       if (name.includes('沉默')) icon = '😶';
       if (name.includes('束缚')) icon = '⛓️';
       if (name.includes('无敌')) icon = '🛡️';
       if (name.includes('必暴')) icon = '💥';
       if (name.includes('嘲讽')) icon = '🤬';
-      
+
       enemyEffects.push({
         id: 'enemy_' + name,
         name: displayName || name,
         duration: duration,
         icon: icon,
         type: type,
-        effect: { type: 'focus' as any, value: 0, isPercent: false, duration: duration, stackable: false }
+        effect: { type: 'focus' as any, value: 0, isPercent: false, duration: duration, stackable: false },
       });
     });
     enemy.value.statusEffects = enemyEffects;
-    
+
     // 2. 写入加成统计到 MVU
     _.set(data, '性斗系统.对手临时状态.加成统计', enemyTempBonus);
-    
+
     // 3. 读取基础属性
     const baseCharm = _.get(data, '性斗系统.对手魅力', 0);
     const baseLuck = _.get(data, '性斗系统.对手幸运', 0);
@@ -2480,22 +2607,22 @@ async function updateEnemyRealtimeStats(): Promise<void> {
     const baseCrit = _.get(data, '性斗系统.对手暴击率', 0);
     const baseSexPower = _.get(data, '性斗系统.对手性斗力', 0);
     const baseEndurance = _.get(data, '性斗系统.对手忍耐力', 0);
-    
+
     // 4. 计算实时属性 = 基础属性 + 加成统计
     const realtimeCharm = Math.max(0, baseCharm + (enemyTempBonus.魅力加成 || 0));
     const realtimeLuck = Math.max(0, baseLuck + (enemyTempBonus.幸运加成 || 0));
     const realtimeEvasion = Math.min(60, Math.max(0, baseEvasion + (enemyTempBonus.闪避率加成 || 0)));
     const realtimeCrit = Math.min(100, Math.max(0, baseCrit + (enemyTempBonus.暴击率加成 || 0)));
-    
+
     // 性斗力和忍耐力支持百分比加成
     const sexPowerBonus = enemyTempBonus.基础性斗力加成 || 0;
     const sexPowerMultiplier = (enemyTempBonus.基础性斗力成算 || 0) / 100;
     const realtimeSexPower = Math.max(0, Math.round((baseSexPower + sexPowerBonus) * (1 + sexPowerMultiplier)));
-    
+
     const enduranceBonus = enemyTempBonus.基础忍耐力加成 || 0;
     const enduranceMultiplier = (enemyTempBonus.基础忍耐力成算 || 0) / 100;
     const realtimeEndurance = Math.max(0, Math.round((baseEndurance + enduranceBonus) * (1 + enduranceMultiplier)));
-    
+
     // 5. 写入实时属性到 MVU
     _.set(data, '性斗系统.对手实时魅力', realtimeCharm);
     _.set(data, '性斗系统.对手实时幸运', realtimeLuck);
@@ -2503,9 +2630,9 @@ async function updateEnemyRealtimeStats(): Promise<void> {
     _.set(data, '性斗系统.对手实时暴击率', realtimeCrit);
     _.set(data, '性斗系统.对手实时性斗力', realtimeSexPower);
     _.set(data, '性斗系统.对手实时忍耐力', realtimeEndurance);
-    
+
     await Mvu.replaceMvuData(mvuData, { type: 'message', message_id: 'latest' });
-    
+
     // 6. 同步更新 UI（从实时属性读取）
     enemy.value.stats.charm = realtimeCharm;
     enemy.value.stats.luck = realtimeLuck;
@@ -2513,8 +2640,10 @@ async function updateEnemyRealtimeStats(): Promise<void> {
     enemy.value.stats.crit = realtimeCrit;
     enemy.value.stats.sexPower = realtimeSexPower;
     enemy.value.stats.baseEndurance = realtimeEndurance;
-    
-    console.info(`[Debuff系统] 对手实时属性已更新 - 性斗力:${baseSexPower}->${realtimeSexPower}, 忍耐力:${baseEndurance}->${realtimeEndurance}`);
+
+    console.info(
+      `[Debuff系统] 对手实时属性已更新 - 性斗力:${baseSexPower}->${realtimeSexPower}, 忍耐力:${baseEndurance}->${realtimeEndurance}`,
+    );
   } catch (e) {
     console.error('[Debuff系统] 更新对手实时属性失败', e);
   }
@@ -2539,13 +2668,13 @@ async function reloadStatusFromMvu() {
     const playerTempBonus = calculateBonusFromStatusList(playerStatusList);
     const playerPermBonus = _.get(data, '永久状态.加成统计', {});
     const playerEquipBonus = _.get(data, '物品系统.装备总加成', {});
-    
+
     // 重新解析玩家临时状态为 StatusEffect[]
     const playerEffects: StatusEffect[] = [];
     Object.entries(playerStatusList).forEach(([name, val]) => {
       let duration = 0;
       let bonuses: Record<string, number> = {};
-      
+
       if (typeof val === 'number') {
         duration = val;
       } else if (typeof val === 'object' && val !== null) {
@@ -2558,15 +2687,20 @@ async function reloadStatusFromMvu() {
       let displayName = '';
       let type: 'buff' | 'debuff' = 'buff';
       let icon = '⚡';
-      
+
       if (Object.keys(bonuses).length > 0) {
         const bonusTexts: string[] = [];
         for (const [key, value] of Object.entries(bonuses)) {
           if (value === 0) continue;
           const attrMap: Record<string, string> = {
-            '魅力加成': '魅力', '幸运加成': '幸运', '闪避率加成': '闪避', '暴击率加成': '暴击',
-            '基础性斗力加成': '性斗力', '基础性斗力成算': '性斗力%',
-            '基础忍耐力加成': '忍耐力', '基础忍耐力成算': '忍耐力%',
+            魅力加成: '魅力',
+            幸运加成: '幸运',
+            闪避率加成: '闪避',
+            暴击率加成: '暴击',
+            基础性斗力加成: '性斗力',
+            基础性斗力成算: '性斗力%',
+            基础忍耐力加成: '忍耐力',
+            基础忍耐力成算: '忍耐力%',
           };
           const attrName = attrMap[key] || key;
           const sign = value > 0 ? '+' : '';
@@ -2577,27 +2711,27 @@ async function reloadStatusFromMvu() {
       } else {
         displayName = name;
       }
-      
+
       if (type === 'debuff') icon = '▼';
       else icon = '▲';
-      
+
       if (name.includes('敏感')) icon = '❤️';
       if (name.includes('沉默')) icon = '😶';
       if (name.includes('束缚')) icon = '⛓️';
       if (name.includes('无敌')) icon = '🛡️';
       if (name.includes('必暴')) icon = '💥';
-      
+
       playerEffects.push({
         id: name,
         name: displayName || name,
         duration: duration,
         icon: icon,
         type: type,
-        effect: { type: 'focus' as any, value: 0, isPercent: false, duration: duration, stackable: false }
+        effect: { type: 'focus' as any, value: 0, isPercent: false, duration: duration, stackable: false },
       });
     });
     player.value.statusEffects = playerEffects;
-    
+
     // 获取天赋加成
     const playerTalentBonus: Record<string, number> = {};
     if (playerTalent.value?.bonus) {
@@ -2611,48 +2745,105 @@ async function reloadStatusFromMvu() {
       if (tb.闪避率加成) playerTalentBonus['闪避率加成'] = tb.闪避率加成;
       if (tb.暴击率加成) playerTalentBonus['暴击率加成'] = tb.暴击率加成;
     }
-    
+
     // 写入玩家的临时状态加成统计
     _.set(data, '临时状态.加成统计', playerTempBonus);
 
     // 玩家性斗力（加入天赋加成）
     const playerBaseSexPower = _.get(data, '核心状态.$基础性斗力', 10);
-    const playerSexPowerBonus = (playerTempBonus.基础性斗力加成 || 0) + (playerPermBonus.基础性斗力加成 || 0) + (playerEquipBonus.基础性斗力加成 || 0) + (playerTalentBonus['基础性斗力加成'] || 0);
-    const playerSexPowerMultiplier = ((playerTempBonus.基础性斗力成算 || 0) + (playerPermBonus.基础性斗力成算 || 0) + (playerEquipBonus.基础性斗力成算 || 0) + (playerTalentBonus['基础性斗力成算'] || 0)) / 100;
-    const calculatedSexPower = Math.max(0, Math.round((playerBaseSexPower + playerSexPowerBonus) * (1 + playerSexPowerMultiplier)));
+    const playerSexPowerBonus =
+      (playerTempBonus.基础性斗力加成 || 0) +
+      (playerPermBonus.基础性斗力加成 || 0) +
+      (playerEquipBonus.基础性斗力加成 || 0) +
+      (playerTalentBonus['基础性斗力加成'] || 0);
+    const playerSexPowerMultiplier =
+      ((playerTempBonus.基础性斗力成算 || 0) +
+        (playerPermBonus.基础性斗力成算 || 0) +
+        (playerEquipBonus.基础性斗力成算 || 0) +
+        (playerTalentBonus['基础性斗力成算'] || 0)) /
+      100;
+    const calculatedSexPower = Math.max(
+      0,
+      Math.round((playerBaseSexPower + playerSexPowerBonus) * (1 + playerSexPowerMultiplier)),
+    );
     player.value.stats.sexPower = calculatedSexPower;
-    
+
     // 玩家忍耐力（加入天赋加成）
     const playerBaseEndurance = _.get(data, '核心状态.$基础忍耐力', 10);
-    const playerEnduranceBonus = (playerTempBonus.基础忍耐力加成 || 0) + (playerPermBonus.基础忍耐力加成 || 0) + (playerEquipBonus.基础忍耐力加成 || 0) + (playerTalentBonus['基础忍耐力加成'] || 0);
-    const playerEnduranceMultiplier = ((playerTempBonus.基础忍耐力成算 || 0) + (playerPermBonus.基础忍耐力成算 || 0) + (playerEquipBonus.基础忍耐力成算 || 0) + (playerTalentBonus['基础忍耐力成算'] || 0)) / 100;
-    const calculatedEndurance = Math.max(0, Math.round((playerBaseEndurance + playerEnduranceBonus) * (1 + playerEnduranceMultiplier)));
+    const playerEnduranceBonus =
+      (playerTempBonus.基础忍耐力加成 || 0) +
+      (playerPermBonus.基础忍耐力加成 || 0) +
+      (playerEquipBonus.基础忍耐力加成 || 0) +
+      (playerTalentBonus['基础忍耐力加成'] || 0);
+    const playerEnduranceMultiplier =
+      ((playerTempBonus.基础忍耐力成算 || 0) +
+        (playerPermBonus.基础忍耐力成算 || 0) +
+        (playerEquipBonus.基础忍耐力成算 || 0) +
+        (playerTalentBonus['基础忍耐力成算'] || 0)) /
+      100;
+    const calculatedEndurance = Math.max(
+      0,
+      Math.round((playerBaseEndurance + playerEnduranceBonus) * (1 + playerEnduranceMultiplier)),
+    );
     player.value.stats.baseEndurance = calculatedEndurance;
-    
+
     // 写入玩家实时值
     _.set(data, '性斗系统.实时性斗力', calculatedSexPower);
     _.set(data, '性斗系统.实时忍耐力', calculatedEndurance);
 
     // 玩家其他属性（加入天赋加成，确保不小于0）
-    player.value.stats.charm = Math.max(0, _.get(data, '核心状态.$基础魅力', 10) + (playerTempBonus.魅力加成 || 0) + (playerPermBonus.魅力加成 || 0) + (playerEquipBonus.魅力加成 || 0) + (playerTalentBonus['魅力加成'] || 0));
-    player.value.stats.luck = Math.max(0, _.get(data, '核心状态.$基础幸运', 10) + (playerTempBonus.幸运加成 || 0) + (playerPermBonus.幸运加成 || 0) + (playerEquipBonus.幸运加成 || 0) + (playerTalentBonus['幸运加成'] || 0));
-    player.value.stats.evasion = Math.min(60, Math.max(0, _.get(data, '核心状态.$基础闪避率', 0) + (playerTempBonus.闪避率加成 || 0) + (playerPermBonus.闪避率加成 || 0) + (playerEquipBonus.闪避率加成 || 0) + (playerTalentBonus['闪避率加成'] || 0)));
-    player.value.stats.crit = Math.min(100, Math.max(0, _.get(data, '核心状态.$基础暴击率', 0) + (playerTempBonus.暴击率加成 || 0) + (playerPermBonus.暴击率加成 || 0) + (playerEquipBonus.暴击率加成 || 0) + (playerTalentBonus['暴击率加成'] || 0)));
+    player.value.stats.charm = Math.max(
+      0,
+      _.get(data, '核心状态.$基础魅力', 10) +
+        (playerTempBonus.魅力加成 || 0) +
+        (playerPermBonus.魅力加成 || 0) +
+        (playerEquipBonus.魅力加成 || 0) +
+        (playerTalentBonus['魅力加成'] || 0),
+    );
+    player.value.stats.luck = Math.max(
+      0,
+      _.get(data, '核心状态.$基础幸运', 10) +
+        (playerTempBonus.幸运加成 || 0) +
+        (playerPermBonus.幸运加成 || 0) +
+        (playerEquipBonus.幸运加成 || 0) +
+        (playerTalentBonus['幸运加成'] || 0),
+    );
+    player.value.stats.evasion = Math.min(
+      60,
+      Math.max(
+        0,
+        _.get(data, '核心状态.$基础闪避率', 0) +
+          (playerTempBonus.闪避率加成 || 0) +
+          (playerPermBonus.闪避率加成 || 0) +
+          (playerEquipBonus.闪避率加成 || 0) +
+          (playerTalentBonus['闪避率加成'] || 0),
+      ),
+    );
+    player.value.stats.crit = Math.min(
+      100,
+      Math.max(
+        0,
+        _.get(data, '核心状态.$基础暴击率', 0) +
+          (playerTempBonus.暴击率加成 || 0) +
+          (playerPermBonus.暴击率加成 || 0) +
+          (playerEquipBonus.暴击率加成 || 0) +
+          (playerTalentBonus['暴击率加成'] || 0),
+      ),
+    );
 
     // 快感和高潮次数
     player.value.stats.currentPleasure = _.get(data, '核心状态.$快感', 0);
     player.value.stats.maxPleasure = _.get(data, '核心状态.$最大快感', 100);
     player.value.stats.climaxCount = _.get(data, '性斗系统.高潮次数', 0);
-    
+
     enemy.value.stats.currentPleasure = _.get(data, '性斗系统.对手快感', 0);
     enemy.value.stats.maxPleasure = _.get(data, '性斗系统.对手最大快感', 100);
     enemy.value.stats.climaxCount = _.get(data, '性斗系统.对手高潮次数', 0);
 
     await Mvu.replaceMvuData(mvuData, { type: 'message', message_id: 'latest' });
-    
+
     // === 对手属性计算（调用专用函数）===
     await updateEnemyRealtimeStats();
-    
   } catch (e) {
     console.error('[战斗界面] 重新读取状态失败', e);
   }
@@ -2699,7 +2890,7 @@ async function initializeCombatSystem() {
 
     await Mvu.replaceMvuData(mvuData, { type: 'message', message_id: 'latest' });
     console.info('[战斗界面] 已初始化性斗系统数据');
-    
+
     // 重置BOSS状态
     if (BossSystem.bossState.isBossFight) {
       BossSystem.resetBossState();
@@ -2876,7 +3067,7 @@ function syncEnemySkillsFromMvuIfNeeded() {
     // 不一致：用MVU重建内存技能列表（不依赖skillDatabase，保证预告即时正确）
     if (!same) {
       console.info('[战斗界面] 检测到对手技能与MVU不一致，使用MVU重建对手技能列表');
-      enemy.value.skills = (mvuSkillIds
+      enemy.value.skills = mvuSkillIds
         .map((skillId: string) => {
           const mvuSkill = mvuEnemySkills[skillId];
           if (!mvuSkill?.基本信息) return null;
@@ -2891,7 +3082,7 @@ function syncEnemySkillsFromMvuIfNeeded() {
             data: null,
           } as any;
         })
-        .filter((s: any): s is any => s !== null)) as any;
+        .filter((s: any): s is any => s !== null) as any;
 
       // 如果当前预告技能不在新技能池里，清空让后续重新选
       const refreshedIds = new Set((enemy.value.skills || []).map(s => s.id));
@@ -2962,7 +3153,11 @@ function handlePlayerSkill(skill: Skill) {
   // ========== 七宗罪-懒惰：前3回合无法攻击 ==========
   const sinType = TalentSystem.getSinTalentType(playerTalent.value);
   if (sinType === 'sloth' && playerTalentState.value.slothCannotAttackTurns > 0) {
-    addLog(`【七宗罪·懒惰】前3回合无法攻击！剩余${playerTalentState.value.slothCannotAttackTurns}回合`, 'system', 'critical');
+    addLog(
+      `【七宗罪·懒惰】前3回合无法攻击！剩余${playerTalentState.value.slothCannotAttackTurns}回合`,
+      'system',
+      'critical',
+    );
     return;
   }
 
@@ -2972,7 +3167,7 @@ function handlePlayerSkill(skill: Skill) {
     const slothEffects = BossSystem.getEdenSlothEffects();
     requiredCost = Math.floor(skill.cost * slothEffects.staminaCostMultiplier);
   }
-  
+
   // ========== 黑崎晴雯BOSS：贪婪天赋 - 技能耐力消耗倍率 ==========
   if (BossSystem.bossState.isBossFight && BossSystem.bossState.bossId === 'heisaki') {
     requiredCost = BossSystem.calculateHeisakiSkillCost(skill.id, skill.cost);
@@ -2980,7 +3175,7 @@ function handlePlayerSkill(skill: Skill) {
       addLog(`【利息翻倍】${skill.name} 耐力消耗: ${skill.cost} → ${requiredCost}`, 'system', 'debuff');
     }
   }
-  
+
   // 检查体力是否足够（使用计算后的实际消耗）
   // 黑崎晴雯BOSS战允许透支
   if (BossSystem.bossState.isBossFight && BossSystem.bossState.bossId === 'heisaki') {
@@ -3001,7 +3196,7 @@ function handlePlayerSkill(skill: Skill) {
 
   // 消耗体力（检查耐力稳定天赋限制）
   let actualCost = skill.cost;
-  
+
   // ========== 伊甸芙宁BOSS：懒惰天赋 - 玩家耐力消耗×1.5 ==========
   if (BossSystem.bossState.isBossFight && BossSystem.bossState.bossId === 'eden') {
     const slothEffects = BossSystem.getEdenSlothEffects();
@@ -3011,12 +3206,12 @@ function handlePlayerSkill(skill: Skill) {
       addLog(`【懒惰·虚弱】耐力消耗增加！${originalCost} → ${actualCost}`, 'system', 'debuff');
     }
   }
-  
+
   // ========== 黑崎晴雯BOSS：贪婪天赋 - 技能耐力消耗倍率 ==========
   if (BossSystem.bossState.isBossFight && BossSystem.bossState.bossId === 'heisaki') {
     actualCost = BossSystem.calculateHeisakiSkillCost(skill.id, skill.cost);
   }
-  
+
   if (playerTalent.value) {
     const staminaCap = TalentSystem.getTalentStaminaChangeCap(playerTalent.value);
     if (staminaCap !== null && actualCost > staminaCap) {
@@ -3024,7 +3219,7 @@ function handlePlayerSkill(skill: Skill) {
       actualCost = staminaCap;
     }
   }
-  
+
   // ========== 黑崎晴雯BOSS：贪婪天赋 - 透支机制 ==========
   if (BossSystem.bossState.isBossFight && BossSystem.bossState.bossId === 'heisaki') {
     const overdraftResult = BossSystem.processHeisakiOverdraft(nextPlayer.stats.currentEndurance, actualCost);
@@ -3032,7 +3227,11 @@ function handlePlayerSkill(skill: Skill) {
       // 透支：消耗所有耐力，剩余部分计入债务
       nextPlayer.stats.currentEndurance = 0;
       addLog(`${nextPlayer.name} 消耗了 ${overdraftResult.staminaToUse} 点体力`, 'system', 'info');
-      addLog(`【透支】耐力不足，债务增加 ${overdraftResult.debtIncrease}，当前债务: ${overdraftResult.newDebt}`, 'system', 'critical');
+      addLog(
+        `【透支】耐力不足，债务增加 ${overdraftResult.debtIncrease}，当前债务: ${overdraftResult.newDebt}`,
+        'system',
+        'critical',
+      );
       // 播放透支对话
       if (overdraftResult.dialogues.length > 0) {
         BossSystem.queueDialogues(overdraftResult.dialogues);
@@ -3057,8 +3256,8 @@ function handlePlayerSkill(skill: Skill) {
   // 设置冷却
   const skillIndex = nextPlayer.skills.findIndex(s => s.id === skill.id);
   if (skillIndex !== -1) {
-    let finalCooldown = (skill.cooldown || 0);
-    
+    let finalCooldown = skill.cooldown || 0;
+
     // ========== 伊甸芙宁BOSS：懒惰天赋 - 玩家技能冷却+2（所有技能） ==========
     if (BossSystem.bossState.isBossFight && BossSystem.bossState.bossId === 'eden') {
       const slothEffects = BossSystem.getEdenSlothEffects();
@@ -3066,7 +3265,7 @@ function handlePlayerSkill(skill: Skill) {
       finalCooldown += slothEffects.cooldownIncrease;
       addLog(`【懒惰·迟钝】技能冷却时间增加！${originalCooldown} → ${finalCooldown}`, 'system', 'debuff');
     }
-    
+
     nextPlayer.skills[skillIndex].currentCooldown = finalCooldown;
     if (finalCooldown > 0) {
       addLog(`${skill.name} 进入冷却，冷却时间 ${finalCooldown} 回合`, 'system', 'info');
@@ -3089,19 +3288,19 @@ function handlePlayerSkill(skill: Skill) {
       let sinExtraHits = 0;
       let sinGuaranteedCrit = false;
       let sinGuaranteedHit = false;
-      
+
       if (playerTalent.value) {
         const hasBindEffect = skill.data.buffs?.some((e: any) => e.type === 'bind') || false;
         const talentContext = createTalentEffectContext();
         talentAttackResult = TalentSystem.processTalentOnAttack(playerTalent.value, talentContext, hasBindEffect);
-        
+
         // 检查暴击大师效果（on_crit触发器）
         for (const effect of playerTalent.value.effects) {
           if (effect.trigger === 'on_crit' && effect.effect === 'boost_crit_damage') {
             critDamageBoost = effect.params.value || 25;
           }
         }
-        
+
         // ========== 七宗罪攻击效果 ==========
         const sinType = TalentSystem.getSinTalentType(playerTalent.value);
         if (sinType) {
@@ -3121,19 +3320,23 @@ function handlePlayerSkill(skill: Skill) {
               if (slothMods.guaranteedCrit) sinGuaranteedCrit = true;
               if (slothMods.guaranteedHit) sinGuaranteedHit = true;
               if (slothMods.extraHitCount) sinExtraHits = slothMods.extraHitCount;
-              
+
               // 消耗积蓄
               if (playerTalentState.value.slothStacks > 0) {
                 const stacks = playerTalentState.value.slothStacks;
-                addLog(`【七宗罪·懒惰】消耗${stacks}层积蓄：${stacks >= 1 ? '必定暴击' : ''}${stacks >= 2 ? '、必定命中' : ''}${stacks >= 3 ? '、连击+2' : ''}`, 'system', 'info');
+                addLog(
+                  `【七宗罪·懒惰】消耗${stacks}层积蓄：${stacks >= 1 ? '必定暴击' : ''}${stacks >= 2 ? '、必定命中' : ''}${stacks >= 3 ? '、连击+2' : ''}`,
+                  'system',
+                  'info',
+                );
                 playerTalentState.value.slothStacks = 0;
                 // 移除积蓄buff
                 removeTalentBuff('player', '天赋_懒惰_积蓄');
               }
-              
+
               // 使用任何技能后都进入懒散状态（2回合性斗力成算-20%、闪避率-15%）
               playerTalentState.value.slothDebuffTurns = 2;
-              applyTalentBuff('player', '天赋_懒惰_懒散', { '基础性斗力成算': -20, '闪避率加成': -15 }, 2);
+              applyTalentBuff('player', '天赋_懒惰_懒散', { 基础性斗力成算: -20, 闪避率加成: -15 }, 2);
               addLog(`【七宗罪·懒惰】使用技能后进入懒散状态（2回合性斗力成算-20%、闪避率-15%）`, 'system', 'critical');
               break;
             }
@@ -3196,10 +3399,14 @@ function handlePlayerSkill(skill: Skill) {
           enemyPleasure: nextEnemy.stats.currentPleasure,
           enemyMaxPleasure: nextEnemy.stats.maxPleasure,
         });
-        
-        console.info(`[天赋系统] 被动效果检查: 玩家快感=${nextPlayer.stats.currentPleasure}/${nextPlayer.stats.maxPleasure}, 耐力=${nextPlayer.stats.currentEndurance}/${nextPlayer.stats.maxEndurance}`);
-        console.info(`[天赋系统] 被动修正: damageBoostPercent=${passiveModifiers.damageBoostPercent}, powerCoeffBoost=${passiveModifiers.powerCoeffBoost}`);
-        
+
+        console.info(
+          `[天赋系统] 被动效果检查: 玩家快感=${nextPlayer.stats.currentPleasure}/${nextPlayer.stats.maxPleasure}, 耐力=${nextPlayer.stats.currentEndurance}/${nextPlayer.stats.maxEndurance}`,
+        );
+        console.info(
+          `[天赋系统] 被动修正: damageBoostPercent=${passiveModifiers.damageBoostPercent}, powerCoeffBoost=${passiveModifiers.powerCoeffBoost}`,
+        );
+
         // 应用伤害加成（极限爆发的powerCoeffBoost或其他伤害加成）
         if (passiveModifiers.damageBoostPercent > 0 || passiveModifiers.powerCoeffBoost > 0) {
           const boostPercent = passiveModifiers.damageBoostPercent + passiveModifiers.powerCoeffBoost;
@@ -3216,7 +3423,11 @@ function handlePlayerSkill(skill: Skill) {
       addLog(`${nextPlayer.name} 使用了 ${skill.name}！`, 'player', 'info');
 
       // ========== 伊丽莎白夜羽：君王的剧本 - 检查服从（无论闪避都生效） ==========
-      if (BossSystem.bossState.isBossFight && BossSystem.bossState.bossId === 'elizabeth' && BossSystem.bossState.elizabethCurrentCommand) {
+      if (
+        BossSystem.bossState.isBossFight &&
+        BossSystem.bossState.bossId === 'elizabeth' &&
+        BossSystem.bossState.elizabethCurrentCommand
+      ) {
         // 获取稀有度（从MVU数据读取）
         let skillRarity = 'C'; // 默认C级
         if (typeof Mvu !== 'undefined') {
@@ -3226,31 +3437,35 @@ function handlePlayerSkill(skill: Skill) {
             skillRarity = skillMvuData.基本信息.稀有度;
           }
         }
-        
+
         // 使用技能：跪拜指令时违反，献礼指令检查稀有度
         const obedienceResult = BossSystem.checkElizabethCommandObedience('skill', skillRarity, result.isCritical);
-        
+
         // 播放对话
         if (obedienceResult.dialogues.length > 0) {
           BossSystem.queueDialogues(obedienceResult.dialogues);
         }
-        
+
         if (obedienceResult.obeyed) {
           addLog(`【君王的剧本】你服从了伊丽莎白的献礼命令，使用了${skillRarity}级技能。`, 'system', 'info');
         } else {
           // 违反惩罚：扣除20%最大耐力
           const staminaPenalty = Math.floor(nextPlayer.stats.maxEndurance * 0.2);
           nextPlayer.stats.currentEndurance = Math.max(0, nextPlayer.stats.currentEndurance - staminaPenalty);
-          
+
           // 判断命令类型
           const currentCommand = BossSystem.bossState.elizabethCurrentCommand;
           const commandName = currentCommand === 'kneel' ? '跪拜' : '献礼';
           addLog(`【君王的剧本】你违反了伊丽莎白的${commandName}命令！耐力-${staminaPenalty}！`, 'system', 'critical');
-          
+
           // BOSS获得叠加buff
           const bonus = BossSystem.getElizabethViolationBonus();
-          addLog(`【傲慢·权能】伊丽莎白获得：性斗力+${bonus.sexPowerBonus}，忍耐力+${bonus.enduranceBonus}，闪避+${bonus.evasionBonus}%，暴击+${bonus.critBonus}%`, 'system', 'buff');
-          
+          addLog(
+            `【傲慢·权能】伊丽莎白获得：性斗力+${bonus.sexPowerBonus}，忍耐力+${bonus.enduranceBonus}，闪避+${bonus.evasionBonus}%，暴击+${bonus.critBonus}%`,
+            'system',
+            'buff',
+          );
+
           // 写入MVU
           if (typeof Mvu !== 'undefined') {
             const mvuData = Mvu.getMvuData({ type: 'message', message_id: 'latest' });
@@ -3264,12 +3479,16 @@ function handlePlayerSkill(skill: Skill) {
                 },
                 剩余回合: 999,
               });
-              
+
               // 暴击反制：BOSS获得闪避率-60%，忍耐力成算-90%（2回合）
               if (obedienceResult.punishBoss) {
                 const critDebuff = BossSystem.getElizabethCritCounterDebuff();
-                addLog(`【傲慢·破绽】伊丽莎白被暴击反制！闪避率${critDebuff.evasionDebuff}%，忍耐力成算${critDebuff.enduranceCalcDebuff}%（2回合）`, 'system', 'critical');
-                
+                addLog(
+                  `【傲慢·破绽】伊丽莎白被暴击反制！闪避率${critDebuff.evasionDebuff}%，忍耐力成算${critDebuff.enduranceCalcDebuff}%（2回合）`,
+                  'system',
+                  'critical',
+                );
+
                 _.set(mvuData.stat_data, '性斗系统.对手临时状态.状态列表.暴击反制', {
                   加成: {
                     闪避率加成: critDebuff.evasionDebuff,
@@ -3278,7 +3497,7 @@ function handlePlayerSkill(skill: Skill) {
                   剩余回合: 2,
                 });
               }
-              
+
               Mvu.replaceMvuData(mvuData, { type: 'message', message_id: 'latest' });
             }
           }
@@ -3311,27 +3530,43 @@ function handlePlayerSkill(skill: Skill) {
         if (result.isCritical) {
           addLog(`暴击！总计造成 ${result.totalDamage} 点快感伤害！`, 'player', 'critical');
           triggerEffect('critical');
-          
+
           // ========== 七宗罪-傲慢：标记本回合暴击 ==========
           const sinTypeForCrit = TalentSystem.getSinTalentType(playerTalent.value);
           if (sinTypeForCrit === 'pride') {
             playerTalentState.value.prideCritThisTurn = true;
           }
-          
+
           // ========== 伊甸芙宁BOSS：被暴击时触发debuff (闪避-40, 暴击-40, 倒计时+4) ==========
           if (BossSystem.bossState.isBossFight && BossSystem.bossState.bossId === 'eden') {
             const critDebuffResult = BossSystem.processEdenCritReceived();
-            addLog(`【懒惰·脆弱】倒计时+${critDebuffResult.countdownIncrease}！当前倒计时: ${BossSystem.bossState.edenCountdown}`, 'system', 'critical');
-            addLog(`【懒惰·脆弱】闪避率${critDebuffResult.evasionDebuff}%，暴击率${critDebuffResult.critDebuff}%（可叠加）`, 'system', 'debuff');
-            
+            addLog(
+              `【懒惰·脆弱】倒计时+${critDebuffResult.countdownIncrease}！当前倒计时: ${BossSystem.bossState.edenCountdown}`,
+              'system',
+              'critical',
+            );
+            addLog(
+              `【懒惰·脆弱】闪避率${critDebuffResult.evasionDebuff}%，暴击率${critDebuffResult.critDebuff}%（可叠加）`,
+              'system',
+              'debuff',
+            );
+
             // 写入MVU临时状态：被暴击debuff (闪避-40, 暴击-40)
             if (typeof Mvu !== 'undefined') {
               const mvuData = Mvu.getMvuData({ type: 'message', message_id: 'latest' });
               if (mvuData?.stat_data) {
                 // 获取当前状态
-                const currentEvasionDebuff = _.get(mvuData.stat_data, '性斗系统.对手临时状态.状态列表.被暴击debuff.加成.闪避率加成', 0);
-                const currentCritDebuff = _.get(mvuData.stat_data, '性斗系统.对手临时状态.状态列表.被暴击debuff.加成.暴击率加成', 0);
-                
+                const currentEvasionDebuff = _.get(
+                  mvuData.stat_data,
+                  '性斗系统.对手临时状态.状态列表.被暴击debuff.加成.闪避率加成',
+                  0,
+                );
+                const currentCritDebuff = _.get(
+                  mvuData.stat_data,
+                  '性斗系统.对手临时状态.状态列表.被暴击debuff.加成.暴击率加成',
+                  0,
+                );
+
                 // 叠加debuff
                 _.set(mvuData.stat_data, '性斗系统.对手临时状态.状态列表.被暴击debuff', {
                   加成: {
@@ -3340,21 +3575,25 @@ function handlePlayerSkill(skill: Skill) {
                   },
                   剩余回合: 999, // 持续整场战斗
                 });
-                
+
                 // 更新加成统计
-                const totalEvasion = _.get(mvuData.stat_data, '性斗系统.对手临时状态.加成统计.闪避率加成', 0) + critDebuffResult.evasionDebuff;
-                const totalCrit = _.get(mvuData.stat_data, '性斗系统.对手临时状态.加成统计.暴击率加成', 0) + critDebuffResult.critDebuff;
+                const totalEvasion =
+                  _.get(mvuData.stat_data, '性斗系统.对手临时状态.加成统计.闪避率加成', 0) +
+                  critDebuffResult.evasionDebuff;
+                const totalCrit =
+                  _.get(mvuData.stat_data, '性斗系统.对手临时状态.加成统计.暴击率加成', 0) +
+                  critDebuffResult.critDebuff;
                 _.set(mvuData.stat_data, '性斗系统.对手临时状态.加成统计.闪避率加成', totalEvasion);
                 _.set(mvuData.stat_data, '性斗系统.对手临时状态.加成统计.暴击率加成', totalCrit);
-                
+
                 // 更新对手实时属性
                 const baseEvasion = _.get(mvuData.stat_data, '性斗系统.对手闪避率', 0);
                 const baseCrit = _.get(mvuData.stat_data, '性斗系统.对手暴击率', 0);
                 _.set(mvuData.stat_data, '性斗系统.对手实时闪避率', Math.max(0, baseEvasion + totalEvasion));
                 _.set(mvuData.stat_data, '性斗系统.对手实时暴击率', Math.max(0, baseCrit + totalCrit));
-                
+
                 Mvu.replaceMvuData(mvuData, { type: 'message', message_id: 'latest' });
-                
+
                 // 更新UI显示（使用crit而不是critChance）
                 nextEnemy.stats.evasion = Math.max(0, nextEnemy.stats.evasion + critDebuffResult.evasionDebuff);
                 nextEnemy.stats.crit = Math.max(0, nextEnemy.stats.crit + critDebuffResult.critDebuff);
@@ -3377,10 +3616,10 @@ function handlePlayerSkill(skill: Skill) {
         if (playerTalent.value && result.totalDamage > 0) {
           const talentContext = createTalentEffectContext();
           TalentSystem.processTalentOnDamageDealt(playerTalent.value, talentContext, result.totalDamage);
-          
+
           // ========== 七宗罪效果：造成伤害时 ==========
           const sinType = TalentSystem.getSinTalentType(playerTalent.value);
-          
+
           // 暴食：造成伤害时减少自身20%最大快感的快感
           if (sinType === 'gluttony') {
             const pleasureReduce = Math.floor(nextPlayer.stats.maxPleasure * 0.2);
@@ -3388,22 +3627,22 @@ function handlePlayerSkill(skill: Skill) {
             playerTalentState.value.gluttonyDealtDamageThisTurn = true;
             addLog(`【七宗罪·暴食】造成伤害，自身快感-${pleasureReduce}`, 'system', 'buff');
           }
-          
+
           // 暴怒：造成伤害时标记已造成伤害
           if (sinType === 'wrath') {
             playerTalentState.value.wrathDealtDamageThisTurn = true;
           }
-          
+
           // 色欲：击中后魅惑效果
           if (sinType === 'lust') {
             const charmResult = TalentSystem.processLustCharm(
               talentContext,
               nextPlayer.stats.charm,
-              nextEnemy.stats.charm
+              nextEnemy.stats.charm,
             );
             playerTalentState.value = { ...talentContext.talentState };
             addLog(`【七宗罪·色欲】${charmResult.message}`, 'system', charmResult.success ? 'info' : 'critical');
-            
+
             if (charmResult.success && charmResult.bindEnemy) {
               // 魅惑成功：束缚敌人1回合
               if (BossSystem.bossState.isBossFight && BossSystem.bossState.bossId === 'muxinlan') {
@@ -3413,13 +3652,18 @@ function handlePlayerSkill(skill: Skill) {
                 enemyBindSource.value = 'player';
                 addLog(`${nextEnemy.name} 被魅惑束缚了 ${charmResult.bindDuration || 1} 回合！`, 'system', 'info');
               }
-              
+
               // 自身忍耐力成算-12%（可叠加）- 写入MVU
               if (charmResult.selfEnduranceDebuff) {
-                applyTalentBuff('player', '天赋_色欲_魅惑代价', { '基础忍耐力成算': charmResult.selfEnduranceDebuff }, 999);
+                applyTalentBuff(
+                  'player',
+                  '天赋_色欲_魅惑代价',
+                  { 基础忍耐力成算: charmResult.selfEnduranceDebuff },
+                  999,
+                );
               }
             }
-            
+
             // 魅惑连续失败2次：标记敌人下次攻击必中必暴
             if (charmResult.enemyGuaranteedHitCrit) {
               playerTalentState.value.lustEnemyGuaranteedCrit = true;
@@ -3434,7 +3678,7 @@ function handlePlayerSkill(skill: Skill) {
         } catch (e) {
           console.error('[战斗界面] 应用技能效果失败', e);
         }
-        
+
         // ========== 天赋束缚先手效果 ==========
         if (talentAttackResult.addBind && talentAttackResult.bindDuration && enemyBoundTurns.value === 0) {
           // 检查是否是BOSS免疫束缚
@@ -3446,7 +3690,7 @@ function handlePlayerSkill(skill: Skill) {
             addLog(`【天赋】${nextEnemy.name} 被束缚了 ${talentAttackResult.bindDuration} 回合！`, 'system', 'info');
           }
         }
-        
+
         // ========== 黑崎晴雯BOSS：贪婪天赋 - C/B级技能命中时随机技能耐力消耗减半 ==========
         if (BossSystem.bossState.isBossFight && BossSystem.bossState.bossId === 'heisaki') {
           // 获取技能稀有度
@@ -3458,14 +3702,18 @@ function handlePlayerSkill(skill: Skill) {
               skillRarity = skillMvuData.基本信息.稀有度;
             }
           }
-          
+
           // C/B级技能命中时，随机技能耐力消耗减半
           if (skillRarity === 'C' || skillRarity === 'B') {
             const playerSkillIds = nextPlayer.skills.map(s => s.id);
             const halfResult = BossSystem.processHeisakiLowRaritySkillHit(playerSkillIds);
             if (halfResult.triggered && halfResult.affectedSkillId) {
               const affectedSkill = nextPlayer.skills.find(s => s.id === halfResult.affectedSkillId);
-              addLog(`【廉价回馈】${affectedSkill?.name || halfResult.affectedSkillId} 耐力消耗倍率减半（当前倍率: ${halfResult.newMultiplier}x）`, 'system', 'buff');
+              addLog(
+                `【廉价回馈】${affectedSkill?.name || halfResult.affectedSkillId} 耐力消耗倍率减半（当前倍率: ${halfResult.newMultiplier}x）`,
+                'system',
+                'buff',
+              );
               if (halfResult.dialogues.length > 0) {
                 BossSystem.queueDialogues(halfResult.dialogues);
               }
@@ -3473,7 +3721,7 @@ function handlePlayerSkill(skill: Skill) {
           }
         }
       }
-      
+
       // ========== 黑崎晴雯BOSS：贪婪天赋 - A/S/SS级技能使用后耐力消耗翻倍 ==========
       if (BossSystem.bossState.isBossFight && BossSystem.bossState.bossId === 'heisaki') {
         // 获取技能稀有度
@@ -3485,11 +3733,15 @@ function handlePlayerSkill(skill: Skill) {
             skillRarity = skillMvuData.基本信息.稀有度;
           }
         }
-        
+
         // A/S/SS级技能使用后，该技能下次耐力消耗翻倍
         const doubleResult = BossSystem.processHeisakiHighRaritySkillUsed(skill.id, skillRarity);
         if (doubleResult.triggered) {
-          addLog(`【利息翻倍】${skill.name} 下次耐力消耗将翻倍（当前倍率: ${doubleResult.newMultiplier}x）`, 'system', 'debuff');
+          addLog(
+            `【利息翻倍】${skill.name} 下次耐力消耗将翻倍（当前倍率: ${doubleResult.newMultiplier}x）`,
+            'system',
+            'debuff',
+          );
           if (doubleResult.dialogues.length > 0) {
             BossSystem.queueDialogues(doubleResult.dialogues);
           }
@@ -3513,7 +3765,7 @@ function handlePlayerSkill(skill: Skill) {
       } else {
         // 没有高潮时，才重新读取状态加成
         await reloadStatusFromMvu();
-        
+
         // 使用技能后，轮到对方结算快感
         setTimeout(handleEnemyTurn, 1000);
       }
@@ -3706,11 +3958,11 @@ async function handlePlayerItem(item: Item) {
       if (!mvuData.stat_data.临时状态) mvuData.stat_data.临时状态 = {};
       if (!mvuData.stat_data.临时状态.状态列表) mvuData.stat_data.临时状态.状态列表 = {};
       if (!mvuData.stat_data.临时状态.加成统计) mvuData.stat_data.临时状态.加成统计 = {};
-      
+
       // 从描述中提取持续回合数
       const buffDesc = item.description?.match(/持续(\d+)回合/);
       const duration = buffDesc ? parseInt(buffDesc[1]) : 3;
-      
+
       // 生成唯一的状态key
       let statusKey = item.name;
       let index = 1;
@@ -3718,22 +3970,22 @@ async function handlePlayerItem(item: Item) {
         statusKey = `${item.name}_${index}`;
         index++;
       }
-      
+
       // 写入临时状态.状态列表
       mvuData.stat_data.临时状态.状态列表[statusKey] = {
         加成: item.bonuses,
         剩余回合: duration,
       };
-      
+
       // 更新加成统计（累加所有状态的加成）
       for (const [bonusKey, bonusValue] of Object.entries(item.bonuses)) {
-        mvuData.stat_data.临时状态.加成统计[bonusKey] = 
+        mvuData.stat_data.临时状态.加成统计[bonusKey] =
           (mvuData.stat_data.临时状态.加成统计[bonusKey] || 0) + (bonusValue as number);
       }
-      
+
       // 保存到MVU
       await Mvu.replaceMvuData(mvuData, { type: 'message', message_id: 'latest' });
-      
+
       addLog(`${item.name} 的状态效果已生效，持续 ${duration} 回合`, 'system', 'info');
     }
   }
@@ -3753,8 +4005,10 @@ async function handlePlayerItem(item: Item) {
 
 function handleEnemyTurn() {
   turnState.phase = 'enemyAction';
-  
-  console.info(`[束缚系统] 敌人回合开始 - enemyBoundTurns=${enemyBoundTurns.value}, enemyBindSource=${enemyBindSource.value}`);
+
+  console.info(
+    `[束缚系统] 敌人回合开始 - enemyBoundTurns=${enemyBoundTurns.value}, enemyBindSource=${enemyBindSource.value}`,
+  );
 
   // 记录：敌人回合开始时玩家是否处于束缚状态（用于本回合薇丝佩菈必中必暴判定）
   const playerWasBoundAtEnemyTurnStart = playerBoundTurns.value > 0;
@@ -3817,18 +4071,23 @@ function handleEnemyTurn() {
         const sacrificeDamage = Math.floor(enemy.value.stats.charm * 2.0 + 50);
         player.value.stats.currentPleasure = Math.min(
           player.value.stats.maxPleasure,
-          player.value.stats.currentPleasure + sacrificeDamage
+          player.value.stats.currentPleasure + sacrificeDamage,
         );
         syncPlayerPleasureToMvu(player.value.stats.currentPleasure);
         addLog(`【自体献祭】造成 ${sacrificeDamage} 点快感伤害！`, 'system', 'damage');
 
-        applyTalentBuff('player', 'BOSS_薇丝佩菈_自体献祭', {
-          '基础忍耐力成算': -30,
-          '闪避率加成': -30,
-        }, 3);
+        applyTalentBuff(
+          'player',
+          'BOSS_薇丝佩菈_自体献祭',
+          {
+            基础忍耐力成算: -30,
+            闪避率加成: -30,
+          },
+          3,
+        );
         addLog(`【自体献祭】敏感度+50%，防御-30%，性斗力-30%（3回合）`, 'system', 'debuff');
 
-        endTurn().then((climaxTriggered) => {
+        endTurn().then(climaxTriggered => {
           if (!climaxTriggered) {
             setTimeout(startNewTurn, 1000);
           }
@@ -3843,13 +4102,17 @@ function handleEnemyTurn() {
   console.info(`[束缚系统] 检查敌人束缚状态 - enemyBoundTurns=${enemyBoundTurns.value}`);
   if (enemyBoundTurns.value > 0) {
     addLog(`${enemy.value.name} 被束缚了，无法行动！剩余 ${enemyBoundTurns.value} 回合`, 'system', 'info');
-    
+
     // ========== 克莉丝汀BOSS第二阶段：暴怒天赋 - 未造成伤害时增加快感 ==========
-    if (BossSystem.bossState.isBossFight && BossSystem.bossState.bossId === 'christine' && BossSystem.bossState.currentPhase === 2) {
+    if (
+      BossSystem.bossState.isBossFight &&
+      BossSystem.bossState.bossId === 'christine' &&
+      BossSystem.bossState.currentPhase === 2
+    ) {
       const wrathPleasureGain = Math.floor(enemy.value.stats.maxPleasure * 0.2);
       enemy.value.stats.currentPleasure = Math.min(
         enemy.value.stats.maxPleasure,
-        enemy.value.stats.currentPleasure + wrathPleasureGain
+        enemy.value.stats.currentPleasure + wrathPleasureGain,
       );
       addLog(`【敌人·暴怒】${enemy.value.name} 被束缚无法造成伤害！快感+${wrathPleasureGain}！`, 'system', 'critical');
 
@@ -3861,13 +4124,17 @@ function handleEnemyTurn() {
         return;
       }
     }
-    
+
     // ========== 伊甸芙宁BOSS：被束缚时也要处理倒计时（正常-1，束缚额外-2=共-3） ==========
     if (BossSystem.bossState.isBossFight && BossSystem.bossState.bossId === 'eden') {
       const countdownResult = BossSystem.processEdenTurnStart(enemyBoundTurns.value);
       const isUrgent = countdownResult.countdownValue <= 3;
-      addLog(`【懒惰·倒计时】剩余 ${countdownResult.countdownValue} 回合（被束缚额外-2）`, 'system', isUrgent ? 'critical' : 'info');
-      
+      addLog(
+        `【懒惰·倒计时】剩余 ${countdownResult.countdownValue} 回合（被束缚额外-2）`,
+        'system',
+        isUrgent ? 'critical' : 'info',
+      );
+
       // 苏醒激怒buff衰减
       if (!BossSystem.bossState.edenSleeping && BossSystem.bossState.edenAwakened) {
         if (typeof Mvu !== 'undefined') {
@@ -3880,7 +4147,7 @@ function handleEnemyTurn() {
               const newValue = oldValue - 15;
               awakeningBuff.加成.基础忍耐力成算 = newValue;
               _.set(mvuData.stat_data, '性斗系统.对手临时状态.状态列表.苏醒激怒', awakeningBuff);
-              
+
               let totalEnduranceBonus = newValue;
               Object.entries(tempStates).forEach(([name, state]: [string, any]) => {
                 if (name !== '苏醒激怒' && state?.加成?.基础忍耐力成算) {
@@ -3888,20 +4155,20 @@ function handleEnemyTurn() {
                 }
               });
               _.set(mvuData.stat_data, '性斗系统.对手临时状态.加成统计.基础忍耐力成算', totalEnduranceBonus);
-              
+
               const baseEndurance = _.get(mvuData.stat_data, '性斗系统.对手忍耐力', 0);
               const realTimeEndurance = Math.floor(baseEndurance * (1 + totalEnduranceBonus / 100));
               _.set(mvuData.stat_data, '性斗系统.对手实时忍耐力', realTimeEndurance);
-              
+
               Mvu.replaceMvuData(mvuData, { type: 'message', message_id: 'latest' });
               enemy.value.stats.baseEndurance = realTimeEndurance;
-              
+
               addLog(`【苏醒·激怒】忍耐力成算衰减：${oldValue}% → ${newValue}%`, 'system', 'info');
             }
           }
         }
       }
-      
+
       // 如果触发Game Over技能
       if (countdownResult.triggerSkill16) {
         addLog(`【懒惰】伊甸芙宁的倒计时归零！`, 'system', 'critical');
@@ -3923,17 +4190,23 @@ function handleEnemyTurn() {
           const gameOverDamage = Math.floor(enemy.value.stats.sexPower * 5.0 * 5);
           player.value.stats.currentPleasure = Math.min(
             player.value.stats.maxPleasure,
-            player.value.stats.currentPleasure + gameOverDamage
+            player.value.stats.currentPleasure + gameOverDamage,
           );
           addLog(`${player.value.name} 受到了 ${gameOverDamage} 点快感伤害！`, 'system', 'critical');
 
           // 清除特效
-          setTimeout(() => { phaseTransitionEffect.value = ''; }, 1500);
+          setTimeout(() => {
+            phaseTransitionEffect.value = '';
+          }, 1500);
 
           // 直接检查玩家是否达到高潮上限，触发游戏结束
           if (player.value.stats.currentPleasure >= player.value.stats.maxPleasure) {
             player.value.stats.climaxCount++;
-            addLog(`${player.value.name} 达到了高潮！(${player.value.stats.climaxCount}/${player.value.stats.maxClimaxCount})`, 'system', 'climax');
+            addLog(
+              `${player.value.name} 达到了高潮！(${player.value.stats.climaxCount}/${player.value.stats.maxClimaxCount})`,
+              'system',
+              'climax',
+            );
             triggerEffect('climax');
 
             if (player.value.stats.climaxCount >= player.value.stats.maxClimaxCount) {
@@ -3949,7 +4222,7 @@ function handleEnemyTurn() {
           }
 
           // 继续游戏
-          endTurn().then((climaxTriggered) => {
+          endTurn().then(climaxTriggered => {
             if (!climaxTriggered) {
               setTimeout(startNewTurn, 1000);
             }
@@ -3959,7 +4232,7 @@ function handleEnemyTurn() {
         return;
       }
     }
-    
+
     // 递减束缚回合数
     enemyBoundTurns.value--;
     if (enemyBoundTurns.value === 0) {
@@ -3969,7 +4242,7 @@ function handleEnemyTurn() {
       enemySensoryNumb.value = 2;
       addLog(`${enemy.value.name} 获得了【感官麻木】状态，持续2回合`, 'system', 'buff');
     }
-    endTurn().then((climaxTriggered) => {
+    endTurn().then(climaxTriggered => {
       if (!climaxTriggered) {
         setTimeout(startNewTurn, 1000);
       }
@@ -3984,7 +4257,7 @@ function handleEnemyTurn() {
     // 倒计时日志高亮显示（红色）
     const isUrgent = countdownResult.countdownValue <= 3;
     addLog(`【懒惰·倒计时】剩余 ${countdownResult.countdownValue} 回合`, 'system', isUrgent ? 'danger' : 'critical');
-    
+
     // ========== 苏醒激怒buff衰减：每回合-20 ==========
     if (!BossSystem.bossState.edenSleeping && BossSystem.bossState.edenAwakened) {
       if (typeof Mvu !== 'undefined') {
@@ -3998,7 +4271,7 @@ function handleEnemyTurn() {
             const newValue = oldValue - 15;
             awakeningBuff.加成.基础忍耐力成算 = newValue;
             _.set(mvuData.stat_data, '性斗系统.对手临时状态.状态列表.苏醒激怒', awakeningBuff);
-            
+
             // 重新计算加成统计
             let totalEnduranceBonus = newValue;
             // 加上其他debuff的忍耐力加成
@@ -4008,60 +4281,66 @@ function handleEnemyTurn() {
               }
             });
             _.set(mvuData.stat_data, '性斗系统.对手临时状态.加成统计.基础忍耐力成算', totalEnduranceBonus);
-            
+
             // 更新对手实时忍耐力
             const baseEndurance = _.get(mvuData.stat_data, '性斗系统.对手忍耐力', 0);
             const realTimeEndurance = Math.floor(baseEndurance * (1 + totalEnduranceBonus / 100));
             _.set(mvuData.stat_data, '性斗系统.对手实时忍耐力', realTimeEndurance);
-            
+
             Mvu.replaceMvuData(mvuData, { type: 'message', message_id: 'latest' });
-            
+
             // 更新UI显示（使用baseEndurance）
             enemy.value.stats.baseEndurance = realTimeEndurance;
-            
+
             addLog(`【苏醒·激怒】忍耐力成算衰减：${oldValue}% → ${newValue}%`, 'system', 'debuff');
           }
         }
       }
     }
-    
+
     // 如果触发Game Over技能
     if (countdownResult.triggerSkill16) {
       addLog(`【懒惰】伊甸芙宁的倒计时归零！`, 'system', 'critical');
-      
+
       turnState.phase = 'processing';
       BossSystem.setDialogueSkippable(false);
 
       BossSystem.queueDialogues(BossSystem.EDEN_DIALOGUES.countdown_zero);
-      
+
       // 添加蓝色特效
       phaseTransitionEffect.value = 'eden-game-over';
-      
+
       (async () => {
         await BossSystem.waitForDialoguesToFinish();
 
         // 使用Game Over技能（伊甸芙宁_16）
         addLog(`【Game Over】伊甸芙宁发动了终极技能！`, 'system', 'critical');
         addLog(`【Game Over】造成500%性斗力伤害，必定暴击，5连击！`, 'system', 'damage');
-        
+
         // 计算伤害：500% × 5次 = 2500%
         const gameOverDamage = Math.floor(enemy.value.stats.sexPower * 5.0 * 5);
         player.value.stats.currentPleasure = Math.min(
           player.value.stats.maxPleasure,
-          player.value.stats.currentPleasure + gameOverDamage
+          player.value.stats.currentPleasure + gameOverDamage,
         );
         addLog(`${player.value.name} 受到了 ${gameOverDamage} 点快感伤害！`, 'system', 'critical');
-        
+
         // 清除特效
-        setTimeout(() => { phaseTransitionEffect.value = ''; }, 1500);
-        
+        setTimeout(() => {
+          phaseTransitionEffect.value = '';
+        }, 1500);
+
         // Bug 4 Fix: 直接检查玩家是否达到高潮上限，触发游戏结束
         if (player.value.stats.currentPleasure >= player.value.stats.maxPleasure) {
           // 玩家达到快感上限，增加高潮次数
           player.value.stats.climaxCount++;
-          addLog(`${player.value.name} 达到了高潮！(${player.value.stats.climaxCount}/${player.value.stats.maxClimaxCount})`, 'system', 'climax');
+          addLog(
+            `${player.value.name} 达到了高潮！(${player.value.stats.climaxCount}/${player.value.stats.maxClimaxCount})`,
+            'system',
+            'climax',
+          );
           triggerEffect('climax');
-          
+
           // 检查是否达到高潮次数上限
           if (player.value.stats.climaxCount >= player.value.stats.maxClimaxCount) {
             // 玩家战败
@@ -4072,33 +4351,33 @@ function handleEnemyTurn() {
             turnState.phase = 'gameOver';
             return; // 直接返回，不继续执行
           }
-          
+
           // 未达到上限，重置快感
           player.value.stats.currentPleasure = 0;
         }
-        
+
         // 继续游戏
-        endTurn().then((climaxTriggered) => {
+        endTurn().then(climaxTriggered => {
           if (!climaxTriggered) {
             setTimeout(startNewTurn, 1000);
           }
         });
       })();
-      
+
       return;
     }
-    
+
     // 沉睡状态下不使用技能
     if (BossSystem.bossState.edenSleeping) {
       addLog(`${enemy.value.name} 正在沉睡中...不会进行攻击`, 'system', 'info');
-      
+
       // 随机播放沉睡被攻击对话
       const sleepDialogue = BossSystem.getEdenRandomBattleDialogue();
       if (sleepDialogue) {
         BossSystem.queueDialogues([sleepDialogue], false);
       }
-      
-      endTurn().then((climaxTriggered) => {
+
+      endTurn().then(climaxTriggered => {
         if (!climaxTriggered) {
           setTimeout(startNewTurn, 1000);
         }
@@ -4107,7 +4386,7 @@ function handleEnemyTurn() {
     }
   }
 
-  addLog(`${enemy.value.name} 开始行动...`, 'system', 'info')
+  addLog(`${enemy.value.name} 开始行动...`, 'system', 'info');
 
   setTimeout(() => {
     // 使用预告的技能（如果预告存在且可用），否则随机选择
@@ -4138,7 +4417,7 @@ function handleEnemyTurn() {
 
     if (!skill) {
       addLog(`${nextEnemy.name} 没有可用技能`, 'system', 'info');
-      endTurn().then((climaxTriggered) => {
+      endTurn().then(climaxTriggered => {
         if (!climaxTriggered) {
           setTimeout(startNewTurn, 1000);
         }
@@ -4150,7 +4429,7 @@ function handleEnemyTurn() {
     const skillCost = skill.data?.staminaCost || skill.cost || 0;
     if (nextEnemy.stats.currentEndurance < skillCost) {
       addLog(`${nextEnemy.name} 体力不足，无法使用 ${skill.name}！`, 'system', 'info');
-      endTurn().then((climaxTriggered) => {
+      endTurn().then(climaxTriggered => {
         if (!climaxTriggered) {
           setTimeout(startNewTurn, 1000);
         }
@@ -4252,7 +4531,7 @@ function handleEnemyTurn() {
         // 检查技能数据是否存在
         if (!skill.data) {
           addLog(`技能 ${skill.name} 的数据不存在，无法使用`, 'system', 'critical');
-          endTurn().then((climaxTriggered) => {
+          endTurn().then(climaxTriggered => {
             if (!climaxTriggered) {
               setTimeout(startNewTurn, 1000);
             }
@@ -4270,16 +4549,20 @@ function handleEnemyTurn() {
           playerTalentState.value.lustEnemyGuaranteedCrit = false; // 使用后清除
           addLog(`【七宗罪·色欲】魅惑连续失败的代价！敌人本次攻击必定命中且暴击！`, 'system', 'critical');
         }
-        
+
         // ========== 克莉丝汀BOSS第二阶段：暴怒天赋（必暴击、连击+1） ==========
         let christineWrathCrit = false;
         let christineWrathExtraHits = 0;
-        if (BossSystem.bossState.isBossFight && BossSystem.bossState.bossId === 'christine' && BossSystem.bossState.currentPhase === 2) {
+        if (
+          BossSystem.bossState.isBossFight &&
+          BossSystem.bossState.bossId === 'christine' &&
+          BossSystem.bossState.currentPhase === 2
+        ) {
           christineWrathCrit = true;
           christineWrathExtraHits = 1;
           addLog(`【敌人·暴怒】克莉丝汀的攻击必定暴击，连击+1！`, 'system', 'critical');
         }
-        
+
         // ========== 薇丝佩菈BOSS：束缚猎物 - 本回合玩家处于束缚状态则必定命中且必定暴击 ==========
         let vesperaGuaranteedHit = false;
         let vesperaGuaranteedCrit = false;
@@ -4291,20 +4574,22 @@ function handleEnemyTurn() {
             addLog(`【束缚猎物】你被束缚了！薇丝佩菈的攻击必定命中且必定暴击！`, 'system', 'critical');
           }
         }
-        
+
         const result = executeAttack(nextEnemy, nextPlayer, skill.data, false, {
           guaranteedHit: lustGuaranteedHit || vesperaGuaranteedHit,
           guaranteedCrit: lustGuaranteedCrit || christineWrathCrit || vesperaGuaranteedCrit,
           extraHitCount: christineWrathExtraHits,
         });
-        
+
         // 调试日志：检查40%伤害上限是否生效
         const maxDamageCap = Math.floor(nextPlayer.stats.maxPleasure * 0.4);
-        console.info(`[战斗界面] 敌人攻击玩家 - 玩家最大快感=${nextPlayer.stats.maxPleasure}, 40%上限=${maxDamageCap}, 总伤害=${result.totalDamage}`);
+        console.info(
+          `[战斗界面] 敌人攻击玩家 - 玩家最大快感=${nextPlayer.stats.maxPleasure}, 40%上限=${maxDamageCap}, 总伤害=${result.totalDamage}`,
+        );
 
         // 记录战斗日志
         addLog(`${nextEnemy.name} 使用了 ${skill.name}！`, 'enemy', 'info');
-        
+
         // BOSS战时：敌人使用技能后触发随机战斗对话
         if (BossSystem.bossState.isBossFight && BossSystem.bossState.bossId === 'muxinlan') {
           const battleDialogue = BossSystem.getRandomBattleDialogue(BossSystem.bossState.currentPhase);
@@ -4314,7 +4599,9 @@ function handleEnemyTurn() {
         }
         // 克莉丝汀BOSS战：敌人使用技能后触发随机战斗对话
         if (BossSystem.bossState.isBossFight && BossSystem.bossState.bossId === 'christine') {
-          const battleDialogue = BossSystem.getChristineRandomBattleDialogue(BossSystem.bossState.currentPhase as 1 | 2);
+          const battleDialogue = BossSystem.getChristineRandomBattleDialogue(
+            BossSystem.bossState.currentPhase as 1 | 2,
+          );
           if (battleDialogue) {
             BossSystem.queueDialogues([battleDialogue]);
           }
@@ -4341,29 +4628,46 @@ function handleEnemyTurn() {
         if (result.isDodged) {
           addLog(`${nextPlayer.name} 闪避了所有攻击！`, 'system', 'info');
           triggerEffect('dodge');
-          
+
           // ========== 薇丝佩菈BOSS：记录玩家闪避（用于连续闪避判定） ==========
           if (BossSystem.bossState.isBossFight && BossSystem.bossState.bossId === 'vespera') {
             const dodgeResult = BossSystem.recordVesperaPlayerDodge();
             if (dodgeResult.triggerDebuff) {
               // 应用薇丝佩菈的debuff（闪避率-8，忍耐力成算-8，永久）
               const totalDebuff = BossSystem.getVesperaConsecutiveDodgeDebuff();
-              applyTalentBuff('enemy', 'BOSS_薇丝佩菈_连续闪避debuff', {
-                '闪避率加成': totalDebuff.totalEvasionDebuff,
-                '基础忍耐力成算': totalDebuff.totalEnduranceCalcDebuff,
-              }, 999);
-              addLog(`【挑逗惩罚】连续闪避${dodgeResult.consecutiveDodges}次！薇丝佩菈闪避率${totalDebuff.totalEvasionDebuff}%，忍耐力成算${totalDebuff.totalEnduranceCalcDebuff}%！`, 'system', 'debuff');
+              applyTalentBuff(
+                'enemy',
+                'BOSS_薇丝佩菈_连续闪避debuff',
+                {
+                  闪避率加成: totalDebuff.totalEvasionDebuff,
+                  基础忍耐力成算: totalDebuff.totalEnduranceCalcDebuff,
+                },
+                999,
+              );
+              addLog(
+                `【挑逗惩罚】连续闪避${dodgeResult.consecutiveDodges}次！薇丝佩菈闪避率${totalDebuff.totalEvasionDebuff}%，忍耐力成算${totalDebuff.totalEnduranceCalcDebuff}%！`,
+                'system',
+                'debuff',
+              );
             }
           }
-          
+
           // ========== 克莉丝汀BOSS第二阶段：暴怒天赋 - 攻击被闪避未造成伤害时增加快感 ==========
-          if (BossSystem.bossState.isBossFight && BossSystem.bossState.bossId === 'christine' && BossSystem.bossState.currentPhase === 2) {
+          if (
+            BossSystem.bossState.isBossFight &&
+            BossSystem.bossState.bossId === 'christine' &&
+            BossSystem.bossState.currentPhase === 2
+          ) {
             const wrathPleasureGain = Math.floor(nextEnemy.stats.maxPleasure * 0.2);
             nextEnemy.stats.currentPleasure = Math.min(
               nextEnemy.stats.maxPleasure,
-              nextEnemy.stats.currentPleasure + wrathPleasureGain
+              nextEnemy.stats.currentPleasure + wrathPleasureGain,
             );
-            addLog(`【敌人·暴怒】${nextEnemy.name} 攻击被闪避无法造成伤害！快感+${wrathPleasureGain}！`, 'system', 'critical');
+            addLog(
+              `【敌人·暴怒】${nextEnemy.name} 攻击被闪避无法造成伤害！快感+${wrathPleasureGain}！`,
+              'system',
+              'critical',
+            );
 
             if (nextEnemy.stats.currentPleasure >= nextEnemy.stats.maxPleasure && turnState.climaxTarget === null) {
               enemy.value = nextEnemy;
@@ -4390,7 +4694,7 @@ function handleEnemyTurn() {
           if (result.isCritical) {
             addLog(`暴击！总计造成 ${result.totalDamage} 点快感伤害！`, 'enemy', 'critical');
             triggerEffect('critical');
-            
+
             // ========== 七宗罪-懒惰：被暴击时若有3层积蓄则清空并束缚1回合 ==========
             const sinType = TalentSystem.getSinTalentType(playerTalent.value);
             if (sinType === 'sloth' && playerTalentState.value.slothStacks >= 3) {
@@ -4401,13 +4705,13 @@ function handleEnemyTurn() {
               removeTalentBuff('player', '天赋_懒惰_积蓄');
               saveSinTalentStateToMvu();
             }
-            
+
             // ========== 七宗罪-傲慢：被暴击时进入动摇状态 ==========
             if (sinType === 'pride' && !playerTalentState.value.prideShaken) {
               playerTalentState.value.prideShaken = true;
               playerTalentState.value.prideShakenTurns = 2;
               addLog(`【七宗罪·傲慢】被暴击！进入"动摇"状态（2回合暴击率/闪避率-30%）`, 'system', 'critical');
-              applyTalentBuff('player', '天赋_傲慢_动摇', { '暴击率加成': -30, '闪避率加成': -30 }, 2);
+              applyTalentBuff('player', '天赋_傲慢_动摇', { 暴击率加成: -30, 闪避率加成: -30 }, 2);
             }
           } else {
             addLog(`总计造成 ${result.totalDamage} 点快感伤害`, 'enemy', 'damage');
@@ -4417,8 +4721,12 @@ function handleEnemyTurn() {
           let finalDamage = result.totalDamage;
           if (playerTalent.value && result.totalDamage > 0) {
             const talentContext = createTalentEffectContext();
-            const talentResult = TalentSystem.processTalentOnDamageReceived(playerTalent.value, talentContext, result.totalDamage);
-            
+            const talentResult = TalentSystem.processTalentOnDamageReceived(
+              playerTalent.value,
+              talentContext,
+              result.totalDamage,
+            );
+
             // 应用伤害减免
             if (talentResult.damageReduction) {
               finalDamage = Math.max(0, finalDamage - talentResult.damageReduction);
@@ -4442,7 +4750,7 @@ function handleEnemyTurn() {
             'system',
             'info',
           );
-          
+
           // ========== 伊丽莎白夜羽：吸血天赋 - 攻击造成伤害后回复快感 ==========
           if (BossSystem.bossState.isBossFight && BossSystem.bossState.bossId === 'elizabeth' && finalDamage > 0) {
             const vampireHeal = BossSystem.getElizabethVampirismHeal(finalDamage);
@@ -4451,24 +4759,29 @@ function handleEnemyTurn() {
               addLog(`【吸血】伊丽莎白夜羽吸取了生命精髓使自己冷静了下来，快感-${vampireHeal}`, 'system', 'info');
             }
           }
-          
+
           // ========== 七宗罪-暴食：受到伤害时获得饕餮层数 ==========
           const sinTypeOnDamage = TalentSystem.getSinTalentType(playerTalent.value);
           if (sinTypeOnDamage === 'gluttony' && finalDamage > 0) {
             const oldStacks = playerTalentState.value.gluttonyStacks;
             playerTalentState.value.gluttonyStacks = Math.min(5, oldStacks + 1);
             const newStacks = playerTalentState.value.gluttonyStacks;
-            
+
             if (newStacks > oldStacks) {
               addLog(`【七宗罪·暴食】受到伤害，获得1层「饕餮」（当前${newStacks}层）`, 'system', 'buff');
               // 应用饕餮层数效果
-              applyTalentBuff('player', '天赋_暴食_饕餮', { 
-                '基础性斗力成算': newStacks * 10, 
-                '基础忍耐力成算': newStacks * 10,
-                '暴击率加成': newStacks * 5 
-              }, 999);
+              applyTalentBuff(
+                'player',
+                '天赋_暴食_饕餮',
+                {
+                  基础性斗力成算: newStacks * 10,
+                  基础忍耐力成算: newStacks * 10,
+                  暴击率加成: newStacks * 5,
+                },
+                999,
+              );
               saveSinTalentStateToMvu();
-              
+
               // 5层饕餮时标记下回合过食
               if (newStacks >= 5) {
                 playerTalentState.value.gluttonyOvereatNext = true;
@@ -4504,7 +4817,7 @@ function handleEnemyTurn() {
         } else {
           // 没有高潮时，才重新读取状态加成
           await reloadStatusFromMvu();
-          
+
           // 对方执行完技能后，处理回合结束事务，然后进入下一回合
           const climaxTriggered = await endTurn();
           if (!climaxTriggered) {
@@ -4597,7 +4910,7 @@ function startNewTurn() {
   if (playerTalent.value) {
     const talentContext = createTalentEffectContext();
     TalentSystem.processTalentOnTurnStart(playerTalent.value, talentContext);
-    
+
     // ========== 七宗罪回合开始效果 ==========
     const sinType = TalentSystem.getSinTalentType(playerTalent.value);
     if (sinType) {
@@ -4612,7 +4925,11 @@ function startNewTurn() {
           // 懒惰：前3回合（1,2,3）无法攻击
           if (turnState.currentTurn >= 1 && turnState.currentTurn <= 3) {
             playerTalentState.value.slothCannotAttackTurns = 4 - turnState.currentTurn;
-            addLog(`【七宗罪·懒惰】前3回合无法攻击（剩余${playerTalentState.value.slothCannotAttackTurns}回合）`, 'system', 'info');
+            addLog(
+              `【七宗罪·懒惰】前3回合无法攻击（剩余${playerTalentState.value.slothCannotAttackTurns}回合）`,
+              'system',
+              'info',
+            );
           } else {
             playerTalentState.value.slothCannotAttackTurns = 0;
           }
@@ -4650,17 +4967,22 @@ function startNewTurn() {
           }
           playerTalentState.value = { ...talentContext.talentState };
           addLog(result.message, 'system', 'buff');
-          
+
           // 应用贪婪层数效果到MVU（每层：暴击率+10%、魅力+30、幸运+30、性斗力成算+15%、闪避率-10%）
           const greedStacks = playerTalentState.value.greedStacks;
           if (greedStacks > 0) {
-            applyTalentBuff('player', '天赋_贪婪_层数', { 
-              '暴击率加成': greedStacks * 10,
-              '魅力加成': greedStacks * 30,
-              '幸运加成': greedStacks * 30,
-              '基础性斗力成算': greedStacks * 15,
-              '闪避率加成': greedStacks * -10
-            }, 999);
+            applyTalentBuff(
+              'player',
+              '天赋_贪婪_层数',
+              {
+                暴击率加成: greedStacks * 10,
+                魅力加成: greedStacks * 30,
+                幸运加成: greedStacks * 30,
+                基础性斗力成算: greedStacks * 15,
+                闪避率加成: greedStacks * -10,
+              },
+              999,
+            );
           }
           saveSinTalentStateToMvu();
           break;
@@ -4683,27 +5005,40 @@ function startNewTurn() {
   // ========== 薇丝佩菈：色欲天赋 - 回合开始效果 ==========
   if (BossSystem.bossState.isBossFight && BossSystem.bossState.bossId === 'vespera') {
     const vesperaResult = BossSystem.processVesperaTurnStart(turnState.currentTurn, player.value.stats.maxPleasure);
-    
+
     // 增加玩家快感
     if (vesperaResult.pleasureIncrease > 0) {
       const oldPleasure = player.value.stats.currentPleasure;
       player.value.stats.currentPleasure = Math.min(
         player.value.stats.maxPleasure,
-        player.value.stats.currentPleasure + vesperaResult.pleasureIncrease
+        player.value.stats.currentPleasure + vesperaResult.pleasureIncrease,
       );
       syncPlayerPleasureToMvu(player.value.stats.currentPleasure);
-      addLog(`【信息素侵蚀】快感增加 ${vesperaResult.pleasureIncrease}（第${turnState.currentTurn}回合×4%×最大快感）`, 'system', 'debuff');
+      addLog(
+        `【信息素侵蚀】快感增加 ${vesperaResult.pleasureIncrease}（第${turnState.currentTurn}回合×4%×最大快感）`,
+        'system',
+        'debuff',
+      );
     }
-    
+
     // 应用累计的性斗力成算buff和忍耐力成算debuff到玩家
     if (vesperaResult.sexPowerCalcBuff !== 0 || vesperaResult.enduranceCalcDebuff !== 0) {
-      applyTalentBuff('player', 'BOSS_薇丝佩菈_信息素', {
-        '基础性斗力成算': vesperaResult.sexPowerCalcBuff,
-        '基础忍耐力成算': vesperaResult.enduranceCalcDebuff,
-      }, 999);
-      addLog(`【信息素侵蚀】性斗力成算+${vesperaResult.sexPowerCalcBuff}%，忍耐力成算${vesperaResult.enduranceCalcDebuff}%`, 'system', 'debuff');
+      applyTalentBuff(
+        'player',
+        'BOSS_薇丝佩菈_信息素',
+        {
+          基础性斗力成算: vesperaResult.sexPowerCalcBuff,
+          基础忍耐力成算: vesperaResult.enduranceCalcDebuff,
+        },
+        999,
+      );
+      addLog(
+        `【信息素侵蚀】性斗力成算+${vesperaResult.sexPowerCalcBuff}%，忍耐力成算${vesperaResult.enduranceCalcDebuff}%`,
+        'system',
+        'debuff',
+      );
     }
-    
+
     // 检查是否因上回合使用高耐力技能而被束缚
     if (vesperaResult.shouldBindNextTurn && playerBoundTurns.value <= 0) {
       playerBoundTurns.value = 1;
@@ -4733,46 +5068,65 @@ function startNewTurn() {
   if (BossSystem.bossState.isBossFight && BossSystem.bossState.bossId === 'heisaki') {
     const interestResult = BossSystem.processHeisakiDebtInterest();
     if (interestResult.interestAmount > 0) {
-      addLog(`【债务利息】债务增加 ${interestResult.interestAmount}（30%利息），当前债务: ${interestResult.newDebt}`, 'system', 'debuff');
+      addLog(
+        `【债务利息】债务增加 ${interestResult.interestAmount}（30%利息），当前债务: ${interestResult.newDebt}`,
+        'system',
+        'debuff',
+      );
     }
-    
+
     // 检查是否应该触发债务结算
-    if (BossSystem.shouldTriggerHeisakiDebtSettlement(player.value.stats.currentPleasure, player.value.stats.maxPleasure)) {
+    if (
+      BossSystem.shouldTriggerHeisakiDebtSettlement(player.value.stats.currentPleasure, player.value.stats.maxPleasure)
+    ) {
       // 强制锁定操作：对话期间禁止玩家行动
       showSurrenderMenu.value = false;
       turnState.phase = 'processing';
 
       // 设置对话不可跳过
       BossSystem.setDialogueSkippable(false);
-      
+
       // 执行债务结算
       const settlementResult = BossSystem.executeHeisakiDebtSettlement(
         player.value.stats.currentPleasure,
-        player.value.stats.maxPleasure
+        player.value.stats.maxPleasure,
       );
-      
+
       // 播放债务结算对话
       if (settlementResult.dialogues.length > 0) {
         BossSystem.queueDialogues(settlementResult.dialogues);
       }
-      
+
       // 等待对话完成后应用效果
       BossSystem.waitForDialoguesToFinish().then(() => {
         // 增加玩家快感
         player.value.stats.currentPleasure = Math.min(
           player.value.stats.maxPleasure,
-          player.value.stats.currentPleasure + settlementResult.pleasureIncrease
+          player.value.stats.currentPleasure + settlementResult.pleasureIncrease,
         );
         syncPlayerPleasureToMvu(player.value.stats.currentPleasure);
-        
-        addLog(`【债务结算】快感增加 ${settlementResult.pleasureIncrease}，债务减少 ${settlementResult.debtReduction}`, 'system', 'critical');
-        
+
+        addLog(
+          `【债务结算】快感增加 ${settlementResult.pleasureIncrease}，债务减少 ${settlementResult.debtReduction}`,
+          'system',
+          'critical',
+        );
+
         // 应用贪婪满足debuff到黑崎晴雯
         if (settlementResult.greedSatisfiedDebuff.enduranceCalcDebuff !== 0) {
-          applyTalentBuff('enemy', 'BOSS_黑崎晴雯_贪婪满足', {
-            '基础忍耐力成算': settlementResult.greedSatisfiedDebuff.enduranceCalcDebuff,
-          }, settlementResult.greedSatisfiedDebuff.duration);
-          addLog(`【贪婪满足】黑崎晴雯忍耐力成算${settlementResult.greedSatisfiedDebuff.enduranceCalcDebuff}%（${settlementResult.greedSatisfiedDebuff.duration}回合）`, 'system', 'buff');
+          applyTalentBuff(
+            'enemy',
+            'BOSS_黑崎晴雯_贪婪满足',
+            {
+              基础忍耐力成算: settlementResult.greedSatisfiedDebuff.enduranceCalcDebuff,
+            },
+            settlementResult.greedSatisfiedDebuff.duration,
+          );
+          addLog(
+            `【贪婪满足】黑崎晴雯忍耐力成算${settlementResult.greedSatisfiedDebuff.enduranceCalcDebuff}%（${settlementResult.greedSatisfiedDebuff.duration}回合）`,
+            'system',
+            'buff',
+          );
         }
 
         // 恢复玩家输入（若仍处于处理中）
@@ -4877,13 +5231,13 @@ async function removeTalentBuff(target: 'player' | 'enemy', buffName: string) {
     if (typeof Mvu === 'undefined') return;
     const mvuData = Mvu.getMvuData({ type: 'message', message_id: 'latest' });
     if (!mvuData?.stat_data) return;
-    
+
     const statusListPath = target === 'player' ? '临时状态.状态列表' : '性斗系统.对手临时状态.状态列表';
     const bonusPath = target === 'player' ? '临时状态.加成统计' : '性斗系统.对手临时状态.加成统计';
-    
+
     const statusList = _.get(mvuData.stat_data, statusListPath, {});
     const currentBonus = _.get(mvuData.stat_data, bonusPath, {});
-    
+
     // 如果状态存在，移除其加成
     if (statusList[buffName]) {
       const buffBonus = statusList[buffName].加成 || {};
@@ -4893,11 +5247,11 @@ async function removeTalentBuff(target: 'player' | 'enemy', buffName: string) {
       }
       delete statusList[buffName];
     }
-    
+
     _.set(mvuData.stat_data, statusListPath, statusList);
     _.set(mvuData.stat_data, bonusPath, currentBonus);
     await Mvu.replaceMvuData(mvuData, { type: 'message', message_id: 'latest' });
-    
+
     await reloadStatusFromMvu();
   } catch (e) {
     console.error('[天赋系统] 移除buff失败', e);
@@ -4910,10 +5264,10 @@ async function saveSinTalentStateToMvu() {
     if (typeof Mvu === 'undefined') return;
     const mvuData = Mvu.getMvuData({ type: 'message', message_id: 'latest' });
     if (!mvuData?.stat_data) return;
-    
+
     // 保存七宗罪状态到临时状态
     const sinState: Record<string, any> = {};
-    
+
     // 懒惰积蓄
     if (playerTalentState.value.slothStacks > 0) {
       sinState['懒惰积蓄'] = playerTalentState.value.slothStacks;
@@ -4926,7 +5280,7 @@ async function saveSinTalentStateToMvu() {
     if (playerTalentState.value.greedStacks > 0) {
       sinState['贪婪层数'] = playerTalentState.value.greedStacks;
     }
-    
+
     _.set(mvuData.stat_data, '临时状态.七宗罪状态', sinState);
     await Mvu.replaceMvuData(mvuData, { type: 'message', message_id: 'latest' });
   } catch (e) {
@@ -4935,18 +5289,23 @@ async function saveSinTalentStateToMvu() {
 }
 
 // 应用天赋buff到临时状态
-async function applyTalentBuff(target: 'player' | 'enemy', buffName: string, bonus: Record<string, number>, duration: number) {
+async function applyTalentBuff(
+  target: 'player' | 'enemy',
+  buffName: string,
+  bonus: Record<string, number>,
+  duration: number,
+) {
   try {
     if (typeof Mvu === 'undefined') return;
     const mvuData = Mvu.getMvuData({ type: 'message', message_id: 'latest' });
     if (!mvuData?.stat_data) return;
-    
+
     const statusListPath = target === 'player' ? '临时状态.状态列表' : '性斗系统.对手临时状态.状态列表';
     const bonusPath = target === 'player' ? '临时状态.加成统计' : '性斗系统.对手临时状态.加成统计';
-    
+
     const statusList = _.get(mvuData.stat_data, statusListPath, {});
     const currentBonus = _.get(mvuData.stat_data, bonusPath, {});
-    
+
     // 如果状态已存在，先移除旧的加成
     if (statusList[buffName]) {
       const oldBonus = statusList[buffName].加成 || {};
@@ -4955,22 +5314,22 @@ async function applyTalentBuff(target: 'player' | 'enemy', buffName: string, bon
         if (currentBonus[key] === 0) delete currentBonus[key];
       }
     }
-    
+
     // 添加状态到状态列表（正确格式：状态名: { 加成: {...}, 剩余回合: 回合数 }）
     statusList[buffName] = {
       加成: bonus,
       剩余回合: duration,
     };
-    
+
     // 累加新的加成到加成统计
     for (const [key, value] of Object.entries(bonus)) {
       currentBonus[key] = (currentBonus[key] || 0) + value;
     }
-    
+
     _.set(mvuData.stat_data, statusListPath, statusList);
     _.set(mvuData.stat_data, bonusPath, currentBonus);
     await Mvu.replaceMvuData(mvuData, { type: 'message', message_id: 'latest' });
-    
+
     // 重新计算属性
     await reloadStatusFromMvu();
   } catch (e) {
@@ -4981,14 +5340,14 @@ async function applyTalentBuff(target: 'player' | 'enemy', buffName: string, bon
 // 处理回合结束时的事务，返回true表示触发了高潮（不应继续startNewTurn）
 async function endTurn(): Promise<boolean> {
   // 束缚回合数在尝试行动时递减，不在这里处理
-  
+
   // 处理天赋回合结束效果
   if (playerTalent.value) {
     const talentContext = createTalentEffectContext();
     TalentSystem.processTalentOnTurnEnd(playerTalent.value, talentContext);
-    
+
     const sinType = TalentSystem.getSinTalentType(playerTalent.value);
-    
+
     // ========== 七宗罪-傲慢：回合结束检查连续暴击 ==========
     if (sinType === 'pride') {
       if (playerTalentState.value.prideCritThisTurn) {
@@ -4996,7 +5355,11 @@ async function endTurn(): Promise<boolean> {
         playerTalentState.value.prideConsecutiveCrits++;
         if (playerTalentState.value.prideConsecutiveCrits >= 2) {
           playerTalentState.value.prideAbsoluteConfidence = true;
-          addLog(`【七宗罪·傲慢】连续${playerTalentState.value.prideConsecutiveCrits}回合暴击！下回合攻击必中且连击+2`, 'system', 'buff');
+          addLog(
+            `【七宗罪·傲慢】连续${playerTalentState.value.prideConsecutiveCrits}回合暴击！下回合攻击必中且连击+2`,
+            'system',
+            'buff',
+          );
         }
       } else {
         // 本回合没有暴击，重置连续暴击计数
@@ -5007,16 +5370,16 @@ async function endTurn(): Promise<boolean> {
       // 重置本回合暴击标记
       playerTalentState.value.prideCritThisTurn = false;
     }
-    
+
     // ========== 七宗罪-暴食：回合结束未造成伤害时快感+20%最大快感 ==========
     if (sinType === 'gluttony' && !playerTalentState.value.gluttonyDealtDamageThisTurn) {
       const pleasureIncrease = Math.floor(player.value.stats.maxPleasure * 0.2);
       player.value.stats.currentPleasure = Math.min(
         player.value.stats.maxPleasure,
-        player.value.stats.currentPleasure + pleasureIncrease
+        player.value.stats.currentPleasure + pleasureIncrease,
       );
       addLog(`【七宗罪·暴食】本回合未造成伤害，快感+${pleasureIncrease}`, 'system', 'critical');
-      
+
       // 检查是否因暴食效果达到高潮
       if (player.value.stats.currentPleasure >= player.value.stats.maxPleasure && turnState.climaxTarget === null) {
         addLog(`${player.value.name} 因暴食效果达到了快感上限！`, 'system', 'critical');
@@ -5026,16 +5389,16 @@ async function endTurn(): Promise<boolean> {
         return true; // 高潮处理会接管后续流程
       }
     }
-    
+
     // ========== 七宗罪-暴怒：回合结束未造成伤害时快感+20%最大快感 ==========
     if (sinType === 'wrath' && !playerTalentState.value.wrathDealtDamageThisTurn) {
       const pleasureIncrease = Math.floor(player.value.stats.maxPleasure * 0.2);
       player.value.stats.currentPleasure = Math.min(
         player.value.stats.maxPleasure,
-        player.value.stats.currentPleasure + pleasureIncrease
+        player.value.stats.currentPleasure + pleasureIncrease,
       );
       addLog(`【七宗罪·暴怒】本回合未造成伤害，快感+${pleasureIncrease}`, 'system', 'critical');
-      
+
       // 检查是否因暴怒效果达到高潮
       if (player.value.stats.currentPleasure >= player.value.stats.maxPleasure && turnState.climaxTarget === null) {
         addLog(`${player.value.name} 因暴怒效果达到了快感上限！`, 'system', 'critical');
@@ -5090,7 +5453,11 @@ function collectCombatLogs(): string {
     }
 
     // 保留道具使用日志
-    if (message.includes('使用了') || message.includes('剩余数量') || message.includes('记录：第') && message.includes('回合使用了')) {
+    if (
+      message.includes('使用了') ||
+      message.includes('剩余数量') ||
+      (message.includes('记录：第') && message.includes('回合使用了'))
+    ) {
       return true;
     }
 
@@ -5105,11 +5472,7 @@ function collectCombatLogs(): string {
     }
 
     // 保留玩家主动结束类行为（子菜单）
-    if (
-      message.includes('自慰') ||
-      message.includes('上贡') ||
-      message.includes('诱惑')
-    ) {
+    if (message.includes('自慰') || message.includes('上贡') || message.includes('诱惑')) {
       return true;
     }
 
@@ -5133,13 +5496,17 @@ function collectCombatLogs(): string {
       return true;
     }
 
-
-
     // 过滤掉状态变化
-    if (message.includes('进入了贤者时间状态') || message.includes('进入虚脱状态') ||
-        message.includes('性斗力降低') || message.includes('性斗力提升') || 
-        message.includes('忍耐力降低') || message.includes('忍耐力提升') ||
-        message.includes('耐力降低') || message.includes('耐力提升')) {
+    if (
+      message.includes('进入了贤者时间状态') ||
+      message.includes('进入虚脱状态') ||
+      message.includes('性斗力降低') ||
+      message.includes('性斗力提升') ||
+      message.includes('忍耐力降低') ||
+      message.includes('忍耐力提升') ||
+      message.includes('耐力降低') ||
+      message.includes('耐力提升')
+    ) {
       return false;
     }
 
@@ -5180,19 +5547,19 @@ function selectAndDisplayCG() {
   console.log('[战斗界面] selectAndDisplayCG 函数被调用');
   console.log('[战斗界面] 当前战斗阶段:', turnState.phase);
   console.log('[战斗界面] ========================================');
-  
+
   try {
     // 获取玩家性别
     const globalAny = window as any;
     let playerGender: '男' | '女' = '男';
-    
+
     console.log('[战斗界面] 检查Mvu是否可用:', typeof Mvu !== 'undefined');
-    
+
     if (typeof Mvu !== 'undefined') {
       const mvuData = Mvu.getMvuData({ type: 'message', message_id: 'latest' });
       console.log('[战斗界面] MVU数据获取成功:', !!mvuData);
       console.log('[战斗界面] MVU stat_data存在:', !!mvuData?.stat_data);
-      
+
       if (mvuData && mvuData.stat_data) {
         const gender = _.get(mvuData.stat_data, '角色基础.性别', '男');
         console.log('[战斗界面] 从MVU读取的性别值:', gender);
@@ -5202,26 +5569,26 @@ function selectAndDisplayCG() {
     } else {
       console.warn('[战斗界面] Mvu未定义，使用默认性别');
     }
-    
+
     // 判断胜负
     const isVictory = turnState.phase === 'victory';
     console.log('[战斗界面] 是否胜利:', isVictory);
-    
+
     // 获取对手名称
     const enemyName = enemy.value.name;
     console.log('[战斗界面] 对手名称:', enemyName);
-    
+
     console.log('[战斗界面] 准备调用selectCGEvent，参数:', {
       enemyName,
       playerGender,
-      isVictory
+      isVictory,
     });
-    
+
     // 选择CG事件
     const cgResult = selectCGEvent(enemyName, playerGender, isVictory);
-    
+
     console.log('[战斗界面] selectCGEvent返回结果:', cgResult);
-    
+
     if (cgResult) {
       cgImageUrl.value = cgResult.imageUrl;
       cgDescription.value = cgResult.description;
@@ -5243,7 +5610,7 @@ function selectAndDisplayCG() {
     cgImageUrl.value = null;
     cgDescription.value = '';
   }
-  
+
   console.log('[战斗界面] ========================================');
   console.log('[战斗界面] selectAndDisplayCG 函数执行完毕');
   console.log('[战斗界面] 最终 cgImageUrl.value:', cgImageUrl.value);
@@ -5270,7 +5637,7 @@ async function sendCombatLogToLLM(context: string) {
 
     // 构建完整的提示词（包含CG描述）
     let fullPrompt = `请根据以下战斗日志生成${resultText}剧情\n[战斗日志]\n${combatLogText}\n共${totalTurns}回合。\n请根据以上性斗过程，生成一段性斗时的剧情描写（${contextText}）。`;
-    
+
     // 如果有CG描述，添加到提示词中
     if (cgDescription.value) {
       fullPrompt += `\n${cgDescription.value}`;
@@ -5392,25 +5759,27 @@ async function handleSendCombatLogToLLM() {
         const currentPleasure = _.get(mvuData.stat_data, '核心状态.$快感', 0);
         const maxStamina = _.get(mvuData.stat_data, '核心状态.$最大耐力', 100);
         const currentStamina = _.get(mvuData.stat_data, '核心状态.$耐力', 0);
-        
+
         // 计算新数值
         const newPleasure = Math.floor(currentPleasure / 2); // 快感减半
         const staminaIncrease = Math.floor(maxStamina * 0.2); // 耐力增加最大耐力的20%
         const newStamina = Math.min(maxStamina, currentStamina + staminaIncrease); // 不超过最大耐力
-        
+
         // 更新MVU变量
         _.set(mvuData.stat_data, '核心状态.$快感', newPleasure);
         _.set(mvuData.stat_data, '核心状态.$耐力', newStamina);
-        
+
         // 保存到MVU
         await Mvu.replaceMvuData(mvuData, { type: 'message', message_id: 'latest' });
-        
+
         // 添加结算日志
         addLog(`战斗结算：快感 ${currentPleasure} → ${newPleasure} (减半)`, 'system', 'info');
         addLog(`战斗结算：耐力 ${currentStamina} → ${newStamina} (+${staminaIncrease})`, 'system', 'info');
         addLog('战斗结算完成', 'system', 'info');
-        
-        console.info(`[战斗结算] 快感: ${currentPleasure} → ${newPleasure}, 耐力: ${currentStamina} → ${newStamina} (+${staminaIncrease})`);
+
+        console.info(
+          `[战斗结算] 快感: ${currentPleasure} → ${newPleasure}, 耐力: ${currentStamina} → ${newStamina} (+${staminaIncrease})`,
+        );
       }
     }
   } catch (e) {
@@ -5440,25 +5809,25 @@ async function handleSendCombatLogToLLM() {
 function lockHealthAndChangeAvatar(nextPhase: 1 | 2 | 3) {
   const currentPhase = BossSystem.bossState.currentPhase;
   console.info(`[战斗界面] BOSS阶段切换开始: ${currentPhase} -> ${nextPhase}`);
-  
+
   // 锁血：快感设为最大值-1，防止触发高潮
   enemy.value.stats.currentPleasure = enemy.value.stats.maxPleasure - 1;
-  
+
   // 立即更立绘和名称
   const newDisplayName = BossSystem.getMuxinlanDisplayName(nextPhase);
   const newAvatarUrl = BossSystem.getMuxinlanAvatarUrl(nextPhase);
   enemy.value.name = newDisplayName;
   enemy.value.avatarUrl = newAvatarUrl;
-  
+
   // 设置转换状态
   isPhaseTransitioning.value = true;
   phaseTransitionEffect.value = currentPhase === 1 ? 'phase1to2' : 'phase2to3';
-  
+
   // 1.5秒后自动清除特效（冲击波动画完成后）
   setTimeout(() => {
     phaseTransitionEffect.value = null;
   }, 1500);
-  
+
   console.info(`[战斗界面] 已锁血并更换立绘: ${newDisplayName}`);
 }
 
@@ -5466,25 +5835,25 @@ function lockHealthAndChangeAvatar(nextPhase: 1 | 2 | 3) {
 function lockHealthAndChangeAvatarChristine(nextPhase: 1 | 2) {
   const currentPhase = BossSystem.bossState.currentPhase;
   console.info(`[战斗界面] 克莉丝汀BOSS阶段切换开始: ${currentPhase} -> ${nextPhase}`);
-  
+
   // 锁血：快感设为最大值-1，防止触发高潮
   enemy.value.stats.currentPleasure = enemy.value.stats.maxPleasure - 1;
-  
+
   // 立即更换名称和立绘
   const newDisplayName = BossSystem.getChristineDisplayName(nextPhase);
   enemy.value.name = newDisplayName;
   // 更换立绘：克莉丝汀_1 或 克莉丝汀_2
   enemy.value.avatarUrl = BossSystem.getChristineAvatarUrl(nextPhase);
-  
+
   // 设置转换状态
   isPhaseTransitioning.value = true;
   phaseTransitionEffect.value = 'phase1to2';
-  
+
   // 1.5秒后自动清除特效
   setTimeout(() => {
     phaseTransitionEffect.value = null;
   }, 1500);
-  
+
   console.info(`[战斗界面] 克莉丝汀已锁血并更换名称: ${newDisplayName}`);
 }
 
@@ -5492,28 +5861,28 @@ function lockHealthAndChangeAvatarChristine(nextPhase: 1 | 2) {
 async function executePhaseTransitionLogic(nextPhase: 1 | 2 | 3) {
   const currentPhase = BossSystem.bossState.currentPhase;
   console.info(`[战斗界面] 执行阶段转换逻辑: ${currentPhase} -> ${nextPhase}`);
-  
+
   // 执行阶段转换（更新BOSS状态）
   BossSystem.executePhaseTransition(nextPhase);
-  
+
   // 获取新阶段的配置
   const newDisplayName = BossSystem.getMuxinlanDisplayName(nextPhase);
   const newClimaxLimit = BossSystem.BOSS_CONFIG.muxinlan.climaxLimits[nextPhase - 1];
   const newDataKey = BossSystem.getMuxinlanDataKey(nextPhase);
-  
+
   // 添加阶段切换日志
   addLog(`【阶段切换】${enemy.value.name} 进入了新形态！`, 'system', 'critical');
-  
+
   // 从数据库加载新阶段的敌人数据
   try {
     const { enemyDbModule, enemySkillDbModule } = await loadDatabaseModules();
     const newEnemyData = enemyDbModule.getEnemyMvuData(newDataKey);
-    
+
     if (newEnemyData) {
       // 更新敌人显示名称和立绘
       enemy.value.name = newDisplayName;
       enemy.value.avatarUrl = BossSystem.getMuxinlanAvatarUrl(nextPhase);
-      
+
       // 更新敌人属性
       enemy.value.stats.level = newEnemyData.对手等级;
       enemy.value.stats.charm = newEnemyData.对手魅力;
@@ -5527,14 +5896,14 @@ async function executePhaseTransitionLogic(nextPhase: 1 | 2 | 3) {
       enemy.value.stats.climaxCount = 0; // 新阶段高潮次数重置
       enemy.value.stats.sexPower = newEnemyData.对手性斗力;
       enemy.value.stats.baseEndurance = newEnemyData.对手忍耐力;
-      
+
       // 更新高潮次数上限（双方共享）
       enemy.value.stats.maxClimaxCount = newClimaxLimit;
       player.value.stats.maxClimaxCount = newClimaxLimit;
 
       // 阶段切换时同步重置玩家高潮次数，避免出现 2/1 等显示问题
       player.value.stats.climaxCount = 0;
-      
+
       // 加载新阶段的技能
       const newSkills = enemySkillDbModule.getEnemySkills(newDataKey, newDataKey);
       if (newSkills && newSkills.length > 0) {
@@ -5549,31 +5918,37 @@ async function executePhaseTransitionLogic(nextPhase: 1 | 2 | 3) {
           currentCooldown: 0,
           data: skill,
         }));
-        console.info(`[战斗界面] 加载新阶段技能:`, newSkills.map((s: any) => s.name));
-        
+        console.info(
+          `[战斗界面] 加载新阶段技能:`,
+          newSkills.map((s: any) => s.name),
+        );
+
         // 同时写入MVU的对手可用技能
         if (typeof Mvu !== 'undefined') {
           const mvuData = Mvu.getMvuData({ type: 'message', message_id: 'latest' });
           if (mvuData?.stat_data) {
             // 清空旧技能
             _.set(mvuData.stat_data, '性斗系统.对手可用技能', {});
-            
+
             // 写入新技能（使用convertToMvuSkillFormat保持格式一致）
             const mvuSkills: Record<string, any> = {};
             newSkills.forEach((skill: any) => {
               mvuSkills[skill.id] = enemySkillDbModule.convertToMvuSkillFormat(skill);
             });
             _.set(mvuData.stat_data, '性斗系统.对手可用技能', mvuSkills);
-            
+
             // 重置技能冷却
             _.set(mvuData.stat_data, '性斗系统.对手技能冷却', {});
-            
+
             await Mvu.replaceMvuData(mvuData, { type: 'message', message_id: 'latest' });
-            console.info(`[战斗界面] 新阶段技能已写入MVU:`, newSkills.map((s: any) => s.id));
+            console.info(
+              `[战斗界面] 新阶段技能已写入MVU:`,
+              newSkills.map((s: any) => s.id),
+            );
           }
         }
       }
-      
+
       // 更新MVU数据
       if (typeof Mvu !== 'undefined') {
         const mvuData = Mvu.getMvuData({ type: 'message', message_id: 'latest' });
@@ -5602,7 +5977,7 @@ async function executePhaseTransitionLogic(nextPhase: 1 | 2 | 3) {
           await Mvu.replaceMvuData(mvuData, { type: 'message', message_id: 'latest' });
         }
       }
-      
+
       // 添加阶段特定效果和禁用
       if (nextPhase === 2) {
         // 第二阶段：禁用物品和投降，并施加封印效果
@@ -5620,7 +5995,7 @@ async function executePhaseTransitionLogic(nextPhase: 1 | 2 | 3) {
         removeSealEffect(['.menu-card:has(svg[data-icon="package"])', '[data-action="surrender-menu"]']);
         addLog(`【提示】禁用效果已解除，可以正常使用物品和投降（啊你真的会在这个阶段投降吗？）`, 'system', 'info');
       }
-      
+
       // ========== 沐芯兰嫉妒天赋：每次阶段转换时重新触发 ==========
       const enemySinType = TalentSystem.getEnemySinTalentType(newDisplayName);
       if (enemySinType === 'envy') {
@@ -5645,28 +6020,33 @@ async function executePhaseTransitionLogic(nextPhase: 1 | 2 | 3) {
             luck: player.value.stats.luck,
             evasion: player.value.stats.evasion,
             crit: player.value.stats.crit,
-          }
+          },
         );
-        
+
         // 应用嫉妒效果到敌人（使用新阶段的buff标识）
         for (const effect of envyResult.effects) {
           addLog(`【敌人·嫉妒】${effect.message}`, 'system', effect.isBonus ? 'buff' : 'critical');
           const bonusKey = effect.attribute + '加成';
-          applyTalentBuff('enemy', `敌人天赋_嫉妒_阶段${nextPhase}_${effect.attribute}`, { [bonusKey]: effect.value }, 999);
+          applyTalentBuff(
+            'enemy',
+            `敌人天赋_嫉妒_阶段${nextPhase}_${effect.attribute}`,
+            { [bonusKey]: effect.value },
+            999,
+          );
         }
       }
     }
   } catch (e) {
     console.error('[战斗界面] BOSS阶段切换失败', e);
   }
-  
+
   // 完成阶段转换
   BossSystem.completePhaseTransition();
-  
+
   // 清除转换状态和特效
   isPhaseTransitioning.value = false;
   phaseTransitionEffect.value = null;
-  
+
   // 重置回合状态，继续战斗
   turnState.phase = 'playerInput';
   addLog(`阶段切换完成，继续战斗...`, 'system', 'info');
@@ -5675,35 +6055,35 @@ async function executePhaseTransitionLogic(nextPhase: 1 | 2 | 3) {
 // 完整的阶段转换流程（协调三个步骤）- 沐芯兰
 async function handleBossPhaseTransition(nextPhase: 1 | 2 | 3) {
   const currentPhase = BossSystem.bossState.currentPhase;
-  
+
   // 步骤1：锁血+换图（立即执行）
   lockHealthAndChangeAvatar(nextPhase);
-  
+
   // 步骤2：播放锁血对话 + 转阶段对话（使用bossSystem.ts的对话系统）
   // 先播放lockHp对话，再播放phase_to对话
   const allDialogues: BossSystem.BossDialogue[] = [];
-  
+
   // 添加锁血对话
   const lockHpDialogues = BossSystem.getPhaseDialogues(currentPhase, 'lockHp');
   if (lockHpDialogues) {
     allDialogues.push(...lockHpDialogues);
   }
-  
+
   // 添加转阶段对话
   const transitionDialogues = BossSystem.getPhaseDialogues(currentPhase, 'transition');
   if (transitionDialogues) {
     allDialogues.push(...transitionDialogues);
   }
-  
+
   // 播放所有对话
   if (allDialogues.length > 0) {
     BossSystem.queueDialogues(allDialogues);
   }
-  
+
   // 步骤3：等待对话播放完成后执行转阶段逻辑
   // 计算等待时间：每句对话2.5秒
   const waitTime = allDialogues.length * 2500 + 500; // 额外500ms缓冲
-  
+
   setTimeout(async () => {
     await executePhaseTransitionLogic(nextPhase);
   }, waitTime);
@@ -5712,32 +6092,32 @@ async function handleBossPhaseTransition(nextPhase: 1 | 2 | 3) {
 // 克莉丝汀BOSS阶段转换流程
 async function handleChristinePhaseTransition(nextPhase: 1 | 2) {
   const currentPhase = BossSystem.bossState.currentPhase;
-  
+
   // 步骤1：锁血+换名（不换立绘）
   lockHealthAndChangeAvatarChristine(nextPhase);
-  
+
   // 步骤2：播放锁血对话 + 转阶段对话
   const allDialogues: BossSystem.BossDialogue[] = [];
-  
+
   // 添加锁血对话
   const lockHpDialogue = BossSystem.getChristineLockHpDialogue(currentPhase as 1 | 2);
   if (lockHpDialogue) {
     allDialogues.push(lockHpDialogue);
   }
-  
+
   // 添加转阶段对话（第一阶段到第二阶段）
   if (currentPhase === 1 && nextPhase === 2) {
     allDialogues.push(...BossSystem.CHRISTINE_DIALOGUES.phase1_to_2);
   }
-  
+
   // 播放所有对话
   if (allDialogues.length > 0) {
     BossSystem.queueDialogues(allDialogues);
   }
-  
+
   // 步骤3：等待对话播放完成后执行转阶段逻辑
   const waitTime = allDialogues.length * 2500 + 500;
-  
+
   setTimeout(async () => {
     await executeChristinePhaseTransitionLogic(nextPhase);
   }, waitTime);
@@ -5747,28 +6127,28 @@ async function handleChristinePhaseTransition(nextPhase: 1 | 2) {
 async function executeChristinePhaseTransitionLogic(nextPhase: 1 | 2) {
   const currentPhase = BossSystem.bossState.currentPhase;
   console.info(`[战斗界面] 克莉丝汀执行阶段转换逻辑: ${currentPhase} -> ${nextPhase}`);
-  
+
   // 更新BOSS状态
   BossSystem.bossState.currentPhase = nextPhase;
   BossSystem.bossState.phaseTransitioning = false;
-  
+
   // 获取新阶段的配置
   const newDisplayName = BossSystem.getChristineDisplayName(nextPhase);
   const newClimaxLimit = BossSystem.BOSS_CONFIG.christine.climaxLimits[nextPhase - 1];
   const newDataKey = BossSystem.getChristineDataKey(nextPhase);
-  
+
   // 添加阶段切换日志
   addLog(`【阶段切换】${enemy.value.name} 人格切换！`, 'system', 'critical');
-  
+
   // 从数据库加载新阶段的敌人数据
   try {
     const { enemyDbModule, enemySkillDbModule } = await loadDatabaseModules();
     const newEnemyData = enemyDbModule.getEnemyMvuData(newDataKey);
-    
+
     if (newEnemyData) {
       // 更新敌人显示名称（不换立绘）
       enemy.value.name = newDisplayName;
-      
+
       // 更新敌人属性
       enemy.value.stats.level = newEnemyData.对手等级;
       enemy.value.stats.charm = newEnemyData.对手魅力;
@@ -5782,12 +6162,12 @@ async function executeChristinePhaseTransitionLogic(nextPhase: 1 | 2) {
       enemy.value.stats.climaxCount = 0; // 新阶段高潮次数重置
       enemy.value.stats.sexPower = newEnemyData.对手性斗力;
       enemy.value.stats.baseEndurance = newEnemyData.对手忍耐力;
-      
+
       // 更新高潮次数上限（双方共享）
       enemy.value.stats.maxClimaxCount = newClimaxLimit;
       player.value.stats.maxClimaxCount = newClimaxLimit;
       player.value.stats.climaxCount = 0;
-      
+
       // 加载新阶段的技能
       const newSkills = enemySkillDbModule.getEnemySkills(newDataKey, newDataKey);
       if (newSkills && newSkills.length > 0) {
@@ -5801,8 +6181,11 @@ async function executeChristinePhaseTransitionLogic(nextPhase: 1 | 2) {
           currentCooldown: 0,
           data: skill,
         }));
-        console.info(`[战斗界面] 克莉丝汀加载新阶段技能:`, newSkills.map((s: any) => s.name));
-        
+        console.info(
+          `[战斗界面] 克莉丝汀加载新阶段技能:`,
+          newSkills.map((s: any) => s.name),
+        );
+
         // 写入MVU
         if (typeof Mvu !== 'undefined') {
           const mvuData = Mvu.getMvuData({ type: 'message', message_id: 'latest' });
@@ -5818,7 +6201,7 @@ async function executeChristinePhaseTransitionLogic(nextPhase: 1 | 2) {
           }
         }
       }
-      
+
       // 更新MVU数据
       if (typeof Mvu !== 'undefined') {
         const mvuData = Mvu.getMvuData({ type: 'message', message_id: 'latest' });
@@ -5847,27 +6230,31 @@ async function executeChristinePhaseTransitionLogic(nextPhase: 1 | 2) {
           await Mvu.replaceMvuData(mvuData, { type: 'message', message_id: 'latest' });
         }
       }
-      
+
       // 第二阶段：禁用物品和投降，激活暴怒天赋
       if (nextPhase === 2) {
         isBossItemsDisabled.value = true;
         isBossSurrenderDisabled.value = true;
         addLog(`【女王觉醒】克莉丝汀的里人格觉醒！物品和投降被封印！`, 'system', 'critical');
-        
+
         // 激活暴怒天赋效果：闪避率归零
-        applyTalentBuff('enemy', '敌人天赋_暴怒_闪避归零', { '闪避率加成': -999 }, 999);
+        applyTalentBuff('enemy', '敌人天赋_暴怒_闪避归零', { 闪避率加成: -999 }, 999);
         addLog(`【敌人·暴怒】克莉丝汀暴怒觉醒！闪避率归零，所有攻击连击+1，必定暴击！`, 'system', 'critical');
-        addLog(`【敌人·暴怒】若克莉丝汀本回合没有造成快感伤害，将因暴怒增加自身20%最大快感的快感！`, 'system', 'critical');
+        addLog(
+          `【敌人·暴怒】若克莉丝汀本回合没有造成快感伤害，将因暴怒增加自身20%最大快感的快感！`,
+          'system',
+          'critical',
+        );
       }
     }
   } catch (e) {
     console.error('[战斗界面] 克莉丝汀阶段转换数据加载失败', e);
   }
-  
+
   // 清除转换状态
   isPhaseTransitioning.value = false;
   phaseTransitionEffect.value = null;
-  
+
   // 重置回合状态，继续战斗
   turnState.phase = 'playerInput';
   addLog(`阶段切换完成，继续战斗...`, 'system', 'info');
@@ -5882,7 +6269,7 @@ async function processClimaxAfterLLM(targetIsEnemy: boolean) {
   }
 
   const char = targetIsEnemy ? enemy.value : player.value;
-  
+
   // 再次检查快感是否真的达到最大值（防止重复触发）
   if (char.stats.currentPleasure < char.stats.maxPleasure) {
     console.warn('[战斗界面] 快感未达到最大值，跳过高潮处理');
@@ -5891,21 +6278,21 @@ async function processClimaxAfterLLM(targetIsEnemy: boolean) {
 
   // 立即设置climaxTarget，防止重复调用
   turnState.climaxTarget = targetIsEnemy ? 'enemy' : 'player';
-  
+
   // ==================== BOSS锁血和阶段切换检测 ====================
   // 必须在增加高潮次数之前检测，以实现锁血效果
   if (targetIsEnemy && BossSystem.bossState.isBossFight && BossSystem.bossState.bossId === 'muxinlan') {
     const currentPhase = BossSystem.bossState.currentPhase;
     const currentClimaxCount = enemy.value.stats.climaxCount;
-    
+
     // 检查是否应该触发阶段转换
     const transitionCheck = BossSystem.shouldTransitionPhase(
       char.stats.currentPleasure,
       char.stats.maxPleasure,
       currentClimaxCount,
-      currentPhase
+      currentPhase,
     );
-    
+
     if (transitionCheck.shouldTransition) {
       // 触发阶段转换（锁血对话和转阶段对话已在handleBossPhaseTransition中统一处理）
       await handleBossPhaseTransition(transitionCheck.nextPhase);
@@ -5916,20 +6303,20 @@ async function processClimaxAfterLLM(targetIsEnemy: boolean) {
       return;
     }
   }
-  
+
   // ==================== 克莉丝汀BOSS锁血和阶段切换检测 ====================
   if (targetIsEnemy && BossSystem.bossState.isBossFight && BossSystem.bossState.bossId === 'christine') {
     const currentPhase = BossSystem.bossState.currentPhase as 1 | 2;
     const currentClimaxCount = enemy.value.stats.climaxCount;
-    
+
     // 检查是否应该触发阶段转换（第一阶段快感满时转第二阶段）
     const transitionCheck = BossSystem.shouldChristineTransitionPhase(
       char.stats.currentPleasure,
       char.stats.maxPleasure,
       currentClimaxCount,
-      currentPhase
+      currentPhase,
     );
-    
+
     if (transitionCheck.shouldTransition) {
       // 触发阶段转换
       await handleChristinePhaseTransition(transitionCheck.nextPhase);
@@ -5940,23 +6327,23 @@ async function processClimaxAfterLLM(targetIsEnemy: boolean) {
       return;
     }
   }
-  
+
   // ==================== 伊甸芙宁BOSS：沉睡状态高潮触发苏醒 ====================
   if (targetIsEnemy && BossSystem.bossState.isBossFight && BossSystem.bossState.bossId === 'eden') {
     // 如果在沉睡状态且快感达到上限，触发苏醒
     if (BossSystem.bossState.edenSleeping) {
       addLog(`${enemy.value.name} 被快感唤醒了！`, 'system', 'critical');
-      
+
       // 执行苏醒流程
       const awakeningResult = BossSystem.processEdenAwakening();
-      
+
       // 播放苏醒对话（已在processEdenAwakening中处理）
-      
+
       // 更新高潮次数上限（从1提升到3）
       const newClimaxLimit = awakeningResult.newClimaxLimit;
       player.value.stats.maxClimaxCount = newClimaxLimit;
       enemy.value.stats.maxClimaxCount = newClimaxLimit;
-      
+
       // 清除MVU中的沉睡临时状态（-70%忍耐力成算）并添加苏醒buff (+100忍耐力成算)
       if (typeof Mvu !== 'undefined') {
         const mvuData = Mvu.getMvuData({ type: 'message', message_id: 'latest' });
@@ -5966,7 +6353,7 @@ async function processClimaxAfterLLM(targetIsEnemy: boolean) {
           if (tempStates['懒惰沉睡']) {
             delete tempStates['懒惰沉睡'];
           }
-          
+
           // 添加苏醒buff: +100忍耐力成算 (999回合，每回合-20)
           tempStates['苏醒激怒'] = {
             加成: {
@@ -5975,35 +6362,39 @@ async function processClimaxAfterLLM(targetIsEnemy: boolean) {
             剩余回合: 999,
           };
           _.set(mvuData.stat_data, '性斗系统.对手临时状态.状态列表', tempStates);
-          
+
           // 重新计算加成统计：-70(沉睡) -> +100(苏醒) = +100
-          const otherEnduranceBonus = _.get(mvuData.stat_data, '性斗系统.对手临时状态.状态列表.被暴击debuff.加成.基础忍耐力成算', 0);
+          const otherEnduranceBonus = _.get(
+            mvuData.stat_data,
+            '性斗系统.对手临时状态.状态列表.被暴击debuff.加成.基础忍耐力成算',
+            0,
+          );
           _.set(mvuData.stat_data, '性斗系统.对手临时状态.加成统计.基础忍耐力成算', 100 + otherEnduranceBonus);
-          
+
           // 更新对手实时忍耐力
           const baseEndurance = _.get(mvuData.stat_data, '性斗系统.对手忍耐力', 0);
           const totalEnduranceBonus = 100 + otherEnduranceBonus;
           const realTimeEndurance = Math.floor(baseEndurance * (1 + totalEnduranceBonus / 100));
           _.set(mvuData.stat_data, '性斗系统.对手实时忍耐力', realTimeEndurance);
-          
+
           // 更新高潮次数上限
           _.set(mvuData.stat_data, '性斗系统.胜负规则.高潮次数上限', newClimaxLimit);
           await Mvu.replaceMvuData(mvuData, { type: 'message', message_id: 'latest' });
-          
+
           // 更新UI显示
           enemy.value.stats.baseEndurance = realTimeEndurance;
         }
       }
-      
+
       addLog(`【苏醒】伊甸芙宁从沉睡中醒来，沉睡debuff已消除！`, 'system', 'critical');
       addLog(`【苏醒·激怒】忍耐力成算+100%（每回合衰减15%）`, 'system', 'buff');
       addLog(`【规则变更】高潮次数上限提升至 ${newClimaxLimit} 次！`, 'system', 'critical');
-      
+
       // 锁血：重置快感但不增加高潮次数
       enemy.value.stats.currentPleasure = 0;
       turnState.climaxTarget = null;
       saveToMvu();
-      
+
       // 继续游戏
       setTimeout(() => {
         turnState.phase = 'playerInput';
@@ -6016,7 +6407,11 @@ async function processClimaxAfterLLM(targetIsEnemy: boolean) {
   if (targetIsEnemy) {
     enemy.value.stats.currentPleasure = 0;
     enemy.value.stats.climaxCount += 1;
-    addLog(`${enemy.value.name} 的高潮次数：${enemy.value.stats.climaxCount}/${enemy.value.stats.maxClimaxCount}`, 'system', 'info');
+    addLog(
+      `${enemy.value.name} 的高潮次数：${enemy.value.stats.climaxCount}/${enemy.value.stats.maxClimaxCount}`,
+      'system',
+      'info',
+    );
   } else {
     // 检查坚持天赋效果（高潮时有概率不计入高潮次数）
     let preventClimaxCount = false;
@@ -6028,12 +6423,16 @@ async function processClimaxAfterLLM(targetIsEnemy: boolean) {
         addLog(`【${playerTalent.value.name}】触发：本次高潮不计入高潮次数！`, 'system', 'critical');
       }
     }
-    
+
     player.value.stats.currentPleasure = 0;
     if (!preventClimaxCount) {
       player.value.stats.climaxCount += 1;
     }
-    addLog(`${player.value.name} 的高潮次数：${player.value.stats.climaxCount}/${player.value.stats.maxClimaxCount}`, 'system', 'info');
+    addLog(
+      `${player.value.name} 的高潮次数：${player.value.stats.climaxCount}/${player.value.stats.maxClimaxCount}`,
+      'system',
+      'info',
+    );
   }
 
   // 保存状态到MVU
@@ -6049,7 +6448,7 @@ async function processClimaxAfterLLM(targetIsEnemy: boolean) {
           addLog(`${char.name} 进入了贤者时间状态（持续${tempStates.贤者时间}回合）`, 'system', 'info');
           addLog(`${char.name} 的性斗力降低20%，忍耐力提升10%`, 'system', 'info');
         }
-        
+
         // 检查虚脱状态
         const orgasmCount = _.get(mvuData.stat_data, '性斗系统.高潮次数', 0);
         const maxOrgasmCount = _.get(mvuData.stat_data, '性斗系统.胜负规则.高潮次数上限', 0);
@@ -6074,7 +6473,7 @@ async function processClimaxAfterLLM(targetIsEnemy: boolean) {
     saveToMvu();
     return;
   }
-  
+
   if (!targetIsEnemy && player.value.stats.climaxCount >= player.value.stats.maxClimaxCount) {
     turnState.phase = 'defeat';
     addLog(`${player.value.name} 达到了最大高潮次数... 败北，共${turnState.currentTurn}回合。`, 'system', 'damage');
@@ -6129,7 +6528,7 @@ function handleSkipTurn() {
   const sinType = TalentSystem.getSinTalentType(playerTalent.value);
   if (sinType) {
     const talentContext = createTalentEffectContext();
-    
+
     switch (sinType) {
       // 暴怒：现在由回合结束时的未造成伤害检测处理，不再在跳过回合时触发
       case 'sloth': {
@@ -6137,15 +6536,20 @@ function handleSkipTurn() {
         const result = TalentSystem.processSlothSkipTurn(talentContext);
         playerTalentState.value = { ...talentContext.talentState };
         addLog(result.message, 'system', 'buff');
-        
+
         // 应用积蓄效果到MVU
         const stacks = playerTalentState.value.slothStacks;
         if (stacks > 0) {
-          applyTalentBuff('player', '天赋_懒惰_积蓄', { 
-            '基础性斗力成算': stacks * 10, 
-            '基础忍耐力成算': stacks * 10,
-            '闪避率加成': stacks * 5 
-          }, 999);
+          applyTalentBuff(
+            'player',
+            '天赋_懒惰_积蓄',
+            {
+              基础性斗力成算: stacks * 10,
+              基础忍耐力成算: stacks * 10,
+              闪避率加成: stacks * 5,
+            },
+            999,
+          );
         }
         saveSinTalentStateToMvu();
         break;
@@ -6157,21 +6561,26 @@ function handleSkipTurn() {
         if (result.message) {
           const newPleasure = Math.min(
             player.value.stats.maxPleasure,
-            player.value.stats.currentPleasure + result.pleasureIncrease
+            player.value.stats.currentPleasure + result.pleasureIncrease,
           );
           player.value.stats.currentPleasure = newPleasure;
           addLog(result.message, 'system', 'critical');
-          
+
           // 更新贪婪层数效果（每层：暴击率+10%、魅力+30、幸运+30、性斗力成算+15%、闪避率-10%）
           const greedStacks = playerTalentState.value.greedStacks;
           if (greedStacks > 0) {
-            applyTalentBuff('player', '天赋_贪婪_层数', { 
-              '暴击率加成': greedStacks * 10,
-              '魅力加成': greedStacks * 30,
-              '幸运加成': greedStacks * 30,
-              '基础性斗力成算': greedStacks * 15,
-              '闪避率加成': greedStacks * -10
-            }, 999);
+            applyTalentBuff(
+              'player',
+              '天赋_贪婪_层数',
+              {
+                暴击率加成: greedStacks * 10,
+                魅力加成: greedStacks * 30,
+                幸运加成: greedStacks * 30,
+                基础性斗力成算: greedStacks * 15,
+                闪避率加成: greedStacks * -10,
+              },
+              999,
+            );
           } else {
             removeTalentBuff('player', '天赋_贪婪_层数');
           }
@@ -6183,15 +6592,19 @@ function handleSkipTurn() {
   }
 
   // ========== 伊丽莎白夜羽：君王的剧本 - 检查服从 ==========
-  if (BossSystem.bossState.isBossFight && BossSystem.bossState.bossId === 'elizabeth' && BossSystem.bossState.elizabethCurrentCommand) {
+  if (
+    BossSystem.bossState.isBossFight &&
+    BossSystem.bossState.bossId === 'elizabeth' &&
+    BossSystem.bossState.elizabethCurrentCommand
+  ) {
     // 跳过回合：跪拜指令时服从，献礼指令时违反
     const obedienceResult = BossSystem.checkElizabethCommandObedience('skip', undefined, false);
-    
+
     // 播放对话
     if (obedienceResult.dialogues.length > 0) {
       BossSystem.queueDialogues(obedienceResult.dialogues);
     }
-    
+
     if (obedienceResult.obeyed) {
       addLog(`【君王的剧本】你服从了伊丽莎白的跪拜命令。`, 'system', 'info');
     } else {
@@ -6199,11 +6612,15 @@ function handleSkipTurn() {
       const staminaPenalty = Math.floor(player.value.stats.maxEndurance * 0.2);
       player.value.stats.currentEndurance = Math.max(0, player.value.stats.currentEndurance - staminaPenalty);
       addLog(`【君王的剧本】你违反了伊丽莎白的献礼命令！耐力-${staminaPenalty}！`, 'system', 'critical');
-      
+
       // BOSS获得叠加buff（写入MVU）
       const bonus = BossSystem.getElizabethViolationBonus();
-      addLog(`【傲慢·权能】伊丽莎白获得：性斗力+${bonus.sexPowerBonus}，忍耐力+${bonus.enduranceBonus}，闪避+${bonus.evasionBonus}%，暴击+${bonus.critBonus}%`, 'system', 'buff');
-      
+      addLog(
+        `【傲慢·权能】伊丽莎白获得：性斗力+${bonus.sexPowerBonus}，忍耐力+${bonus.enduranceBonus}，闪避+${bonus.evasionBonus}%，暴击+${bonus.critBonus}%`,
+        'system',
+        'buff',
+      );
+
       // 写入MVU
       if (typeof Mvu !== 'undefined') {
         const mvuData = Mvu.getMvuData({ type: 'message', message_id: 'latest' });
@@ -6261,14 +6678,14 @@ function handlePlayerPortraitSelected(event: Event) {
   }
 
   const reader = new FileReader();
-  reader.onload = (e) => {
+  reader.onload = e => {
     const base64 = e.target?.result as string;
     if (base64) {
       savePlayerCustomAvatar(base64);
       // 强制触发响应式更新：创建新对象
       player.value = {
         ...player.value,
-        avatarUrl: base64
+        avatarUrl: base64,
       };
       console.info('[战斗界面] 玩家立绘已更新:', base64.substring(0, 50) + '...');
     }
@@ -6293,7 +6710,7 @@ async function handleSurrender() {
     addLog(`【七宗罪·${sinNames[sinType || ''] || ''}】无法投降！`, 'system', 'critical');
     return;
   }
-  
+
   // allowSurrender为true时不可认输，false时允许认输
   if (allowSurrender.value) {
     addLog('不能逃跑！这是尊严之战！', 'system', 'info');
@@ -6337,7 +6754,11 @@ async function handleSelfPleasure() {
   const after = Math.min(player.value.stats.maxPleasure, before + increase);
   player.value.stats.currentPleasure = after;
 
-  addLog(`${player.value.name} 选择了在对手前自慰，快感从 ${before} 上升到 ${after}（+${after - before}）。`, 'system', 'info');
+  addLog(
+    `${player.value.name} 选择了在对手前自慰，快感从 ${before} 上升到 ${after}（+${after - before}）。`,
+    'system',
+    'info',
+  );
 
   saveToMvu();
 
@@ -6462,7 +6883,7 @@ watch(
 onMounted(async () => {
   // 重置BOSS状态，确保重新进入战斗时状态正确
   BossSystem.resetBossState();
-  
+
   await loadFromMvu();
 
   // 确保玩家名字已设置
@@ -6487,12 +6908,12 @@ onMounted(async () => {
   }
 
   addLog(`--- 战斗开始 ---`, 'system', 'info');
-  
+
   // 处理天赋战斗开始效果
   if (playerTalent.value) {
     const talentContext = createTalentEffectContext();
     TalentSystem.processTalentOnBattleStart(playerTalent.value, talentContext);
-    
+
     // ========== 七宗罪-嫉妒：战斗开始时属性比较 ==========
     const sinType = TalentSystem.getSinTalentType(playerTalent.value);
     if (sinType === 'envy') {
@@ -6513,10 +6934,10 @@ onMounted(async () => {
           luck: enemy.value.stats.luck,
           evasion: enemy.value.stats.evasion,
           crit: enemy.value.stats.crit,
-        }
+        },
       );
       playerTalentState.value = { ...talentContext.talentState };
-      
+
       // 应用嫉妒效果
       for (const effect of envyResult.effects) {
         addLog(`【七宗罪·嫉妒】${effect.message}`, 'system', effect.isBonus ? 'buff' : 'critical');
@@ -6525,7 +6946,7 @@ onMounted(async () => {
         applyTalentBuff('player', `天赋_嫉妒_${effect.attribute}`, { [bonusKey]: effect.value }, 999);
       }
     }
-    
+
     // ========== 七宗罪-傲慢：战斗开始时全属性比较 ==========
     if (sinType === 'pride') {
       const playerStats = {
@@ -6552,7 +6973,7 @@ onMounted(async () => {
         evasion: '闪避率',
         crit: '暴击率',
       };
-      
+
       for (const [key, playerVal] of Object.entries(playerStats)) {
         const enemyVal = enemyStats[key as keyof typeof enemyStats];
         const displayName = statNames[key];
@@ -6560,21 +6981,34 @@ onMounted(async () => {
         const isSexPowerOrEndurance = key === 'sexPower' || key === 'endurance';
         const bonusSuffix = isSexPowerOrEndurance ? '成算' : '加成';
         const bonusValue = isSexPowerOrEndurance ? 20 : Math.floor(playerVal * 0.2); // 成算用百分比，加成用实际值
-        
+
         if (playerVal > enemyVal) {
           // 自身属性高于对手，+20%
           const actualBonus = isSexPowerOrEndurance ? 20 : bonusValue;
-          addLog(`【七宗罪·傲慢】${displayName}：自身(${playerVal}) > 对手(${enemyVal})，${displayName}+${isSexPowerOrEndurance ? '20%' : actualBonus}`, 'system', 'buff');
+          addLog(
+            `【七宗罪·傲慢】${displayName}：自身(${playerVal}) > 对手(${enemyVal})，${displayName}+${isSexPowerOrEndurance ? '20%' : actualBonus}`,
+            'system',
+            'buff',
+          );
           applyTalentBuff('player', `天赋_傲慢_${displayName}`, { [`${displayName}${bonusSuffix}`]: actualBonus }, 999);
         } else if (playerVal < enemyVal) {
           // 自身属性低于对手，-20%
           const actualPenalty = isSexPowerOrEndurance ? -20 : -bonusValue;
-          addLog(`【七宗罪·傲慢】${displayName}：自身(${playerVal}) < 对手(${enemyVal})，${displayName}${isSexPowerOrEndurance ? '-20%' : actualPenalty}`, 'system', 'critical');
-          applyTalentBuff('player', `天赋_傲慢_${displayName}`, { [`${displayName}${bonusSuffix}`]: actualPenalty }, 999);
+          addLog(
+            `【七宗罪·傲慢】${displayName}：自身(${playerVal}) < 对手(${enemyVal})，${displayName}${isSexPowerOrEndurance ? '-20%' : actualPenalty}`,
+            'system',
+            'critical',
+          );
+          applyTalentBuff(
+            'player',
+            `天赋_傲慢_${displayName}`,
+            { [`${displayName}${bonusSuffix}`]: actualPenalty },
+            999,
+          );
         }
       }
     }
-    
+
     // 应用被动天赋效果到临时状态（如压迫感减少敌人闪避、极限爆发的性斗力加成等）
     const passiveModifiers = TalentSystem.getTalentPassiveModifiers(playerTalent.value, {
       playerPleasure: player.value.stats.currentPleasure,
@@ -6584,25 +7018,29 @@ onMounted(async () => {
       enemyPleasure: enemy.value.stats.currentPleasure,
       enemyMaxPleasure: enemy.value.stats.maxPleasure,
     });
-    
+
     // 压迫感：降低敌人闪避率
     if (passiveModifiers.enemyDodgeReduction > 0) {
-      applyTalentBuff('enemy', '天赋_压迫感', { '闪避率加成': -passiveModifiers.enemyDodgeReduction }, 999);
+      applyTalentBuff('enemy', '天赋_压迫感', { 闪避率加成: -passiveModifiers.enemyDodgeReduction }, 999);
       addLog(`【${playerTalent.value.name}】敌人闪避率降低${passiveModifiers.enemyDodgeReduction}%`, 'system', 'info');
     }
-    
+
     addLog(`【天赋】${playerTalent.value.name} 已激活`, 'system', 'info');
   }
-  
+
   // ========== 敌人七宗罪天赋处理 ==========
   const enemySinType = TalentSystem.getEnemySinTalentType(enemy.value.name);
   if (enemySinType) {
     // 克莉丝汀是隐藏BOSS，不显示敌人天赋日志
     const isChristineHiddenBoss = BossSystem.bossState.isBossFight && BossSystem.bossState.bossId === 'christine';
     if (!isChristineHiddenBoss) {
-      addLog(`【敌人天赋】${enemy.value.name} 拥有七宗罪天赋：${getSinTalentDisplayName(enemySinType)}`, 'system', 'critical');
+      addLog(
+        `【敌人天赋】${enemy.value.name} 拥有七宗罪天赋：${getSinTalentDisplayName(enemySinType)}`,
+        'system',
+        'critical',
+      );
     }
-    
+
     // 嫉妒：战斗开始时属性比较（敌人视角：敌人与玩家比较）
     if (enemySinType === 'envy') {
       const talentContext = createTalentEffectContext();
@@ -6625,9 +7063,9 @@ onMounted(async () => {
           luck: player.value.stats.luck,
           evasion: player.value.stats.evasion,
           crit: player.value.stats.crit,
-        }
+        },
       );
-      
+
       // 应用嫉妒效果到敌人
       for (const effect of envyResult.effects) {
         addLog(`【敌人·嫉妒】${effect.message}`, 'system', effect.isBonus ? 'buff' : 'critical');
@@ -6635,7 +7073,7 @@ onMounted(async () => {
         applyTalentBuff('enemy', `敌人天赋_嫉妒_${effect.attribute}`, { [bonusKey]: effect.value }, 999);
       }
     }
-    
+
     // 暴怒：克莉丝汀专属（仅第二阶段触发）
     // 第一阶段不触发暴怒效果，第二阶段才激活
     // 克莉丝汀是隐藏BOSS，第一阶段不显示任何暴怒相关日志
@@ -6646,14 +7084,17 @@ onMounted(async () => {
           // 隐藏BOSS第一阶段，不显示任何天赋相关日志
         } else {
           // 第二阶段：激活暴怒效果
-          applyTalentBuff('enemy', '敌人天赋_暴怒_闪避归零', { '闪避率加成': -999 }, 999);
-          addLog(`【敌人·暴怒】${enemy.value.name} 暴怒觉醒！闪避率归零，所有攻击连击+1，必定暴击！`, 'system', 'critical');
+          applyTalentBuff('enemy', '敌人天赋_暴怒_闪避归零', { 闪避率加成: -999 }, 999);
+          addLog(
+            `【敌人·暴怒】${enemy.value.name} 暴怒觉醒！闪避率归零，所有攻击连击+1，必定暴击！`,
+            'system',
+            'critical',
+          );
         }
       }
     }
   }
-  
-  });
+});
 
 // 获取七宗罪天赋显示名称
 function getSinTalentDisplayName(sinType: string): string {
@@ -6754,7 +7195,7 @@ function getSinTalentDisplayName(sinType: string): string {
   align-items: flex-start;
   justify-content: center;
   gap: 1rem;
-  
+
   @media (max-width: 640px) {
     padding-bottom: 22rem;
   }
@@ -6926,21 +7367,21 @@ function getSinTalentDisplayName(sinType: string): string {
   overflow-x: auto;
   padding-bottom: 0.25rem;
   // max-height constraint removed as per user request
-  
+
   // 自定义滚动条
   &::-webkit-scrollbar {
     height: 4px;
   }
-  
+
   &::-webkit-scrollbar-track {
     background: rgba(255, 255, 255, 0.05);
     border-radius: 2px;
   }
-  
+
   &::-webkit-scrollbar-thumb {
     background: rgba(255, 255, 255, 0.2);
     border-radius: 2px;
-    
+
     &:hover {
       background: rgba(255, 255, 255, 0.3);
     }
@@ -7258,25 +7699,25 @@ function getSinTalentDisplayName(sinType: string): string {
   padding: 0.125rem 0.375rem;
   border-radius: 0.25rem;
   margin-left: 0.5rem;
-  
+
   &.rarity-c {
     background: rgba(100, 116, 139, 0.3);
     color: #94a3b8;
     border: 1px solid rgba(100, 116, 139, 0.5);
   }
-  
+
   &.rarity-b {
     background: rgba(56, 189, 248, 0.2);
     color: #38bdf8;
     border: 1px solid rgba(56, 189, 248, 0.4);
   }
-  
+
   &.rarity-a {
     background: rgba(168, 85, 247, 0.2);
     color: #a855f7;
     border: 1px solid rgba(168, 85, 247, 0.4);
   }
-  
+
   &.rarity-s {
     background: linear-gradient(135deg, rgba(251, 191, 36, 0.3), rgba(245, 158, 11, 0.3));
     color: #fbbf24;
@@ -7320,24 +7761,24 @@ function getSinTalentDisplayName(sinType: string): string {
   gap: 0.25rem;
   font-size: 0.625rem;
   font-weight: 600;
-  
+
   svg {
     opacity: 0.8;
   }
-  
+
   &.cost {
     color: #4ade80;
-    
+
     &.cost-danger {
       color: #f87171;
     }
-    
+
     &.cost-multiplied {
       color: #fbbf24;
       background: rgba(234, 179, 8, 0.15);
       border: 1px solid rgba(234, 179, 8, 0.3);
     }
-    
+
     .cost-multiplier {
       font-size: 0.5rem;
       color: #f87171;
@@ -7345,11 +7786,11 @@ function getSinTalentDisplayName(sinType: string): string {
       margin-left: 0.25rem;
     }
   }
-  
+
   &.cooldown {
     color: #38bdf8;
   }
-  
+
   &.accuracy {
     color: #fbbf24;
   }
@@ -7363,7 +7804,7 @@ function getSinTalentDisplayName(sinType: string): string {
   padding: 0.25rem 0.5rem;
   background: rgba(255, 255, 255, 0.05);
   border-radius: 0.25rem;
-  
+
   .source-type {
     color: #f472b6;
     font-weight: 600;
@@ -7671,7 +8112,7 @@ function getSinTalentDisplayName(sinType: string): string {
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
   position: relative;
   z-index: 1;
-  
+
   @media (max-width: 640px) {
     max-width: 100%;
     margin-bottom: 1.5rem;
@@ -7748,10 +8189,13 @@ function getSinTalentDisplayName(sinType: string): string {
   opacity: 0;
   pointer-events: none;
   z-index: 100;
-  text-shadow: 0 0 20px #ff1493, 0 0 40px #dc143c, 2px 2px 0 #000;
+  text-shadow:
+    0 0 20px #ff1493,
+    0 0 40px #dc143c,
+    2px 2px 0 #000;
   letter-spacing: 10px;
-  font-family: "Courier New", monospace;
-  
+  font-family: 'Courier New', monospace;
+
   &.active {
     animation: bossTextSlam 2.5s ease-out forwards;
   }
@@ -7766,15 +8210,20 @@ function getSinTalentDisplayName(sinType: string): string {
   font-size: 40px;
   letter-spacing: 4px;
   color: #c084fc; // 紫色调，符合克莉丝汀的女王形象
-  text-shadow: 0 0 20px rgba(192, 132, 252, 0.8), 0 0 40px rgba(192, 132, 252, 0.4);
+  text-shadow:
+    0 0 20px rgba(192, 132, 252, 0.8),
+    0 0 40px rgba(192, 132, 252, 0.4);
 }
 
 .boss-text-overlay.boss-text-eden {
   font-size: 38px;
   letter-spacing: 5px;
   color: #60a5fa; // 水蓝色调，符合伊甸芙宁的水系形象
-  text-shadow: 0 0 20px rgba(96, 165, 250, 0.8), 0 0 40px rgba(96, 165, 250, 0.4), 0 0 60px rgba(59, 130, 246, 0.3);
-  font-family: "Comic Sans MS", "Segoe UI", sans-serif; // 符合她的二次元显眼包风格
+  text-shadow:
+    0 0 20px rgba(96, 165, 250, 0.8),
+    0 0 40px rgba(96, 165, 250, 0.4),
+    0 0 60px rgba(59, 130, 246, 0.3);
+  font-family: 'Comic Sans MS', 'Segoe UI', sans-serif; // 符合她的二次元显眼包风格
 }
 
 @keyframes bossTextSlam {
@@ -7872,7 +8321,9 @@ function getSinTalentDisplayName(sinType: string): string {
   height: 4px;
   background: #ff1493;
   border-radius: 50%;
-  box-shadow: 0 0 10px #ff1493, 0 0 20px #ff1493;
+  box-shadow:
+    0 0 10px #ff1493,
+    0 0 20px #ff1493;
   left: var(--x);
   top: var(--y);
   animation: particleExplode 1.5s ease-out var(--delay) forwards;
@@ -7896,15 +8347,20 @@ function getSinTalentDisplayName(sinType: string): string {
   .transition-flash {
     background: radial-gradient(circle at center, rgba(255, 20, 147, 0.8) 0%, transparent 70%);
   }
-  
+
   .particle {
     background: #ff1493;
-    box-shadow: 0 0 10px #ff1493, 0 0 20px #ff1493;
+    box-shadow:
+      0 0 10px #ff1493,
+      0 0 20px #ff1493;
   }
-  
+
   .transition-shockwave {
     border-color: #ff1493;
-    box-shadow: 0 0 20px #ff1493, 0 0 40px #ff1493, inset 0 0 20px #ff1493;
+    box-shadow:
+      0 0 20px #ff1493,
+      0 0 40px #ff1493,
+      inset 0 0 20px #ff1493;
   }
 }
 
@@ -7913,15 +8369,20 @@ function getSinTalentDisplayName(sinType: string): string {
   .transition-flash {
     background: radial-gradient(circle at center, rgba(138, 43, 226, 0.8) 0%, transparent 70%);
   }
-  
+
   .particle {
     background: #8a2be2;
-    box-shadow: 0 0 10px #8a2be2, 0 0 20px #8a2be2;
+    box-shadow:
+      0 0 10px #8a2be2,
+      0 0 20px #8a2be2;
   }
-  
+
   .transition-shockwave {
     border-color: #8a2be2;
-    box-shadow: 0 0 20px #8a2be2, 0 0 40px #8a2be2, inset 0 0 20px #8a2be2;
+    box-shadow:
+      0 0 20px #8a2be2,
+      0 0 40px #8a2be2,
+      inset 0 0 20px #8a2be2;
   }
 }
 
@@ -7949,10 +8410,7 @@ function getSinTalentDisplayName(sinType: string): string {
   }
   100% {
     opacity: 0;
-    transform: translate(
-      calc((var(--x) - 50%) * 2),
-      calc((var(--y) - 50%) * 2)
-    ) scale(0);
+    transform: translate(calc((var(--x) - 50%) * 2), calc((var(--y) - 50%) * 2)) scale(0);
   }
 }
 
@@ -7979,16 +8437,16 @@ function getSinTalentDisplayName(sinType: string): string {
   right: 3%;
   z-index: 30;
   pointer-events: none;
-  
+
   @media (min-width: 1024px) {
     top: 100px;
     right: 5%;
   }
-  
+
   .sleep-icon {
     font-size: 28px;
     animation: sleepFloat 2s ease-in-out infinite;
-    
+
     @media (min-width: 1024px) {
       font-size: 40px;
     }
@@ -8003,7 +8461,7 @@ function getSinTalentDisplayName(sinType: string): string {
   transform: translate(-50%, -50%);
   z-index: 25;
   pointer-events: none;
-  
+
   .debt-container {
     display: flex;
     align-items: center;
@@ -8012,57 +8470,57 @@ function getSinTalentDisplayName(sinType: string): string {
     background: linear-gradient(135deg, rgba(234, 179, 8, 0.15) 0%, rgba(161, 98, 7, 0.25) 100%);
     border: 2px solid rgba(234, 179, 8, 0.6);
     border-radius: 12px;
-    box-shadow: 
+    box-shadow:
       0 0 20px rgba(234, 179, 8, 0.3),
       0 0 40px rgba(234, 179, 8, 0.15),
       inset 0 0 15px rgba(234, 179, 8, 0.1);
     backdrop-filter: blur(8px);
     animation: debtPulse 2s ease-in-out infinite;
-    
+
     @media (min-width: 1024px) {
       padding: 1rem 1.75rem;
       gap: 0.75rem;
     }
   }
-  
+
   .debt-icon {
     font-size: 1.5rem;
     animation: coinSpin 3s ease-in-out infinite;
-    
+
     @media (min-width: 1024px) {
       font-size: 2rem;
     }
   }
-  
+
   .debt-info {
     display: flex;
     flex-direction: column;
     align-items: flex-start;
   }
-  
+
   .debt-label {
     font-size: 0.625rem;
     font-weight: 600;
     color: rgba(234, 179, 8, 0.8);
     text-transform: uppercase;
     letter-spacing: 0.05em;
-    
+
     @media (min-width: 1024px) {
       font-size: 0.75rem;
     }
   }
-  
+
   .debt-value {
     font-size: 1.25rem;
     font-weight: 700;
     color: #fbbf24;
     text-shadow: 0 0 10px rgba(234, 179, 8, 0.5);
     font-family: 'Courier New', monospace;
-    
+
     @media (min-width: 1024px) {
       font-size: 1.75rem;
     }
-    
+
     &.debt-danger {
       color: #f87171;
       text-shadow: 0 0 15px rgba(248, 113, 113, 0.6);
@@ -8072,14 +8530,15 @@ function getSinTalentDisplayName(sinType: string): string {
 }
 
 @keyframes debtPulse {
-  0%, 100% { 
-    box-shadow: 
+  0%,
+  100% {
+    box-shadow:
       0 0 20px rgba(234, 179, 8, 0.3),
       0 0 40px rgba(234, 179, 8, 0.15),
       inset 0 0 15px rgba(234, 179, 8, 0.1);
   }
-  50% { 
-    box-shadow: 
+  50% {
+    box-shadow:
       0 0 30px rgba(234, 179, 8, 0.5),
       0 0 60px rgba(234, 179, 8, 0.25),
       inset 0 0 20px rgba(234, 179, 8, 0.15);
@@ -8087,18 +8546,34 @@ function getSinTalentDisplayName(sinType: string): string {
 }
 
 @keyframes coinSpin {
-  0%, 100% { transform: rotateY(0deg); }
-  50% { transform: rotateY(180deg); }
+  0%,
+  100% {
+    transform: rotateY(0deg);
+  }
+  50% {
+    transform: rotateY(180deg);
+  }
 }
 
 @keyframes debtDanger {
-  from { transform: scale(1); }
-  to { transform: scale(1.05); }
+  from {
+    transform: scale(1);
+  }
+  to {
+    transform: scale(1.05);
+  }
 }
 
 @keyframes sleepFloat {
-  0%, 100% { transform: translateY(0); opacity: 0.8; }
-  50% { transform: translateY(-10px); opacity: 1; }
+  0%,
+  100% {
+    transform: translateY(0);
+    opacity: 0.8;
+  }
+  50% {
+    transform: translateY(-10px);
+    opacity: 1;
+  }
 }
 
 // 保留旧的水盾样式（可选择删除，但保留以防需要）
@@ -8110,23 +8585,23 @@ function getSinTalentDisplayName(sinType: string): string {
   transform: translateY(-50%);
   pointer-events: none;
   z-index: 5; // 在立绘之后
-  
+
   // 移动端尺寸 (匹配 avatar max-width: 180px)
   width: 200px;
   height: 300px;
-  
+
   @media (min-width: 1024px) {
     // 桌面端尺寸 (匹配 avatar max-width: 320px)
     width: 350px;
     height: 530px;
     right: 5%;
   }
-  
+
   .water-shield-overlay {
     position: absolute;
     inset: -15%; // 使用百分比覆盖，随父元素缩放
     background: linear-gradient(
-      135deg, 
+      135deg,
       rgba(96, 165, 250, 0.3) 0%,
       rgba(59, 130, 246, 0.4) 25%,
       rgba(96, 165, 250, 0.2) 50%,
@@ -8134,20 +8609,22 @@ function getSinTalentDisplayName(sinType: string): string {
       rgba(96, 165, 250, 0.3) 100%
     );
     border-radius: 50%;
-    animation: waterShieldPulse 3s ease-in-out infinite, waterShieldRotate 8s linear infinite;
-    box-shadow: 
+    animation:
+      waterShieldPulse 3s ease-in-out infinite,
+      waterShieldRotate 8s linear infinite;
+    box-shadow:
       0 0 30px rgba(96, 165, 250, 0.5),
       0 0 60px rgba(59, 130, 246, 0.3),
       inset 0 0 40px rgba(96, 165, 250, 0.2);
   }
-  
+
   .sleep-icon {
     position: absolute;
     top: 5%;
     right: -15%;
     font-size: 24px; // 移动端
     animation: sleepFloat 2s ease-in-out infinite;
-    
+
     @media (min-width: 1024px) {
       font-size: 36px; // 桌面端
     }
@@ -8155,25 +8632,43 @@ function getSinTalentDisplayName(sinType: string): string {
 }
 
 @keyframes waterShieldPulse {
-  0%, 100% { opacity: 0.7; transform: scale(1); }
-  50% { opacity: 1; transform: scale(1.05); }
+  0%,
+  100% {
+    opacity: 0.7;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.05);
+  }
 }
 
 @keyframes waterShieldRotate {
-  from { filter: hue-rotate(0deg); }
-  to { filter: hue-rotate(30deg); }
+  from {
+    filter: hue-rotate(0deg);
+  }
+  to {
+    filter: hue-rotate(30deg);
+  }
 }
 
 @keyframes sleepFloat {
-  0%, 100% { transform: translateY(0); opacity: 0.8; }
-  50% { transform: translateY(-10px); opacity: 1; }
+  0%,
+  100% {
+    transform: translateY(0);
+    opacity: 0.8;
+  }
+  50% {
+    transform: translateY(-10px);
+    opacity: 1;
+  }
 }
 
 // ========== 伊甸芙宁倒计时显示 (响应式缩放) ==========
 .eden-countdown {
   position: absolute;
   // 移动端定位
-  top: 60px; 
+  top: 60px;
   right: 1%;
   display: flex;
   align-items: center;
@@ -8187,7 +8682,7 @@ function getSinTalentDisplayName(sinType: string): string {
   z-index: 25;
   animation: fadeIn 0.3s ease-out;
   box-shadow: 0 0 10px rgba(59, 130, 246, 0.4);
-  
+
   @media (min-width: 1024px) {
     // 桌面端定位
     top: 80px;
@@ -8197,27 +8692,27 @@ function getSinTalentDisplayName(sinType: string): string {
     border-radius: 20px;
     box-shadow: 0 0 15px rgba(59, 130, 246, 0.4);
   }
-  
+
   .countdown-icon {
     font-size: 14px;
-    
+
     @media (min-width: 1024px) {
       font-size: 20px;
     }
   }
-  
+
   .countdown-number {
     font-size: 16px;
     font-family: 'Courier New', monospace;
     min-width: 20px;
     text-align: center;
-    
+
     @media (min-width: 1024px) {
       font-size: 24px;
       min-width: 30px;
     }
   }
-  
+
   &.countdown-urgent {
     background: linear-gradient(135deg, rgba(220, 38, 38, 0.8), rgba(239, 68, 68, 0.6));
     border-color: rgba(248, 113, 113, 0.6);
@@ -8227,7 +8722,12 @@ function getSinTalentDisplayName(sinType: string): string {
 }
 
 @keyframes urgentPulse {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.1); }
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
 }
 </style>
