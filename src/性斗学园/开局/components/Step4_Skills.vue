@@ -1,7 +1,7 @@
 <template>
   <div class="animate-slide-up space-y-8 pb-4">
-    <!-- Active Skills Section -->
-    <div class="bg-black/20 border border-white/5 rounded-2xl overflow-hidden">
+    <!-- Active Skills Section (hidden in Life Sim Mode) -->
+    <div v-if="!isLifeSimMode" class="bg-black/20 border border-white/5 rounded-2xl overflow-hidden">
       <div class="bg-white/5 border-b border-white/5 p-4 flex justify-between items-center backdrop-blur-md">
         <div class="flex items-center gap-2">
           <div class="p-1.5 bg-red-500/20 rounded text-red-400">
@@ -236,6 +236,7 @@ import { CharacterData, Gender } from '../types';
 
 const props = defineProps<{
   data: CharacterData;
+  isLifeSimMode?: boolean;
 }>();
 
 const emit = defineEmits<{

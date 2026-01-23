@@ -69,7 +69,15 @@
             </div>
 
             <Step0_Welcome v-if="step === 1" />
-            <Step1_Identity v-if="step === 2" :data="characterData" @update-data="updateCharacterData" />
+            <Step1_Identity
+              v-if="step === 2"
+              :data="characterData"
+              :is-life-sim-unlocked="isLifeSimUnlocked"
+              :is-life-sim-mode="isLifeSimMode"
+              @update-data="updateCharacterData"
+              @update-life-sim-mode="(v: boolean) => isLifeSimMode = v"
+              @select-npc="handleNpcSelect"
+            />
             <Step2_Archetype v-if="step === 3" :data="characterData" @update-data="updateCharacterData" />
             <Step3_Attributes
               v-if="step === 4"
@@ -77,7 +85,7 @@
               :cheat-mode="isCheatActive"
               @update-data="updateCharacterData"
             />
-            <Step4_Skills v-if="step === 5" :data="characterData" @update-data="updateCharacterData" />
+            <Step4_Skills v-if="step === 5" :data="characterData" :is-life-sim-mode="isLifeSimMode" @update-data="updateCharacterData" />
           </div>
         </div>
 
@@ -104,7 +112,7 @@
           </button>
           <button
             v-else
-            :disabled="characterData.initialActiveSkills.length === 0"
+            :disabled="characterData.initialPassiveSkills.length === 0"
             class="group from-primary to-secondary shadow-primary/30 relative flex items-center gap-2 rounded-xl bg-gradient-to-r px-10 py-3 font-bold text-white shadow-lg transition-all hover:shadow-primary/50 hover:scale-105 active:scale-95 disabled:opacity-50 disabled:grayscale"
             @click="handleStartGame"
           >
@@ -445,6 +453,8 @@
 </template>
 
 <script setup lang="ts">
+import { ENEMY_DATABASE } from '@/性斗学园/战斗界面/enemyDatabase';
+import { ENEMY_SKILL_MAP, ENEMY_SKILLS } from '@/性斗学园/战斗界面/enemySkillDatabase';
 import { computed, onMounted, ref } from 'vue';
 import FloatingShapes from './components/FloatingShapes.vue';
 import Step0_Welcome from './components/Step0_Welcome.vue';
@@ -472,6 +482,11 @@ const cheatCode = ref('');
 const isCheatActive = ref(false);
 const activatedCheatCodes = ref<Set<string>>(new Set());
 const isApplyingCheatCode = ref(false);
+
+// 生活模拟模式相关
+const isLifeSimMode = ref(false);
+const isLifeSimUnlocked = ref(false);
+const selectedNpc = ref<{ id: string; name: string; dbKey: string; skillKey: string; level: number; gender?: '男' | '女' | '非二元' } | null>(null);
 
 // 从 MVU 变量同步初始数据
 onMounted(async () => {
@@ -1352,6 +1367,16 @@ const applyCheatCode = async () => {
         console.error('[开局] 添加装备失败:', error);
         openModal('错误', '添加装备失败');
       }
+    } else if (code === '980321') {
+      // 生活模拟模式解锁码（测试用）
+      showCheatInput.value = false;
+      cheatCode.value = '';
+
+      isLifeSimUnlocked.value = true;
+      await recordActivatedCheatCode('980321');
+
+      console.info('[开局] 生活模拟模式已解锁');
+      openModal('生活模拟模式', '夺舍模式已解锁！\n\n现在你可以在角色档案页面的右上角切换到生活模拟模式，选择一位NPC角色进行游玩。');
     } else {
       openModal('错误', '无效的代码');
       cheatCode.value = '';
@@ -1363,28 +1388,68 @@ const applyCheatCode = async () => {
 
 const MAX_STEPS = 5;
 
-const navItems = [
-  { id: 1, label: '温馨提示', icon: 'fa-heart' },
-  { id: 2, label: '身份档案', icon: 'fa-user' },
-  { id: 3, label: '角色类型', icon: 'fa-wand-magic-sparkles' },
-  { id: 4, label: '天赋分配', icon: 'fa-dice-d20' },
-  { id: 5, label: '初始技能', icon: 'fa-hand-fist' },
-];
+const navItems = computed(() => {
+  if (isLifeSimMode.value) {
+    // 生活模拟模式：只显示 温馨提示 → 角色选择 → 特殊体质
+    return [
+      { id: 1, label: '温馨提示', icon: 'fa-heart' },
+      { id: 2, label: '角色选择', icon: 'fa-user-secret' },
+      { id: 5, label: '特殊体质', icon: 'fa-dna' },
+    ];
+  }
+  return [
+    { id: 1, label: '温馨提示', icon: 'fa-heart' },
+    { id: 2, label: '身份档案', icon: 'fa-user' },
+    { id: 3, label: '角色类型', icon: 'fa-wand-magic-sparkles' },
+    { id: 4, label: '天赋分配', icon: 'fa-dice-d20' },
+    { id: 5, label: '初始技能', icon: 'fa-hand-fist' },
+  ];
+});
 
-const stepTitles = ['温馨提示', '创建你的学籍档案', '选择你的校园定位', '激活你的天赋潜能', '选择初始技能'];
+const stepTitles = computed(() => {
+  if (isLifeSimMode.value) {
+    return ['温馨提示', '选择你要扮演的角色', '', '', '选择特殊体质'];
+  }
+  return ['温馨提示', '创建你的学籍档案', '选择你的校园定位', '激活你的天赋潜能', '选择初始技能'];
+});
 
-const stepDescriptions = [
-  '请先阅读说明与常见问题，确保你的环境配置正确。',
-  '请输入基础信息以办理入学手续。',
-  '不同的身份将决定你在学园中的社交圈层与初始加成。',
-  '根据游戏难度，你需要合理分配有限的天赋点数。',
-  '选择适合你战术风格的初始技能。',
-];
+const stepDescriptions = computed(() => {
+  if (isLifeSimMode.value) {
+    return [
+      '请先阅读说明与常见问题，确保你的环境配置正确。',
+      '选择一位NPC角色，设定难度和开局场景。',
+      '',
+      '',
+      '选择你的特殊体质，这将影响你的被动能力。',
+    ];
+  }
+  return [
+    '请先阅读说明与常见问题，确保你的环境配置正确。',
+    '请输入基础信息以办理入学手续。',
+    '不同的身份将决定你在学园中的社交圈层与初始加成。',
+    '根据游戏难度，你需要合理分配有限的天赋点数。',
+    '选择适合你战术风格的初始技能。',
+  ];
+});
 
-const progress = computed(() => (step.value / MAX_STEPS) * 100);
+// 生活模拟模式只有3个步骤：1 -> 2 -> 5
+const progress = computed(() => {
+  if (isLifeSimMode.value) {
+    // 步骤1=33%, 步骤2=66%, 步骤5=100%
+    if (step.value === 1) return 33;
+    if (step.value === 2) return 66;
+    return 100;
+  }
+  return (step.value / MAX_STEPS) * 100;
+});
 
 const updateCharacterData = (fields: Partial<CharacterData>) => {
   characterData.value = { ...characterData.value, ...fields };
+};
+
+// 处理NPC选择（生活模拟模式）
+const handleNpcSelect = (npc: { id: string; name: string; dbKey: string; skillKey: string; level: number; gender?: '男' | '女' | '非二元' } | null) => {
+  selectedNpc.value = npc;
 };
 
 const nextStep = () => {
@@ -1393,7 +1458,12 @@ const nextStep = () => {
     if (step.value === 4) {
       resetAttributes();
     }
-    step.value++;
+    // 生活模拟模式：从步骤2直接跳到步骤5
+    if (isLifeSimMode.value && step.value === 2) {
+      step.value = 5;
+    } else {
+      step.value++;
+    }
   }
 };
 
@@ -1403,7 +1473,12 @@ const prevStep = () => {
     if (step.value === 4) {
       resetAttributes();
     }
-    step.value--;
+    // 生活模拟模式：从步骤5直接回到步骤2
+    if (isLifeSimMode.value && step.value === 5) {
+      step.value = 2;
+    } else {
+      step.value--;
+    }
   }
 };
 
@@ -1455,6 +1530,178 @@ const handleStartGame = async () => {
   loading.value = true;
 
   try {
+    // ==================== 生活模拟模式特殊处理 ====================
+    if (isLifeSimMode.value && selectedNpc.value) {
+      const npcData = ENEMY_DATABASE[selectedNpc.value.dbKey];
+      const npcSkillIds = ENEMY_SKILL_MAP[selectedNpc.value.skillKey] || [];
+      
+      if (!npcData) {
+        console.error('[开局] 找不到NPC数据:', selectedNpc.value.dbKey);
+        loading.value = false;
+        openModal('错误', `找不到角色数据: ${selectedNpc.value.name}`);
+        return;
+      }
+
+      // 将难度转换为 MVU 使用的格式
+      const difficultyToMvu: Record<string, string> = {
+        [Difficulty.STORY]: '简单',
+        [Difficulty.NORMAL]: '普通',
+        [Difficulty.HARDCORE]: '困难',
+        [Difficulty.MASOCHIST]: '抖M',
+        [Difficulty.CHEATER]: '作弊',
+      };
+      const mvuDifficulty = difficultyToMvu[characterData.value.difficulty] || '普通';
+
+      // 辅助函数：将DamageSource枚举转换为MVU格式
+      const mapDamageSource = (source: any): '性斗力' | '魅力' | '幸运' | '固定值' | '目标快感' => {
+        const sourceMap: Record<string, '性斗力' | '魅力' | '幸运' | '固定值' | '目标快感'> = {
+          sex_power: '性斗力',
+          charm: '魅力',
+          luck: '幸运',
+          fixed: '固定值',
+          target_pleasure: '目标快感',
+        };
+        return sourceMap[source] || '性斗力';
+      };
+
+      // 辅助函数：将buffs数组转换为MVU的效果列表格式
+      const mapBuffsToEffects = (buffs: any[]): Record<string, any> => {
+        const effects: Record<string, any> = {};
+        buffs.forEach((buff, index) => {
+          if (buff && buff.type) {
+            // 根据buff类型映射到MVU的效果类型
+            const buffTypeMap: Record<string, string> = {
+              atk_up: '性斗力',
+              atk_down: '性斗力',
+              def_up: '忍耐力',
+              def_down: '忍耐力',
+              charm_up: '魅力',
+              charm_down: '魅力',
+              luck_up: '幸运',
+              luck_down: '幸运',
+              evasion_up: '闪避率',
+              evasion_down: '闪避率',
+              crit_up: '暴击率',
+              crit_down: '暴击率',
+              bind: '束缚',
+            };
+
+            const effectType = buffTypeMap[buff.type] || '性斗力';
+            const effectValue = buff.value || 0;
+            const isNegative = buff.type?.includes('down') || effectValue < 0;
+
+            effects[`效果${index + 1}`] = {
+              效果类型: effectType,
+              效果值: Math.abs(effectValue),
+              是否为百分比: buff.isPercentage || false,
+              持续回合数: buff.duration || 0,
+              是否作用敌人: isNegative, // 负面效果作用于敌人，正面效果作用于自己
+            };
+          }
+        });
+        return effects;
+      };
+
+      // 构建NPC的主动技能记录（使用正确的ActiveSkillSchema格式）
+      const npcActiveSkills: Record<string, any> = {};
+      for (const skillId of npcSkillIds) {
+        const skillData = ENEMY_SKILLS[skillId];
+        if (skillData) {
+          // 获取主要伤害来源（取第一个damageFormula）
+          const primaryDamage = skillData.damageFormula?.[0];
+          
+          npcActiveSkills[skillData.name] = {
+            基本信息: {
+              技能名称: skillData.name,
+              技能描述: skillData.effectDescription || skillData.description || '',
+              基础描述: skillData.description || '',
+              技能等级: 1,
+              稀有度: skillData.rarity || 'C',
+            },
+            冷却与消耗: {
+              耐力消耗: skillData.staminaCost || 0,
+              冷却回合数: skillData.cooldown || 0,
+            },
+            伤害与效果: {
+              伤害来源: primaryDamage ? mapDamageSource(primaryDamage.source) : '性斗力',
+              系数: primaryDamage ? Math.round((primaryDamage.coefficient || 1) * 100) : 100,
+              基础命中率: skillData.accuracy || 100,
+              连击数: skillData.hitCount || 1,
+              准确率: skillData.accuracy || 100,
+              暴击修正: skillData.critModifier || 0,
+              效果列表: mapBuffsToEffects(skillData.buffs || []),
+            },
+          };
+        }
+      }
+
+      // 构建永久状态列表（只有特殊体质）
+      const permanentStateList: string[] = [];
+      const permanentBonusStats: Record<string, number> = {
+        魅力加成: 0,
+        幸运加成: 0,
+        基础性斗力加成: 0,
+        基础性斗力成算: 0,
+        基础忍耐力加成: 0,
+        基础忍耐力成算: 0,
+        闪避率加成: 0,
+        暴击率加成: 0,
+        意志力加成: 0,
+      };
+
+      // 添加选中的体质到永久状态
+      for (const constitutionId of characterData.value.initialPassiveSkills) {
+        const constitution = getConstitutionById(constitutionId);
+        if (constitution) {
+          permanentStateList.push(constitution.name);
+          for (const mod of constitution.permanentModifiers) {
+            if (permanentBonusStats[mod.stat] !== undefined) {
+              permanentBonusStats[mod.stat] += mod.value;
+            }
+          }
+        }
+      }
+
+      // 写入MVU变量
+      await updateMvuVariables({
+        // 角色基础
+        '角色基础._姓名': selectedNpc.value.name,
+        '角色基础._等级': npcData.对手等级,
+        '角色基础.性别': selectedNpc.value.gender || '女', // 使用NPC设定的性别，默认女性
+        '角色基础.难度': mvuDifficulty,
+        // 核心状态
+        '核心状态.$最大耐力': npcData.对手最大耐力,
+        '核心状态.$耐力': npcData.对手耐力,
+        '核心状态.$最大快感': npcData.对手最大快感,
+        '核心状态._潜力': 10, // 默认潜力
+        '核心状态.$基础魅力': npcData.对手魅力,
+        '核心状态.$基础幸运': npcData.对手幸运,
+        // 性斗力与忍耐力由脚本自动计算，不需要手动写入
+        '核心状态.$基础闪避率': npcData.对手闪避率,
+        '核心状态.$基础暴击率': npcData.对手暴击率,
+        // 技能系统
+        '技能系统.主动技能': npcActiveSkills,
+        // 永久状态
+        '永久状态.状态列表': permanentStateList,
+        '永久状态.加成统计': permanentBonusStats,
+      });
+
+      console.info('[开局] 生活模拟模式 - NPC数据已写入MVU');
+      console.info('[开局] NPC:', selectedNpc.value.name, '等级:', npcData.对手等级);
+      console.info('[开局] 技能数量:', Object.keys(npcActiveSkills).length);
+
+      // 发送角色基础数据到酒馆
+      sendCharacterDataToTavern();
+
+      // 完成创建
+      setTimeout(() => {
+        loading.value = false;
+        openModal('角色创建完成！', `你将以${selectedNpc.value!.name}的身份开始学园生活...`);
+      }, 1500);
+      return;
+    }
+
+    // ==================== 正常模式 ====================
     // 保存选中的主动技能到 MVU 变量
     // 使用新的 ActiveSkillSchema 结构
     const activeSkillsRecord = convertSkillsToMvu(STARTER_SKILLS, characterData.value.initialActiveSkills);
@@ -1582,61 +1829,98 @@ const sendCharacterDataToTavern = async () => {
   }
 
   // 构建角色描述文本
-  const infoParts: string[] = [
-    `【学员档案】`,
-    `姓名：${characterData.value.name}`,
-    `性别：${genderText}`,
-    `难度：${characterData.value.difficulty}`,
-    `身高：${characterData.value.height}cm`,
-  ];
+  let characterDescription: string;
 
-  // 只有有胸部时才显示罩杯和臀围（女性特征）
-  if (hasBreasts) {
-    if (characterData.value.cupSize) {
-      infoParts.push(`罩杯：${characterData.value.cupSize}`);
+  if (isLifeSimMode.value) {
+    // 生活模拟模式：简化输出
+    const difficultyMap: Record<string, string> = {
+      '学园生活': '简单',
+      '普通': '普通',
+      '困难': '困难',
+      '抖M特化': '抖M',
+      '作弊者': '作弊',
+    };
+    const mvuDifficultyText = difficultyMap[characterData.value.difficulty] || characterData.value.difficulty;
+
+    // 获取开局场景（从personality字段读取，生活模拟模式会将场景写入此字段）
+    let openingScene = '';
+    if (characterData.value.personality?.includes('[生活模拟模式开局场景]')) {
+      openingScene = characterData.value.personality.replace('[生活模拟模式开局场景]\n', '').trim();
+    } else {
+      openingScene = characterData.value.personality?.trim() || '';
     }
-    if (characterData.value.hips) {
-      infoParts.push(`臀围：${characterData.value.hips}cm`);
+
+    const lifeSimParts: string[] = [
+      `【学员档案】`,
+      `姓名：${characterData.value.name}`,
+      `模式：生活模拟`,
+      `性别：${genderText}`,
+      `难度：${mvuDifficultyText}`,
+      '',
+      `【生活模拟模式开局场景】`,
+      openingScene || '（未设定）',
+    ];
+
+    characterDescription = `<用户信息>\n${lifeSimParts.join('\n')}\n</用户信息>`;
+  } else {
+    // 正常模式：完整输出
+    const infoParts: string[] = [
+      `【学员档案】`,
+      `姓名：${characterData.value.name}`,
+      `模式：正常模式`,
+      `性别：${genderText}`,
+      `难度：${characterData.value.difficulty}`,
+      `身高：${characterData.value.height}cm`,
+    ];
+
+    // 只有有胸部时才显示罩杯和臀围（女性特征）
+    if (hasBreasts) {
+      if (characterData.value.cupSize) {
+        infoParts.push(`罩杯：${characterData.value.cupSize}`);
+      }
+      if (characterData.value.hips) {
+        infoParts.push(`臀围：${characterData.value.hips}cm`);
+      }
+      // 女性性器特征
+      if (characterData.value.femaleGenitalType) {
+        infoParts.push(`女性性器特征：${characterData.value.femaleGenitalType}`);
+      }
     }
-    // 女性性器特征
-    if (characterData.value.femaleGenitalType) {
-      infoParts.push(`女性性器特征：${characterData.value.femaleGenitalType}`);
+
+    // 只有有阴茎时才显示阴茎长度和男性性器特征
+    if (hasPenis) {
+      if (characterData.value.cockLength) {
+        infoParts.push(`阴茎长度：${characterData.value.cockLength}cm`);
+      }
+      // 男性性器特征
+      if (characterData.value.maleGenitalType) {
+        infoParts.push(`男性性器特征：${characterData.value.maleGenitalType}`);
+      }
     }
-  }
 
-  // 只有有阴茎时才显示阴茎长度和男性性器特征
-  if (hasPenis) {
-    if (characterData.value.cockLength) {
-      infoParts.push(`阴茎长度：${characterData.value.cockLength}cm`);
+    // 如果两个性征都不选，则为无性
+    if (!hasBreasts && !hasPenis) {
+      infoParts.push(`性器特征：无性`);
     }
-    // 男性性器特征
-    if (characterData.value.maleGenitalType) {
-      infoParts.push(`男性性器特征：${characterData.value.maleGenitalType}`);
+
+    // 外貌与性格 / 背景描述（所有性别通用）
+    if (characterData.value.appearance?.trim()) {
+      infoParts.push('', `【外貌】`, characterData.value.appearance.trim());
     }
-  }
+    if (characterData.value.personality?.trim()) {
+      infoParts.push('', `【性格与背景】`, characterData.value.personality.trim());
+    }
+    if (characterData.value.background?.trim()) {
+      infoParts.push('', `【补充背景】`, characterData.value.background.trim());
+    }
 
-  // 如果两个性征都不选，则为无性
-  if (!hasBreasts && !hasPenis) {
-    infoParts.push(`性器特征：无性`);
-  }
+    infoParts.push('', `【校园身份】`);
+    infoParts.push(`类型：${selectedArchetype?.name || '未知'}`);
+    infoParts.push(`专属被动：${selectedArchetype?.passiveSkill.name || '无'}`);
+    infoParts.push(`特性描述：${selectedArchetype?.description || ''}`);
 
-  // 外貌与性格 / 背景描述（所有性别通用）
-  if (characterData.value.appearance?.trim()) {
-    infoParts.push('', `【外貌】`, characterData.value.appearance.trim());
+    characterDescription = `<用户信息>\n${infoParts.join('\n')}\n</用户信息>`;
   }
-  if (characterData.value.personality?.trim()) {
-    infoParts.push('', `【性格与背景】`, characterData.value.personality.trim());
-  }
-  if (characterData.value.background?.trim()) {
-    infoParts.push('', `【补充背景】`, characterData.value.background.trim());
-  }
-
-  infoParts.push('', `【校园身份】`);
-  infoParts.push(`类型：${selectedArchetype?.name || '未知'}`);
-  infoParts.push(`专属被动：${selectedArchetype?.passiveSkill.name || '无'}`);
-  infoParts.push(`特性描述：${selectedArchetype?.description || ''}`);
-
-  const characterDescription = `<用户信息>\n${infoParts.join('\n')}\n</用户信息>`;
 
   // 尝试发送到酒馆并写入世界书
   try {
