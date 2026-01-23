@@ -1,12 +1,14 @@
 // MVU 变量操作辅助函数
 
-
 /**
  * 原生实现的 get 函数
  */
 function get<T = any>(obj: any, path: string, defaultValue?: T): T {
   if (!obj || !path) return defaultValue as T;
-  const keys = path.replace(/\[(\d+)\]/g, '.$1').split('.').filter(Boolean);
+  const keys = path
+    .replace(/\[(\d+)\]/g, '.$1')
+    .split('.')
+    .filter(Boolean);
   let result: any = obj;
   for (const key of keys) {
     if (result == null) return defaultValue as T;
@@ -20,7 +22,10 @@ function get<T = any>(obj: any, path: string, defaultValue?: T): T {
  */
 function set<T extends object>(obj: T, path: string, value: any): T {
   if (!obj || !path) return obj;
-  const keys = path.replace(/\[(\d+)\]/g, '.$1').split('.').filter(Boolean);
+  const keys = path
+    .replace(/\[(\d+)\]/g, '.$1')
+    .split('.')
+    .filter(Boolean);
   let current: any = obj;
   for (let i = 0; i < keys.length - 1; i++) {
     const key = keys[i];
@@ -164,4 +169,3 @@ export function syncFromMvu(mvuData: any): any {
     },
   };
 }
-
