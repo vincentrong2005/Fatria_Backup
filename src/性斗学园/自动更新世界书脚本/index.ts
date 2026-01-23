@@ -7,9 +7,7 @@ const GITHUB_BASE_URL = 'https://raw.githack.com/vincentrong2005/Fatria/main/src
 
 export async function checkUpdate() {
   const version =
-    (await getWorldbook(WORLDBOOK_NAME))
-      .find(entry => entry.name === VERSION_ENTRY_NAME)
-      ?.content.trim() ?? '0.0.0';
+    (await getWorldbook(WORLDBOOK_NAME)).find(entry => entry.name === VERSION_ENTRY_NAME)?.content.trim() ?? '0.0.0';
 
   const remoteVersion = await fetch(`${GITHUB_BASE_URL}/版本号.txt`)
     .then(response => response.text())

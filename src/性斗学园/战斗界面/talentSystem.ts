@@ -7,15 +7,15 @@ import type { TalentData } from '../性斗学园脚本/data/talentDatabase';
 // 特定敌人拥有的七宗罪天赋（敌人名称 -> 七宗罪类型）
 export const ENEMY_SIN_TALENTS: Record<string, 'lust' | 'wrath' | 'envy' | 'sloth' | 'pride' | 'gluttony' | 'greed'> = {
   // 沐芯兰BOSS - 嫉妒
-  '沐芯兰_1': 'envy',
-  '沐芯兰_2': 'envy',
-  '沐芯兰_3': 'envy',
-  '茉莉': 'envy',
-  '沐芯兰': 'envy',
+  沐芯兰_1: 'envy',
+  沐芯兰_2: 'envy',
+  沐芯兰_3: 'envy',
+  茉莉: 'envy',
+  沐芯兰: 'envy',
   // 克莉丝汀BOSS - 暴怒（仅第二阶段触发，由bossSystem控制）
-  '克莉丝汀_1': 'wrath',
-  '克莉丝汀_2': 'wrath',
-  '克莉丝汀': 'wrath',
+  克莉丝汀_1: 'wrath',
+  克莉丝汀_2: 'wrath',
+  克莉丝汀: 'wrath',
 };
 
 /**
@@ -23,7 +23,9 @@ export const ENEMY_SIN_TALENTS: Record<string, 'lust' | 'wrath' | 'envy' | 'slot
  * @param enemyName 敌人名称
  * @returns 七宗罪类型，如果没有则返回null
  */
-export function getEnemySinTalentType(enemyName: string): 'lust' | 'wrath' | 'envy' | 'sloth' | 'pride' | 'gluttony' | 'greed' | null {
+export function getEnemySinTalentType(
+  enemyName: string,
+): 'lust' | 'wrath' | 'envy' | 'sloth' | 'pride' | 'gluttony' | 'greed' | null {
   if (!enemyName) return null;
 
   // 精确匹配
@@ -43,46 +45,46 @@ export function getEnemySinTalentType(enemyName: string): 'lust' | 'wrath' | 'en
 
 export interface TalentState {
   // 计数器（用于追踪次数限制的效果）
-  attackCount: number;           // 攻击次数
-  damageReceivedCount: number;   // 本回合受到伤害次数
+  attackCount: number; // 攻击次数
+  damageReceivedCount: number; // 本回合受到伤害次数
   damageReceivedCountInBattle: number; // 本次性斗受到伤害次数
-  bindReceivedCount: number;     // 受到束缚次数
-  consecutiveHits: number;       // 连续命中次数
-  accumulatedPleasureDamage: number;  // 累计受到的快感伤害
-  accumulatedStaminaConsume: number;  // 累计消耗的耐力
+  bindReceivedCount: number; // 受到束缚次数
+  consecutiveHits: number; // 连续命中次数
+  accumulatedPleasureDamage: number; // 累计受到的快感伤害
+  accumulatedStaminaConsume: number; // 累计消耗的耐力
   // 状态标记
-  hasShield: boolean;            // 是否有护盾
-  shieldTurnsRemaining: number;  // 护盾剩余回合
-  shieldValue: number;           // 护盾减伤值
-  nextAttackBoost: number;       // 下次攻击加成
-  dodgeBoostActive: boolean;     // 闪避后攻击加成是否激活
+  hasShield: boolean; // 是否有护盾
+  shieldTurnsRemaining: number; // 护盾剩余回合
+  shieldValue: number; // 护盾减伤值
+  nextAttackBoost: number; // 下次攻击加成
+  dodgeBoostActive: boolean; // 闪避后攻击加成是否激活
 
   // ==================== 七宗罪状态 ====================
   // 色欲
-  lustCharmSuccessCount: number;       // 魅惑成功次数（用于计算忍耐力惩罚）
-  lustCharmFailCount: number;          // 连续魅惑失败次数
-  lustEnemyGuaranteedCrit: boolean;    // 敌人下次攻击必中且暴击
+  lustCharmSuccessCount: number; // 魅惑成功次数（用于计算忍耐力惩罚）
+  lustCharmFailCount: number; // 连续魅惑失败次数
+  lustEnemyGuaranteedCrit: boolean; // 敌人下次攻击必中且暴击
   // 暴怒
-  wrathActive: boolean;                // 暴怒状态是否激活
-  wrathDealtDamageThisTurn: boolean;   // 本回合是否造成了伤害（与暴食共用逻辑）
+  wrathActive: boolean; // 暴怒状态是否激活
+  wrathDealtDamageThisTurn: boolean; // 本回合是否造成了伤害（与暴食共用逻辑）
   // 嫉妒
-  envyApplied: boolean;                // 嫉妒效果是否已应用
+  envyApplied: boolean; // 嫉妒效果是否已应用
   // 懒惰
-  slothStacks: number;                 // 怠惰积蓄层数（0-3）
-  slothCannotAttackTurns: number;      // 剩余不能攻击的回合数
-  slothDebuffTurns: number;            // 懒散状态剩余回合
+  slothStacks: number; // 怠惰积蓄层数（0-3）
+  slothCannotAttackTurns: number; // 剩余不能攻击的回合数
+  slothDebuffTurns: number; // 懒散状态剩余回合
   // 傲慢
-  prideConsecutiveCrits: number;       // 连续暴击回合数
-  prideCritThisTurn: boolean;          // 本回合是否暴击
-  prideAbsoluteConfidence: boolean;    // 绝对自信状态
-  prideShaken: boolean;                // 动摇状态
-  prideShakenTurns: number;            // 动摇剩余回合
+  prideConsecutiveCrits: number; // 连续暴击回合数
+  prideCritThisTurn: boolean; // 本回合是否暴击
+  prideAbsoluteConfidence: boolean; // 绝对自信状态
+  prideShaken: boolean; // 动摇状态
+  prideShakenTurns: number; // 动摇剩余回合
   // 暴食
-  gluttonyStacks: number;              // 饕餮层数（0-5）
-  gluttonyDealtDamageThisTurn: boolean;// 本回合是否造成了伤害
-  gluttonyOvereatNext: boolean;        // 下回合进入过食状态
+  gluttonyStacks: number; // 饕餮层数（0-5）
+  gluttonyDealtDamageThisTurn: boolean; // 本回合是否造成了伤害
+  gluttonyOvereatNext: boolean; // 下回合进入过食状态
   // 贪婪
-  greedStacks: number;                 // 贪婪层数（0-5）
+  greedStacks: number; // 贪婪层数（0-5）
 }
 
 // 创建默认天赋状态
@@ -145,36 +147,33 @@ export interface TalentEffectContext {
 
 // 天赋效果结果
 export interface TalentEffectResult {
-  damageMultiplier?: number;      // 伤害倍率修正
-  damageReduction?: number;       // 伤害减免（固定值）
+  damageMultiplier?: number; // 伤害倍率修正
+  damageReduction?: number; // 伤害减免（固定值）
   damageReductionPercent?: number; // 伤害减免（百分比）
-  accuracyBoost?: number;         // 命中率加成
-  guaranteedHit?: boolean;        // 必定命中
-  guaranteedCrit?: boolean;       // 必定暴击
-  reflectDamage?: number;         // 反弹伤害
-  preventClimaxCount?: boolean;   // 阻止高潮计数
-  preventBind?: boolean;          // 阻止束缚
-  addBind?: boolean;              // 附加束缚
-  bindDuration?: number;          // 束缚持续回合
-  skipEffect?: boolean;           // 跳过本次效果
-  message?: string;               // 日志消息
+  accuracyBoost?: number; // 命中率加成
+  guaranteedHit?: boolean; // 必定命中
+  guaranteedCrit?: boolean; // 必定暴击
+  reflectDamage?: number; // 反弹伤害
+  preventClimaxCount?: boolean; // 阻止高潮计数
+  preventBind?: boolean; // 阻止束缚
+  addBind?: boolean; // 附加束缚
+  bindDuration?: number; // 束缚持续回合
+  skipEffect?: boolean; // 跳过本次效果
+  message?: string; // 日志消息
   // 七宗罪特殊效果
-  extraHitCount?: number;         // 额外连击次数
-  critDamageMultiplier?: number;  // 暴击伤害倍率（贪婪3层以上为300%）
-  charmEnemy?: boolean;           // 魅惑敌人
-  cannotAttack?: boolean;         // 无法攻击
-  cannotUseItems?: boolean;       // 无法使用道具
-  cannotSurrender?: boolean;      // 无法投降
-  selfPleasureIncrease?: number;  // 自身快感增加
-  selfPleasureDecrease?: number;  // 自身快感减少
-  bindDurationExtend?: number;    // 束缚持续时间延长
+  extraHitCount?: number; // 额外连击次数
+  critDamageMultiplier?: number; // 暴击伤害倍率（贪婪3层以上为300%）
+  charmEnemy?: boolean; // 魅惑敌人
+  cannotAttack?: boolean; // 无法攻击
+  cannotUseItems?: boolean; // 无法使用道具
+  cannotSurrender?: boolean; // 无法投降
+  selfPleasureIncrease?: number; // 自身快感增加
+  selfPleasureDecrease?: number; // 自身快感减少
+  bindDurationExtend?: number; // 束缚持续时间延长
 }
 
 // 处理回合开始时的天赋效果
-export function processTalentOnTurnStart(
-  talent: TalentData | null,
-  context: TalentEffectContext
-): TalentEffectResult {
+export function processTalentOnTurnStart(talent: TalentData | null, context: TalentEffectContext): TalentEffectResult {
   if (!talent) return {};
 
   const result: TalentEffectResult = {};
@@ -228,10 +227,10 @@ export function processTalentOnTurnStart(
         const interval = effect.params.count || 3;
         if (context.currentTurn > 0 && context.currentTurn % interval === 0) {
           const buffs: Array<{ name: string; bonus: Record<string, number> }> = [
-            { name: '性斗力提升', bonus: { '基础性斗力成算': 15 } },
-            { name: '忍耐力提升', bonus: { '基础忍耐力成算': 15 } },
-            { name: '闪避提升', bonus: { '闪避率加成': 10 } },
-            { name: '暴击提升', bonus: { '暴击率加成': 10 } },
+            { name: '性斗力提升', bonus: { 基础性斗力成算: 15 } },
+            { name: '忍耐力提升', bonus: { 基础忍耐力成算: 15 } },
+            { name: '闪避提升', bonus: { 闪避率加成: 10 } },
+            { name: '暴击提升', bonus: { 暴击率加成: 10 } },
           ];
           const randomBuff = buffs[Math.floor(Math.random() * buffs.length)];
           const duration = effect.params.duration || 2;
@@ -250,10 +249,7 @@ export function processTalentOnTurnStart(
 }
 
 // 处理回合结束时的天赋效果
-export function processTalentOnTurnEnd(
-  talent: TalentData | null,
-  context: TalentEffectContext
-): TalentEffectResult {
+export function processTalentOnTurnEnd(talent: TalentData | null, context: TalentEffectContext): TalentEffectResult {
   if (!talent) return {};
 
   const result: TalentEffectResult = {};
@@ -300,7 +296,7 @@ export function processTalentOnTurnEnd(
 // 处理战斗开始时的天赋效果
 export function processTalentOnBattleStart(
   talent: TalentData | null,
-  context: TalentEffectContext
+  context: TalentEffectContext,
 ): TalentEffectResult {
   if (!talent) return {};
 
@@ -325,7 +321,11 @@ export function processTalentOnBattleStart(
         context.talentState.hasShield = true;
         context.talentState.shieldTurnsRemaining = effect.params.duration || 3;
         context.talentState.shieldValue = effect.params.value || 5;
-        context.addLog(`【${talent.name}】触发：获得护盾（${context.talentState.shieldTurnsRemaining}回合）`, 'system', 'info');
+        context.addLog(
+          `【${talent.name}】触发：获得护盾（${context.talentState.shieldTurnsRemaining}回合）`,
+          'system',
+          'info',
+        );
         break;
       }
 
@@ -345,7 +345,7 @@ export function processTalentOnBattleStart(
 export function processTalentOnAttack(
   talent: TalentData | null,
   context: TalentEffectContext,
-  hasBindEffect: boolean
+  hasBindEffect: boolean,
 ): TalentEffectResult {
   if (!talent) return {};
 
@@ -389,7 +389,7 @@ export function processTalentOnAttack(
         if (Math.random() * 100 < chance) {
           const value = effect.params.value || 20;
           const duration = effect.params.duration || 1;
-          context.applyBuff('enemy', '天赋_闪避降低', { '闪避率加成': -value }, duration);
+          context.applyBuff('enemy', '天赋_闪避降低', { 闪避率加成: -value }, duration);
           context.addLog(`【${talent.name}】触发：敌人闪避率降低${value}%`, 'system', 'info');
         }
         break;
@@ -412,7 +412,7 @@ export function processTalentOnAttack(
 export function processTalentOnDamageDealt(
   talent: TalentData | null,
   context: TalentEffectContext,
-  damageDealt: number
+  damageDealt: number,
 ): TalentEffectResult {
   if (!talent) return {};
 
@@ -451,7 +451,7 @@ export function processTalentOnDamageDealt(
 export function processTalentOnDamageReceived(
   talent: TalentData | null,
   context: TalentEffectContext,
-  incomingDamage: number
+  incomingDamage: number,
 ): TalentEffectResult {
   if (!talent) return {};
 
@@ -551,10 +551,7 @@ export function processTalentOnDamageReceived(
 }
 
 // 处理闪避时的天赋效果
-export function processTalentOnDodge(
-  talent: TalentData | null,
-  context: TalentEffectContext
-): TalentEffectResult {
+export function processTalentOnDodge(talent: TalentData | null, context: TalentEffectContext): TalentEffectResult {
   if (!talent) return {};
 
   for (const effect of talent.effects) {
@@ -578,7 +575,7 @@ export function processTalentOnDodge(
 export function processTalentOnCrit(
   talent: TalentData | null,
   context: TalentEffectContext,
-  baseDamage: number
+  baseDamage: number,
 ): TalentEffectResult {
   if (!talent) return {};
 
@@ -603,7 +600,7 @@ export function processTalentOnCrit(
 // 处理受到暴击时的天赋效果
 export function processTalentOnCritReceived(
   talent: TalentData | null,
-  context: TalentEffectContext
+  context: TalentEffectContext,
 ): TalentEffectResult {
   if (!talent) return {};
 
@@ -626,10 +623,7 @@ export function processTalentOnCritReceived(
 }
 
 // 处理高潮时的天赋效果
-export function processTalentOnClimax(
-  talent: TalentData | null,
-  context: TalentEffectContext
-): TalentEffectResult {
+export function processTalentOnClimax(talent: TalentData | null, context: TalentEffectContext): TalentEffectResult {
   if (!talent) return {};
 
   const result: TalentEffectResult = {};
@@ -655,7 +649,7 @@ export function processTalentOnClimax(
 // 处理敌人高潮时的天赋效果
 export function processTalentOnEnemyClimax(
   talent: TalentData | null,
-  context: TalentEffectContext
+  context: TalentEffectContext,
 ): TalentEffectResult {
   if (!talent) return {};
 
@@ -679,7 +673,7 @@ export function processTalentOnEnemyClimax(
 export function processTalentOnDebuffReceived(
   talent: TalentData | null,
   context: TalentEffectContext,
-  debuffType: string
+  debuffType: string,
 ): TalentEffectResult {
   if (!talent) return {};
 
@@ -710,7 +704,7 @@ export function processTalentOnDebuffReceived(
 export function processTalentOnStaminaConsume(
   talent: TalentData | null,
   context: TalentEffectContext,
-  staminaConsumed: number
+  staminaConsumed: number,
 ): TalentEffectResult {
   if (!talent) return {};
 
@@ -745,7 +739,7 @@ export function getTalentPassiveModifiers(
     playerMaxStamina: number;
     enemyPleasure: number;
     enemyMaxPleasure: number;
-  }
+  },
 ): {
   damageBoostPercent: number;
   accuracyBoost: number;
@@ -875,13 +869,13 @@ export function getSinTalentType(talent: TalentData | null): string | null {
   if (!talent || talent.rarity !== 'SIN') return null;
 
   const sinTypes: Record<string, string> = {
-    'talent_sin_lust': 'lust',
-    'talent_sin_wrath': 'wrath',
-    'talent_sin_envy': 'envy',
-    'talent_sin_sloth': 'sloth',
-    'talent_sin_pride': 'pride',
-    'talent_sin_gluttony': 'gluttony',
-    'talent_sin_greed': 'greed',
+    talent_sin_lust: 'lust',
+    talent_sin_wrath: 'wrath',
+    talent_sin_envy: 'envy',
+    talent_sin_sloth: 'sloth',
+    talent_sin_pride: 'pride',
+    talent_sin_gluttony: 'gluttony',
+    talent_sin_greed: 'greed',
   };
 
   return sinTypes[talent.id] || null;
@@ -912,8 +906,15 @@ export function sinTalentDisablesSurrender(talent: TalentData | null): boolean {
 export function processLustCharm(
   context: TalentEffectContext,
   playerCharm: number,
-  enemyCharm: number
-): { success: boolean; message: string; bindEnemy?: boolean; bindDuration?: number; selfEnduranceDebuff?: number; enemyGuaranteedHitCrit?: boolean } {
+  enemyCharm: number,
+): {
+  success: boolean;
+  message: string;
+  bindEnemy?: boolean;
+  bindDuration?: number;
+  selfEnduranceDebuff?: number;
+  enemyGuaranteedHitCrit?: boolean;
+} {
   // 魅惑成功率 = 30% + (玩家魅力 - 敌人魅力) / 10
   const charmChance = 35 + (playerCharm - enemyCharm) / 10;
   const roll = Math.random() * 100;
@@ -924,9 +925,9 @@ export function processLustCharm(
     context.talentState.lustCharmFailCount = 0;
     return {
       success: true,
-      bindEnemy: true,  // 束缚敌人1回合
+      bindEnemy: true, // 束缚敌人1回合
       bindDuration: 1,
-      selfEnduranceDebuff: -12 * context.talentState.lustCharmSuccessCount,  // 自身忍耐力成算-12%（可叠加）
+      selfEnduranceDebuff: -12 * context.talentState.lustCharmSuccessCount, // 自身忍耐力成算-12%（可叠加）
       message: `魅惑成功！（概率=${Math.round(charmChance)}%）敌人被束缚1回合。自身忍耐力成算-12%（已叠加${context.talentState.lustCharmSuccessCount}次）`,
     };
   } else {
@@ -937,7 +938,7 @@ export function processLustCharm(
       return {
         success: false,
         bindEnemy: false,
-        enemyGuaranteedHitCrit: true,  // 标记敌人下次必中必暴
+        enemyGuaranteedHitCrit: true, // 标记敌人下次必中必暴
         message: `魅惑失败！（概率=${Math.round(charmChance)}%）连续失败2次，敌人下次攻击必定命中且暴击！`,
       };
     }
@@ -956,9 +957,9 @@ export function processLustCharm(
 export function getWrathModifiers(_talentState: TalentState): TalentEffectResult {
   // 暴怒天赋始终激活（不需要检查wrathActive）
   return {
-    extraHitCount: 1,        // 连击+1
-    cannotUseItems: true,    // 无法使用道具
-    cannotSurrender: true,   // 无法投降
+    extraHitCount: 1, // 连击+1
+    cannotUseItems: true, // 无法使用道具
+    cannotSurrender: true, // 无法投降
   };
 }
 
@@ -968,7 +969,7 @@ export function getWrathModifiers(_talentState: TalentState): TalentEffectResult
 export function processEnvyOnBattleStart(
   context: TalentEffectContext,
   playerStats: { sexPower: number; endurance: number; crit: number; evasion: number; charm: number; luck: number },
-  enemyStats: { sexPower: number; endurance: number; crit: number; evasion: number; charm: number; luck: number }
+  enemyStats: { sexPower: number; endurance: number; crit: number; evasion: number; charm: number; luck: number },
 ): { effects: Array<{ attribute: string; value: number; isBonus: boolean; message: string }> } {
   const statKeys: Array<keyof typeof playerStats> = ['sexPower', 'endurance', 'crit', 'evasion', 'charm', 'luck'];
   const statNames: Record<string, string> = {
@@ -998,7 +999,7 @@ export function processEnvyOnBattleStart(
         attribute: displayName,
         value: boost,
         isBonus: true,
-        message: `${displayName}：对手(${enemyValue}) > 自身(${playerValue})，${displayName}+${boost}`
+        message: `${displayName}：对手(${enemyValue}) > 自身(${playerValue})，${displayName}+${boost}`,
       });
     } else {
       // 对手属性低于或等于自身，自身-50%对手值（减少debuff惩罚）
@@ -1007,7 +1008,7 @@ export function processEnvyOnBattleStart(
         attribute: displayName,
         value: -penalty,
         isBonus: false,
-        message: `${displayName}：对手(${enemyValue}) ≤ 自身(${playerValue})，${displayName}-${penalty}`
+        message: `${displayName}：对手(${enemyValue}) ≤ 自身(${playerValue})，${displayName}-${penalty}`,
       });
     }
   }
@@ -1074,7 +1075,7 @@ export function processSlothAfterAttack(context: TalentEffectContext): { message
  */
 export function getPrideStatModifiers(
   playerStats: { sexPower: number; endurance: number; charm: number; luck: number },
-  enemyStats: { sexPower: number; endurance: number; charm: number; luck: number }
+  enemyStats: { sexPower: number; endurance: number; charm: number; luck: number },
 ): { boosts: string[]; penalties: string[]; totalBoostPercent: number; totalPenaltyPercent: number } {
   const stats: Array<keyof typeof playerStats> = ['sexPower', 'endurance', 'charm', 'luck'];
   const statNames: Record<string, string> = {
@@ -1105,7 +1106,10 @@ export function getPrideStatModifiers(
 /**
  * 处理七宗罪-暴食的受伤效果
  */
-export function processGluttonyOnDamageReceived(context: TalentEffectContext): { message: string; bindNextTurn: boolean } {
+export function processGluttonyOnDamageReceived(context: TalentEffectContext): {
+  message: string;
+  bindNextTurn: boolean;
+} {
   if (context.talentState.gluttonyStacks < 5) {
     context.talentState.gluttonyStacks++;
   }
@@ -1126,7 +1130,10 @@ export function processGluttonyOnDamageReceived(context: TalentEffectContext): {
 /**
  * 处理七宗罪-暴食的造成伤害效果
  */
-export function processGluttonyOnDamageDealt(context: TalentEffectContext, maxPleasure: number): { pleasureReduction: number; message: string } {
+export function processGluttonyOnDamageDealt(
+  context: TalentEffectContext,
+  maxPleasure: number,
+): { pleasureReduction: number; message: string } {
   context.talentState.gluttonyDealtDamageThisTurn = true;
   const reduction = Math.floor(maxPleasure * 0.1);
   return {
@@ -1138,7 +1145,10 @@ export function processGluttonyOnDamageDealt(context: TalentEffectContext, maxPl
 /**
  * 处理七宗罪-贪婪的回合开始效果
  */
-export function processGreedOnTurnStart(context: TalentEffectContext, currentStamina: number): { staminaCost: number; message: string } {
+export function processGreedOnTurnStart(
+  context: TalentEffectContext,
+  currentStamina: number,
+): { staminaCost: number; message: string } {
   if (context.talentState.greedStacks >= 5) {
     return { staminaCost: 0, message: `【七宗罪·贪婪】贪婪层数已达上限（5层）` };
   }
@@ -1160,7 +1170,10 @@ export function processGreedOnTurnStart(context: TalentEffectContext, currentSta
 /**
  * 处理七宗罪-贪婪的跳过回合效果
  */
-export function processGreedSkipTurn(context: TalentEffectContext, maxPleasure: number): { pleasureIncrease: number; message: string } {
+export function processGreedSkipTurn(
+  context: TalentEffectContext,
+  maxPleasure: number,
+): { pleasureIncrease: number; message: string } {
   if (context.talentState.greedStacks > 0) {
     const stacks = context.talentState.greedStacks;
     const pleasureIncrease = Math.floor(maxPleasure * stacks * 0.05);
@@ -1198,7 +1211,7 @@ export function getGreedBindExtension(talentState: TalentState): number {
  */
 export function getSinTalentPassiveModifiers(
   talent: TalentData | null,
-  talentState: TalentState
+  talentState: TalentState,
 ): {
   sexPowerPercent: number;
   endurancePercent: number;
