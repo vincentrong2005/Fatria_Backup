@@ -752,16 +752,16 @@ function removeSealEffect(targetSelectors: string[]) {
 /**
  * 计算闪避率（带递减收益）
  * - 0-60%: 1:1比例
- * - 60%-70%: 10:1比例（超过60的部分除以10）
+ * - 60%-70%: 5:1比例（超过60的部分除以5）
  * - 上限: 70%
  *
- * 例如：原始闪避率80 -> 60 + (80-60)/10 = 60 + 2 = 62
- * 达到70%上限需要原始闪避率160（60 + 100/10 = 70）
+ * 例如：原始闪避率100 -> 60 + (100-60)/5 = 60 + 8 = 68
+ * 达到70%上限需要原始闪避率110（60 + 50/5 = 70）
  */
 function calcEvasionWithDiminishingReturns(rawEvasion: number): number {
   const normalCap = 60; // 正常比例的上限
   const hardCap = 70; // 闪避率绝对上限
-  const diminishingRatio = 10; // 超过60后的递减比例
+  const diminishingRatio = 5; // 超过60后的递减比例
 
   // 确保不为负数
   const safeRaw = Math.max(0, rawEvasion);
@@ -771,7 +771,7 @@ function calcEvasionWithDiminishingReturns(rawEvasion: number): number {
     return safeRaw;
   }
 
-  // 超过60的部分按10:1递减
+  // 超过60的部分按5:1递减
   const excessEvasion = safeRaw - normalCap;
   const diminishedBonus = excessEvasion / diminishingRatio;
   const finalEvasion = normalCap + diminishedBonus;
