@@ -5923,7 +5923,7 @@ async function executePhaseTransitionLogic(nextPhase: 1 | 2 | 3) {
       enemy.value.stats.level = newEnemyData.对手等级;
       enemy.value.stats.charm = newEnemyData.对手魅力;
       enemy.value.stats.luck = newEnemyData.对手幸运;
-      enemy.value.stats.evasion = Math.min(60, newEnemyData.对手闪避率);
+      enemy.value.stats.evasion = calcEvasionWithDiminishingReturns(newEnemyData.对手闪避率);
       enemy.value.stats.crit = newEnemyData.对手暴击率;
       enemy.value.stats.maxEndurance = newEnemyData.对手最大耐力;
       enemy.value.stats.currentEndurance = newEnemyData.对手耐力;
@@ -6189,7 +6189,7 @@ async function executeChristinePhaseTransitionLogic(nextPhase: 1 | 2) {
       enemy.value.stats.level = newEnemyData.对手等级;
       enemy.value.stats.charm = newEnemyData.对手魅力;
       enemy.value.stats.luck = newEnemyData.对手幸运;
-      enemy.value.stats.evasion = Math.min(60, newEnemyData.对手闪避率);
+      enemy.value.stats.evasion = calcEvasionWithDiminishingReturns(newEnemyData.对手闪避率);
       enemy.value.stats.crit = newEnemyData.对手暴击率;
       enemy.value.stats.maxEndurance = newEnemyData.对手最大耐力;
       enemy.value.stats.currentEndurance = newEnemyData.对手耐力;

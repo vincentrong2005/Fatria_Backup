@@ -34,6 +34,37 @@ export const DIFFICULTY_COEFFICIENTS: Record<string, number> = {
 };
 
 /**
+ * 计算闪避率（带递减收益）
+ * - 0-60%: 1:1比例
+ * - 60%-70%: 5:1比例（超过60的部分除以5）
+ * - 上限: 70%
+ *
+ * 例如：原始闪避率100 -> 60 + (100-60)/5 = 60 + 8 = 68
+ * 达到70%上限需要原始闪避率110（60 + 50/5 = 70）
+ */
+function calcEvasionWithDiminishingReturns(rawEvasion: number): number {
+  const normalCap = 60; // 正常比例的上限
+  const hardCap = 70; // 闪避率绝对上限
+  const diminishingRatio = 5; // 超过60后的递减比例
+
+  // 确保不为负数
+  const safeRaw = Math.max(0, rawEvasion);
+
+  if (safeRaw <= normalCap) {
+    // 60以内，1:1比例
+    return safeRaw;
+  }
+
+  // 超过60的部分按5:1递减
+  const excessEvasion = safeRaw - normalCap;
+  const diminishedBonus = excessEvasion / diminishingRatio;
+  const finalEvasion = normalCap + diminishedBonus;
+
+  // 最终上限为70
+  return Math.min(hardCap, finalEvasion);
+}
+
+/**
  * 根据用户等级调整NPC等级下限
  * NPC最低等级 = max(原等级, 用户等级 - 8)
  * 每提升1级：魅力/幸运/闪避率/暴击率+1，最大耐力/最大快感+5，性斗力/忍耐力+10
@@ -57,7 +88,7 @@ export function applyLevelScaling(baseData: EnemyMvuData, userLevel: number): En
     对手等级: minLevel,
     对手魅力: baseData.对手魅力 + levelDiff,
     对手幸运: baseData.对手幸运 + levelDiff,
-    对手闪避率: Math.min(60, baseData.对手闪避率 + levelDiff), // 闪避率上限60
+    对手闪避率: baseData.对手闪避率 + levelDiff, // 存储原始值，递减收益在计算实时值时应用
     对手暴击率: Math.min(100, baseData.对手暴击率 + levelDiff), // 暴击率上限100
     对手耐力: baseData.对手耐力 + levelDiff * 5,
     对手最大耐力: baseData.对手最大耐力 + levelDiff * 5,
@@ -88,7 +119,7 @@ export function applyDifficultyCoefficient(baseData: EnemyMvuData, difficulty: s
     对手等级: baseData.对手等级, // 等级不变
     对手魅力: Math.round(baseData.对手魅力 * coefficient),
     对手幸运: Math.round(baseData.对手幸运 * coefficient),
-    对手闪避率: Math.min(60, Math.round(baseData.对手闪避率 * coefficient)), // 闪避率上限60
+    对手闪避率: Math.round(baseData.对手闪避率 * coefficient), // 存储原始值，递减收益在计算实时值时应用
     对手暴击率: Math.min(100, Math.round(baseData.对手暴击率 * coefficient)), // 暴击率上限100
     对手耐力: Math.round(baseData.对手耐力 * coefficient),
     对手最大耐力: Math.round(baseData.对手最大耐力 * coefficient),
@@ -1249,7 +1280,7 @@ export const ENEMY_DATABASE: Record<string, EnemyMvuData> = {
     对手等级: 50,
     对手魅力: 60,
     对手幸运: 80,
-    对手闪避率: 55, // 高闪避，嚣张闪避流
+    对手闪避率: 60, // 高闪避，嚣张闪避流
     对手暴击率: 25,
     对手耐力: 200,
     对手最大耐力: 200,
@@ -1336,11 +1367,11 @@ export const ENEMY_DATABASE: Record<string, EnemyMvuData> = {
     对手魅力: 200,
     对手幸运: 150,
     对手闪避率: 25, // 女王不屑于躲避
-    对手暴击率: 65,
+    对手暴击率: 80,
     对手耐力: 500,
     对手最大耐力: 500,
     对手快感: 0,
-    对手最大快感: 528,
+    对手最大快感: 652,
     对手高潮次数: 0,
     对手性斗力: 871,
     对手忍耐力: 850,
@@ -1403,15 +1434,15 @@ export const ENEMY_DATABASE: Record<string, EnemyMvuData> = {
   薇丝佩菈: {
     对手等级: 40,
     对手魅力: 300, // 鬼族的魅惑天赋，极高魅力
-    对手幸运: 98,
-    对手闪避率: 60, // 鬼族高机动性
+    对手幸运: 18,
+    对手闪避率: 100, // 鬼族高机动性
     对手暴击率: 0,
     对手耐力: 200,
     对手最大耐力: 200,
     对手快感: 0,
     对手最大快感: 400,
     对手高潮次数: 0,
-    对手性斗力: 68,
+    对手性斗力: 48,
     对手忍耐力: 400,
     对手临时状态: {},
     对手技能冷却: {},
