@@ -1,5 +1,8 @@
 <template>
   <div class="profile-page">
+    <!-- 版本号显示 -->
+    <div class="version-label">版本：2.4.1.1</div>
+
     <button class="help-btn" @click="showHelp = true" title="玩法说明">
       <i class="fas fa-question"></i>
     </button>
@@ -680,6 +683,18 @@ onMounted(() => {
     font-size: 13px;
     line-height: 1;
   }
+}
+
+.version-label {
+  position: absolute;
+  top: 16px;
+  left: 12px;
+  z-index: 30;
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.45);
+  font-weight: 400;
+  letter-spacing: 0.2px;
+  user-select: none;
 }
 
 .help-overlay {
