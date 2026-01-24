@@ -458,6 +458,7 @@
 </template>
 
 <script setup lang="ts">
+import { getEnemyPortraitUrl, savePlayerCustomAvatar } from '@/性斗学园/战斗界面/constants';
 import { ENEMY_DATABASE } from '@/性斗学园/战斗界面/enemyDatabase';
 import { ENEMY_SKILL_MAP, ENEMY_SKILLS } from '@/性斗学园/战斗界面/enemySkillDatabase';
 import { computed, onMounted, ref } from 'vue';
@@ -1590,6 +1591,24 @@ const handleStartGame = async () => {
       // 辅助函数：将buffs数组转换为MVU的效果列表格式
       const mapBuffsToEffects = (buffs: any[]): Record<string, any> => {
         const effects: Record<string, any> = {};
+
+        // 所有作用于敌人的负面效果类型
+        const debuffTypes = new Set([
+          'atk_down',
+          'def_down',
+          'charm_down',
+          'luck_down',
+          'dodge_down',
+          'crit_down',
+          'bind',
+          'sensitive',
+          'silence',
+          'fear',
+          'shame',
+          'heat',
+          'dot_lust',
+        ]);
+
         buffs.forEach((buff, index) => {
           if (buff && buff.type) {
             // 根据buff类型映射到MVU的效果类型
@@ -1602,23 +1621,33 @@ const handleStartGame = async () => {
               charm_down: '魅力',
               luck_up: '幸运',
               luck_down: '幸运',
-              evasion_up: '闪避率',
-              evasion_down: '闪避率',
+              dodge_up: '闪避率',
+              dodge_down: '闪避率',
               crit_up: '暴击率',
               crit_down: '暴击率',
               bind: '束缚',
+              sensitive: '敏感',
+              silence: '沉默',
+              fear: '恐惧',
+              shame: '羞耻',
+              heat: '发情',
+              dot_lust: '持续快感',
             };
 
             const effectType = buffTypeMap[buff.type] || '性斗力';
-            const effectValue = buff.value || 0;
-            const isNegative = buff.type?.includes('down') || effectValue < 0;
+            const rawEffectValue = buff.value || 0;
+            // 判断是否为负面效果：检查是否在debuff类型集合中，或者效果值为负
+            const isDebuff = debuffTypes.has(buff.type) || rawEffectValue < 0;
+            // 对于包含 'down' 的类型，效果值必须为负数（降低属性）
+            const isDownType = buff.type?.includes('down');
+            const effectValue = isDownType ? -Math.abs(rawEffectValue) : rawEffectValue;
 
             effects[`效果${index + 1}`] = {
               效果类型: effectType,
-              效果值: Math.abs(effectValue),
-              是否为百分比: buff.isPercentage || false,
+              效果值: effectValue,
+              是否为百分比: buff.isPercent || buff.isPercentage || false,
               持续回合数: buff.duration || 0,
-              是否作用敌人: isNegative, // 负面效果作用于敌人，正面效果作用于自己
+              是否作用敌人: isDebuff, // 负面效果作用于敌人，正面效果作用于自己
             };
           }
         });
@@ -1712,6 +1741,18 @@ const handleStartGame = async () => {
       console.info('[开局] 生活模拟模式 - NPC数据已写入MVU');
       console.info('[开局] NPC:', selectedNpc.value.name, '等级:', npcData.对手等级);
       console.info('[开局] 技能数量:', Object.keys(npcActiveSkills).length);
+
+      // 生活模拟模式：保存NPC的立绘作为玩家头像（战斗界面使用）
+      // 特殊角色的立绘文件名与角色名不同，需要映射
+      const specialPortraitMap: Record<string, string> = {
+        '沐芯兰': '沐芯兰_2',
+        '克莉丝汀': '克莉丝汀_2',
+        '艾格妮丝蔷薇': '艾格妮丝',
+      };
+      const portraitName = specialPortraitMap[selectedNpc.value.name] || selectedNpc.value.name;
+      const npcPortraitUrl = getEnemyPortraitUrl(portraitName);
+      savePlayerCustomAvatar(npcPortraitUrl);
+      console.info('[开局] 生活模拟模式 - 已保存NPC立绘作为玩家头像:', npcPortraitUrl);
 
       // 发送角色基础数据到酒馆
       sendCharacterDataToTavern();
