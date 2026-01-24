@@ -11,3 +11,9 @@ pnpm-debug.log*
 
 auto-imports.d.ts
 components.d.ts
+
+# 忽略所有 map 调试文件
+*.map
+
+# 建议忽略整个编译输出目录（因为里面的内容可以随时重新生成）
+dist/
