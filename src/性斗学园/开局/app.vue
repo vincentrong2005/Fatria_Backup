@@ -1757,6 +1757,16 @@ const handleStartGame = async () => {
       // 发送角色基础数据到酒馆
       sendCharacterDataToTavern();
 
+      // 处理世界书条目 - 根据"抖M"难度决定是否写入抖M特性
+      // （与正常模式逻辑一致）
+      if (characterData.value.difficulty === Difficulty.MASOCHIST) {
+        // 如果难度为"抖M"，写入特性到世界书
+        await writeMasochistTraitToWorldbook();
+      } else {
+        // 如果没有选择"抖M"难度，移除抖M特性
+        await clearMasochistTraitFromWorldbook();
+      }
+
       // 完成创建
       setTimeout(() => {
         loading.value = false;
