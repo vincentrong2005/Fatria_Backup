@@ -1745,9 +1745,9 @@ const handleStartGame = async () => {
       // 生活模拟模式：保存NPC的立绘作为玩家头像（战斗界面使用）
       // 特殊角色的立绘文件名与角色名不同，需要映射
       const specialPortraitMap: Record<string, string> = {
-        '沐芯兰': '沐芯兰_2',
-        '克莉丝汀': '克莉丝汀_2',
-        '艾格妮丝蔷薇': '艾格妮丝',
+        沐芯兰: '沐芯兰_2',
+        克莉丝汀: '克莉丝汀_2',
+        艾格妮丝蔷薇: '艾格妮丝',
       };
       const portraitName = specialPortraitMap[selectedNpc.value.name] || selectedNpc.value.name;
       const npcPortraitUrl = getEnemyPortraitUrl(portraitName);
