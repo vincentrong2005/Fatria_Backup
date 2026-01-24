@@ -749,6 +749,37 @@ function removeSealEffect(targetSelectors: string[]) {
   }
 }
 
+/**
+ * 计算闪避率（带递减收益）
+ * - 0-60%: 1:1比例
+ * - 60%-70%: 10:1比例（超过60的部分除以10）
+ * - 上限: 70%
+ *
+ * 例如：原始闪避率80 -> 60 + (80-60)/10 = 60 + 2 = 62
+ * 达到70%上限需要原始闪避率160（60 + 100/10 = 70）
+ */
+function calcEvasionWithDiminishingReturns(rawEvasion: number): number {
+  const normalCap = 60; // 正常比例的上限
+  const hardCap = 70; // 闪避率绝对上限
+  const diminishingRatio = 10; // 超过60后的递减比例
+
+  // 确保不为负数
+  const safeRaw = Math.max(0, rawEvasion);
+
+  if (safeRaw <= normalCap) {
+    // 60以内，1:1比例
+    return safeRaw;
+  }
+
+  // 超过60的部分按10:1递减
+  const excessEvasion = safeRaw - normalCap;
+  const diminishedBonus = excessEvasion / diminishingRatio;
+  const finalEvasion = normalCap + diminishedBonus;
+
+  // 最终上限为70
+  return Math.min(hardCap, finalEvasion);
+}
+
 // ================= MVU 集成 =================
 // 获取用户名字
 function getUserName(): string {
@@ -818,7 +849,7 @@ async function loadFromMvu() {
     player.value.stats.level = _.get(data, '角色基础._等级', 1);
     player.value.stats.charm = _.get(data, '核心状态._魅力', 10);
     player.value.stats.luck = _.get(data, '核心状态._幸运', 10);
-    player.value.stats.evasion = _.get(data, '核心状态._闪避率', 0);
+    player.value.stats.evasion = calcEvasionWithDiminishingReturns(_.get(data, '核心状态._闪避率', 0));
     player.value.stats.crit = _.get(data, '核心状态._暴击率', 0);
 
     // 性斗系统数据 - 直接读取实时值
@@ -844,7 +875,10 @@ async function loadFromMvu() {
           player.value.stats.baseEndurance += bonus.基础忍耐力加成 || 0;
           player.value.stats.charm += bonus.魅力加成 || 0;
           player.value.stats.luck += bonus.幸运加成 || 0;
-          player.value.stats.evasion += bonus.闪避率加成 || 0;
+          // 闪避率需要加上加成后重新应用递减收益上限
+          player.value.stats.evasion = calcEvasionWithDiminishingReturns(
+            player.value.stats.evasion + (bonus.闪避率加成 || 0),
+          );
           player.value.stats.crit += bonus.暴击率加成 || 0;
         }
       } else {
@@ -2611,7 +2645,7 @@ async function updateEnemyRealtimeStats(): Promise<void> {
     // 4. 计算实时属性 = 基础属性 + 加成统计
     const realtimeCharm = Math.max(0, baseCharm + (enemyTempBonus.魅力加成 || 0));
     const realtimeLuck = Math.max(0, baseLuck + (enemyTempBonus.幸运加成 || 0));
-    const realtimeEvasion = Math.min(60, Math.max(0, baseEvasion + (enemyTempBonus.闪避率加成 || 0)));
+    const realtimeEvasion = calcEvasionWithDiminishingReturns(baseEvasion + (enemyTempBonus.闪避率加成 || 0));
     const realtimeCrit = Math.min(100, Math.max(0, baseCrit + (enemyTempBonus.暴击率加成 || 0)));
 
     // 性斗力和忍耐力支持百分比加成
@@ -2808,16 +2842,12 @@ async function reloadStatusFromMvu() {
         (playerEquipBonus.幸运加成 || 0) +
         (playerTalentBonus['幸运加成'] || 0),
     );
-    player.value.stats.evasion = Math.min(
-      60,
-      Math.max(
-        0,
-        _.get(data, '核心状态.$基础闪避率', 0) +
-          (playerTempBonus.闪避率加成 || 0) +
-          (playerPermBonus.闪避率加成 || 0) +
-          (playerEquipBonus.闪避率加成 || 0) +
-          (playerTalentBonus['闪避率加成'] || 0),
-      ),
+    player.value.stats.evasion = calcEvasionWithDiminishingReturns(
+      _.get(data, '核心状态.$基础闪避率', 0) +
+        (playerTempBonus.闪避率加成 || 0) +
+        (playerPermBonus.闪避率加成 || 0) +
+        (playerEquipBonus.闪避率加成 || 0) +
+        (playerTalentBonus['闪避率加成'] || 0),
     );
     player.value.stats.crit = Math.min(
       100,
@@ -3589,13 +3619,13 @@ function handlePlayerSkill(skill: Skill) {
                 // 更新对手实时属性
                 const baseEvasion = _.get(mvuData.stat_data, '性斗系统.对手闪避率', 0);
                 const baseCrit = _.get(mvuData.stat_data, '性斗系统.对手暴击率', 0);
-                _.set(mvuData.stat_data, '性斗系统.对手实时闪避率', Math.max(0, baseEvasion + totalEvasion));
+                _.set(mvuData.stat_data, '性斗系统.对手实时闪避率', calcEvasionWithDiminishingReturns(baseEvasion + totalEvasion));
                 _.set(mvuData.stat_data, '性斗系统.对手实时暴击率', Math.max(0, baseCrit + totalCrit));
 
                 Mvu.replaceMvuData(mvuData, { type: 'message', message_id: 'latest' });
 
                 // 更新UI显示（使用crit而不是critChance）
-                nextEnemy.stats.evasion = Math.max(0, nextEnemy.stats.evasion + critDebuffResult.evasionDebuff);
+                nextEnemy.stats.evasion = calcEvasionWithDiminishingReturns(nextEnemy.stats.evasion + critDebuffResult.evasionDebuff);
                 nextEnemy.stats.crit = Math.max(0, nextEnemy.stats.crit + critDebuffResult.critDebuff);
               }
             }

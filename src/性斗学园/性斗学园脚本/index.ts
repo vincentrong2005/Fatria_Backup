@@ -161,6 +161,37 @@ function calculateRank(level: number): string {
 }
 
 /**
+ * 计算闪避率（带递减收益）
+ * - 0-60%: 1:1比例
+ * - 60%-70%: 10:1比例（超过60的部分除以10）
+ * - 上限: 70%
+ *
+ * 例如：原始闪避率80 -> 60 + (80-60)/10 = 60 + 2 = 62
+ * 达到70%上限需要原始闪避率160（60 + 100/10 = 70）
+ */
+function calcEvasionWithDiminishingReturns(rawEvasion: number): number {
+  const normalCap = 60; // 正常比例的上限
+  const hardCap = 70; // 闪避率绝对上限
+  const diminishingRatio = 10; // 超过60后的递减比例
+
+  // 确保不为负数
+  const safeRaw = Math.max(0, rawEvasion);
+
+  if (safeRaw <= normalCap) {
+    // 60以内，1:1比例
+    return safeRaw;
+  }
+
+  // 超过60的部分按10:1递减
+  const excessEvasion = safeRaw - normalCap;
+  const diminishedBonus = excessEvasion / diminishingRatio;
+  const finalEvasion = normalCap + diminishedBonus;
+
+  // 最终上限为70
+  return Math.min(hardCap, finalEvasion);
+}
+
+/**
  * 独立更新段位（确保段位始终与等级匹配）
  */
 async function updateRank() {
@@ -281,7 +312,7 @@ async function updateDependentVariables() {
     // 计算最终值（带上下限限制）
     const finalCharm = Math.max(0, baseCharm + charmBonus);
     const finalLuck = Math.max(0, baseLuck + luckBonus);
-    const finalDodge = Math.min(60, Math.max(0, baseDodge + dodgeBonus)); // 闪避率上陘60%
+    const finalDodge = calcEvasionWithDiminishingReturns(baseDodge + dodgeBonus); // 闪避率带递减收益，上限70%
     const finalCrit = Math.min(100, Math.max(0, baseCrit + critBonus)); // 暴击率上限100%
     // 已移除意志力计算
 
