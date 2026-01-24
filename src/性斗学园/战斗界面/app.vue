@@ -3619,13 +3619,19 @@ function handlePlayerSkill(skill: Skill) {
                 // 更新对手实时属性
                 const baseEvasion = _.get(mvuData.stat_data, '性斗系统.对手闪避率', 0);
                 const baseCrit = _.get(mvuData.stat_data, '性斗系统.对手暴击率', 0);
-                _.set(mvuData.stat_data, '性斗系统.对手实时闪避率', calcEvasionWithDiminishingReturns(baseEvasion + totalEvasion));
+                _.set(
+                  mvuData.stat_data,
+                  '性斗系统.对手实时闪避率',
+                  calcEvasionWithDiminishingReturns(baseEvasion + totalEvasion),
+                );
                 _.set(mvuData.stat_data, '性斗系统.对手实时暴击率', Math.max(0, baseCrit + totalCrit));
 
                 Mvu.replaceMvuData(mvuData, { type: 'message', message_id: 'latest' });
 
                 // 更新UI显示（使用crit而不是critChance）
-                nextEnemy.stats.evasion = calcEvasionWithDiminishingReturns(nextEnemy.stats.evasion + critDebuffResult.evasionDebuff);
+                nextEnemy.stats.evasion = calcEvasionWithDiminishingReturns(
+                  nextEnemy.stats.evasion + critDebuffResult.evasionDebuff,
+                );
                 nextEnemy.stats.crit = Math.max(0, nextEnemy.stats.crit + critDebuffResult.critDebuff);
               }
             }
