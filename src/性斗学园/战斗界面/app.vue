@@ -512,7 +512,7 @@ import CombatEffect from './components/CombatEffect.vue';
 import CombatLog from './components/CombatLog.vue';
 import { createDefaultEnemy, createDefaultPlayer, getEnemyPortraitUrl, savePlayerCustomAvatar } from './constants';
 import { selectCGEvent } from './data/cgConfig';
-import { resolveEnemyName } from './enemyDatabase';
+import { normalizeEnemyName, resolveEnemyName } from './enemyDatabase';
 import type { Character, CombatLogEntry, Item, Skill, StatusEffect, TurnState } from './types';
 // BOSS系统
 import * as BossSystem from './bossSystem';
@@ -1359,8 +1359,22 @@ async function loadFromMvu() {
 
 // 从MVU数据加载敌人（后备方案）
 async function loadEnemyFromMvuData(data: any, maxClimaxCount: number) {
-  const enemyName = _.get(data, '性斗系统.对手名称', '风纪委员长');
+  let enemyName = _.get(data, '性斗系统.对手名称', '风纪委员长');
   console.info(`[战斗界面] loadEnemyFromMvuData: enemyName=${enemyName}`); // DEBUG
+
+  // 规范化对手名称：去除中间点等特殊字符
+  const normalizedName = normalizeEnemyName(enemyName);
+  if (normalizedName !== enemyName) {
+    console.info(`[战斗界面] 对手名称规范化: "${enemyName}" -> "${normalizedName}"`);
+    enemyName = normalizedName;
+    // 写回规范化后的名称到 MVU
+    const mvuData = Mvu.getMvuData({ type: 'message', message_id: 'latest' });
+    if (mvuData?.stat_data) {
+      _.set(mvuData.stat_data, '性斗系统.对手名称', normalizedName);
+      await Mvu.replaceMvuData(mvuData, { type: 'message', message_id: 'latest' });
+    }
+  }
+
   if (enemyName) enemy.value.name = enemyName;
 
   // 解析对手临时状态 (Buff/Debuff)

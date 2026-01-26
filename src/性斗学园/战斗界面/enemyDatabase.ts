@@ -1642,19 +1642,33 @@ export const NAME_ALIASES: Record<string, string> = {
 };
 
 /**
+ * 规范化对手名称：去除中间点等特殊字符
+ * 例如："雪莉·克里姆希尔德" -> "雪莉克里姆希尔德"
+ * @param name 原始名称
+ * @returns 规范化后的名称
+ */
+export function normalizeEnemyName(name: string): string {
+  // 去除中间点（·、・、‧等变体）
+  return name.replace(/[·・‧]/g, '');
+}
+
+/**
  * 根据对手名称获取MVU变量数据（支持包含匹配）
  * @param enemyName 对手名称（可以是全名、部分名称或包含多个角色的复合名称）
  * @returns MVU变量数据，如果不存在则返回null
  */
 export function getEnemyMvuData(enemyName: string): EnemyMvuData | null {
+  // 预处理：去除名字中的中间点
+  const normalizedName = normalizeEnemyName(enemyName);
+
   // 1. 先尝试精确匹配（对手名刚好是某个数据库全名）
-  if (enemyName in ENEMY_DATABASE) {
+  if (normalizedName in ENEMY_DATABASE) {
     return ENEMY_DATABASE[enemyName];
   }
 
-  // 2. 先尝试精确别名匹配（避免短名包含匹配误判，如“雪莉”误命中“雪”）
-  if (enemyName in NAME_ALIASES) {
-    const fullName = NAME_ALIASES[enemyName];
+  // 2. 先尝试精确别名匹配（避免短名包含匹配误判，如"雪莉"误命中"雪"）
+  if (normalizedName in NAME_ALIASES) {
+    const fullName = NAME_ALIASES[normalizedName];
     if (fullName in ENEMY_DATABASE) {
       return ENEMY_DATABASE[fullName];
     }
@@ -1664,8 +1678,8 @@ export function getEnemyMvuData(enemyName: string): EnemyMvuData | null {
   //    如果包含多个，以第一个为准
   const enemyDbNames = Object.keys(ENEMY_DATABASE).sort((a, b) => b.length - a.length);
   for (const fullName of enemyDbNames) {
-    if (enemyName.includes(fullName)) {
-      console.info(`[敌人数据库] 包含匹配成功（数据）: "${enemyName}" 包含 "${fullName}"`);
+    if (normalizedName.includes(fullName)) {
+      console.info(`[敌人数据库] 包含匹配成功（数据）: "${enemyName}" (规范化: "${normalizedName}") 包含 "${fullName}"`);
       return ENEMY_DATABASE[fullName];
     }
   }
@@ -1674,8 +1688,8 @@ export function getEnemyMvuData(enemyName: string): EnemyMvuData | null {
   //    如果包含多个，以第一个为准
   const enemyAliases = Object.entries(NAME_ALIASES).sort((a, b) => b[0].length - a[0].length);
   for (const [alias, fullName] of enemyAliases) {
-    if (enemyName.includes(alias) && fullName in ENEMY_DATABASE) {
-      console.info(`[敌人数据库] 别名包含匹配成功（数据）: "${enemyName}" 包含别名 "${alias}" -> "${fullName}"`);
+    if (normalizedName.includes(alias) && fullName in ENEMY_DATABASE) {
+      console.info(`[敌人数据库] 别名包含匹配成功（数据）: "${enemyName}" (规范化: "${normalizedName}") 包含别名 "${alias}" -> "${fullName}"`);
       return ENEMY_DATABASE[fullName];
     }
   }
@@ -1691,14 +1705,17 @@ export function getEnemyMvuData(enemyName: string): EnemyMvuData | null {
  * @returns 完整名称，如果不存在则返回原名称
  */
 export function resolveEnemyName(enemyName: string): string {
+  // 预处理：去除名字中的中间点
+  const normalizedName = normalizeEnemyName(enemyName);
+
   // 1. 先尝试精确匹配（对手名刚好是某个数据库全名）
-  if (enemyName in ENEMY_DATABASE) {
-    return enemyName;
+  if (normalizedName in ENEMY_DATABASE) {
+    return normalizedName;
   }
 
-  // 2. 先尝试精确别名匹配（避免短名包含匹配误判，如“雪莉”误命中“雪”）
-  if (enemyName in NAME_ALIASES) {
-    const fullName = NAME_ALIASES[enemyName];
+  // 2. 先尝试精确别名匹配（避免短名包含匹配误判，如"雪莉"误命中"雪"）
+  if (normalizedName in NAME_ALIASES) {
+    const fullName = NAME_ALIASES[normalizedName];
     if (fullName in ENEMY_DATABASE) {
       return fullName;
     }
@@ -1708,8 +1725,8 @@ export function resolveEnemyName(enemyName: string): string {
   //    如果包含多个，以第一个为准
   const enemyDbNames = Object.keys(ENEMY_DATABASE).sort((a, b) => b.length - a.length);
   for (const fullName of enemyDbNames) {
-    if (enemyName.includes(fullName)) {
-      console.info(`[敌人数据库] 包含匹配成功: "${enemyName}" 包含 "${fullName}"`);
+    if (normalizedName.includes(fullName)) {
+      console.info(`[敌人数据库] 包含匹配成功: "${enemyName}" (规范化: "${normalizedName}") 包含 "${fullName}"`);
       return fullName;
     }
   }
@@ -1718,8 +1735,8 @@ export function resolveEnemyName(enemyName: string): string {
   //    如果包含多个，以第一个为准
   const enemyAliases = Object.entries(NAME_ALIASES).sort((a, b) => b[0].length - a[0].length);
   for (const [alias, fullName] of enemyAliases) {
-    if (enemyName.includes(alias) && fullName in ENEMY_DATABASE) {
-      console.info(`[敌人数据库] 别名包含匹配成功: "${enemyName}" 包含别名 "${alias}" -> "${fullName}"`);
+    if (normalizedName.includes(alias) && fullName in ENEMY_DATABASE) {
+      console.info(`[敌人数据库] 别名包含匹配成功: "${enemyName}" (规范化: "${normalizedName}") 包含别名 "${alias}" -> "${fullName}"`);
       return fullName;
     }
   }
