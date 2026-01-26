@@ -38,6 +38,14 @@ export interface BossState {
   heisakiDebt: number; // 玩家债务值
   heisakiSkillCostMultipliers: Record<string, number>; // 各技能的耐力消耗倍率
   heisakiDebtSettlementTriggered: boolean; // 本回合是否触发了债务结算
+  // Agnes专属状态（暴食天赋）
+  agnesCalories: number; // 卡路里累计值
+  agnesCalorieThreshold: number; // 上次触发对话的卡路里阈值（100的倍数）
+  agnesFrenzyActive: boolean; // 是否处于发狂状态
+  agnesFrenzyExtraHits: number; // 发狂额外连击数
+  agnesFrenzyGuaranteedHit: boolean; // 发狂必定命中
+  agnesFrenzyCrit: boolean; // 发狂必定暴击
+  agnesCurrentTurn: number; // 当前回合数
 }
 
 export interface BossDialogue {
@@ -232,6 +240,14 @@ export const bossState = reactive<BossState>({
   heisakiDebt: 0,
   heisakiSkillCostMultipliers: {},
   heisakiDebtSettlementTriggered: false,
+  // Agnes专属状态
+  agnesCalories: 0,
+  agnesCalorieThreshold: 0,
+  agnesFrenzyActive: false,
+  agnesFrenzyExtraHits: 0,
+  agnesFrenzyGuaranteedHit: false,
+  agnesFrenzyCrit: false,
+  agnesCurrentTurn: 0,
 });
 
 // 当前显示的对话
@@ -302,6 +318,14 @@ export function resetBossState(): void {
   bossState.heisakiDebt = 0;
   bossState.heisakiSkillCostMultipliers = {};
   bossState.heisakiDebtSettlementTriggered = false;
+  // Agnes专属状态重置
+  bossState.agnesCalories = 0;
+  bossState.agnesCalorieThreshold = 0;
+  bossState.agnesFrenzyActive = false;
+  bossState.agnesFrenzyExtraHits = 0;
+  bossState.agnesFrenzyGuaranteedHit = false;
+  bossState.agnesFrenzyCrit = false;
+  bossState.agnesCurrentTurn = 0;
   currentDialogue.value = null;
   dialogueQueue.value = [];
   isShowingDialogue.value = false;
@@ -2297,6 +2321,418 @@ export function getHeisakiGreedDescription(): string {
     '',
     '【贪婪满足】债务结算触发时：',
     '• 黑崎晴雯获得忍耐力成算-90%（1回合）',
+  ];
+  return effects.join('\n');
+}
+
+// ==================== 艾格妮丝 BOSS 对话库（七宗罪·暴食）====================
+export const AGNES_DIALOGUES = {
+  // 开场白（根据玩家性别区分）
+  entry_female: [
+    { speaker: '艾格妮丝', text: '"哎呀~今天的下午茶来了呢...请允许本公主为您斟上一杯...特制红茶♡"', emotion: 'arrogant' as const },
+    { speaker: '艾格妮丝', text: '"这芬芳的气息...是只有美丽的少女才会散发出的高贵香调呢~"', emotion: 'arrogant' as const },
+    { speaker: '艾格妮丝', text: '"来吧，让本公主好好...品鉴一下你的味道♡"', emotion: 'arrogant' as const },
+  ],
+  entry_male: [
+    { speaker: '艾格妮丝', text: '"......（皱眉戴上蕾丝口罩）"', emotion: 'angry' as const },
+    { speaker: '艾格妮丝', text: '"又是一只臭烘烘的雄性害虫吗...真是败坏本公主的胃口。"', emotion: 'angry' as const },
+    { speaker: '艾格妮丝', text: '"既然你管不住自己的下半身，那本公主就帮你废了它！"', emotion: 'angry' as const },
+  ],
+
+  // 卡路里突破对话（每突破100触发）
+  calorie_milestone: [
+    { speaker: '艾格妮丝', text: '"嗯~不错不错...♡ 本公主还没满足呢~"', emotion: 'arrogant' as const },
+    { speaker: '艾格妮丝', text: '"呼...本公主的肚子越来越暖了...力量在涌动~"', emotion: 'arrogant' as const },
+    { speaker: '艾格妮丝', text: '"这种充实感...真是让人欲罢不能呢...再来一点♡"', emotion: 'arrogant' as const },
+    { speaker: '艾格妮丝', text: '"真不错呢~♡，本公主现在状态绝佳！"', emotion: 'arrogant' as const },
+  ],
+
+  // 共餐触发对话（偷取道具时）
+  feast_steal_female: [
+    { speaker: '艾格妮丝', text: '"哦？你背包里有好东西呢~本公主不客气地收下了♡"', emotion: 'arrogant' as const },
+    { speaker: '艾格妮丝', text: '"与美少女共餐是最高雅的享受...让我尝尝这是什么味道~"', emotion: 'arrogant' as const },
+  ],
+  feast_steal_male: [
+    { speaker: '艾格妮丝', text: '"你的东西？现在是本公主的了。（轻蔑地夺走）"', emotion: 'angry' as const },
+    { speaker: '艾格妮丝', text: '"害虫的物品...勉强能入口。别以为本公主会感谢你。"', emotion: 'angry' as const },
+  ],
+
+  // 发狂对话（吃到不好的东西）
+  frenzy_trigger: [
+    { speaker: '艾格妮丝', text: '"这、这是什么堕落之物...！？"', emotion: 'angry' as const },
+  ],
+
+  // 发狂后束缚对话
+  frenzy_aftermath: [
+    { speaker: '艾格妮丝', text: '"不好吃...太恶心了...本公主要把你撕碎...！"', emotion: 'angry' as const },
+    { speaker: '艾格妮丝', text: '"本公主的皇冠...别碰本公主的皇冠...（虚弱）"', emotion: 'weak' as const },
+  ],
+};
+
+// ==================== 艾格妮丝 BOSS 检测函数 ====================
+/**
+ * 检测是否是艾格妮丝BOSS战
+ */
+export function isAgnesBoss(enemyName: string): boolean {
+  if (!enemyName) return false;
+  const name = enemyName.toLowerCase();
+  return (
+    name.includes('艾格妮丝') ||
+    name.includes('agnes') ||
+    name.includes('蔷薇') ||
+    name.includes('鼠族公主') ||
+    name.includes('暴食')
+  );
+}
+
+/**
+ * 初始化艾格妮丝BOSS战
+ * @param playerGender 玩家性别 'male' | 'female' | 'other'
+ */
+export function initAgnesBoss(playerGender: string): void {
+  bossState.isBossFight = true;
+  bossState.bossId = 'agnes';
+  bossState.currentPhase = 1;
+  bossState.phaseTransitioning = false;
+  bossState.dialogueIndex = 0;
+  bossState.buttonsDisabled = false;
+  bossState.hasUsedMedal = false;
+  // Agnes专属状态初始化
+  bossState.agnesCalories = 0;
+  bossState.agnesCalorieThreshold = 0;
+  bossState.agnesFrenzyActive = false;
+  bossState.agnesFrenzyExtraHits = 0;
+  bossState.agnesFrenzyGuaranteedHit = false;
+  bossState.agnesFrenzyCrit = false;
+
+  // 根据玩家性别播放不同开场白
+  const isMale = playerGender === 'male' || playerGender === '男';
+  const entryDialogues = isMale ? AGNES_DIALOGUES.entry_male : AGNES_DIALOGUES.entry_female;
+  queueDialogues(entryDialogues);
+}
+
+/**
+ * 获取当前卡路里值
+ */
+export function getAgnesCalories(): number {
+  if (!bossState.isBossFight || bossState.bossId !== 'agnes') {
+    return 0;
+  }
+  return bossState.agnesCalories;
+}
+
+/**
+ * 添加卡路里（快感伤害的80%转化为卡路里）
+ * @param pleasureDamage 快感伤害值
+ * @param logs 日志数组
+ * @returns 新增的卡路里值和是否触发阈值
+ */
+export function addAgnesCalories(pleasureDamage: number, logs: string[]): { calorieGain: number; triggeredThreshold: boolean; dialogues: any[] } {
+  if (!bossState.isBossFight || bossState.bossId !== 'agnes') {
+    return { calorieGain: 0, triggeredThreshold: false, dialogues: [] };
+  }
+
+  // 80%的快感伤害转化为卡路里
+  const calorieGain = Math.floor(pleasureDamage * 0.8);
+  if (calorieGain <= 0) return { calorieGain: 0, triggeredThreshold: false, dialogues: [] };
+
+  const oldCalories = bossState.agnesCalories;
+  bossState.agnesCalories += calorieGain;
+  const newCalories = bossState.agnesCalories;
+
+  logs.push(`【七宗罪·暴食】卡路里+${calorieGain}（当前${newCalories}）`);
+
+  // 检查是否突破100的整数倍
+  const oldThreshold = Math.floor(oldCalories / 100);
+  const newThreshold = Math.floor(newCalories / 100);
+
+  let triggeredThreshold = false;
+  let dialogues: any[] = [];
+
+  if (newThreshold > oldThreshold) {
+    triggeredThreshold = true;
+    // 计算新增的成算加成
+    const bonusPercent = newThreshold * 12;
+    logs.push(`【七宗罪·暴食】卡路里突破${newThreshold * 100}！性斗力/忍耐力成算+${bonusPercent}%`);
+
+    // 获取突破对话 - 作为阻塞式对话返回
+    dialogues = [AGNES_DIALOGUES.calorie_milestone[Math.floor(Math.random() * AGNES_DIALOGUES.calorie_milestone.length)]];
+
+    bossState.agnesCalorieThreshold = newThreshold * 100;
+  }
+
+  return { calorieGain, triggeredThreshold, dialogues };
+}
+
+/**
+ * 获取卡路里带来的成算加成（每100卡路里：性斗力/忍耐力成算+12%，魅力加成+18）
+ */
+export function getAgnesCalorieBonus(): { sexPowerCalcBonus: number; enduranceCalcBonus: number; charmCalcBonus: number } {
+  if (!bossState.isBossFight || bossState.bossId !== 'agnes') {
+    return { sexPowerCalcBonus: 0, enduranceCalcBonus: 0, charmCalcBonus: 0 };
+  }
+
+  const threshold = Math.floor(bossState.agnesCalories / 100);
+  const percentBonus = threshold * 12; // 每100卡路里+12%
+  const charmBonus = threshold * 18; // 每100卡路里+18魅力
+
+  return {
+    sexPowerCalcBonus: percentBonus,
+    enduranceCalcBonus: percentBonus,
+    charmCalcBonus: charmBonus,
+  };
+}
+
+// 特殊道具列表（吃到会发狂的道具）
+export const AGNES_BAD_FOOD_ITEMS = ['意识奇点', '中枢神经兴奋剂', '强力媚药', '致幻剂'];
+
+/**
+ * 执行共餐机制（奇数回合开始时）
+ * @param playerItems 玩家物品列表
+ * @param playerGender 玩家性别
+ * @param logs 日志数组
+ * @returns { itemStolen, isBadFood, itemEffects } 偷取的道具信息
+ */
+export function executeAgnesFeast(
+  playerItems: any[],
+  playerGender: string,
+  logs: string[],
+): {
+  itemStolen: any | null;
+  itemName: string;
+  isBadFood: boolean;
+  itemEffects: { type: string; value: number; buffs?: Record<string, number> }[];
+  feastDialogue: { speaker: string; text: string; emotion: string } | null;
+} {
+  if (!bossState.isBossFight || bossState.bossId !== 'agnes') {
+    return { itemStolen: null, itemName: '', isBadFood: false, itemEffects: [], feastDialogue: null };
+  }
+
+  // 过滤出有效的道具（数量>0的）
+  const availableItems = playerItems.filter(item => item && (item.quantity > 0 || item.count > 0));
+  if (availableItems.length === 0) {
+    logs.push(`【七宗罪·暴食】共餐失败...玩家背包空空如也`);
+    return { itemStolen: null, itemName: '', isBadFood: false, itemEffects: [], feastDialogue: null };
+  }
+
+  // 按道具种类等概率选取（与数量无关）
+  const uniqueItems = [...new Map(availableItems.map(item => [item.name || item.id, item])).values()];
+  const selectedItem = uniqueItems[Math.floor(Math.random() * uniqueItems.length)];
+  const itemName = selectedItem.name || selectedItem.id || '未知道具';
+
+  // 检查是否是发狂道具
+  const isBadFood = AGNES_BAD_FOOD_ITEMS.some(badFood => itemName.includes(badFood));
+
+  // 生成包含道具名称的动态共餐对话（不直接调用queueDialogues，由app.vue控制）
+  const isMale = playerGender === 'male' || playerGender === '男';
+  const feastDialogue = isMale
+    ? { speaker: '艾格妮丝', text: `"「${itemName}」？现在是本公主的了。（轻蔑地夺走）"`, emotion: 'angry' as const }
+    : { speaker: '艾格妮丝', text: `"哦？「${itemName}」呢~本公主不客气地收下了♡"`, emotion: 'arrogant' as const };
+
+  logs.push(`【七宗罪·暴食】艾格妮丝共餐了你的「${itemName}」！`);
+
+  if (isBadFood) {
+    // 发狂！
+    logs.push(`【七宗罪·暴食】艾格妮丝吃到了「${itemName}」！这是不好的东西！`);
+
+    // 触发发狂状态
+    bossState.agnesFrenzyActive = true;
+    bossState.agnesFrenzyExtraHits = 1; // 连击+1
+    bossState.agnesFrenzyGuaranteedHit = true; // 必定命中
+    bossState.agnesFrenzyCrit = true; // 必定暴击
+
+    logs.push(`【七宗罪·暴食】发狂！本回合连击+1，必定命中，必定暴击！`);
+
+    return {
+      itemStolen: selectedItem,
+      itemName,
+      isBadFood: true,
+      itemEffects: [], // 特殊道具不触发效果
+      feastDialogue,
+    };
+  }
+
+  // 正常道具：计算3倍效果
+  const itemEffects = getItemEffects(selectedItem);
+  const tripleEffects = itemEffects.map(effect => {
+    // 对于buff类型，需要将buffs字段的值也乘以3
+    if (effect.type === 'buff' && effect.buffs) {
+      const tripleBuffs: Record<string, number> = {};
+      for (const [key, value] of Object.entries(effect.buffs)) {
+        tripleBuffs[key] = (value as number) * 3;
+      }
+      return {
+        type: effect.type,
+        value: effect.value,
+        buffs: tripleBuffs,
+      };
+    }
+    // 对于耐力/快感类型，直接乘以3
+    return {
+      type: effect.type,
+      value: effect.value * 3,
+      buffs: effect.buffs,
+    };
+  });
+
+  if (tripleEffects.length > 0) {
+    const effectDescriptions = tripleEffects.map(e => {
+      if (e.type === 'buff' && e.buffs) {
+        return Object.entries(e.buffs).map(([k, v]) => `${k}${v > 0 ? '+' : ''}${v}`).join(', ');
+      }
+      return `${e.type}${e.value > 0 ? '+' : ''}${e.value}`;
+    }).join(', ');
+    logs.push(`【七宗罪·暴食】艾格妮丝获得3倍效果：${effectDescriptions}`);
+  }
+
+  return {
+    itemStolen: selectedItem,
+    itemName,
+    isBadFood: false,
+    itemEffects: tripleEffects,
+    feastDialogue,
+  };
+}
+
+/**
+ * 解析道具效果（用于共餐机制）
+ * 根据MVU道具数据结构解析：
+ * - 加成属性: { 魅力加成: X, 幸运加成: Y, ... }
+ * - 耐力增加: X
+ * - 快感降低: X
+ */
+function getItemEffects(item: any): { type: string; value: number; buffs?: Record<string, number> }[] {
+  const effects: { type: string; value: number; buffs?: Record<string, number> }[] = [];
+
+  if (!item) return effects;
+
+  // 从 耐力增加 字段解析
+  if (item.耐力增加 && typeof item.耐力增加 === 'number') {
+    effects.push({ type: '耐力', value: item.耐力增加 });
+  }
+
+  // 从 快感降低 字段解析（负值表示降低快感）
+  if (item.快感降低 && typeof item.快感降低 === 'number') {
+    effects.push({ type: '快感', value: -item.快感降低 });
+  }
+
+  // 从 加成属性 字段解析（buff类道具）
+  if (item.加成属性 && typeof item.加成属性 === 'object') {
+    const buffEntries = Object.entries(item.加成属性);
+    if (buffEntries.length > 0) {
+      // 返回buff类型效果，包含所有加成属性
+      effects.push({
+        type: 'buff',
+        value: 1, // 占位值，实际效果在buffs字段
+        buffs: item.加成属性 as Record<string, number>,
+      });
+    }
+  }
+
+  // 备用方案：从道具名称推断效果
+  const name = item.name || item.名称 || '';
+  if (effects.length === 0) {
+    if (name.includes('耐力药剂')) {
+      const match = name.match(/(\d+)/);
+      if (match) {
+        effects.push({ type: '耐力', value: parseInt(match[1]) });
+      }
+    }
+    if (name.includes('冷静剂')) {
+      const match = name.match(/(\d+)/);
+      if (match) {
+        effects.push({ type: '快感', value: -parseInt(match[1]) });
+      }
+    }
+  }
+
+  return effects;
+}
+
+/**
+ * 处理发狂后的效果（卡路里减半，束缚2回合）
+ * @param logs 日志数组
+ * @returns 需要应用的束缚回合数
+ */
+export function handleAgnesFrenzyAftermath(logs: string[]): number {
+  if (!bossState.isBossFight || bossState.bossId !== 'agnes') {
+    return 0;
+  }
+
+  if (!bossState.agnesFrenzyActive) {
+    return 0;
+  }
+
+  // 卡路里减半（而非清空）
+  const oldCalories = bossState.agnesCalories;
+  const halvedCalories = Math.floor(oldCalories / 2);
+  bossState.agnesCalories = halvedCalories;
+  const lostCalories = oldCalories - halvedCalories;
+  
+  // 重新计算阈值
+  bossState.agnesCalorieThreshold = Math.floor(halvedCalories / 100) * 100;
+
+  logs.push(`【七宗罪·暴食】艾格妮丝呕吐了...卡路里减半（-${lostCalories}，剩余${halvedCalories}）`);
+
+  // 播放发狂后对话
+  queueDialogues(AGNES_DIALOGUES.frenzy_aftermath, false);
+
+  // 重置发狂状态
+  bossState.agnesFrenzyActive = false;
+  bossState.agnesFrenzyExtraHits = 0;
+  bossState.agnesFrenzyGuaranteedHit = false;
+  bossState.agnesFrenzyCrit = false;
+
+  logs.push(`【七宗罪·暴食】艾格妮丝被束缚1回合！`);
+
+  return 1; // 返回束缚回合数
+}
+
+/**
+ * 检查是否处于发狂状态
+ */
+export function isAgnesFrenzyActive(): boolean {
+  return bossState.isBossFight && bossState.bossId === 'agnes' && bossState.agnesFrenzyActive;
+}
+
+/**
+ * 获取发狂状态的战斗修正
+ */
+export function getAgnesFrenzyModifiers(): {
+  extraHits: number;
+  guaranteedHit: boolean;
+  guaranteedCrit: boolean;
+} {
+  if (!isAgnesFrenzyActive()) {
+    return { extraHits: 0, guaranteedHit: false, guaranteedCrit: false };
+  }
+
+  return {
+    extraHits: bossState.agnesFrenzyExtraHits,
+    guaranteedHit: bossState.agnesFrenzyGuaranteedHit,
+    guaranteedCrit: bossState.agnesFrenzyCrit,
+  };
+}
+
+/**
+ * 获取艾格妮丝暴食天赋描述信息（用于UI显示）
+ */
+export function getAgnesGluttonyDescription(): string {
+  const effects = [
+    '【七宗罪·暴食】艾格妮丝蔷薇的暴食天赋：',
+    '',
+    '【卡路里堆叠】每一笔快感伤害：',
+    '• 80%转化为艾格妮丝的「卡路里」',
+    '• 每100卡路里：性斗力/忍耐力成算+12%，魅力+18',
+    '',
+    '【共餐】每3回合开始时（1,4,7...）：',
+    '• 随机消耗玩家1个道具',
+    '• 艾格妮丝获得3倍道具效果',
+    '',
+    '【发狂】共餐到特殊道具时：',
+    '• 本回合连击+1，必定命中，必定暴击',
+    '• 之后卡路里减半',
+    '• 艾格妮丝被束缚1回合',
   ];
   return effects.join('\n');
 }

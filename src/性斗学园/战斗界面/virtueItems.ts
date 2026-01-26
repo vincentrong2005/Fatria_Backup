@@ -89,6 +89,16 @@ export const VIRTUE_ITEMS: VirtueItem[] = [
       基础忍耐力加成: 250,
     },
   },
+  {
+    id: 'virtue_temperance',
+    name: '节制之王冠',
+    bossName: '艾格妮丝',
+    bossAliases: ['agnes', '暴食', '蔷薇', '鼠族公主'],
+    description: '曾经属于暴食公主的华丽王冠，如今被净化为自律的象征。它教导持有者：真正的富足不在于吞噬一切，而在于知足常乐。',
+    bonuses: {
+      闪避率加成: 60,
+    },
+  },
 ];
 
 /**
