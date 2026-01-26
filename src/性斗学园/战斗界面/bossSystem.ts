@@ -2329,8 +2329,16 @@ export function getHeisakiGreedDescription(): string {
 export const AGNES_DIALOGUES = {
   // 开场白（根据玩家性别区分）
   entry_female: [
-    { speaker: '艾格妮丝', text: '"哎呀~今天的下午茶来了呢...请允许本公主为您斟上一杯...特制红茶♡"', emotion: 'arrogant' as const },
-    { speaker: '艾格妮丝', text: '"这芬芳的气息...是只有美丽的少女才会散发出的高贵香调呢~"', emotion: 'arrogant' as const },
+    {
+      speaker: '艾格妮丝',
+      text: '"哎呀~今天的下午茶来了呢...请允许本公主为您斟上一杯...特制红茶♡"',
+      emotion: 'arrogant' as const,
+    },
+    {
+      speaker: '艾格妮丝',
+      text: '"这芬芳的气息...是只有美丽的少女才会散发出的高贵香调呢~"',
+      emotion: 'arrogant' as const,
+    },
     { speaker: '艾格妮丝', text: '"来吧，让本公主好好...品鉴一下你的味道♡"', emotion: 'arrogant' as const },
   ],
   entry_male: [
@@ -2358,9 +2366,7 @@ export const AGNES_DIALOGUES = {
   ],
 
   // 发狂对话（吃到不好的东西）
-  frenzy_trigger: [
-    { speaker: '艾格妮丝', text: '"这、这是什么堕落之物...！？"', emotion: 'angry' as const },
-  ],
+  frenzy_trigger: [{ speaker: '艾格妮丝', text: '"这、这是什么堕落之物...！？"', emotion: 'angry' as const }],
 
   // 发狂后束缚对话
   frenzy_aftermath: [
@@ -2427,7 +2433,10 @@ export function getAgnesCalories(): number {
  * @param logs 日志数组
  * @returns 新增的卡路里值和是否触发阈值
  */
-export function addAgnesCalories(pleasureDamage: number, logs: string[]): { calorieGain: number; triggeredThreshold: boolean; dialogues: any[] } {
+export function addAgnesCalories(
+  pleasureDamage: number,
+  logs: string[],
+): { calorieGain: number; triggeredThreshold: boolean; dialogues: any[] } {
   if (!bossState.isBossFight || bossState.bossId !== 'agnes') {
     return { calorieGain: 0, triggeredThreshold: false, dialogues: [] };
   }
@@ -2456,7 +2465,9 @@ export function addAgnesCalories(pleasureDamage: number, logs: string[]): { calo
     logs.push(`【七宗罪·暴食】卡路里突破${newThreshold * 100}！性斗力/忍耐力成算+${bonusPercent}%`);
 
     // 获取突破对话 - 作为阻塞式对话返回
-    dialogues = [AGNES_DIALOGUES.calorie_milestone[Math.floor(Math.random() * AGNES_DIALOGUES.calorie_milestone.length)]];
+    dialogues = [
+      AGNES_DIALOGUES.calorie_milestone[Math.floor(Math.random() * AGNES_DIALOGUES.calorie_milestone.length)],
+    ];
 
     bossState.agnesCalorieThreshold = newThreshold * 100;
   }
@@ -2467,7 +2478,11 @@ export function addAgnesCalories(pleasureDamage: number, logs: string[]): { calo
 /**
  * 获取卡路里带来的成算加成（每100卡路里：性斗力/忍耐力成算+12%，魅力加成+18）
  */
-export function getAgnesCalorieBonus(): { sexPowerCalcBonus: number; enduranceCalcBonus: number; charmCalcBonus: number } {
+export function getAgnesCalorieBonus(): {
+  sexPowerCalcBonus: number;
+  enduranceCalcBonus: number;
+  charmCalcBonus: number;
+} {
   if (!bossState.isBossFight || bossState.bossId !== 'agnes') {
     return { sexPowerCalcBonus: 0, enduranceCalcBonus: 0, charmCalcBonus: 0 };
   }
@@ -2576,12 +2591,16 @@ export function executeAgnesFeast(
   });
 
   if (tripleEffects.length > 0) {
-    const effectDescriptions = tripleEffects.map(e => {
-      if (e.type === 'buff' && e.buffs) {
-        return Object.entries(e.buffs).map(([k, v]) => `${k}${v > 0 ? '+' : ''}${v}`).join(', ');
-      }
-      return `${e.type}${e.value > 0 ? '+' : ''}${e.value}`;
-    }).join(', ');
+    const effectDescriptions = tripleEffects
+      .map(e => {
+        if (e.type === 'buff' && e.buffs) {
+          return Object.entries(e.buffs)
+            .map(([k, v]) => `${k}${v > 0 ? '+' : ''}${v}`)
+            .join(', ');
+        }
+        return `${e.type}${e.value > 0 ? '+' : ''}${e.value}`;
+      })
+      .join(', ');
     logs.push(`【七宗罪·暴食】艾格妮丝获得3倍效果：${effectDescriptions}`);
   }
 
@@ -2668,7 +2687,7 @@ export function handleAgnesFrenzyAftermath(logs: string[]): number {
   const halvedCalories = Math.floor(oldCalories / 2);
   bossState.agnesCalories = halvedCalories;
   const lostCalories = oldCalories - halvedCalories;
-  
+
   // 重新计算阈值
   bossState.agnesCalorieThreshold = Math.floor(halvedCalories / 100) * 100;
 

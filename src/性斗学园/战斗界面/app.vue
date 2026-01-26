@@ -1669,7 +1669,7 @@ async function loadEnemyFromMvuData(data: any, maxClimaxCount: number) {
   // 检测是否是艾格妮丝BOSS战（七宗罪·暴食）
   else if (BossSystem.isAgnesBoss(enemyName)) {
     console.info('[战斗界面] 检测到艾格妮丝BOSS战！（七宗罪·暴食）');
-    
+
     // 获取玩家性别
     let agnesPlayerGender = '女';
     try {
@@ -1680,7 +1680,7 @@ async function loadEnemyFromMvuData(data: any, maxClimaxCount: number) {
     } catch (e) {
       agnesPlayerGender = '女';
     }
-    
+
     BossSystem.initAgnesBoss(agnesPlayerGender);
     const bossDisplayName = '艾格妮丝';
     const bossClimaxLimit = 3; // 高潮次数上限3
@@ -1710,7 +1710,9 @@ async function loadEnemyFromMvuData(data: any, maxClimaxCount: number) {
     isBossSurrenderDisabled.value = true;
     addLog(`【暴食契约】投降按钮已被封印！`, 'system', 'critical');
 
-    console.info(`[战斗界面] 艾格妮丝BOSS战初始化完成, 高潮次数上限: ${bossClimaxLimit}, 玩家性别: ${agnesPlayerGender}`);
+    console.info(
+      `[战斗界面] 艾格妮丝BOSS战初始化完成, 高潮次数上限: ${bossClimaxLimit}, 玩家性别: ${agnesPlayerGender}`,
+    );
   }
 
   // 优先从数据库查找对手数据，如果存在则覆盖MVU变量
@@ -3718,39 +3720,42 @@ function handlePlayerSkill(skill: Skill) {
           const calorieLogs: string[] = [];
           const thresholdResult = BossSystem.addAgnesCalories(result.totalDamage, calorieLogs);
           calorieLogs.forEach(log => addLog(log, 'system', log.includes('成算') ? 'debuff' : 'info'));
-          
+
           // 同步卡路里到MVU
           if (typeof Mvu !== 'undefined') {
             const mvuData = Mvu.getMvuData({ type: 'message', message_id: 'latest' });
             if (mvuData?.stat_data) {
               _.set(mvuData.stat_data, '性斗系统.艾格妮丝卡路里', BossSystem.bossState.agnesCalories);
-              
+
               // 如果触发了阈值，写入对手临时状态（每100卡路里+20%成算）
               if (thresholdResult.triggeredThreshold) {
                 const calorieBonus = BossSystem.getAgnesCalorieBonus();
                 const stateList = _.get(mvuData.stat_data, '性斗系统.对手临时状态.状态列表', {}) as Record<string, any>;
                 stateList['卡路里加成'] = {
                   加成: {
-                    '基础性斗力成算': calorieBonus.sexPowerCalcBonus,
-                    '基础忍耐力成算': calorieBonus.enduranceCalcBonus,
-                    '魅力加成': calorieBonus.charmCalcBonus,
+                    基础性斗力成算: calorieBonus.sexPowerCalcBonus,
+                    基础忍耐力成算: calorieBonus.enduranceCalcBonus,
+                    魅力加成: calorieBonus.charmCalcBonus,
                   },
                   剩余回合: 999, // 永久效果
                 };
                 _.set(mvuData.stat_data, '性斗系统.对手临时状态.状态列表', stateList);
-                
+
                 // 更新加成统计
-                const bonusStats = _.get(mvuData.stat_data, '性斗系统.对手临时状态.加成统计', {}) as Record<string, number>;
+                const bonusStats = _.get(mvuData.stat_data, '性斗系统.对手临时状态.加成统计', {}) as Record<
+                  string,
+                  number
+                >;
                 bonusStats['基础性斗力成算'] = (bonusStats['基础性斗力成算'] || 0) + 12;
                 bonusStats['基础忍耐力成算'] = (bonusStats['基础忍耐力成算'] || 0) + 12;
                 bonusStats['魅力加成'] = (bonusStats['魅力加成'] || 0) + 18;
                 _.set(mvuData.stat_data, '性斗系统.对手临时状态.加成统计', bonusStats);
               }
-              
+
               Mvu.replaceMvuData(mvuData, { type: 'message', message_id: 'latest' });
             }
           }
-          
+
           // 如果触发了阈值对话，使用阻塞式对话（玩家必须看完）
           if (thresholdResult.triggeredThreshold && thresholdResult.dialogues.length > 0) {
             BossSystem.queueDialogues(thresholdResult.dialogues, true); // true = 阻塞式
@@ -4178,7 +4183,7 @@ function handleEnemyTurn() {
   if (BossSystem.bossState.isBossFight && BossSystem.bossState.bossId === 'agnes') {
     // 增加回合计数
     BossSystem.bossState.agnesCurrentTurn++;
-    
+
     // 检查是否是共餐回合（1,4,7,10... 即 (回合-1) % 3 === 0）
     if ((BossSystem.bossState.agnesCurrentTurn - 1) % 3 === 0) {
       // 获取玩家性别
@@ -4247,9 +4252,7 @@ function handleEnemyTurn() {
         }
 
         // 同时从战斗界面的items列表扣除
-        const itemIndex = player.value.items.findIndex(
-          (item: any) => (item.name || item.id) === feastResult.itemName
-        );
+        const itemIndex = player.value.items.findIndex((item: any) => (item.name || item.id) === feastResult.itemName);
         if (itemIndex !== -1) {
           player.value.items[itemIndex].quantity--;
           if (player.value.items[itemIndex].quantity <= 0) {
@@ -4261,7 +4264,7 @@ function handleEnemyTurn() {
         if (feastResult.isBadFood) {
           addLog(`【发狂】艾格妮丝吃到了「${feastResult.itemName}」，陷入发狂状态！`, 'system', 'critical');
           addLog(`【发狂效果】本回合攻击：连击+1，必定命中，必定暴击！`, 'system', 'critical');
-          
+
           // 显示发狂对话（阻塞式，会排队在共餐对话之后）
           BossSystem.queueDialogues(BossSystem.AGNES_DIALOGUES.frenzy_trigger, true);
         } else if (feastResult.itemEffects.length > 0) {
@@ -4291,14 +4294,15 @@ function handleEnemyTurn() {
                   // 写入临时状态（3倍效果）
                   const stateName = `共餐_${feastResult.itemName}`;
                   if (!mvuData.stat_data['性斗系统']) mvuData.stat_data['性斗系统'] = {};
-                  if (!mvuData.stat_data['性斗系统']['对手临时状态']) mvuData.stat_data['性斗系统']['对手临时状态'] = { 状态列表: {}, 加成统计: {} };
-                  
+                  if (!mvuData.stat_data['性斗系统']['对手临时状态'])
+                    mvuData.stat_data['性斗系统']['对手临时状态'] = { 状态列表: {}, 加成统计: {} };
+
                   const stateList = mvuData.stat_data['性斗系统']['对手临时状态']['状态列表'];
                   stateList[stateName] = {
                     加成: effect.buffs || {},
                     剩余回合: 3,
                   };
-                  
+
                   // 更新加成统计
                   const bonusStats = mvuData.stat_data['性斗系统']['对手临时状态']['加成统计'] || {};
                   Object.entries(effect.buffs || {}).forEach(([key, val]) => {
@@ -4315,7 +4319,6 @@ function handleEnemyTurn() {
       }
     }
   }
-
 
   // ========== 薇丝佩菈BOSS：自体献祭检查（高潮2/3次后，仅女性玩家） ==========
   if (BossSystem.bossState.isBossFight && BossSystem.bossState.bossId === 'vespera') {
@@ -4869,7 +4872,11 @@ function handleEnemyTurn() {
         let agnesFrenzyGuaranteedHit = false;
         let agnesFrenzyGuaranteedCrit = false;
         let agnesFrenzyExtraHits = 0;
-        if (BossSystem.bossState.isBossFight && BossSystem.bossState.bossId === 'agnes' && BossSystem.bossState.agnesFrenzyActive) {
+        if (
+          BossSystem.bossState.isBossFight &&
+          BossSystem.bossState.bossId === 'agnes' &&
+          BossSystem.bossState.agnesFrenzyActive
+        ) {
           const frenzyMods = BossSystem.getAgnesFrenzyModifiers();
           agnesFrenzyGuaranteedHit = frenzyMods.guaranteedHit;
           agnesFrenzyGuaranteedCrit = frenzyMods.guaranteedCrit;
@@ -4879,7 +4886,8 @@ function handleEnemyTurn() {
 
         const result = executeAttack(nextEnemy, nextPlayer, skill.data, false, {
           guaranteedHit: lustGuaranteedHit || vesperaGuaranteedHit || agnesFrenzyGuaranteedHit,
-          guaranteedCrit: lustGuaranteedCrit || christineWrathCrit || vesperaGuaranteedCrit || agnesFrenzyGuaranteedCrit,
+          guaranteedCrit:
+            lustGuaranteedCrit || christineWrathCrit || vesperaGuaranteedCrit || agnesFrenzyGuaranteedCrit,
           extraHitCount: christineWrathExtraHits + agnesFrenzyExtraHits,
         });
 
@@ -5058,74 +5066,88 @@ function handleEnemyTurn() {
             const calorieLogs: string[] = [];
             const thresholdResult = BossSystem.addAgnesCalories(finalDamage, calorieLogs);
             calorieLogs.forEach(log => addLog(log, 'system', log.includes('成算') ? 'debuff' : 'info'));
-            
+
             // 同步卡路里到MVU
             if (typeof Mvu !== 'undefined') {
               const mvuData = Mvu.getMvuData({ type: 'message', message_id: 'latest' });
               if (mvuData?.stat_data) {
                 _.set(mvuData.stat_data, '性斗系统.艾格妮丝卡路里', BossSystem.bossState.agnesCalories);
-                
+
                 // 如果触发了阈值，写入对手临时状态（每100卡路里+20%成算）
                 if (thresholdResult.triggeredThreshold) {
                   const calorieBonus = BossSystem.getAgnesCalorieBonus();
-                  const stateList = _.get(mvuData.stat_data, '性斗系统.对手临时状态.状态列表', {}) as Record<string, any>;
+                  const stateList = _.get(mvuData.stat_data, '性斗系统.对手临时状态.状态列表', {}) as Record<
+                    string,
+                    any
+                  >;
                   stateList['卡路里加成'] = {
                     加成: {
-                      '基础性斗力成算': calorieBonus.sexPowerCalcBonus,
-                      '基础忍耐力成算': calorieBonus.enduranceCalcBonus,
-                      '魅力加成': calorieBonus.charmCalcBonus,
+                      基础性斗力成算: calorieBonus.sexPowerCalcBonus,
+                      基础忍耐力成算: calorieBonus.enduranceCalcBonus,
+                      魅力加成: calorieBonus.charmCalcBonus,
                     },
                     剩余回合: 999, // 永久效果
                   };
                   _.set(mvuData.stat_data, '性斗系统.对手临时状态.状态列表', stateList);
-                  
+
                   // 更新加成统计
-                  const bonusStats = _.get(mvuData.stat_data, '性斗系统.对手临时状态.加成统计', {}) as Record<string, number>;
+                  const bonusStats = _.get(mvuData.stat_data, '性斗系统.对手临时状态.加成统计', {}) as Record<
+                    string,
+                    number
+                  >;
                   bonusStats['基础性斗力成算'] = (bonusStats['基础性斗力成算'] || 0) + 12;
                   bonusStats['基础忍耐力成算'] = (bonusStats['基础忍耐力成算'] || 0) + 12;
                   bonusStats['魅力加成'] = (bonusStats['魅力加成'] || 0) + 18;
                   _.set(mvuData.stat_data, '性斗系统.对手临时状态.加成统计', bonusStats);
                 }
-                
+
                 Mvu.replaceMvuData(mvuData, { type: 'message', message_id: 'latest' });
               }
             }
-            
+
             // 如果触发了阈值对话，使用阻塞式对话
             if (thresholdResult.triggeredThreshold && thresholdResult.dialogues.length > 0) {
               BossSystem.queueDialogues(thresholdResult.dialogues, true); // true = 阻塞式
             }
           }
-          
+
           // ========== 艾格妮丝BOSS：发狂后效果（卡路里减半，束缚1回合） ==========
-          if (BossSystem.bossState.isBossFight && BossSystem.bossState.bossId === 'agnes' && BossSystem.bossState.agnesFrenzyActive) {
+          if (
+            BossSystem.bossState.isBossFight &&
+            BossSystem.bossState.bossId === 'agnes' &&
+            BossSystem.bossState.agnesFrenzyActive
+          ) {
             const aftermathLogs: string[] = [];
             BossSystem.handleAgnesFrenzyAftermath(aftermathLogs);
             aftermathLogs.forEach(log => addLog(log, 'system', log.includes('束缚') ? 'critical' : 'info'));
-            
+
             // 束缚艾格妮丝1回合
             enemyBoundTurns.value = 1;
             enemyBindSource.value = 'enemy'; // 自我束缚
             addLog(`【发狂代价】艾格妮丝陷入虚脱，被束缚1回合！`, 'system', 'critical');
-            
+
             // 显示发狂后对话（阻塞式）
             BossSystem.queueDialogues(BossSystem.AGNES_DIALOGUES.frenzy_aftermath, true);
-            
+
             // 同步减半后的卡路里到MVU，同时更新对手临时状态
             if (typeof Mvu !== 'undefined') {
               const mvuData = Mvu.getMvuData({ type: 'message', message_id: 'latest' });
               if (mvuData?.stat_data) {
                 _.set(mvuData.stat_data, '性斗系统.艾格妮丝卡路里', BossSystem.bossState.agnesCalories);
-                
+
                 // 更新卡路里加成状态
                 const calorieBonus = BossSystem.getAgnesCalorieBonus();
                 const stateList = _.get(mvuData.stat_data, '性斗系统.对手临时状态.状态列表', {}) as Record<string, any>;
-                if (calorieBonus.sexPowerCalcBonus > 0 || calorieBonus.enduranceCalcBonus > 0 || calorieBonus.charmCalcBonus > 0) {
+                if (
+                  calorieBonus.sexPowerCalcBonus > 0 ||
+                  calorieBonus.enduranceCalcBonus > 0 ||
+                  calorieBonus.charmCalcBonus > 0
+                ) {
                   stateList['卡路里加成'] = {
                     加成: {
-                      '基础性斗力成算': calorieBonus.sexPowerCalcBonus,
-                      '基础忍耐力成算': calorieBonus.enduranceCalcBonus,
-                      '魅力加成': calorieBonus.charmCalcBonus,
+                      基础性斗力成算: calorieBonus.sexPowerCalcBonus,
+                      基础忍耐力成算: calorieBonus.enduranceCalcBonus,
+                      魅力加成: calorieBonus.charmCalcBonus,
                     },
                     剩余回合: 999,
                   };
@@ -5133,7 +5155,7 @@ function handleEnemyTurn() {
                   delete stateList['卡路里加成'];
                 }
                 _.set(mvuData.stat_data, '性斗系统.对手临时状态.状态列表', stateList);
-                
+
                 Mvu.replaceMvuData(mvuData, { type: 'message', message_id: 'latest' });
               }
             }
