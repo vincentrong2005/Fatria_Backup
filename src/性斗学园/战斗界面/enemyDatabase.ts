@@ -1679,7 +1679,9 @@ export function getEnemyMvuData(enemyName: string): EnemyMvuData | null {
   const enemyDbNames = Object.keys(ENEMY_DATABASE).sort((a, b) => b.length - a.length);
   for (const fullName of enemyDbNames) {
     if (normalizedName.includes(fullName)) {
-      console.info(`[敌人数据库] 包含匹配成功（数据）: "${enemyName}" (规范化: "${normalizedName}") 包含 "${fullName}"`);
+      console.info(
+        `[敌人数据库] 包含匹配成功（数据）: "${enemyName}" (规范化: "${normalizedName}") 包含 "${fullName}"`,
+      );
       return ENEMY_DATABASE[fullName];
     }
   }
@@ -1689,7 +1691,9 @@ export function getEnemyMvuData(enemyName: string): EnemyMvuData | null {
   const enemyAliases = Object.entries(NAME_ALIASES).sort((a, b) => b[0].length - a[0].length);
   for (const [alias, fullName] of enemyAliases) {
     if (normalizedName.includes(alias) && fullName in ENEMY_DATABASE) {
-      console.info(`[敌人数据库] 别名包含匹配成功（数据）: "${enemyName}" (规范化: "${normalizedName}") 包含别名 "${alias}" -> "${fullName}"`);
+      console.info(
+        `[敌人数据库] 别名包含匹配成功（数据）: "${enemyName}" (规范化: "${normalizedName}") 包含别名 "${alias}" -> "${fullName}"`,
+      );
       return ENEMY_DATABASE[fullName];
     }
   }
@@ -1736,7 +1740,9 @@ export function resolveEnemyName(enemyName: string): string {
   const enemyAliases = Object.entries(NAME_ALIASES).sort((a, b) => b[0].length - a[0].length);
   for (const [alias, fullName] of enemyAliases) {
     if (normalizedName.includes(alias) && fullName in ENEMY_DATABASE) {
-      console.info(`[敌人数据库] 别名包含匹配成功: "${enemyName}" (规范化: "${normalizedName}") 包含别名 "${alias}" -> "${fullName}"`);
+      console.info(
+        `[敌人数据库] 别名包含匹配成功: "${enemyName}" (规范化: "${normalizedName}") 包含别名 "${alias}" -> "${fullName}"`,
+      );
       return fullName;
     }
   }
