@@ -2441,8 +2441,8 @@ export function addAgnesCalories(
     return { calorieGain: 0, triggeredThreshold: false, dialogues: [] };
   }
 
-  // 80%的快感伤害转化为卡路里
-  const calorieGain = Math.floor(pleasureDamage * 0.8);
+  // 125%的快感伤害转化为卡路里
+  const calorieGain = Math.floor(pleasureDamage * 1.25);
   if (calorieGain <= 0) return { calorieGain: 0, triggeredThreshold: false, dialogues: [] };
 
   const oldCalories = bossState.agnesCalories;
@@ -2461,7 +2461,7 @@ export function addAgnesCalories(
   if (newThreshold > oldThreshold) {
     triggeredThreshold = true;
     // 计算新增的成算加成
-    const bonusPercent = newThreshold * 12;
+    const bonusPercent = newThreshold * 20;
     logs.push(`【七宗罪·暴食】卡路里突破${newThreshold * 100}！性斗力/忍耐力成算+${bonusPercent}%`);
 
     // 获取突破对话 - 作为阻塞式对话返回
@@ -2488,8 +2488,8 @@ export function getAgnesCalorieBonus(): {
   }
 
   const threshold = Math.floor(bossState.agnesCalories / 100);
-  const percentBonus = threshold * 12; // 每100卡路里+12%
-  const charmBonus = threshold * 18; // 每100卡路里+18魅力
+  const percentBonus = threshold * 20; // 每100卡路里+20%
+  const charmBonus = threshold * 30; // 每100卡路里+30魅力
 
   return {
     sexPowerCalcBonus: percentBonus,
@@ -2741,8 +2741,8 @@ export function getAgnesGluttonyDescription(): string {
     '【七宗罪·暴食】艾格妮丝蔷薇的暴食天赋：',
     '',
     '【卡路里堆叠】每一笔快感伤害：',
-    '• 80%转化为艾格妮丝的「卡路里」',
-    '• 每100卡路里：性斗力/忍耐力成算+12%，魅力+18',
+    '• 125%转化为艾格妮丝的「卡路里」',
+    '• 每100卡路里：性斗力/忍耐力成算+20%，魅力+30',
     '',
     '【共餐】每3回合开始时（1,4,7...）：',
     '• 随机消耗玩家1个道具',

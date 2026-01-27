@@ -3760,9 +3760,9 @@ function handlePlayerSkill(skill: Skill) {
                   string,
                   number
                 >;
-                bonusStats['基础性斗力成算'] = (bonusStats['基础性斗力成算'] || 0) + 12;
-                bonusStats['基础忍耐力成算'] = (bonusStats['基础忍耐力成算'] || 0) + 12;
-                bonusStats['魅力加成'] = (bonusStats['魅力加成'] || 0) + 18;
+                bonusStats['基础性斗力成算'] = (bonusStats['基础性斗力成算'] || 0) + 20;
+                bonusStats['基础忍耐力成算'] = (bonusStats['基础忍耐力成算'] || 0) + 20;
+                bonusStats['魅力加成'] = (bonusStats['魅力加成'] || 0) + 30;
                 _.set(mvuData.stat_data, '性斗系统.对手临时状态.加成统计', bonusStats);
               }
 
@@ -5109,9 +5109,9 @@ function handleEnemyTurn() {
                     string,
                     number
                   >;
-                  bonusStats['基础性斗力成算'] = (bonusStats['基础性斗力成算'] || 0) + 12;
-                  bonusStats['基础忍耐力成算'] = (bonusStats['基础忍耐力成算'] || 0) + 12;
-                  bonusStats['魅力加成'] = (bonusStats['魅力加成'] || 0) + 18;
+                  bonusStats['基础性斗力成算'] = (bonusStats['基础性斗力成算'] || 0) + 20;
+                  bonusStats['基础忍耐力成算'] = (bonusStats['基础忍耐力成算'] || 0) + 20;
+                  bonusStats['魅力加成'] = (bonusStats['魅力加成'] || 0) + 30;
                   _.set(mvuData.stat_data, '性斗系统.对手临时状态.加成统计', bonusStats);
                 }
 

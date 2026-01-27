@@ -1383,7 +1383,7 @@ export const ENEMY_DATABASE: Record<string, EnemyMvuData> = {
     对手等级: 42,
     对手魅力: 100,
     对手幸运: 120, // 鼠族的敏捷与运气
-    对手闪避率: 50, // 极高敏捷
+    对手闪避率: 60, // 极高敏捷
     对手暴击率: 35,
     对手耐力: 200,
     对手最大耐力: 200,
@@ -1391,7 +1391,7 @@ export const ENEMY_DATABASE: Record<string, EnemyMvuData> = {
     对手最大快感: 252,
     对手高潮次数: 0,
     对手性斗力: 403,
-    对手忍耐力: 380,
+    对手忍耐力: 480,
     对手临时状态: {},
     对手技能冷却: {},
   },
