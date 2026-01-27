@@ -205,7 +205,13 @@
           <div class="quantity-selector" v-if="selectedItem.category !== 'equipment'">
             <span class="qty-label">数量:</span>
             <div class="quantity-control">
-              <button class="qty-btn" @click="purchaseQuantity = Math.max(1, purchaseQuantity - 1)" :disabled="isGoldInsufficient">-</button>
+              <button
+                class="qty-btn"
+                @click="purchaseQuantity = Math.max(1, purchaseQuantity - 1)"
+                :disabled="isGoldInsufficient"
+              >
+                -
+              </button>
               <input
                 type="number"
                 v-model.number="purchaseQuantity"
@@ -214,9 +220,15 @@
                 @blur="validatePurchaseQuantity"
                 :disabled="isGoldInsufficient"
               />
-              <button class="qty-btn" @click="purchaseQuantity = Math.min(maxPurchaseQuantity, purchaseQuantity + 1)" :disabled="isGoldInsufficient || purchaseQuantity >= maxPurchaseQuantity">+</button>
+              <button
+                class="qty-btn"
+                @click="purchaseQuantity = Math.min(maxPurchaseQuantity, purchaseQuantity + 1)"
+                :disabled="isGoldInsufficient || purchaseQuantity >= maxPurchaseQuantity"
+              >
+                +
+              </button>
             </div>
-            <span class="max-hint" :class="{ 'insufficient': isGoldInsufficient }">
+            <span class="max-hint" :class="{ insufficient: isGoldInsufficient }">
               {{ isGoldInsufficient ? '金币不足！' : `最多可买 ${maxPurchaseQuantity} 个` }}
             </span>
           </div>
@@ -3183,7 +3195,7 @@ function getSlotType(slot: string): '主装备' | '副装备' | '饰品' | '特�
   .max-hint {
     font-size: 11px;
     color: rgba(255, 255, 255, 0.4);
-    
+
     &.insufficient {
       color: #f87171;
       font-weight: 500;
