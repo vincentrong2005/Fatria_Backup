@@ -1697,7 +1697,7 @@ async function loadEnemyFromMvuData(data: any, maxClimaxCount: number) {
 
     BossSystem.initAgnesBoss(agnesPlayerGender);
     const bossDisplayName = '艾格妮丝';
-    const bossClimaxLimit = 3; // 高潮次数上限3
+    const bossClimaxLimit = 5; // 高潮次数上限5
     enemy.value.name = bossDisplayName;
     enemy.value.avatarUrl = getEnemyPortraitUrl('艾格妮丝');
 
@@ -1716,8 +1716,8 @@ async function loadEnemyFromMvuData(data: any, maxClimaxCount: number) {
     enemy.value.stats.maxClimaxCount = bossClimaxLimit;
 
     addLog(`【七宗罪·暴食】艾格妮丝蔷薇的暴食天赋正在影响战场...`, 'system', 'critical');
-    addLog(`【卡路里堆叠】每一笔快感伤害的80%转化为艾格妮丝的卡路里`, 'system', 'info');
-    addLog(`【卡路里效果】每100卡路里，性斗力/忍耐力成算+12%，魅力+18`, 'system', 'debuff');
+    addLog(`【卡路里堆叠】每一笔快感伤害的125%转化为艾格妮丝的卡路里`, 'system', 'info');
+    addLog(`【卡路里效果】每100卡路里，性斗力/忍耐力成算+20%，魅力+30`, 'system', 'debuff');
     addLog(`【共餐机制】每3回合开始时（1,4,7...），艾格妮丝会偷取你的一个道具`, 'system', 'debuff');
 
     // 禁用投降按钮
