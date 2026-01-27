@@ -203,10 +203,22 @@
           </div>
 
           <div class="quantity-selector" v-if="selectedItem.category !== 'equipment'">
-            <span>数量:</span>
-            <button @click="purchaseQuantity = Math.max(1, purchaseQuantity - 1)">-</button>
-            <span class="quantity">{{ purchaseQuantity }}</span>
-            <button @click="purchaseQuantity = Math.min(99, purchaseQuantity + 1)">+</button>
+            <span class="qty-label">数量:</span>
+            <div class="quantity-control">
+              <button class="qty-btn" @click="purchaseQuantity = Math.max(1, purchaseQuantity - 1)" :disabled="isGoldInsufficient">-</button>
+              <input
+                type="number"
+                v-model.number="purchaseQuantity"
+                min="1"
+                :max="maxPurchaseQuantity || 1"
+                @blur="validatePurchaseQuantity"
+                :disabled="isGoldInsufficient"
+              />
+              <button class="qty-btn" @click="purchaseQuantity = Math.min(maxPurchaseQuantity, purchaseQuantity + 1)" :disabled="isGoldInsufficient || purchaseQuantity >= maxPurchaseQuantity">+</button>
+            </div>
+            <span class="max-hint" :class="{ 'insufficient': isGoldInsufficient }">
+              {{ isGoldInsufficient ? '金币不足！' : `最多可买 ${maxPurchaseQuantity} 个` }}
+            </span>
           </div>
 
           <div class="price-summary">
@@ -301,6 +313,32 @@ const activeCategory = ref('equipment');
 // 选中的物品
 const selectedItem = ref<any>(null);
 const purchaseQuantity = ref(1);
+
+// 计算最大可购买数量（基于金币）
+const maxPurchaseQuantity = computed(() => {
+  if (!selectedItem.value) return 99;
+  const unitPrice = getDiscountedPrice(selectedItem.value);
+  if (unitPrice <= 0) return 99;
+  const maxByGold = Math.floor(goldCoins.value / unitPrice);
+  return Math.min(99, Math.max(0, maxByGold));
+});
+
+// 是否金币不足
+const isGoldInsufficient = computed(() => {
+  if (!selectedItem.value) return false;
+  const unitPrice = getDiscountedPrice(selectedItem.value);
+  return goldCoins.value < unitPrice;
+});
+
+// 验证购买数量
+function validatePurchaseQuantity() {
+  if (!purchaseQuantity.value || purchaseQuantity.value < 1) {
+    purchaseQuantity.value = 1;
+  } else if (purchaseQuantity.value > maxPurchaseQuantity.value) {
+    purchaseQuantity.value = maxPurchaseQuantity.value;
+  }
+  purchaseQuantity.value = Math.floor(purchaseQuantity.value);
+}
 
 const isSpecialBattleUnlocked = ref(false);
 
@@ -3081,40 +3119,81 @@ function getSlotType(slot: string): '主装备' | '副装备' | '饰品' | '特�
 
 .quantity-selector {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: center;
-  gap: 12px;
+  gap: 10px;
   margin-bottom: 16px;
 
-  span {
+  .qty-label {
     color: rgba(255, 255, 255, 0.7);
     font-size: 13px;
   }
 
-  button {
-    width: 32px;
-    height: 32px;
+  .quantity-control {
     display: flex;
     align-items: center;
     justify-content: center;
-    background: rgba(255, 255, 255, 0.08);
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    border-radius: 8px;
-    color: white;
-    font-size: 16px;
-    cursor: pointer;
+    gap: 12px;
 
-    &:hover {
-      background: rgba(255, 255, 255, 0.12);
+    input {
+      width: 80px;
+      padding: 10px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      color: white;
+      font-size: 16px;
+      font-weight: 600;
+      text-align: center;
+
+      &:focus {
+        outline: none;
+        border-color: rgba(139, 92, 246, 0.5);
+      }
+
+      /* 隐藏数字输入框的spin按钮 */
+      &::-webkit-outer-spin-button,
+      &::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+      }
+      -moz-appearance: textfield;
     }
   }
 
-  .quantity {
-    font-size: 18px;
-    font-weight: 600;
+  .qty-btn {
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 8px;
     color: white;
-    min-width: 40px;
-    text-align: center;
+    font-size: 18px;
+    cursor: pointer;
+    transition: all 0.2s;
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
+  }
+
+  .max-hint {
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.4);
+    
+    &.insufficient {
+      color: #f87171;
+      font-weight: 500;
+    }
+  }
+
+  .qty-btn:disabled,
+  input:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
   }
 }
 
