@@ -4179,15 +4179,17 @@ function handleEnemyTurn() {
   // 记录：敌人回合开始时玩家是否处于束缚状态（用于本回合薇丝佩菈必中必暴判定）
   const playerWasBoundAtEnemyTurnStart = playerBoundTurns.value > 0;
 
-  // 敌人行动开始时，递减敌人施加的束缚效果
-  if (playerBoundTurns.value > 0 && playerBindSource.value === 'enemy') {
+  // 敌人行动开始时，递减束缚效果（无论来源是敌人还是玩家自身）
+  if (playerBoundTurns.value > 0 && (playerBindSource.value === 'enemy' || playerBindSource.value === 'player')) {
     playerBoundTurns.value--;
     if (playerBoundTurns.value === 0) {
       addLog(`${player.value.name} 的束缚效果消失了`, 'system', 'info');
+      // 只有敌人施加的束缚才授予感官麻木状态
+      if (playerBindSource.value === 'enemy') {
+        playerSensoryNumb.value = 2;
+        addLog(`${player.value.name} 获得了【感官麻木】状态，持续2回合`, 'system', 'buff');
+      }
       playerBindSource.value = null;
-      // 授予感官麻木状态
-      playerSensoryNumb.value = 2;
-      addLog(`${player.value.name} 获得了【感官麻木】状态，持续2回合`, 'system', 'buff');
     } else {
       addLog(`${player.value.name} 的束缚效果剩余 ${playerBoundTurns.value} 回合`, 'system', 'info');
     }

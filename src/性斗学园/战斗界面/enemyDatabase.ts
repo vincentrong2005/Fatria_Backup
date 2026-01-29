@@ -1663,7 +1663,7 @@ export function getEnemyMvuData(enemyName: string): EnemyMvuData | null {
 
   // 1. 先尝试精确匹配（对手名刚好是某个数据库全名）
   if (normalizedName in ENEMY_DATABASE) {
-    return ENEMY_DATABASE[enemyName];
+    return ENEMY_DATABASE[normalizedName];
   }
 
   // 2. 先尝试精确别名匹配（避免短名包含匹配误判，如"雪莉"误命中"雪"）

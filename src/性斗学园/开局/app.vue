@@ -77,6 +77,7 @@
               @update-data="updateCharacterData"
               @update-life-sim-mode="(v: boolean) => (isLifeSimMode = v)"
               @select-npc="handleNpcSelect"
+              @request-life-sim-confirm="showLifeSimConfirmModal"
             />
             <Step2_Archetype v-if="step === 3" :data="characterData" @update-data="updateCharacterData" />
             <Step3_Attributes
@@ -126,6 +127,86 @@
               加载世界...
             </span>
             <span v-else> <i class="fas fa-sparkles"></i> 开始学园生活 </span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 生活模拟模式确认弹窗 -->
+    <div v-if="showLifeSimConfirm" class="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div class="absolute inset-0 bg-black/80 backdrop-blur-md"></div>
+      <div
+        class="animate-scale-in relative w-full max-w-lg transform overflow-hidden rounded-3xl border-2 border-purple-500/50 bg-gradient-to-br from-purple-900/60 via-indigo-900/60 to-violet-900/60 shadow-2xl shadow-purple-500/30"
+      >
+        <!-- 特效背景 -->
+        <div class="pointer-events-none absolute inset-0 overflow-hidden">
+          <div
+            class="animate-spin-slow absolute -top-1/2 -left-1/2 h-full w-full bg-gradient-to-r from-purple-500/20 via-indigo-500/20 to-violet-500/20 blur-3xl"
+          ></div>
+          <div
+            class="animate-spin-slow-reverse absolute -right-1/2 -bottom-1/2 h-full w-full bg-gradient-to-r from-violet-500/20 via-purple-500/20 to-indigo-500/20 blur-3xl"
+          ></div>
+          <!-- 星光粒子效果 -->
+          <div class="absolute inset-0">
+            <div class="absolute top-1/4 left-1/4 h-2 w-2 animate-pulse rounded-full bg-purple-300/60"></div>
+            <div class="absolute top-1/3 right-1/4 h-1.5 w-1.5 animate-ping rounded-full bg-indigo-300/50"></div>
+            <div class="absolute bottom-1/3 left-1/3 h-1 w-1 animate-pulse rounded-full bg-violet-300/70"></div>
+            <div class="absolute top-1/2 right-1/3 h-2 w-2 animate-bounce rounded-full bg-purple-400/40"></div>
+            <div class="absolute bottom-1/4 right-1/5 h-1.5 w-1.5 animate-pulse rounded-full bg-indigo-400/60"></div>
+          </div>
+        </div>
+
+        <!-- 标题 -->
+        <div class="relative z-10 p-8 pb-4">
+          <div class="mb-4 flex items-center justify-center gap-3">
+            <i class="fas fa-moon animate-pulse text-3xl text-purple-300"></i>
+            <h3
+              class="bg-gradient-to-r from-purple-200 via-indigo-200 to-violet-200 bg-clip-text text-3xl font-black tracking-wider text-transparent drop-shadow-lg"
+            >
+              命运的抉择
+            </h3>
+            <i class="fas fa-star animate-pulse text-3xl text-indigo-300"></i>
+          </div>
+          <div
+            class="mx-auto h-1 w-32 rounded-full bg-gradient-to-r from-purple-400 via-indigo-400 to-violet-400 shadow-lg shadow-purple-400/50"
+          ></div>
+        </div>
+
+        <!-- 内容 -->
+        <div class="relative z-10 px-8 pb-6">
+          <div class="rounded-xl border border-purple-500/30 bg-black/40 p-6 backdrop-blur-sm">
+            <div class="space-y-4 text-center">
+              <div class="flex items-center justify-center gap-2">
+                <i class="fas fa-ghost text-2xl text-purple-300"></i>
+                <i class="fas fa-exchange-alt animate-pulse text-xl text-indigo-400"></i>
+                <i class="fas fa-user-secret text-2xl text-violet-300"></i>
+              </div>
+              <p class="text-lg leading-relaxed text-purple-100">
+                每个灵魂都有其独特的轨迹。
+              </p>
+              <p class="text-base leading-relaxed text-indigo-200/80">
+                在你尚未见证他们的喜怒哀乐之前，<br />恐怕还无法真正走进他们的生活。
+              </p>
+              <p class="text-base leading-relaxed text-violet-200/70">
+                建议先以新生的身份入学，<br />多去了解一下性斗学园中的角色吧。
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- 按钮区域 -->
+        <div class="relative z-10 flex justify-center gap-4 px-8 pb-8">
+          <button
+            class="transform rounded-xl border-2 border-gray-500/50 bg-gradient-to-r from-gray-700/50 to-gray-600/50 px-6 py-3 text-sm font-semibold text-gray-200 shadow-lg shadow-gray-700/20 transition-all duration-300 hover:scale-105 hover:border-gray-400/70 hover:from-gray-600/60 hover:to-gray-500/60 hover:shadow-gray-600/30 active:scale-95"
+            @click="cancelLifeSimMode"
+          >
+            <i class="fas fa-seedling mr-2"></i> 我是新手
+          </button>
+          <button
+            class="transform rounded-xl border-2 border-purple-500/50 bg-gradient-to-r from-purple-500/30 to-indigo-500/30 px-6 py-3 text-sm font-semibold text-purple-200 shadow-lg shadow-purple-500/20 transition-all duration-300 hover:scale-105 hover:border-purple-400/70 hover:from-purple-500/40 hover:to-indigo-500/40 hover:shadow-purple-500/30 active:scale-95"
+            @click="confirmLifeSimMode"
+          >
+            <i class="fas fa-user-secret mr-2"></i> 我已知晓
           </button>
         </div>
       </div>
@@ -491,7 +572,8 @@ const isApplyingCheatCode = ref(false);
 
 // 生活模拟模式相关
 const isLifeSimMode = ref(false);
-const isLifeSimUnlocked = ref(false);
+const isLifeSimUnlocked = ref(true); // 默认解锁生活模拟模式
+const showLifeSimConfirm = ref(false); // 生活模拟确认弹窗
 const selectedNpc = ref<{
   id: string;
   name: string;
@@ -500,6 +582,21 @@ const selectedNpc = ref<{
   level: number;
   gender?: '男' | '女' | '非二元';
 } | null>(null);
+
+// 生活模拟确认弹窗相关函数
+const showLifeSimConfirmModal = () => {
+  showLifeSimConfirm.value = true;
+};
+
+const cancelLifeSimMode = () => {
+  showLifeSimConfirm.value = false;
+  // 保持在普通模式
+};
+
+const confirmLifeSimMode = () => {
+  showLifeSimConfirm.value = false;
+  isLifeSimMode.value = true;
+};
 
 // 从 MVU 变量同步初始数据
 onMounted(async () => {
@@ -1380,18 +1477,6 @@ const applyCheatCode = async () => {
         console.error('[开局] 添加装备失败:', error);
         openModal('错误', '添加装备失败');
       }
-    } else if (code === '980321') {
-      showCheatInput.value = false;
-      cheatCode.value = '';
-
-      isLifeSimUnlocked.value = true;
-      await recordActivatedCheatCode('980321');
-
-      console.info('[开局] 生活模拟模式已解锁');
-      openModal(
-        '生活模拟模式',
-        '夺舍模式已解锁！\n\n现在你可以在角色档案页面的右上角切换到生活模拟模式，选择一位NPC角色进行游玩。',
-      );
     } else {
       openModal('错误', '无效的代码');
       cheatCode.value = '';
@@ -1748,6 +1833,7 @@ const handleStartGame = async () => {
         沐芯兰: '沐芯兰_2',
         克莉丝汀: '克莉丝汀_2',
         艾格妮丝蔷薇: '艾格妮丝',
+        伊甸芙宁: '伊甸芙宁_2',
       };
       const portraitName = specialPortraitMap[selectedNpc.value.name] || selectedNpc.value.name;
       const npcPortraitUrl = getEnemyPortraitUrl(portraitName);

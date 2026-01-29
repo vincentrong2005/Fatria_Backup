@@ -1,4 +1,4 @@
-import type { Character, CombatLogEntry, Item, Skill } from './types';
+import { SkillType, type Character, type CombatLogEntry, type Item, type Skill } from './types';
 
 // GitHub 立绘基础路径
 const GITHUB_PORTRAIT_BASE_URL = 'https://raw.githubusercontent.com/vincentrong2005/Fatria/main/图片素材/性斗学园/立绘';
@@ -92,10 +92,10 @@ export const PLAYER_SKILLS: Skill[] = [
     name: '挑逗言语',
     description: '轻声细语，攻击敌方精神，造成少量快感伤害。',
     cost: 5,
-    type: 'attack',
+    type: SkillType.ATTACK,
     cooldown: 0,
     currentCooldown: 0,
-    effect: (user, target) => {
+    effect: (user: Character, target: Character) => {
       const dmg = Math.floor(user.stats.charm * 1.5 + user.stats.sexPower * 0.5);
       target.stats.currentPleasure += dmg;
       return createLog(`${user.name} 使用 [挑逗言语]，消耗体力，造成了 ${dmg} 点快感！`, 'player', 'damage');
@@ -106,10 +106,10 @@ export const PLAYER_SKILLS: Skill[] = [
     name: '绝对领域',
     description: '调整姿态，大幅提升本回合闪避率。',
     cost: 15,
-    type: 'buff',
+    type: SkillType.BUFF,
     cooldown: 3,
     currentCooldown: 0,
-    effect: (user, _target) => {
+    effect: (user: Character, _target: Character) => {
       return createLog(`${user.name} 展开 [绝对领域]，消耗体力提升闪避！`, 'player', 'info');
     },
   },
@@ -118,10 +118,10 @@ export const PLAYER_SKILLS: Skill[] = [
     name: '必杀·纯爱战神',
     description: '消耗大量体力，造成基于性斗力的巨额伤害。',
     cost: 40,
-    type: 'ultimate',
+    type: SkillType.ULTIMATE,
     cooldown: 5,
     currentCooldown: 0,
-    effect: (user, target) => {
+    effect: (user: Character, target: Character) => {
       const dmg = Math.floor(user.stats.sexPower * 3.5);
       target.stats.currentPleasure += dmg;
       return createLog(`${user.name} 发动 [必杀·纯爱战神]，造成 ${dmg} 点暴击快感！`, 'player', 'critical');
@@ -136,10 +136,10 @@ export const ENEMY_SKILLS: Skill[] = [
     name: '强硬手段',
     description: '无视防御的粗暴攻击，削减耐力。',
     cost: 0,
-    type: 'attack',
+    type: SkillType.ATTACK,
     cooldown: 0,
     currentCooldown: 0,
-    effect: (user, target) => {
+    effect: (user: Character, target: Character) => {
       const dmg = 15;
       target.stats.currentEndurance -= dmg;
       return createLog(`${user.name} 使用 [强硬手段]，你的耐力减少了 ${dmg}！`, 'enemy', 'damage');
@@ -150,10 +150,10 @@ export const ENEMY_SKILLS: Skill[] = [
     name: '深渊凝视',
     description: '降低对手的耐力。',
     cost: 0,
-    type: 'debuff',
+    type: SkillType.DEBUFF,
     cooldown: 2,
     currentCooldown: 0,
-    effect: (user, target) => {
+    effect: (user: Character, target: Character) => {
       const dmg = 10;
       target.stats.currentEndurance -= dmg;
       return createLog(`${user.name} 施展 [深渊凝视]，你的耐力被削弱了 ${dmg} 点。`, 'enemy', 'damage');
@@ -164,10 +164,10 @@ export const ENEMY_SKILLS: Skill[] = [
     name: '触手纠缠',
     description: '造成持续快感。',
     cost: 0,
-    type: 'attack',
+    type: SkillType.ATTACK,
     cooldown: 3,
     currentCooldown: 0,
-    effect: (user, target) => {
+    effect: (user: Character, target: Character) => {
       const dmg = 25;
       target.stats.currentPleasure += dmg;
       return createLog(`${user.name} 使用 [触手纠缠]，快感上升了 ${dmg} 点！`, 'enemy', 'damage');
@@ -183,7 +183,7 @@ export const PLAYER_ITEMS: Item[] = [
     description: '恢复 30 点耐力。',
     quantity: 3,
     staminaRestore: 30,
-    effect: (user, _target) => {
+    effect: (user: Character, _target: Character) => {
       user.stats.currentEndurance = Math.min(user.stats.maxEndurance, user.stats.currentEndurance + 30);
       return createLog(`${user.name} 喝下 [强走饮料]，耐力恢复了。`, 'player', 'heal');
     },
@@ -194,7 +194,7 @@ export const PLAYER_ITEMS: Item[] = [
     description: '减少 20 点当前快感。',
     quantity: 2,
     pleasureReduce: 20,
-    effect: (user, _target) => {
+    effect: (user: Character, _target: Character) => {
       user.stats.currentPleasure = Math.max(0, user.stats.currentPleasure - 20);
       return createLog(`${user.name} 注射了 [抑制剂]，身体稍微冷却下来。`, 'player', 'heal');
     },
@@ -220,8 +220,6 @@ export function createDefaultPlayer(): Character {
       currentEndurance: 100,
       maxPleasure: 100,
       currentPleasure: 0,
-      willpower: 100,
-      baseWillpower: 100,
       climaxCount: 0,
       maxClimaxCount: 3,
       sexPower: 25,
@@ -230,6 +228,7 @@ export function createDefaultPlayer(): Character {
       crit: 5,
       charm: 30,
       luck: 15,
+      level: 1,
     },
   };
 }
@@ -248,8 +247,6 @@ export function createDefaultEnemy(): Character {
       currentEndurance: 150,
       maxPleasure: 100,
       currentPleasure: 0,
-      willpower: 80,
-      baseWillpower: 80,
       climaxCount: 0,
       maxClimaxCount: 3,
       sexPower: 20,
@@ -258,6 +255,7 @@ export function createDefaultEnemy(): Character {
       crit: 10,
       charm: 10,
       luck: 5,
+      level: 1,
     },
   };
 }

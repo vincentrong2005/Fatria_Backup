@@ -6,17 +6,14 @@
         @click="toggleLifeSimMode"
         :class="[
           'flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300 border',
-          !isLifeSimUnlocked
-            ? 'bg-gray-800/50 text-gray-500 border-gray-700/50 cursor-pointer'
-            : isLifeSimMode
-              ? 'bg-purple-500/20 text-purple-300 border-purple-500/50 hover:bg-purple-500/30 shadow-lg shadow-purple-500/20'
-              : 'bg-white/10 text-gray-300 border-white/20 hover:bg-white/20 hover:text-white',
+          isLifeSimMode
+            ? 'bg-purple-500/20 text-purple-300 border-purple-500/50 hover:bg-purple-500/30 shadow-lg shadow-purple-500/20'
+            : 'bg-white/10 text-gray-300 border-white/20 hover:bg-white/20 hover:text-white',
         ]"
-        :title="!isLifeSimUnlocked ? '需要特殊代码解锁' : isLifeSimMode ? '切换到正常模式' : '切换到生活模拟模式'"
+        :title="isLifeSimMode ? '切换到正常模式' : '切换到生活模拟模式'"
       >
-        <i :class="['fas', !isLifeSimUnlocked ? 'fa-lock' : isLifeSimMode ? 'fa-user-secret' : 'fa-user']"></i>
-        <span v-if="!isLifeSimUnlocked">🔒 生活模拟</span>
-        <span v-else-if="isLifeSimMode">生活模拟</span>
+        <i :class="['fas', isLifeSimMode ? 'fa-user-secret' : 'fa-user']"></i>
+        <span v-if="isLifeSimMode">生活模拟</span>
         <span v-else>正常模式</span>
       </button>
     </div>
@@ -217,6 +214,7 @@ const emit = defineEmits<{
   (e: 'update-data', fields: Partial<CharacterData>): void;
   (e: 'update-life-sim-mode', isActive: boolean): void;
   (e: 'select-npc', npc: NpcCharacter | null): void;
+  (e: 'request-life-sim-confirm'): void;
 }>();
 
 // 本地状态
@@ -225,11 +223,12 @@ const openingScene = ref('');
 
 // 切换模式
 const toggleLifeSimMode = () => {
-  if (props.isLifeSimUnlocked) {
-    emit('update-life-sim-mode', !props.isLifeSimMode);
+  if (!props.isLifeSimMode) {
+    // 切换到生活模拟模式时显示确认弹窗
+    emit('request-life-sim-confirm');
   } else {
-    // 未解锁时显示提示
-    alert('尚未解锁，敬请期待');
+    // 从生活模拟模式切换回普通模式，直接切换
+    emit('update-life-sim-mode', false);
   }
 };
 

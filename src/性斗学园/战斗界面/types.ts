@@ -41,6 +41,10 @@ export enum SkillType {
   SUPPORT = 'support',
   CONTROL = 'control',
   ULTIMATE = 'ultimate',
+  // 兼容旧版技能类型
+  ATTACK = 'attack',
+  BUFF = 'buff',
+  DEBUFF = 'debuff',
 }
 
 /** Buff类型（已移除意志力下降） */
@@ -118,7 +122,8 @@ export interface Skill {
   type: SkillType;
   cooldown: number;
   currentCooldown: number;
-  data: SkillData;
+  data?: SkillData;
+  effect?: (user: Character, target: Character) => CombatLogEntry;
 }
 
 /** 物品 */
