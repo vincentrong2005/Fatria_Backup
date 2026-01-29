@@ -181,9 +181,7 @@
                 <i class="fas fa-exchange-alt animate-pulse text-xl text-indigo-400"></i>
                 <i class="fas fa-user-secret text-2xl text-violet-300"></i>
               </div>
-              <p class="text-lg leading-relaxed text-purple-100">
-                每个灵魂都有其独特的轨迹。
-              </p>
+              <p class="text-lg leading-relaxed text-purple-100">每个灵魂都有其独特的轨迹。</p>
               <p class="text-base leading-relaxed text-indigo-200/80">
                 在你尚未见证他们的喜怒哀乐之前，<br />恐怕还无法真正走进他们的生活。
               </p>
