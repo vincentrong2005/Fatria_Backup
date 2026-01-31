@@ -49,14 +49,14 @@
           <span>全部CG</span>
           <span class="count-badge">{{ getTotalUnlockedCount }} / {{ getTotalCGCount }}</span>
         </div>
-        
+
         <!-- 仅显示已解锁CG勾选框 -->
         <label class="unlock-filter-checkbox">
           <input type="checkbox" v-model="showOnlyUnlocked" />
           <span class="checkbox-custom"></span>
           <span class="checkbox-label">仅显示已解锁</span>
         </label>
-        
+
         <div v-for="char in filteredCharactersWithCGs" :key="char" class="character-section">
           <div class="character-section-header" @click="toggleCharacterCollapse(char)">
             <div class="char-avatar-small">
@@ -71,7 +71,10 @@
               v-for="cg in getCharacterCGs(char)"
               :key="cg.id + '-' + cg.imageIndex"
               class="cg-item"
-              :class="{ locked: !isCGImageUnlocked(cg.id, cg.imageIndex), unlocked: isCGImageUnlocked(cg.id, cg.imageIndex) }"
+              :class="{
+                locked: !isCGImageUnlocked(cg.id, cg.imageIndex),
+                unlocked: isCGImageUnlocked(cg.id, cg.imageIndex),
+              }"
               @click="handleCGImageClick(cg)"
             >
               <div class="cg-thumbnail">
@@ -101,7 +104,7 @@
           <span>{{ getCategoryLabel(currentCategory) }}</span>
           <span class="count-badge">{{ getFilteredUnlockedCount }} / {{ getCategoryTotalCount }}</span>
         </div>
-        
+
         <!-- 仅显示已解锁CG勾选框（始终显示，不受过滤结果影响） -->
         <label class="unlock-filter-checkbox">
           <input type="checkbox" v-model="showOnlyUnlocked" />
@@ -115,7 +118,10 @@
               v-for="cg in filteredCGImages"
               :key="cg.id + '-' + cg.imageIndex"
               class="cg-item"
-              :class="{ locked: !isCGImageUnlocked(cg.id, cg.imageIndex), unlocked: isCGImageUnlocked(cg.id, cg.imageIndex) }"
+              :class="{
+                locked: !isCGImageUnlocked(cg.id, cg.imageIndex),
+                unlocked: isCGImageUnlocked(cg.id, cg.imageIndex),
+              }"
               @click="handleCGImageClick(cg)"
             >
               <div class="cg-thumbnail">
@@ -143,7 +149,9 @@
             <i class="fas fa-images"></i>
           </div>
           <p class="empty-title">暂无CG数据</p>
-          <p class="empty-desc">{{ selectedCharacter ? `${selectedCharacter}的CG尚未解锁` : '请选择一个角色查看CG' }}</p>
+          <p class="empty-desc">
+            {{ selectedCharacter ? `${selectedCharacter}的CG尚未解锁` : '请选择一个角色查看CG' }}
+          </p>
         </div>
       </template>
     </div>
@@ -236,7 +244,7 @@ interface FlattenedCGImage {
 // 将所有CG事件展开为单独的图片项
 const allCGImages = computed<FlattenedCGImage[]>(() => {
   const result: FlattenedCGImage[] = [];
-  
+
   for (const config of CG_CONFIGS) {
     // 处理所有事件类型
     const processEvents = (events: CGEvent[], genderKey: 'male' | 'female', resultKey: 'defeat' | 'victory') => {
@@ -262,7 +270,7 @@ const allCGImages = computed<FlattenedCGImage[]>(() => {
     processEvents(config.female.defeat, 'female', 'defeat');
     processEvents(config.female.victory, 'female', 'victory');
   }
-  
+
   return result;
 });
 
@@ -287,9 +295,7 @@ const filteredCharactersWithCGs = computed(() => {
   }
   // 只返回至少有一个已解锁CG的角色
   return availableCharacters.value.filter(char => {
-    return allCGImages.value.some(cg =>
-      cg.characterName === char && isCGImageUnlocked(cg.id, cg.imageIndex)
-    );
+    return allCGImages.value.some(cg => cg.characterName === char && isCGImageUnlocked(cg.id, cg.imageIndex));
   });
 });
 
@@ -315,18 +321,18 @@ function getCharacterCGCount(characterName: string): number {
 // 获取分类模式下的总CG数量（不受仅显示已解锁过滤影响）
 const getCategoryTotalCount = computed(() => {
   let result = allCGImages.value;
-  
+
   // 按分类过滤
   if (currentCategory.value !== 'all') {
     const [gender, outcome] = currentCategory.value.split('_');
     result = result.filter(cg => cg.genderKey === gender && cg.resultKey === outcome);
   }
-  
+
   // 按角色过滤
   if (selectedCharacter.value) {
     result = result.filter(cg => cg.characterName === selectedCharacter.value);
   }
-  
+
   return result.length;
 });
 
@@ -341,23 +347,23 @@ const getTotalUnlockedCount = computed(() => {
 // 过滤后的CG图片列表（分类模式下使用，支持仅显示已解锁过滤）
 const filteredCGImages = computed(() => {
   let result = allCGImages.value;
-  
+
   // 按分类过滤
   if (currentCategory.value !== 'all') {
     const [gender, outcome] = currentCategory.value.split('_');
     result = result.filter(cg => cg.genderKey === gender && cg.resultKey === outcome);
   }
-  
+
   // 按角色过滤
   if (selectedCharacter.value) {
     result = result.filter(cg => cg.characterName === selectedCharacter.value);
   }
-  
+
   // 仅显示已解锁过滤
   if (showOnlyUnlocked.value) {
     result = result.filter(cg => isCGImageUnlocked(cg.id, cg.imageIndex));
   }
-  
+
   return result;
 });
 
@@ -429,9 +435,8 @@ function getCategoryLabel(category: string): string {
 
 // 获取角色解锁数量
 function getCharacterUnlockCount(characterName: string): number {
-  return allCGImages.value.filter(
-    cg => cg.characterName === characterName && isCGImageUnlocked(cg.id, cg.imageIndex)
-  ).length;
+  return allCGImages.value.filter(cg => cg.characterName === characterName && isCGImageUnlocked(cg.id, cg.imageIndex))
+    .length;
 }
 
 // 生成头像 URL（沐芯兰特殊处理）
@@ -500,7 +505,7 @@ function handleCGImageClick(cg: FlattenedCGImage) {
     }
     return;
   }
-  
+
   // 已解锁，显示模态框
   modalCG.value = cg;
   showModal.value = true;
@@ -516,7 +521,7 @@ function closeModal() {
 function handleCGUnlockEvent(event: CustomEvent) {
   const cgId = event.detail?.cgId;
   const imageIndex = event.detail?.imageIndex;
-  
+
   if (cgId !== undefined) {
     if (imageIndex !== undefined) {
       // 新格式：解锁单张图片
@@ -532,22 +537,26 @@ function handleCGUnlockEvent(event: CustomEvent) {
 }
 
 // 初始化时默认选中第一个有CG的角色，并折叠所有角色
-watch(availableCharacters, (chars) => {
-  if (chars.length > 0 && !selectedCharacter.value) {
-    selectedCharacter.value = chars[0];
-  }
-  // 默认折叠所有角色
-  if (chars.length > 0 && collapsedCharacters.value.size === 0) {
-    chars.forEach(char => collapsedCharacters.value.add(char));
-  }
-}, { immediate: true });
+watch(
+  availableCharacters,
+  chars => {
+    if (chars.length > 0 && !selectedCharacter.value) {
+      selectedCharacter.value = chars[0];
+    }
+    // 默认折叠所有角色
+    if (chars.length > 0 && collapsedCharacters.value.size === 0) {
+      chars.forEach(char => collapsedCharacters.value.add(char));
+    }
+  },
+  { immediate: true },
+);
 
 onMounted(() => {
   loadUnlockedCGs();
-  
+
   // 监听CG解锁事件
   window.addEventListener('cg-unlocked', handleCGUnlockEvent as EventListener);
-  
+
   // 暴露解锁函数到全局（供战斗系统调用）
   const globalAny = window as any;
   globalAny.__cgUnlockImage = unlockCGImage;
@@ -576,11 +585,11 @@ onUnmounted(() => {
   padding-bottom: 12px;
   margin-bottom: 12px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  
+
   &::-webkit-scrollbar {
     height: 4px;
   }
-  
+
   &::-webkit-scrollbar-thumb {
     background: rgba(255, 255, 255, 0.2);
     border-radius: 2px;
@@ -600,22 +609,22 @@ onUnmounted(() => {
   cursor: pointer;
   transition: all 0.2s ease;
   white-space: nowrap;
-  
+
   &:hover {
     background: rgba(255, 255, 255, 0.1);
     color: rgba(255, 255, 255, 0.8);
   }
-  
+
   &.active {
     background: linear-gradient(135deg, rgba(236, 72, 153, 0.3), rgba(168, 85, 247, 0.3));
     border-color: rgba(236, 72, 153, 0.5);
     color: white;
   }
-  
+
   i {
     font-size: 11px;
   }
-  
+
   .count-badge {
     padding: 2px 6px;
     background: rgba(0, 0, 0, 0.3);
@@ -634,11 +643,11 @@ onUnmounted(() => {
   gap: 8px;
   overflow-x: auto;
   padding: 8px 0;
-  
+
   &::-webkit-scrollbar {
     height: 4px;
   }
-  
+
   &::-webkit-scrollbar-thumb {
     background: rgba(255, 255, 255, 0.2);
     border-radius: 2px;
@@ -658,17 +667,17 @@ onUnmounted(() => {
   transition: all 0.2s ease;
   min-width: 70px;
   position: relative;
-  
+
   &:hover {
     background: rgba(255, 255, 255, 0.08);
     transform: translateY(-2px);
   }
-  
+
   &.active {
     background: linear-gradient(135deg, rgba(102, 126, 234, 0.2), rgba(102, 126, 234, 0.1));
     border-color: rgba(102, 126, 234, 0.4);
   }
-  
+
   .char-avatar {
     width: 40px;
     height: 40px;
@@ -678,19 +687,19 @@ onUnmounted(() => {
     align-items: center;
     justify-content: center;
     overflow: hidden;
-    
+
     .avatar-img {
       width: 100%;
       height: 100%;
       object-fit: cover;
     }
-    
+
     .fallback-icon {
       font-size: 16px;
       color: #a5b4fc;
     }
   }
-  
+
   .char-name {
     font-size: 10px;
     color: rgba(255, 255, 255, 0.8);
@@ -700,7 +709,7 @@ onUnmounted(() => {
     text-overflow: ellipsis;
     white-space: nowrap;
   }
-  
+
   .unlock-badge {
     position: absolute;
     top: 4px;
@@ -731,11 +740,11 @@ onUnmounted(() => {
   font-weight: 600;
   color: rgba(255, 255, 255, 0.8);
   margin-bottom: 12px;
-  
+
   i:first-child {
     color: #ec4899;
   }
-  
+
   .count-badge {
     margin-left: auto;
     padding: 2px 8px;
@@ -756,7 +765,7 @@ onUnmounted(() => {
 // 角色分组区域
 .character-section {
   margin-bottom: 24px;
-  
+
   &:last-child {
     margin-bottom: 0;
   }
@@ -772,15 +781,15 @@ onUnmounted(() => {
   margin-bottom: 12px;
   cursor: pointer;
   transition: background 0.2s ease;
-  
+
   &:hover {
     background: rgba(255, 255, 255, 0.06);
   }
-  
+
   &:active {
     background: rgba(255, 255, 255, 0.08);
   }
-  
+
   .char-avatar-small {
     width: 32px;
     height: 32px;
@@ -791,20 +800,20 @@ onUnmounted(() => {
     justify-content: center;
     overflow: hidden;
     flex-shrink: 0;
-    
+
     .avatar-img {
       width: 100%;
       height: 100%;
       object-fit: cover;
     }
   }
-  
+
   .char-section-name {
     font-size: 14px;
     font-weight: 600;
     color: rgba(255, 255, 255, 0.9);
   }
-  
+
   .count-badge {
     margin-left: auto;
     padding: 3px 10px;
@@ -813,7 +822,7 @@ onUnmounted(() => {
     font-size: 11px;
     color: rgba(255, 255, 255, 0.7);
   }
-  
+
   .collapse-icon {
     color: rgba(255, 255, 255, 0.5);
     font-size: 12px;
@@ -831,11 +840,11 @@ onUnmounted(() => {
   margin-bottom: 16px;
   cursor: pointer;
   user-select: none;
-  
-  input[type="checkbox"] {
+
+  input[type='checkbox'] {
     display: none;
   }
-  
+
   .checkbox-custom {
     width: 18px;
     height: 18px;
@@ -847,7 +856,7 @@ onUnmounted(() => {
     justify-content: center;
     transition: all 0.2s ease;
     flex-shrink: 0;
-    
+
     &::after {
       content: '';
       width: 10px;
@@ -860,28 +869,28 @@ onUnmounted(() => {
       transition: opacity 0.2s ease;
     }
   }
-  
-  input[type="checkbox"]:checked + .checkbox-custom {
+
+  input[type='checkbox']:checked + .checkbox-custom {
     background: linear-gradient(135deg, rgba(236, 72, 153, 0.6), rgba(168, 85, 247, 0.6));
     border-color: rgba(236, 72, 153, 0.8);
-    
+
     &::after {
       border-color: white;
       opacity: 1;
     }
   }
-  
+
   .checkbox-label {
     font-size: 12px;
     color: rgba(255, 255, 255, 0.7);
   }
-  
+
   &:hover {
     .checkbox-custom {
       border-color: rgba(236, 72, 153, 0.8);
       background: rgba(255, 255, 255, 0.1);
     }
-    
+
     .checkbox-label {
       color: rgba(255, 255, 255, 0.9);
     }
@@ -902,28 +911,28 @@ onUnmounted(() => {
   overflow: hidden;
   cursor: pointer;
   transition: all 0.2s ease;
-  
+
   &:hover {
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
   }
-  
+
   &.unlocked {
     border-color: rgba(236, 72, 153, 0.3);
-    
+
     &:hover {
       border-color: rgba(236, 72, 153, 0.5);
     }
   }
-  
+
   &.locked {
     opacity: 0.6;
-    
+
     &:hover {
       opacity: 0.8;
     }
   }
-  
+
   .cg-thumbnail {
     width: 100%;
     aspect-ratio: 1;
@@ -932,13 +941,13 @@ onUnmounted(() => {
     align-items: center;
     justify-content: center;
     position: relative;
-    
+
     .cg-img {
       width: 100%;
       height: 100%;
       object-fit: cover;
     }
-    
+
     .locked-overlay {
       position: absolute;
       inset: 0;
@@ -946,25 +955,25 @@ onUnmounted(() => {
       align-items: center;
       justify-content: center;
       background: rgba(0, 0, 0, 0.6);
-      
+
       i {
         font-size: 24px;
         color: rgba(255, 255, 255, 0.4);
       }
     }
-    
+
     .fallback-icon {
       font-size: 24px;
       color: rgba(255, 255, 255, 0.3);
     }
   }
-  
+
   .cg-info {
     padding: 8px;
     display: flex;
     flex-direction: column;
     gap: 4px;
-    
+
     .cg-name {
       font-size: 10px;
       color: rgba(255, 255, 255, 0.8);
@@ -972,14 +981,14 @@ onUnmounted(() => {
       text-overflow: ellipsis;
       white-space: nowrap;
     }
-    
+
     .cg-rarity {
       font-size: 9px;
       color: #fbbf24;
       display: flex;
       align-items: center;
       gap: 2px;
-      
+
       i {
         font-size: 8px;
       }
@@ -995,7 +1004,7 @@ onUnmounted(() => {
   justify-content: center;
   padding: 40px 20px;
   text-align: center;
-  
+
   .empty-icon {
     width: 60px;
     height: 60px;
@@ -1005,20 +1014,20 @@ onUnmounted(() => {
     align-items: center;
     justify-content: center;
     margin-bottom: 16px;
-    
+
     i {
       font-size: 24px;
       color: rgba(255, 255, 255, 0.3);
     }
   }
-  
+
   .empty-title {
     font-size: 14px;
     font-weight: 600;
     color: rgba(255, 255, 255, 0.6);
     margin: 0 0 8px;
   }
-  
+
   .empty-desc {
     font-size: 12px;
     color: rgba(255, 255, 255, 0.4);
@@ -1082,7 +1091,7 @@ onUnmounted(() => {
   transition: all 0.2s ease;
   z-index: 10;
   font-size: clamp(12px, 2vmin, 16px);
-  
+
   &:hover {
     background: rgba(248, 113, 113, 0.8);
   }
@@ -1093,7 +1102,7 @@ onUnmounted(() => {
   padding: clamp(10px, 2vmin, 16px) clamp(12px, 2.5vmin, 20px);
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   flex-shrink: 0;
-  
+
   h3 {
     margin: 0;
     font-size: clamp(12px, 2vmin, 16px);
@@ -1104,7 +1113,7 @@ onUnmounted(() => {
     text-overflow: ellipsis;
     white-space: nowrap;
   }
-  
+
   .modal-character {
     font-size: clamp(10px, 1.5vmin, 12px);
     color: rgba(255, 255, 255, 0.5);
@@ -1134,7 +1143,7 @@ onUnmounted(() => {
   overflow: hidden;
   flex: 1;
   min-height: 0; // 允许flex子项收缩
-  
+
   .modal-cg-img {
     width: 100%;
     height: 100%;
@@ -1142,7 +1151,7 @@ onUnmounted(() => {
     max-height: clamp(150px, 40vmin, 350px);
     object-fit: contain;
   }
-  
+
   .modal-fallback {
     display: flex;
     flex-direction: column;
@@ -1150,11 +1159,11 @@ onUnmounted(() => {
     gap: clamp(6px, 1vmin, 10px);
     color: rgba(255, 255, 255, 0.4);
     padding: clamp(20px, 4vmin, 40px);
-    
+
     i {
       font-size: clamp(20px, 4vmin, 32px);
     }
-    
+
     p {
       font-size: clamp(10px, 1.5vmin, 13px);
       margin: 0;
@@ -1168,7 +1177,7 @@ onUnmounted(() => {
   background: rgba(255, 255, 255, 0.05);
   border-radius: clamp(8px, 1.5vmin, 12px);
   flex-shrink: 0;
-  
+
   p {
     margin: 0;
     font-size: clamp(11px, 1.8vmin, 14px);

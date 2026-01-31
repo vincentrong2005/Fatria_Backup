@@ -140,9 +140,9 @@ const emit = defineEmits<{
 const characterData = ref<any>({});
 const combatData = ref<any>({});
 const currentTime = ref('12:00');
-const currentPage = ref<'dashboard' | 'profile' | 'skills' | 'inventory' | 'quest' | 'relationship' | 'shop' | 'cg' | 'map'>(
-  'dashboard',
-);
+const currentPage = ref<
+  'dashboard' | 'profile' | 'skills' | 'inventory' | 'quest' | 'relationship' | 'shop' | 'cg' | 'map'
+>('dashboard');
 
 const bottomNavRef = ref<HTMLElement | null>(null);
 

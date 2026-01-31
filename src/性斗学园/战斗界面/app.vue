@@ -6027,7 +6027,7 @@ function selectAndDisplayCG() {
       console.log('[战斗界面]   - 描述:', cgResult.description);
       console.log('[战斗界面]   - cgImageUrl.value:', cgImageUrl.value);
       console.log('[战斗界面]   - cgDescription.value:', cgDescription.value);
-      
+
       // 解锁CG - 将CG ID和图片索引组合作为key添加到localStorage中
       // 格式：cgId-imageIndex，每张图片单独解锁
       try {
@@ -6037,14 +6037,14 @@ function selectAndDisplayCG() {
           const cgKey = `${cgId}-${imageIndex}`;
           const storedCGs = localStorage.getItem('unlocked_cgs');
           let unlockedSet: Set<string>;
-          
+
           if (storedCGs) {
             const parsed = JSON.parse(storedCGs);
             unlockedSet = new Set(Array.isArray(parsed) ? parsed : []);
           } else {
             unlockedSet = new Set();
           }
-          
+
           if (!unlockedSet.has(cgKey)) {
             unlockedSet.add(cgKey);
             localStorage.setItem('unlocked_cgs', JSON.stringify(Array.from(unlockedSet)));
