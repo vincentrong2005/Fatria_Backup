@@ -105,24 +105,95 @@ function watch_it(compiler: webpack.Compiler) {
 }
 
 let watcher: FSWatcher;
+<<<<<<< HEAD
 function dump_schema(compiler: webpack.Compiler) {
   const execute = () => {
+=======
+const dump = () => {
+>>>>>>> 3ff3ec895fe0b8683e26537ccb33fbb96c7c9535
     exec('pnpm dump', { cwd: import.meta.dirname });
   };
+<<<<<<< HEAD
   const execute_debounced = _.debounce(execute, 500, { leading: true, trailing: false });
   if (!compiler.options.watch) {
     execute();
   } else if (!watcher) {
+=======
+const dump_debounced = _.debounce(dump, 500, { leading: true, trailing: false });
+function schema_dump(compiler: webpack.Compiler) {
+  if (!compiler.options.watch) {
+    dump_debounced();
+    return;
+  }
+  if (!watcher) {
+>>>>>>> 3ff3ec895fe0b8683e26537ccb33fbb96c7c9535
     watcher = watch('src', {
       awaitWriteFinish: true,
     }).on('all', (_event, path) => {
       if (path.endsWith('schema.ts')) {
-        execute_debounced();
+        dump_debounced();
       }
     });
   }
 }
 
+<<<<<<< HEAD
+=======
+let child_process: ChildProcess;
+const bundle = () => {
+  exec('pnpm sync bundle all', { cwd: import.meta.dirname });
+  console.info('\x1b[36m[tavern_sync]\x1b[0m 已打包所有配置了的角色卡/世界书/预设');
+};
+const bundle_debounced = _.debounce(bundle, 500, { leading: true, trailing: false });
+function tavern_sync(compiler: webpack.Compiler) {
+  if (!compiler.options.watch) {
+    bundle_debounced();
+    return;
+  }
+  compiler.hooks.watchRun.tap('watch_tavern_sync', () => {
+    if (!child_process) {
+      child_process = spawn('pnpm', ['sync', 'watch', 'all', '-f'], {
+        shell: true,
+        stdio: ['ignore', 'pipe', 'pipe'],
+        cwd: import.meta.dirname,
+        env: { ...process.env, FORCE_COLOR: '1' },
+      });
+      child_process.stdout?.on('data', (data: Buffer) => {
+        console.info(
+          data
+            .toString()
+            .trimEnd()
+            .split('\n')
+            .map(string => (/^\s*$/s.test(string) ? string : `\x1b[36m[tavern_sync]\x1b[0m ${string}`))
+            .join('\n'),
+        );
+      });
+      child_process.stderr?.on('data', (data: Buffer) => {
+        console.error(
+          data
+            .toString()
+            .trimEnd()
+            .split('\n')
+            .map(string => (/^\s*$/s.test(string) ? string : `\x1b[36m[tavern_sync]\x1b[0m ${string}`))
+            .join('\n'),
+        );
+      });
+      child_process.on('error', error => {
+        console.error(`\x1b[31m[tavern_sync]\x1b[0m Error: ${error.message}`);
+      });
+    }
+  });
+  compiler.hooks.watchClose.tap('watch_tavern_sync', () => {
+    child_process?.kill();
+  });
+  ['SIGINT', 'SIGTERM'].forEach(signal => {
+    process.on(signal, () => {
+      child_process?.kill();
+    });
+  });
+}
+
+>>>>>>> 3ff3ec895fe0b8683e26537ccb33fbb96c7c9535
 function parse_configuration(entry: Entry): (_env: any, argv: any) => webpack.Configuration {
   const should_obfuscate = fs
     .readFileSync(path.join(import.meta.dirname, entry.script), 'utf-8')
@@ -368,8 +439,14 @@ function parse_configuration(entry: Entry): (_env: any, argv: any) => webpack.Co
         ]
     )
       .concat(
+<<<<<<< HEAD
         { apply: watch_it },
         { apply: dump_schema },
+=======
+        { apply: watch_tavern_helper },
+        { apply: schema_dump },
+        { apply: tavern_sync },
+>>>>>>> 3ff3ec895fe0b8683e26537ccb33fbb96c7c9535
         new VueLoaderPlugin(),
         unpluginAutoImport({
           dts: true,
