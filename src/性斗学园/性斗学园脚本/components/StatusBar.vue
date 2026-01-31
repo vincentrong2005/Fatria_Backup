@@ -60,6 +60,9 @@
 
           <!-- Shop 商店页 -->
           <ShopPage v-if="currentPage === 'shop'" :character-data="characterData" />
+
+          <!-- CG 页面 -->
+          <CGPage v-if="currentPage === 'cg'" :character-data="characterData" />
         </div>
 
         <!-- 底部导航栏 -->
@@ -96,6 +99,10 @@
             <i class="fas fa-store"></i>
             <span>商店</span>
           </button>
+          <button class="nav-button" :class="{ active: currentPage === 'cg' }" @click="currentPage = 'cg'">
+            <i class="fas fa-images"></i>
+            <span>CG</span>
+          </button>
           <button class="nav-button" :class="{ active: currentPage === 'map' }" @click="currentPage = 'map'">
             <i class="fas fa-map"></i>
             <span>地图</span>
@@ -112,6 +119,7 @@
 <script setup lang="ts">
 import { onMounted, onUnmounted, ref } from 'vue';
 import { getDailyTalentEffect } from '../data/talentDatabase';
+import CGPage from './pages/CGPage.vue';
 import DashboardPage from './pages/DashboardPage.vue';
 import InventoryPage from './pages/InventoryPage.vue';
 import MapPage from './pages/MapPage.vue';
@@ -132,7 +140,7 @@ const emit = defineEmits<{
 const characterData = ref<any>({});
 const combatData = ref<any>({});
 const currentTime = ref('12:00');
-const currentPage = ref<'dashboard' | 'profile' | 'skills' | 'inventory' | 'quest' | 'relationship' | 'shop' | 'map'>(
+const currentPage = ref<'dashboard' | 'profile' | 'skills' | 'inventory' | 'quest' | 'relationship' | 'shop' | 'cg' | 'map'>(
   'dashboard',
 );
 

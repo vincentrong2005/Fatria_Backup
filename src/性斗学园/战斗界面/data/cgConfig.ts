@@ -2750,7 +2750,7 @@ export function selectCGEvent(
   characterName: string,
   playerGender: '男' | '女',
   isVictory: boolean,
-): { event: CGEvent; imageUrl: string; description: string } | null {
+): { event: CGEvent; imageUrl: string; description: string; imageIndex: number } | null {
   console.log('[CG选择] ========== 开始选择CG事件 ==========');
   console.log('[CG选择] 参数 - 角色:', characterName, '性别:', playerGender, '胜利:', isVictory);
 
@@ -2817,11 +2817,13 @@ export function selectCGEvent(
 
   console.log('[CG选择] 生成的图片URL:', imageUrl);
   console.log('[CG选择] 事件描述:', selectedEvent.description);
+  console.log('[CG选择] 选择的图片索引:', randomImageIndex);
   console.log('[CG选择] ========== CG事件选择完成 ==========');
 
   return {
     event: selectedEvent,
     imageUrl,
     description: selectedEvent.description,
+    imageIndex: randomImageIndex,
   };
 }
