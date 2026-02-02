@@ -4275,8 +4275,7 @@ export const ENEMY_SKILLS: Record<string, SkillData> = {
   明日香_11: {
     id: '明日香_11',
     name: '润滑全身按摩',
-    description:
-      '将特制的、带有恢复效果的润滑剂涂满对手全身,并用专业的手法进行按摩。',
+    description: '将特制的、带有恢复效果的润滑剂涂满对手全身,并用专业的手法进行按摩。',
     effectDescription: '造成伤害',
     icon: 'Shield',
     type: SkillType.SUPPORT,
