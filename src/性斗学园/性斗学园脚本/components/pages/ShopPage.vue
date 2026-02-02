@@ -301,7 +301,7 @@ function getItemDiscount(item: any): number {
   }
 
   // 永久提升类折扣
-  if (item.category === 'consumable' && item.effect?.permanent) {
+  if (item.category === 'consumable' && (item.effect?.permanent || item.effect?.permanentBonus)) {
     discount += getDailyTalentEffect(talentId, 'shop_discount_permanent');
   }
 
@@ -2303,6 +2303,28 @@ const consumableSubCategories = [
         effect: { permanent: { _潜力: 0.3 } },
         description: '永久提升0.3点潜力值（传说级）',
       },
+      {
+        id: 'con_p_7',
+        name: '战斗本能觉醒剂',
+        icon: 'fas fa-fist-raised',
+        price: 10000,
+        category: 'consumable',
+        combatOnly: false,
+        effectText: '性斗力成算+2',
+        effect: { permanentBonus: { 基础性斗力成算: 2 } },
+        description: '永久提升2点基础性斗力成算',
+      },
+      {
+        id: 'con_p_8',
+        name: '意志强化精华',
+        icon: 'fas fa-shield-alt',
+        price: 10000,
+        category: 'consumable',
+        combatOnly: false,
+        effectText: '忍耐力成算+2',
+        effect: { permanentBonus: { 基础忍耐力成算: 2 } },
+        description: '永久提升2点基础忍耐力成算',
+      },
     ],
   },
   {
@@ -2466,7 +2488,7 @@ async function purchaseItem() {
           if (item.effect.buff) consumableData.加成属性 = item.effect.buff;
 
           if (item.effect.permanent) {
-            // 永久提升类：直接应用效果
+            // 永久提升类：直接应用效果到核心状态
             if (!mvuData.stat_data.核心状态) mvuData.stat_data.核心状态 = {};
             for (const [key, value] of Object.entries(item.effect.permanent)) {
               if (key === '_潜力') {
@@ -2477,6 +2499,24 @@ async function purchaseItem() {
               } else {
                 mvuData.stat_data.核心状态[key] = (mvuData.stat_data.核心状态[key] || 0) + (value as number) * quantity;
               }
+            }
+            // 永久提升不存入背包，直接生效
+            await globalAny.Mvu.replaceMvuData(mvuData, { type: 'message', message_id: 'latest' });
+
+            if (typeof toastr !== 'undefined') {
+              toastr.success(`永久属性提升成功！`, '购买成功');
+            }
+            selectedItem.value = null;
+            return;
+          }
+
+          if (item.effect.permanentBonus) {
+            // 永久成算类提升：直接应用效果到永久状态.加成统计
+            if (!mvuData.stat_data.永久状态) mvuData.stat_data.永久状态 = { 状态列表: [], 加成统计: {} };
+            if (!mvuData.stat_data.永久状态.加成统计) mvuData.stat_data.永久状态.加成统计 = {};
+            for (const [key, value] of Object.entries(item.effect.permanentBonus)) {
+              mvuData.stat_data.永久状态.加成统计[key] =
+                (mvuData.stat_data.永久状态.加成统计[key] || 0) + (value as number) * quantity;
             }
             // 永久提升不存入背包，直接生效
             await globalAny.Mvu.replaceMvuData(mvuData, { type: 'message', message_id: 'latest' });
