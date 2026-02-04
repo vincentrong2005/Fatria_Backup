@@ -157,6 +157,17 @@ function handleBottomNavWheel(event: WheelEvent) {
   el.scrollLeft += delta;
 }
 
+/**
+ * 规范化名字：去除中间点等特殊字符
+ * 例如："雪莉·克里姆希尔德" -> "雪莉克里姆希尔德"
+ * @param name 原始名称
+ * @returns 去除特殊字符后的名称
+ */
+function normalizeName(name: string): string {
+  // 去除中间点（·、・、‧等变体）
+  return name.replace(/[·・‧]/g, '');
+}
+
 // 从 MVU 获取数据
 async function loadMvuData() {
   try {
@@ -169,6 +180,67 @@ async function loadMvuData() {
     if (!mvuData || !mvuData.stat_data) {
       console.warn('[状态栏] MVU数据为空');
       return;
+    }
+
+    // ==================== 规范化关系系统中的名字 ====================
+    let needsUpdate = false;
+    const relationships = mvuData.stat_data.关系系统 as Record<string, any> | undefined;
+    
+    if (relationships && typeof relationships === 'object') {
+      const keysToNormalize: { oldKey: string; newKey: string }[] = [];
+
+      // 遍历关系系统的所有键（人物名字）
+      for (const key of Object.keys(relationships)) {
+        // 跳过非人物键（如在场人物数组）
+        if (key === '在场人物') continue;
+
+        const normalizedKey = normalizeName(key);
+        // 如果名字包含中间点，需要规范化
+        if (normalizedKey !== key) {
+          keysToNormalize.push({ oldKey: key, newKey: normalizedKey });
+        }
+      }
+
+      // 如果有需要规范化的名字
+      if (keysToNormalize.length > 0) {
+        for (const { oldKey, newKey } of keysToNormalize) {
+          // 如果规范化后的键已存在，合并数据（保留更高的好感度）
+          if (relationships[newKey]) {
+            const oldData = relationships[oldKey];
+            const existingData = relationships[newKey];
+            // 保留好感度更高的关系数据
+            if ((oldData?.好感度 || 0) > (existingData?.好感度 || 0)) {
+              relationships[newKey] = oldData;
+            }
+          } else {
+            // 直接使用规范化后的键
+            relationships[newKey] = relationships[oldKey];
+          }
+          // 删除旧键
+          delete relationships[oldKey];
+          console.info(`[状态栏] 关系系统名字规范化: "${oldKey}" → "${newKey}"`);
+        }
+        needsUpdate = true;
+      }
+
+      // 同时规范化在场人物数组中的名字
+      const presentCharacters = relationships['在场人物'] as string[] | undefined;
+      if (Array.isArray(presentCharacters)) {
+        const normalizedCharacters = presentCharacters.map((name: string) => normalizeName(name));
+        // 检查是否有变化
+        const hasChange = presentCharacters.some((name: string, i: number) => name !== normalizedCharacters[i]);
+        if (hasChange) {
+          relationships['在场人物'] = normalizedCharacters;
+          console.info(`[状态栏] 在场人物名字规范化: ${presentCharacters.join(', ')} → ${normalizedCharacters.join(', ')}`);
+          needsUpdate = true;
+        }
+      }
+    }
+
+    // 如果有变更，写回 MVU
+    if (needsUpdate) {
+      await globalAny.Mvu.replaceMvuData(mvuData, { type: 'message', message_id: 'latest' });
+      console.info('[状态栏] 已更新规范化后的关系系统数据');
     }
 
     characterData.value = mvuData.stat_data;

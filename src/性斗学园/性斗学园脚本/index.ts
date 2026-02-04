@@ -16,6 +16,17 @@ import { shouldTriggerOrgasm } from '../开局/utils/combat-calculator';
 import StatusBarWrapper from './components/StatusBarWrapper.vue';
 import { getDailyTalentEffect } from './data/talentDatabase';
 
+/**
+ * 规范化名字：去除中间点等特殊字符
+ * 例如："雪莉·克里姆希尔德" -> "雪莉克里姆希尔德"
+ * @param name 原始名称
+ * @returns 去除特殊字符后的名称
+ */
+function normalizeName(name: string): string {
+  // 去除中间点（·、・、‧等变体）
+  return name.replace(/[·・‧]/g, '');
+}
+
 // 等待 MVU 初始化（带安全检查和超时）
 const globalAny = window as any;
 if (typeof globalAny.waitGlobalInitialized === 'function') {
@@ -529,6 +540,21 @@ async function updateDependentVariables() {
       }
     }
 
+    // ==================== 步骤6.1: 满级经验转金币（1:200比例）====================
+    // 当玩家等级已达100级时，将所有经验值转换为金币
+    if (finalLevel >= 100 && finalExp > 0) {
+      const goldEarned = finalExp * 200; // 1经验 = 200金币
+      const currentGold = getValue(mvuData, '物品系统.学园金币', 0);
+      const newGold = currentGold + goldEarned;
+
+      updates['角色基础.经验值'] = 0; // 清空经验值
+      updates['物品系统.学园金币'] = newGold;
+      hasUpdates = true;
+
+      console.info(`[性斗学园脚本] 满级经验转金币：${finalExp}经验 → ${goldEarned}金币 (总金币: ${newGold})`);
+      finalExp = 0;
+    }
+
     // ==================== 步骤6.5: 根据等级自动更新段位 ====================
     const expectedRank = calculateRank(finalLevel);
     const currentRank = get(mvuData.stat_data, '角色基础._段位', '无段位');
@@ -573,6 +599,60 @@ function registerMvuEventListeners() {
      */
     eventOn(Mvu.events.VARIABLE_UPDATE_ENDED, async (variables, variables_before_update) => {
       console.info('[性斗学园脚本] 检测到 MVU 变量更新事件');
+
+      // ==================== 去除关系系统中名字的中间点 ====================
+      const relationships = get(variables, 'stat_data.关系系统', {}) as Record<string, any>;
+      if (relationships && typeof relationships === 'object') {
+        const keysToNormalize: { oldKey: string; newKey: string }[] = [];
+
+        // 遍历关系系统的所有键（人物名字）
+        for (const key of Object.keys(relationships)) {
+          // 跳过非人物键（如在场人物数组）
+          if (key === '在场人物') continue;
+
+          const normalizedKey = normalizeName(key);
+          // 如果名字包含中间点，需要规范化
+          if (normalizedKey !== key) {
+            keysToNormalize.push({ oldKey: key, newKey: normalizedKey });
+          }
+        }
+
+        // 如果有需要规范化的名字
+        if (keysToNormalize.length > 0) {
+          for (const { oldKey, newKey } of keysToNormalize) {
+            // 如果规范化后的键已存在，合并数据（保留更高的好感度）
+            if (relationships[newKey]) {
+              const oldData = relationships[oldKey];
+              const existingData = relationships[newKey];
+              // 保留好感度更高的关系数据
+              if ((oldData?.好感度 || 0) > (existingData?.好感度 || 0)) {
+                relationships[newKey] = oldData;
+              }
+            } else {
+              // 直接使用规范化后的键
+              relationships[newKey] = relationships[oldKey];
+            }
+            // 删除旧键
+            delete relationships[oldKey];
+            console.info(`[性斗学园脚本] 关系系统名字规范化: "${oldKey}" → "${newKey}"`);
+          }
+          // 更新变量
+          set(variables, 'stat_data.关系系统', relationships);
+        }
+
+        // 同时规范化在场人物数组中的名字
+        const presentCharacters = relationships['在场人物'] as string[] | undefined;
+        if (Array.isArray(presentCharacters)) {
+          const normalizedCharacters = presentCharacters.map((name: string) => normalizeName(name));
+          // 检查是否有变化
+          const hasChange = presentCharacters.some((name: string, i: number) => name !== normalizedCharacters[i]);
+          if (hasChange) {
+            relationships['在场人物'] = normalizedCharacters;
+            set(variables, 'stat_data.关系系统', relationships);
+            console.info(`[性斗学园脚本] 在场人物名字规范化: ${presentCharacters.join(', ')} → ${normalizedCharacters.join(', ')}`);
+          }
+        }
+      }
 
       // 检查是否有基础变量发生变化（这些变量的变化会影响计算值）
       const basePaths = [
