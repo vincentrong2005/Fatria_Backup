@@ -649,7 +649,9 @@ function registerMvuEventListeners() {
           if (hasChange) {
             relationships['在场人物'] = normalizedCharacters;
             set(variables, 'stat_data.关系系统', relationships);
-            console.info(`[性斗学园脚本] 在场人物名字规范化: ${presentCharacters.join(', ')} → ${normalizedCharacters.join(', ')}`);
+            console.info(
+              `[性斗学园脚本] 在场人物名字规范化: ${presentCharacters.join(', ')} → ${normalizedCharacters.join(', ')}`,
+            );
           }
         }
       }

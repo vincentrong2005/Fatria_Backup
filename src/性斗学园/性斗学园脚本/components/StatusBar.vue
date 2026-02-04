@@ -185,7 +185,7 @@ async function loadMvuData() {
     // ==================== 规范化关系系统中的名字 ====================
     let needsUpdate = false;
     const relationships = mvuData.stat_data.关系系统 as Record<string, any> | undefined;
-    
+
     if (relationships && typeof relationships === 'object') {
       const keysToNormalize: { oldKey: string; newKey: string }[] = [];
 
@@ -231,7 +231,9 @@ async function loadMvuData() {
         const hasChange = presentCharacters.some((name: string, i: number) => name !== normalizedCharacters[i]);
         if (hasChange) {
           relationships['在场人物'] = normalizedCharacters;
-          console.info(`[状态栏] 在场人物名字规范化: ${presentCharacters.join(', ')} → ${normalizedCharacters.join(', ')}`);
+          console.info(
+            `[状态栏] 在场人物名字规范化: ${presentCharacters.join(', ')} → ${normalizedCharacters.join(', ')}`,
+          );
           needsUpdate = true;
         }
       }
