@@ -264,6 +264,9 @@ importers:
       webpack-obfuscator:
         specifier: ^3.6.0
         version: 3.6.0(javascript-obfuscator@4.2.2)(webpack@5.105.0)
+      yaml-loader:
+        specifier: ^0.9.0
+        version: 0.9.0
 
 packages:
 

@@ -14,14 +14,6 @@ alwaysApply: true
 
 ## 项目结构
 
-<<<<<<< HEAD
-每个前端界面或脚本, 都以 `src` 文件夹中的一个独立文件夹形式存在. 具体是前端界面还是脚本, 由文件夹中的内容直接决定:
-
-- 如果文件夹中既有 `index.ts` 文件也有 `index.html` 文件, 则是前端界面项目. 例如, `src/界面示例` 是一个前端界面项目.
-- 如果文件夹中仅有 `index.ts` 文件, 则是脚本项目. 例如, `src/脚本示例` 是一个脚本项目.
-
-你可以在 `模板/**/新建为src文件夹中的文件夹` 中找到前端界面和脚本项目的初始模板.
-=======
 ### 核心机制: 前端界面或脚本
 
 每个前端界面或脚本, 都以 `src` 文件夹或 `示例` 文件夹中的一个独立文件夹形式存在. 具体是前端界面还是脚本, 由文件夹中的内容直接决定:
@@ -56,27 +48,18 @@ alwaysApply: true
 - `util/mvu.ts` 中提供了 `defineMvuDataStore` 函数, 它基于 pinia 实现了本项目推荐的前端界面获取、修改 MVU 变量方式, 支持与酒馆实际变量之间的双向同步; `示例/角色卡示例/界面/store.ts` 中的 `useDataStore` 就是用它获取和修改界面所在楼层变量的.
 
 你同样可以在 `初始模板/角色卡/新建为src文件夹中的文件夹` 中找到 MVU zod 角色卡的初始模板.
->>>>>>> c9caee866fce817dfc1a431872cc0dffa951a5e9
 
 ## 项目参考文件
 
 ### 可用的第三方库
 
-<<<<<<< HEAD
-项目使用 pnpm 作为包管理器, 在 `package.json` 的 `dependencies` 部分定义了可用的第三方库 (dedent、gsap、jquery、jquery-ui、lodash、pinia、pixi.js、toastr、yaml、vue、vue-router、@vueuse/core、react、@pixi/react、zod), 你也可以自己通过 `pnpm add` 添加更多第三方库, 如添加 (@vueuse/integrations 等).
-=======
 项目使用 pnpm 作为包管理器, 在 `package.json` 的 `dependencies` 部分定义了可用的第三方库 (dedent、gsap、jquery、jquery-ui、lodash、pinia、pixi.js、toastr、yaml、vue、vue-router、@vueuse/core、react、@pixi/react、async-wait-until、zod), 你也可以自己通过 `pnpm add` 添加更多第三方库, 如添加 (@vueuse/integrations 等).
->>>>>>> c9caee866fce817dfc1a431872cc0dffa951a5e9
 
 前端界面或脚本都是在浏览器中使用, 因此你不能使用 nodejs 库
 
 ### 与酒馆交互的方式
 
-<<<<<<< HEAD
-前端界面或脚本主要使用酒馆助手所提供的接口与酒馆进行交互. 这些接口定义在 `@types` 文件夹中, 如 `@types/function/variables.d.ts` 中描述了该如何操控酒馆变量.
-=======
 前端界面或脚本主要使用酒馆助手所提供的接口与酒馆进行交互. 这些接口定义在 `@types` 文件夹中, 如 `@types/function/worldbook.d.ts` 中描述了该如何操控世界书, `@types/function/variables.d.ts` 中描述了该如何操控酒馆变量.
->>>>>>> c9caee866fce817dfc1a431872cc0dffa951a5e9
 
 此外, `@types` 文件夹也为酒馆本身、其他插件、MVU 变量框架所提供的接口变量、函数进行了类型定义, 如 `@types/iframe/exported.mvu.d.ts` 中描述了 MVU 变量框架所提供的接口 `Mvu`.
 
@@ -86,18 +69,11 @@ alwaysApply: true
 
 ### 工具函数
 
-<<<<<<< HEAD
-在 `src/util` 中定义了一些工具函数:
-
-- `src/util/script.ts`: 脚本可能使用的函数
-- `src/util/common.ts`: 前端界面或脚本可能使用的函数
-=======
 在 `util` 中定义了一些工具函数:
 
 - `util/script.ts`: 脚本可能使用的函数
 - `util/common.ts`: 前端界面或脚本可能使用的函数
 - `util/mvu.ts`: MVU 角色卡可能使用的函数
->>>>>>> c9caee866fce817dfc1a431872cc0dffa951a5e9
 
 ## 特殊导入方式
 
@@ -157,19 +133,12 @@ typescript 更容易写对, 你应该使用 typescript 而非 javascript
 
 ### 优先使用酒馆助手提供的接口
 
-<<<<<<< HEAD
-相比于 `@types/iframe/exported.sillytavern.d.ts` 中定义的酒馆内置接口或 STScript 命令, 酒馆助手所提供的接口抽象层次更高, 且更符合 Typescript 的类型系统. 例如:
-
-- 使用 `getChatMessages()` 而不是 `SillyTavern.chat`
-- 使用 `replaceWorldbook()` 而不是 `triggerSlash('/setentryfield')`
-=======
 **酒馆助手所提供的接口抽象层次更高, 你应该优先使用 `@types` 文件夹中其他文件定义的酒馆助手接口**, 而不是 `@types/iframe/exported.sillytavern.d.ts` 中定义的酒馆内置接口或 STScript 命令.
 
 - 使用 `@types/function/chat_message.d.ts` 中定义的 `getChatMessages()`、`setChatMessages()` 等来获取、修改消息楼层
 - 使用 `@types/function/worldbook.d.ts` 中定义的 `getWorldbook()`、`replaceWorldbook()` 等来获取、修改世界书条目
 - 使用 `@types/function/variables.d.ts` 中定义的 `getVariables()`、`replaceVariables()` 等来获取、修改酒馆变量
 - ……
->>>>>>> c9caee866fce817dfc1a431872cc0dffa951a5e9
 
 ### 优先使用 vue 编写界面
 
@@ -200,15 +169,12 @@ export const useSettingsStore = defineStore('settings', () => {
 });
 ```
 
-<<<<<<< HEAD
-=======
 ### 优先使用 tailwindcss 和 `<style scoped>` 进行样式设计
 
 你可以直接在项目中使用 tailwindcss, 而无需导入任何 css 文件.
 
 在设计样式时, 你应该优先使用 tailwindcss 直接在 vue 组件的 `<template>` 内书写, 对于无法这样做的情况则使用 `<style scoped>` 标签.
 
->>>>>>> c9caee866fce817dfc1a431872cc0dffa951a5e9
 ### 尝试使用 @pixi/react 编写界面
 
 当有很多多媒体资源时, 我们的前端界面更像是一个完整的游戏, 因此你应该使用 @pixi/react 在 .tsx 中编写界面, 并使用 pixi.js 来实现资源预先加载等逻辑.
@@ -253,11 +219,7 @@ $(() => {
 
 ### 重载前端界面或脚本
 
-<<<<<<< HEAD
-如果有完全重载前端界面或脚本的需求, 你应该使用 `window.location.reload()`. 如聊天文件变更时重新载入前端界面或脚本, 你可以用 `src/util/script.ts` 中定义好了的工具函数:
-=======
 如果有完全重载前端界面或脚本的需求, 你应该使用 `window.location.reload()`. 如聊天文件变更时重新载入前端界面或脚本, 你可以用 `util/script.ts` 中定义好了的工具函数:
->>>>>>> c9caee866fce817dfc1a431872cc0dffa951a5e9
 
 ```ts
 export function reloadOnChatChange(): EventOnReturn {
