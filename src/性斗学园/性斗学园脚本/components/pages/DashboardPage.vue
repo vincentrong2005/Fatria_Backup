@@ -1007,4 +1007,3 @@ function formatNumber(num: number): string {
   margin-top: 4px;
 }
 </style>
- 
