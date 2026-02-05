@@ -6078,7 +6078,6 @@ function selectAndDisplayCG() {
 
 // 处理CG图片加载错误
 function handleCGImageError() {
-  console.warn('[战斗界面] CG图片加载失败:', cgImageUrl.value);
   cgImageUrl.value = null;
 }
 

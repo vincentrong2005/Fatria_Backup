@@ -90,7 +90,6 @@ const handleImageError = (event: Event) => {
   const img = event.target as HTMLImageElement;
   if (imageLoadError.value) return; // 避免无限循环
 
-  console.warn(`[战斗界面] 图片加载失败: ${img.src}`);
   imageLoadError.value = true;
 
   // 降级使用随机图片
