@@ -1,7 +1,7 @@
 import { SkillType, type Character, type CombatLogEntry, type Item, type Skill } from './types';
 
-// GitHub 立绘基础路径
-const GITHUB_PORTRAIT_BASE_URL = 'https://raw.githubusercontent.com/vincentrong2005/Fatria/main/图片素材/性斗学园/立绘';
+// Hugging Face 立绘基础路径
+const GITHUB_PORTRAIT_BASE_URL = 'https://huggingface.co/datasets/Vin05/AI-Gallery/resolve/main/性斗学园/立绘';
 
 // 随机图片 URL（降级使用）
 const RANDOM_IMAGE_URLS = [

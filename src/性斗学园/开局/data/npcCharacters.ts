@@ -40,7 +40,7 @@ export type NpcCategory =
  */
 export function getNpcPortraitUrl(name: string, portraitKey?: string): string {
   const fileName = portraitKey || name;
-  return `https://raw.githubusercontent.com/vincentrong2005/Fatria/main/图片素材/性斗学园/头像/${encodeURIComponent(fileName)}.png`;
+  return `https://huggingface.co/datasets/Vin05/AI-Gallery/resolve/main/性斗学园/头像/${encodeURIComponent(fileName)}.png`;
 }
 
 /**
